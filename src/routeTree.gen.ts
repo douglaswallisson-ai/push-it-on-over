@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
@@ -50,184 +51,190 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/app/',
-  path: '/app/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppSplatRoute = AppSplatRouteImport.update({
-  id: '/app/$',
-  path: '/app/$',
-  getParentRoute: () => rootRouteImport,
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCo2Route = AppCo2RouteImport.update({
-  id: '/app/co2',
-  path: '/app/co2',
-  getParentRoute: () => rootRouteImport,
+  id: '/co2',
+  path: '/co2',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppEstrategicoRoute = AppEstrategicoRouteImport.update({
-  id: '/app/estrategico',
-  path: '/app/estrategico',
-  getParentRoute: () => rootRouteImport,
+  id: '/estrategico',
+  path: '/estrategico',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppEventosRoute = AppEventosRouteImport.update({
-  id: '/app/eventos',
-  path: '/app/eventos',
-  getParentRoute: () => rootRouteImport,
+  id: '/eventos',
+  path: '/eventos',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMapaRoute = AppMapaRouteImport.update({
-  id: '/app/mapa',
-  path: '/app/mapa',
-  getParentRoute: () => rootRouteImport,
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPremiacaoRoute = AppPremiacaoRouteImport.update({
-  id: '/app/premiacao',
-  path: '/app/premiacao',
-  getParentRoute: () => rootRouteImport,
+  id: '/premiacao',
+  path: '/premiacao',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
-  id: '/app/relatorios',
-  path: '/app/relatorios',
-  getParentRoute: () => rootRouteImport,
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosAlarmeRoute = AppCadastrosAlarmeRouteImport.update({
-  id: '/app/cadastros/alarme',
-  path: '/app/cadastros/alarme',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/alarme',
+  path: '/cadastros/alarme',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosCercaRoute = AppCadastrosCercaRouteImport.update({
-  id: '/app/cadastros/cerca',
-  path: '/app/cadastros/cerca',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/cerca',
+  path: '/cadastros/cerca',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosCombustivelRoute = AppCadastrosCombustivelRouteImport.update({
-  id: '/app/cadastros/combustivel',
-  path: '/app/cadastros/combustivel',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/combustivel',
+  path: '/cadastros/combustivel',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosDispositivosRoute =
   AppCadastrosDispositivosRouteImport.update({
-    id: '/app/cadastros/dispositivos',
-    path: '/app/cadastros/dispositivos',
-    getParentRoute: () => rootRouteImport,
+    id: '/cadastros/dispositivos',
+    path: '/cadastros/dispositivos',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppCadastrosGruposRoute = AppCadastrosGruposRouteImport.update({
-  id: '/app/cadastros/grupos',
-  path: '/app/cadastros/grupos',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/grupos',
+  path: '/cadastros/grupos',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosUnidadesRoute = AppCadastrosUnidadesRouteImport.update({
-  id: '/app/cadastros/unidades',
-  path: '/app/cadastros/unidades',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/unidades',
+  path: '/cadastros/unidades',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosUsuariosRoute = AppCadastrosUsuariosRouteImport.update({
-  id: '/app/cadastros/usuarios',
-  path: '/app/cadastros/usuarios',
-  getParentRoute: () => rootRouteImport,
+  id: '/cadastros/usuarios',
+  path: '/cadastros/usuarios',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoAssentosRoute = AppFretamentoAssentosRouteImport.update({
-  id: '/app/fretamento/assentos',
-  path: '/app/fretamento/assentos',
-  getParentRoute: () => rootRouteImport,
+  id: '/fretamento/assentos',
+  path: '/fretamento/assentos',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoEscalaRoute = AppFretamentoEscalaRouteImport.update({
-  id: '/app/fretamento/escala',
-  path: '/app/fretamento/escala',
-  getParentRoute: () => rootRouteImport,
+  id: '/fretamento/escala',
+  path: '/fretamento/escala',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoPassageirosRoute =
   AppFretamentoPassageirosRouteImport.update({
-    id: '/app/fretamento/passageiros',
-    path: '/app/fretamento/passageiros',
-    getParentRoute: () => rootRouteImport,
+    id: '/fretamento/passageiros',
+    path: '/fretamento/passageiros',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppFretamentoPontoRoute = AppFretamentoPontoRouteImport.update({
-  id: '/app/fretamento/ponto',
-  path: '/app/fretamento/ponto',
-  getParentRoute: () => rootRouteImport,
+  id: '/fretamento/ponto',
+  path: '/fretamento/ponto',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoRoteirizacaoRoute =
   AppFretamentoRoteirizacaoRouteImport.update({
-    id: '/app/fretamento/roteirizacao',
-    path: '/app/fretamento/roteirizacao',
-    getParentRoute: () => rootRouteImport,
+    id: '/fretamento/roteirizacao',
+    path: '/fretamento/roteirizacao',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppFrotaAnaliseRoute = AppFrotaAnaliseRouteImport.update({
-  id: '/app/frota/analise',
-  path: '/app/frota/analise',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/analise',
+  path: '/frota/analise',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaDesempenhoRoute = AppFrotaDesempenhoRouteImport.update({
-  id: '/app/frota/desempenho',
-  path: '/app/frota/desempenho',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/desempenho',
+  path: '/frota/desempenho',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaManutencaoRoute = AppFrotaManutencaoRouteImport.update({
-  id: '/app/frota/manutencao',
-  path: '/app/frota/manutencao',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/manutencao',
+  path: '/frota/manutencao',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaMotorParadoRoute = AppFrotaMotorParadoRouteImport.update({
-  id: '/app/frota/motor-parado',
-  path: '/app/frota/motor-parado',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/motor-parado',
+  path: '/frota/motor-parado',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaPosicionamentoRoute = AppFrotaPosicionamentoRouteImport.update({
-  id: '/app/frota/posicionamento',
-  path: '/app/frota/posicionamento',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/posicionamento',
+  path: '/frota/posicionamento',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaRegeneracaoRoute = AppFrotaRegeneracaoRouteImport.update({
-  id: '/app/frota/regeneracao',
-  path: '/app/frota/regeneracao',
-  getParentRoute: () => rootRouteImport,
+  id: '/frota/regeneracao',
+  path: '/frota/regeneracao',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMotoristasIndexRoute = AppMotoristasIndexRouteImport.update({
-  id: '/app/motoristas/',
-  path: '/app/motoristas/',
-  getParentRoute: () => rootRouteImport,
+  id: '/motoristas/',
+  path: '/motoristas/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMotoristasNovoRoute = AppMotoristasNovoRouteImport.update({
-  id: '/app/motoristas/novo',
-  path: '/app/motoristas/novo',
-  getParentRoute: () => rootRouteImport,
+  id: '/motoristas/novo',
+  path: '/motoristas/novo',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppVeiculosIndexRoute = AppVeiculosIndexRouteImport.update({
-  id: '/app/veiculos/',
-  path: '/app/veiculos/',
-  getParentRoute: () => rootRouteImport,
+  id: '/veiculos/',
+  path: '/veiculos/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppVeiculosNovoRoute = AppVeiculosNovoRouteImport.update({
-  id: '/app/veiculos/novo',
-  path: '/app/veiculos/novo',
-  getParentRoute: () => rootRouteImport,
+  id: '/veiculos/novo',
+  path: '/veiculos/novo',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoViagensIndexRoute =
   AppFretamentoViagensIndexRouteImport.update({
-    id: '/app/fretamento/viagens/',
-    path: '/app/fretamento/viagens/',
-    getParentRoute: () => rootRouteImport,
+    id: '/fretamento/viagens/',
+    path: '/fretamento/viagens/',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppFretamentoViagensNovaRoute =
   AppFretamentoViagensNovaRouteImport.update({
-    id: '/app/fretamento/viagens/nova',
-    path: '/app/fretamento/viagens/nova',
-    getParentRoute: () => rootRouteImport,
+    id: '/fretamento/viagens/nova',
+    path: '/fretamento/viagens/nova',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppMotoristasPerfilNomeRoute = AppMotoristasPerfilNomeRouteImport.update({
-  id: '/app/motoristas/perfil/$nome',
-  path: '/app/motoristas/perfil/$nome',
-  getParentRoute: () => rootRouteImport,
+  id: '/motoristas/perfil/$nome',
+  path: '/motoristas/perfil/$nome',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/co2': typeof AppCo2Route
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/co2': typeof AppCo2Route
@@ -342,6 +350,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/app'
     | '/login'
     | '/app/$'
     | '/app/co2'
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/app'
     | '/login'
     | '/app/$'
     | '/app/co2'
@@ -454,7 +464,268 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/$': {
+      id: '/app/$'
+      path: '/$'
+      fullPath: '/app/$'
+      preLoaderRoute: typeof AppSplatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/co2': {
+      id: '/app/co2'
+      path: '/co2'
+      fullPath: '/app/co2'
+      preLoaderRoute: typeof AppCo2RouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/estrategico': {
+      id: '/app/estrategico'
+      path: '/estrategico'
+      fullPath: '/app/estrategico'
+      preLoaderRoute: typeof AppEstrategicoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/eventos': {
+      id: '/app/eventos'
+      path: '/eventos'
+      fullPath: '/app/eventos'
+      preLoaderRoute: typeof AppEventosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/mapa': {
+      id: '/app/mapa'
+      path: '/mapa'
+      fullPath: '/app/mapa'
+      preLoaderRoute: typeof AppMapaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/premiacao': {
+      id: '/app/premiacao'
+      path: '/premiacao'
+      fullPath: '/app/premiacao'
+      preLoaderRoute: typeof AppPremiacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/relatorios': {
+      id: '/app/relatorios'
+      path: '/relatorios'
+      fullPath: '/app/relatorios'
+      preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/alarme': {
+      id: '/app/cadastros/alarme'
+      path: '/cadastros/alarme'
+      fullPath: '/app/cadastros/alarme'
+      preLoaderRoute: typeof AppCadastrosAlarmeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/cerca': {
+      id: '/app/cadastros/cerca'
+      path: '/cadastros/cerca'
+      fullPath: '/app/cadastros/cerca'
+      preLoaderRoute: typeof AppCadastrosCercaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/combustivel': {
+      id: '/app/cadastros/combustivel'
+      path: '/cadastros/combustivel'
+      fullPath: '/app/cadastros/combustivel'
+      preLoaderRoute: typeof AppCadastrosCombustivelRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/dispositivos': {
+      id: '/app/cadastros/dispositivos'
+      path: '/cadastros/dispositivos'
+      fullPath: '/app/cadastros/dispositivos'
+      preLoaderRoute: typeof AppCadastrosDispositivosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/grupos': {
+      id: '/app/cadastros/grupos'
+      path: '/cadastros/grupos'
+      fullPath: '/app/cadastros/grupos'
+      preLoaderRoute: typeof AppCadastrosGruposRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/unidades': {
+      id: '/app/cadastros/unidades'
+      path: '/cadastros/unidades'
+      fullPath: '/app/cadastros/unidades'
+      preLoaderRoute: typeof AppCadastrosUnidadesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/usuarios': {
+      id: '/app/cadastros/usuarios'
+      path: '/cadastros/usuarios'
+      fullPath: '/app/cadastros/usuarios'
+      preLoaderRoute: typeof AppCadastrosUsuariosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/assentos': {
+      id: '/app/fretamento/assentos'
+      path: '/fretamento/assentos'
+      fullPath: '/app/fretamento/assentos'
+      preLoaderRoute: typeof AppFretamentoAssentosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/escala': {
+      id: '/app/fretamento/escala'
+      path: '/fretamento/escala'
+      fullPath: '/app/fretamento/escala'
+      preLoaderRoute: typeof AppFretamentoEscalaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/passageiros': {
+      id: '/app/fretamento/passageiros'
+      path: '/fretamento/passageiros'
+      fullPath: '/app/fretamento/passageiros'
+      preLoaderRoute: typeof AppFretamentoPassageirosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/ponto': {
+      id: '/app/fretamento/ponto'
+      path: '/fretamento/ponto'
+      fullPath: '/app/fretamento/ponto'
+      preLoaderRoute: typeof AppFretamentoPontoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/roteirizacao': {
+      id: '/app/fretamento/roteirizacao'
+      path: '/fretamento/roteirizacao'
+      fullPath: '/app/fretamento/roteirizacao'
+      preLoaderRoute: typeof AppFretamentoRoteirizacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/analise': {
+      id: '/app/frota/analise'
+      path: '/frota/analise'
+      fullPath: '/app/frota/analise'
+      preLoaderRoute: typeof AppFrotaAnaliseRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/desempenho': {
+      id: '/app/frota/desempenho'
+      path: '/frota/desempenho'
+      fullPath: '/app/frota/desempenho'
+      preLoaderRoute: typeof AppFrotaDesempenhoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/manutencao': {
+      id: '/app/frota/manutencao'
+      path: '/frota/manutencao'
+      fullPath: '/app/frota/manutencao'
+      preLoaderRoute: typeof AppFrotaManutencaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/motor-parado': {
+      id: '/app/frota/motor-parado'
+      path: '/frota/motor-parado'
+      fullPath: '/app/frota/motor-parado'
+      preLoaderRoute: typeof AppFrotaMotorParadoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/posicionamento': {
+      id: '/app/frota/posicionamento'
+      path: '/frota/posicionamento'
+      fullPath: '/app/frota/posicionamento'
+      preLoaderRoute: typeof AppFrotaPosicionamentoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/regeneracao': {
+      id: '/app/frota/regeneracao'
+      path: '/frota/regeneracao'
+      fullPath: '/app/frota/regeneracao'
+      preLoaderRoute: typeof AppFrotaRegeneracaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/motoristas/': {
+      id: '/app/motoristas/'
+      path: '/motoristas'
+      fullPath: '/app/motoristas/'
+      preLoaderRoute: typeof AppMotoristasIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/motoristas/novo': {
+      id: '/app/motoristas/novo'
+      path: '/motoristas/novo'
+      fullPath: '/app/motoristas/novo'
+      preLoaderRoute: typeof AppMotoristasNovoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/veiculos/': {
+      id: '/app/veiculos/'
+      path: '/veiculos'
+      fullPath: '/app/veiculos/'
+      preLoaderRoute: typeof AppVeiculosIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/veiculos/novo': {
+      id: '/app/veiculos/novo'
+      path: '/veiculos/novo'
+      fullPath: '/app/veiculos/novo'
+      preLoaderRoute: typeof AppVeiculosNovoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/viagens/': {
+      id: '/app/fretamento/viagens/'
+      path: '/fretamento/viagens'
+      fullPath: '/app/fretamento/viagens/'
+      preLoaderRoute: typeof AppFretamentoViagensIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/viagens/nova': {
+      id: '/app/fretamento/viagens/nova'
+      path: '/fretamento/viagens/nova'
+      fullPath: '/app/fretamento/viagens/nova'
+      preLoaderRoute: typeof AppFretamentoViagensNovaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/motoristas/perfil/$nome': {
+      id: '/app/motoristas/perfil/$nome'
+      path: '/motoristas/perfil/$nome'
+      fullPath: '/app/motoristas/perfil/$nome'
+      preLoaderRoute: typeof AppMotoristasPerfilNomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+  }
+}
+
+interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
   AppCo2Route: typeof AppCo2Route
   AppEstrategicoRoute: typeof AppEstrategicoRoute
@@ -490,259 +761,7 @@ export interface RootRouteChildren {
   AppFretamentoViagensIndexRoute: typeof AppFretamentoViagensIndexRoute
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/': {
-      id: '/app/'
-      path: '/app'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/$': {
-      id: '/app/$'
-      path: '/app/$'
-      fullPath: '/app/$'
-      preLoaderRoute: typeof AppSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/co2': {
-      id: '/app/co2'
-      path: '/app/co2'
-      fullPath: '/app/co2'
-      preLoaderRoute: typeof AppCo2RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/estrategico': {
-      id: '/app/estrategico'
-      path: '/app/estrategico'
-      fullPath: '/app/estrategico'
-      preLoaderRoute: typeof AppEstrategicoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/eventos': {
-      id: '/app/eventos'
-      path: '/app/eventos'
-      fullPath: '/app/eventos'
-      preLoaderRoute: typeof AppEventosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/mapa': {
-      id: '/app/mapa'
-      path: '/app/mapa'
-      fullPath: '/app/mapa'
-      preLoaderRoute: typeof AppMapaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/premiacao': {
-      id: '/app/premiacao'
-      path: '/app/premiacao'
-      fullPath: '/app/premiacao'
-      preLoaderRoute: typeof AppPremiacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/relatorios': {
-      id: '/app/relatorios'
-      path: '/app/relatorios'
-      fullPath: '/app/relatorios'
-      preLoaderRoute: typeof AppRelatoriosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/alarme': {
-      id: '/app/cadastros/alarme'
-      path: '/app/cadastros/alarme'
-      fullPath: '/app/cadastros/alarme'
-      preLoaderRoute: typeof AppCadastrosAlarmeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/cerca': {
-      id: '/app/cadastros/cerca'
-      path: '/app/cadastros/cerca'
-      fullPath: '/app/cadastros/cerca'
-      preLoaderRoute: typeof AppCadastrosCercaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/combustivel': {
-      id: '/app/cadastros/combustivel'
-      path: '/app/cadastros/combustivel'
-      fullPath: '/app/cadastros/combustivel'
-      preLoaderRoute: typeof AppCadastrosCombustivelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/dispositivos': {
-      id: '/app/cadastros/dispositivos'
-      path: '/app/cadastros/dispositivos'
-      fullPath: '/app/cadastros/dispositivos'
-      preLoaderRoute: typeof AppCadastrosDispositivosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/grupos': {
-      id: '/app/cadastros/grupos'
-      path: '/app/cadastros/grupos'
-      fullPath: '/app/cadastros/grupos'
-      preLoaderRoute: typeof AppCadastrosGruposRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/unidades': {
-      id: '/app/cadastros/unidades'
-      path: '/app/cadastros/unidades'
-      fullPath: '/app/cadastros/unidades'
-      preLoaderRoute: typeof AppCadastrosUnidadesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/cadastros/usuarios': {
-      id: '/app/cadastros/usuarios'
-      path: '/app/cadastros/usuarios'
-      fullPath: '/app/cadastros/usuarios'
-      preLoaderRoute: typeof AppCadastrosUsuariosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/assentos': {
-      id: '/app/fretamento/assentos'
-      path: '/app/fretamento/assentos'
-      fullPath: '/app/fretamento/assentos'
-      preLoaderRoute: typeof AppFretamentoAssentosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/escala': {
-      id: '/app/fretamento/escala'
-      path: '/app/fretamento/escala'
-      fullPath: '/app/fretamento/escala'
-      preLoaderRoute: typeof AppFretamentoEscalaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/passageiros': {
-      id: '/app/fretamento/passageiros'
-      path: '/app/fretamento/passageiros'
-      fullPath: '/app/fretamento/passageiros'
-      preLoaderRoute: typeof AppFretamentoPassageirosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/ponto': {
-      id: '/app/fretamento/ponto'
-      path: '/app/fretamento/ponto'
-      fullPath: '/app/fretamento/ponto'
-      preLoaderRoute: typeof AppFretamentoPontoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/roteirizacao': {
-      id: '/app/fretamento/roteirizacao'
-      path: '/app/fretamento/roteirizacao'
-      fullPath: '/app/fretamento/roteirizacao'
-      preLoaderRoute: typeof AppFretamentoRoteirizacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/analise': {
-      id: '/app/frota/analise'
-      path: '/app/frota/analise'
-      fullPath: '/app/frota/analise'
-      preLoaderRoute: typeof AppFrotaAnaliseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/desempenho': {
-      id: '/app/frota/desempenho'
-      path: '/app/frota/desempenho'
-      fullPath: '/app/frota/desempenho'
-      preLoaderRoute: typeof AppFrotaDesempenhoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/manutencao': {
-      id: '/app/frota/manutencao'
-      path: '/app/frota/manutencao'
-      fullPath: '/app/frota/manutencao'
-      preLoaderRoute: typeof AppFrotaManutencaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/motor-parado': {
-      id: '/app/frota/motor-parado'
-      path: '/app/frota/motor-parado'
-      fullPath: '/app/frota/motor-parado'
-      preLoaderRoute: typeof AppFrotaMotorParadoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/posicionamento': {
-      id: '/app/frota/posicionamento'
-      path: '/app/frota/posicionamento'
-      fullPath: '/app/frota/posicionamento'
-      preLoaderRoute: typeof AppFrotaPosicionamentoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/frota/regeneracao': {
-      id: '/app/frota/regeneracao'
-      path: '/app/frota/regeneracao'
-      fullPath: '/app/frota/regeneracao'
-      preLoaderRoute: typeof AppFrotaRegeneracaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/motoristas/': {
-      id: '/app/motoristas/'
-      path: '/app/motoristas'
-      fullPath: '/app/motoristas/'
-      preLoaderRoute: typeof AppMotoristasIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/motoristas/novo': {
-      id: '/app/motoristas/novo'
-      path: '/app/motoristas/novo'
-      fullPath: '/app/motoristas/novo'
-      preLoaderRoute: typeof AppMotoristasNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/veiculos/': {
-      id: '/app/veiculos/'
-      path: '/app/veiculos'
-      fullPath: '/app/veiculos/'
-      preLoaderRoute: typeof AppVeiculosIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/veiculos/novo': {
-      id: '/app/veiculos/novo'
-      path: '/app/veiculos/novo'
-      fullPath: '/app/veiculos/novo'
-      preLoaderRoute: typeof AppVeiculosNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/viagens/': {
-      id: '/app/fretamento/viagens/'
-      path: '/app/fretamento/viagens'
-      fullPath: '/app/fretamento/viagens/'
-      preLoaderRoute: typeof AppFretamentoViagensIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/fretamento/viagens/nova': {
-      id: '/app/fretamento/viagens/nova'
-      path: '/app/fretamento/viagens/nova'
-      fullPath: '/app/fretamento/viagens/nova'
-      preLoaderRoute: typeof AppFretamentoViagensNovaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/motoristas/perfil/$nome': {
-      id: '/app/motoristas/perfil/$nome'
-      path: '/app/motoristas/perfil/$nome'
-      fullPath: '/app/motoristas/perfil/$nome'
-      preLoaderRoute: typeof AppMotoristasPerfilNomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
-}
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
+const AppRouteChildren: AppRouteChildren = {
   AppSplatRoute: AppSplatRoute,
   AppCo2Route: AppCo2Route,
   AppEstrategicoRoute: AppEstrategicoRoute,
@@ -776,6 +795,14 @@ const rootRouteChildren: RootRouteChildren = {
   AppFretamentoViagensNovaRoute: AppFretamentoViagensNovaRoute,
   AppMotoristasPerfilNomeRoute: AppMotoristasPerfilNomeRoute,
   AppFretamentoViagensIndexRoute: AppFretamentoViagensIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

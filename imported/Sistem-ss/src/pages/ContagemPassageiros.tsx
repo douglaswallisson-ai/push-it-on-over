@@ -1,0 +1,155 @@
+import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, TrendingUp, UserCheck, Users } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { HeroBanner, HeroMetric } from "@/components/ui/HeroBanner";
+import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ui/data";
+import { cn } from "@/lib/utils";
+
+/**
+ * Contagem de passageiros — embarques/desembarques por parada e ocupação por
+ * viagem, a partir dos sensores de porta. Dados de exemplo.
+ */
+
+// Embarque/desembarque por parada e ocupação corrente da linha.
+const PARADAS = [
+  { nome: "Terminal Tietê", sobe: 38, desce: 0 },
+  { nome: "Barra Funda", sobe: 6, desce: 3 },
+  { nome: "Osasco", sobe: 4, desce: 8 },
+  { nome: "Jundiaí", sobe: 2, desce: 5 },
+  { nome: "Campinas", sobe: 1, desce: 12 },
+  { nome: "Limeira", sobe: 0, desce: 9 },
+  { nome: "Rio Claro", sobe: 0, desce: 14 },
+];
+const CAP = 44;
+
+type Viagem = {
+  codigo: string;
+  rota: string;
+  veiculo: string;
+  embarques: number;
+  desembarques: number;
+  pico: number;
+  ocupacao: number;
+};
+
+const ocupTone = (n: number): PillTone => (n >= 90 ? "coral" : n >= 70 ? "gold" : "green");
+
+const DADOS: Viagem[] = [
+  { codigo: "FRT-2041", rota: "SP → Curitiba", veiculo: "PLA-1A23", embarques: 51, desembarques: 51, pico: 42, ocupacao: 95 },
+  { codigo: "FRT-2042", rota: "Curitiba → Floripa", veiculo: "PLA-2B45", embarques: 34, desembarques: 32, pico: 30, ocupacao: 83 },
+  { codigo: "FRT-2043", rota: "SP → Campinas", veiculo: "PLA-3C67", embarques: 22, desembarques: 22, pico: 18, ocupacao: 75 },
+  { codigo: "FRT-2039", rota: "Santos → SP", veiculo: "PLA-1A23", embarques: 44, desembarques: 44, pico: 44, ocupacao: 100 },
+];
+
+const COLS: Column<Viagem>[] = [
+  { key: "codigo", header: "Viagem", render: (v) => <span className="font-mono font-semibold text-foreground">{v.codigo}</span> },
+  { key: "rota", header: "Rota", render: (v) => <span className="font-medium text-foreground">{v.rota}</span> },
+  { key: "veiculo", header: "Veículo", render: (v) => <span className="font-mono">{v.veiculo}</span> },
+  { key: "embarques", header: "Embarques", align: "right", render: (v) => <span className="font-mono text-leaf">↑ {v.embarques}</span> },
+  { key: "desembarques", header: "Desembarques", align: "right", render: (v) => <span className="font-mono text-coral">↓ {v.desembarques}</span> },
+  { key: "pico", header: "Pico a bordo", align: "right", render: (v) => <span className="font-mono font-semibold">{v.pico}</span> },
+  {
+    key: "ocupacao",
+    header: "Ocupação",
+    align: "center",
+    render: (v) => <Pill tone={ocupTone(v.ocupacao)}>{v.ocupacao}%</Pill>,
+  },
+];
+
+export default function ContagemPassageiros() {
+  return (
+    <>
+      <PageHeader title="Contagem de passageiros" subtitle="Fretamento · embarque e desembarque por parada" />
+
+      <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
+        <div className="mb-6">
+          <HeroBanner
+            orb
+            eyebrow="Fretamento · Contagem de passageiros"
+            title="642 passageiros transportados hoje"
+            subtitle="Embarque e desembarque por parada, direto dos sensores de porta."
+          >
+            <div className="flex items-center gap-6">
+              <HeroMetric value="27" label="A bordo agora" />
+              <div className="h-10 w-px bg-white/15" />
+              <HeroMetric value="88" unit="%" label="Ocupação média" />
+            </div>
+          </HeroBanner>
+        </div>
+
+        <FilterBar>
+          <FilterChip icon={CalendarDays} label="Dia" value="24/07/2026" />
+          <FilterChip icon={Bus} label="Viagem" value="FRT-2041" />
+        </FilterBar>
+
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+          <StatTile icon={Users} label="Passageiros hoje" value="642" color="var(--brand-navy)" />
+          <StatTile icon={ArrowUpRight} label="Embarques" value="151" color="var(--leaf)" />
+          <StatTile icon={ArrowDownLeft} label="Desembarques" value="149" color="var(--coral)" />
+          <StatTile icon={UserCheck} label="A bordo agora" value="27" color="var(--brand-sky)" />
+          <StatTile icon={TrendingUp} label="Ocupação média" value="88" unit="%" color="var(--gold)" />
+        </div>
+
+        <Card title="Fluxo por parada — FRT-2041 · SP → Curitiba" icon={Bus} className="mb-6">
+          <StopFlow />
+        </Card>
+
+        <Card title="Ocupação por viagem" icon={Users} bodyClassName="p-4">
+          <DataTable columns={COLS} rows={DADOS} />
+        </Card>
+
+        <p className="py-6 text-center text-xs text-muted-foreground">
+          Dados de exemplo — protótipo de interface, sem dados reais.
+        </p>
+      </div>
+    </>
+  );
+}
+
+/** Fluxo por parada: barras de embarque (sobe) e desembarque (desce) + a bordo corrente. */
+function StopFlow() {
+  let onboard = 0;
+  const rows = PARADAS.map((p) => {
+    onboard += p.sobe - p.desce;
+    return { ...p, onboard };
+  });
+  const maxFlux = Math.max(...PARADAS.map((p) => Math.max(p.sobe, p.desce)));
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="flex min-w-[640px] items-end gap-3">
+        {rows.map((p) => (
+          <div key={p.nome} className="flex flex-1 flex-col items-center gap-2">
+            {/* Barras: embarque para cima, desembarque para baixo. */}
+            <div className="flex h-40 w-full flex-col items-center justify-end gap-1">
+              <span className="font-mono text-[10px] text-leaf">{p.sobe > 0 ? `↑${p.sobe}` : ""}</span>
+              <div
+                className="w-6 rounded-t bg-leaf"
+                style={{ height: `${(p.sobe / maxFlux) * 60}px` }}
+              />
+              <div className="h-px w-full bg-border" />
+              <div
+                className="w-6 rounded-b bg-coral"
+                style={{ height: `${(p.desce / maxFlux) * 60}px` }}
+              />
+              <span className="font-mono text-[10px] text-coral">{p.desce > 0 ? `↓${p.desce}` : ""}</span>
+            </div>
+            <div
+              className={cn(
+                "w-full rounded-md py-1 text-center font-mono text-[11px] font-semibold",
+                p.onboard >= CAP * 0.9 ? "bg-coral-tint text-coral" : "bg-navy-tint text-brand-blue",
+              )}
+            >
+              {p.onboard}
+            </div>
+            <span className="text-center text-[10.5px] leading-tight text-muted-foreground">{p.nome}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-4 text-[12px] text-ink-soft">
+        <span className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-leaf" /> Embarque</span>
+        <span className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-coral" /> Desembarque</span>
+        <span className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-navy-tint" /> A bordo (capacidade {CAP})</span>
+      </div>
+    </div>
+  );
+}

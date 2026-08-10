@@ -141,25 +141,32 @@ export default function Manutencao() {
               </div>
             </Card>
 
-            <Card title="Fatores de risco" icon={TrendingDown}>
-              <div className="space-y-2.5">
-                {RISCOS.map((r) => (
-                  <div key={r.fator} className="flex items-center justify-between gap-3">
-                    <span className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-                      <span className={cn("inline-block h-2 w-2 rounded-full", r.tone === "coral" ? "bg-coral" : "bg-gold")} />
-                      {r.fator}
-                    </span>
-                    <span className={cn("shrink-0 font-mono text-[12.5px] font-semibold", r.tone === "coral" ? "text-coral" : "text-gold")}>
-                      {r.pts} pts
-                    </span>
-                  </div>
-                ))}
-                <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-[13px] font-semibold text-foreground">Impacto total no índice</span>
-                  <span className="font-display text-lg font-bold text-coral">{totalPts} pts</span>
+            <Card title="Componentes monitorados" icon={TrendingDown}>
+              {carregando ? (
+                <SkeletonRows rows={3} />
+              ) : componentes.length ? (
+                <div className="space-y-2.5">
+                  {componentes.map((c: any, i: number) => {
+                    const saude = Number(c.saude ?? c.indice ?? 0);
+                    const critico = saude < 50;
+                    return (
+                      <div key={c.id ?? c.nome ?? i} className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+                          <span className={cn("inline-block h-2 w-2 rounded-full", critico ? "bg-coral" : "bg-gold")} />
+                          {c.nome ?? c.componente ?? "Componente"}
+                        </span>
+                        <span className={cn("shrink-0 font-mono text-[12.5px] font-semibold", critico ? "text-coral" : "text-gold")}>
+                          {saude}%
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              ) : (
+                <EmptyNote>Sem componentes retornados pela API.</EmptyNote>
+              )}
             </Card>
+
           </div>
 
           {/* Inspeção visual. */}

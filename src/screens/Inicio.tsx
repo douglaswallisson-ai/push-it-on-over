@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Frota } from "@/lib/api";
+import type { ResumoOperacao } from "@/types";
 import { Link } from "@/lib/router-compat";
 import {
   AlertTriangle,
@@ -34,24 +37,32 @@ import { Sparkline } from "@/components/ss/ui/Sparkline";
 
 type Trend = "up" | "down";
 
-const KPIS: Array<{
+type Kpi = {
   icon: LucideIcon;
   label: string;
   value: string;
   unit?: string;
-  delta: string;
-  trend: Trend;
-  good: boolean;
-  spark: number[];
+  delta?: string;
+  trend?: Trend;
+  good?: boolean;
+  spark?: number[];
   color: string;
   to?: string;
-}> = [
-  { icon: Truck, label: "Veículos ativos", value: "104", delta: "+3", trend: "up", good: true, spark: [96, 98, 97, 100, 101, 103, 104], color: "var(--leaf)", to: "/app/veiculos" },
-  { icon: Zap, label: "Eventos hoje", value: "342", delta: "+18%", trend: "up", good: false, spark: [210, 240, 260, 250, 300, 320, 342], color: "var(--brand-sky)", to: "/app/alertas" },
-  { icon: Users, label: "Motoristas", value: "98", delta: "0", trend: "up", good: true, spark: [98, 98, 97, 98, 98, 98, 98], color: "#6A4FA0", to: "/app/motoristas" },
-  { icon: Gauge, label: "Km no mês", value: "187.432", delta: "+4,1%", trend: "up", good: true, spark: [120, 138, 150, 160, 172, 180, 187], color: "var(--gold)" },
-  { icon: Fuel, label: "KML médio", value: "3,8", unit: "km/l", delta: "+0,2", trend: "up", good: true, spark: [3.4, 3.5, 3.5, 3.6, 3.7, 3.7, 3.8], color: "var(--brand-green)", to: "/app/estrategico" },
-];
+};
+
+const nf = (v: number, digits = 0) =>
+  new Intl.NumberFormat("pt-BR", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v);
+
+/** Monta os KPIs da tela a partir do resumo real da API. */
+function buildKpis(r: ResumoOperacao): Kpi[] {
+  return [
+    { icon: Truck, label: "Veículos ativos", value: nf(r.veiculosAtivos), color: "var(--leaf)", to: "/app/veiculos" },
+    { icon: Zap, label: "Alertas abertos", value: nf(r.alertasAbertos), color: "var(--brand-sky)", to: "/app/alertas" },
+    { icon: Gauge, label: "Disponibilidade", value: nf(r.disponibilidade, 1), unit: "%", color: "#6A4FA0" },
+    { icon: Fuel, label: "Consumo médio", value: nf(r.consumoMedio, 2), unit: "km/l", color: "var(--brand-green)", to: "/app/estrategico" },
+    { icon: Gauge, label: "Custo por km", value: `R$ ${nf(r.custoPorKm, 2)}`, color: "var(--gold)" },
+  ];
+}
 
 const CRIT = [
   { icon: Gauge, label: "Excesso de velocidade", count: 3, pct: 50 },
@@ -61,15 +72,28 @@ const CRIT = [
 
 export default function Inicio() {
   const [notice, setNotice] = useState(true);
+  const {
+    data: resumo,
+    isPending,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({ queryKey: ["frota", "resumo"], queryFn: () => Frota.resumo() });
+
+  const kpis = resumo ? buildKpis(resumo) : [];
 
   return (
     <>
       <PageHeader
         title="Início"
-        subtitle="Visão geral da frota · atualizado às 09:42"
+        subtitle="Visão geral da frota"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
-            <RefreshCw className="h-[15px] w-[15px]" />
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary disabled:opacity-60"
+          >
+            <RefreshCw className={`h-[15px] w-[15px] ${isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </button>
         }
@@ -91,14 +115,38 @@ export default function Inicio() {
 
         <HeroValue />
 
-        {/* KPIs operacionais com tendência. */}
+        {/* KPIs operacionais — dados reais da API. */}
         <section>
-          <SectionLabel>Operação · últimos 7 dias</SectionLabel>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
-            {KPIS.map((k) => (
-              <KpiCard key={k.label} {...k} />
-            ))}
-          </div>
+          <SectionLabel>Operação · dados em tempo real</SectionLabel>
+
+          {error ? (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-coral-line bg-coral-tint px-5 py-4 text-sm text-coral"
+            >
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Não foi possível carregar os KPIs: {(error as Error).message}
+              </span>
+              <button
+                onClick={() => refetch()}
+                className="shrink-0 rounded-full bg-coral px-4 py-1.5 text-xs font-semibold text-white"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              {isPending
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[118px] animate-pulse rounded-2xl border border-border bg-secondary/60 shadow-card"
+                    />
+                  ))
+                : kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+            </div>
+          )}
         </section>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -107,10 +155,6 @@ export default function Inicio() {
         </div>
 
         <CriticalCard />
-
-        <p className="pb-4 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
-        </p>
       </div>
     </>
   );
@@ -178,8 +222,8 @@ function KpiCard({
   spark,
   color,
   to,
-}: (typeof KPIS)[number]) {
-  const TrendIcon = trend === "up" ? ArrowUpRight : ArrowDownRight;
+}: Kpi) {
+  const TrendIcon = trend === "down" ? ArrowDownRight : ArrowUpRight;
   const cls =
     "group block rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2]";
   const content = (
@@ -191,16 +235,18 @@ function KpiCard({
         >
           <Icon className="h-[17px] w-[17px]" style={{ color }} />
         </div>
-        <span
-          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-semibold"
-          style={{
-            color: good ? "var(--leaf)" : "var(--gold)",
-            background: good ? "var(--leaf-tint)" : "var(--gold-tint)",
-          }}
-        >
-          <TrendIcon className="h-3 w-3" />
-          {delta}
-        </span>
+        {delta && (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-semibold"
+            style={{
+              color: good ? "var(--leaf)" : "var(--gold)",
+              background: good ? "var(--leaf-tint)" : "var(--gold-tint)",
+            }}
+          >
+            <TrendIcon className="h-3 w-3" />
+            {delta}
+          </span>
+        )}
       </div>
       <p className="text-[11.5px] text-muted-foreground">{label}</p>
       <div className="mt-0.5 flex items-end justify-between gap-2">
@@ -208,7 +254,7 @@ function KpiCard({
           {value}
           {unit && <span className="ml-1 text-sm font-medium text-muted-foreground">{unit}</span>}
         </p>
-        <Sparkline data={spark} color={color} />
+        {spark && <Sparkline data={spark} color={color} />}
       </div>
     </>
   );

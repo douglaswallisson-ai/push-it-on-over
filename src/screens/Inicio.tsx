@@ -34,24 +34,32 @@ import { Sparkline } from "@/components/ss/ui/Sparkline";
 
 type Trend = "up" | "down";
 
-const KPIS: Array<{
+type Kpi = {
   icon: LucideIcon;
   label: string;
   value: string;
   unit?: string;
-  delta: string;
-  trend: Trend;
-  good: boolean;
-  spark: number[];
+  delta?: string;
+  trend?: Trend;
+  good?: boolean;
+  spark?: number[];
   color: string;
   to?: string;
-}> = [
-  { icon: Truck, label: "Veículos ativos", value: "104", delta: "+3", trend: "up", good: true, spark: [96, 98, 97, 100, 101, 103, 104], color: "var(--leaf)", to: "/app/veiculos" },
-  { icon: Zap, label: "Eventos hoje", value: "342", delta: "+18%", trend: "up", good: false, spark: [210, 240, 260, 250, 300, 320, 342], color: "var(--brand-sky)", to: "/app/alertas" },
-  { icon: Users, label: "Motoristas", value: "98", delta: "0", trend: "up", good: true, spark: [98, 98, 97, 98, 98, 98, 98], color: "#6A4FA0", to: "/app/motoristas" },
-  { icon: Gauge, label: "Km no mês", value: "187.432", delta: "+4,1%", trend: "up", good: true, spark: [120, 138, 150, 160, 172, 180, 187], color: "var(--gold)" },
-  { icon: Fuel, label: "KML médio", value: "3,8", unit: "km/l", delta: "+0,2", trend: "up", good: true, spark: [3.4, 3.5, 3.5, 3.6, 3.7, 3.7, 3.8], color: "var(--brand-green)", to: "/app/estrategico" },
-];
+};
+
+const nf = (v: number, digits = 0) =>
+  new Intl.NumberFormat("pt-BR", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v);
+
+/** Monta os KPIs da tela a partir do resumo real da API. */
+function buildKpis(r: ResumoOperacao): Kpi[] {
+  return [
+    { icon: Truck, label: "Veículos ativos", value: nf(r.veiculosAtivos), color: "var(--leaf)", to: "/app/veiculos" },
+    { icon: Zap, label: "Alertas abertos", value: nf(r.alertasAbertos), color: "var(--brand-sky)", to: "/app/alertas" },
+    { icon: Gauge, label: "Disponibilidade", value: nf(r.disponibilidade, 1), unit: "%", color: "#6A4FA0" },
+    { icon: Fuel, label: "Consumo médio", value: nf(r.consumoMedio, 2), unit: "km/l", color: "var(--brand-green)", to: "/app/estrategico" },
+    { icon: Gauge, label: "Custo por km", value: `R$ ${nf(r.custoPorKm, 2)}`, color: "var(--gold)" },
+  ];
+}
 
 const CRIT = [
   { icon: Gauge, label: "Excesso de velocidade", count: 3, pct: 50 },

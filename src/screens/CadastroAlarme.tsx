@@ -191,12 +191,27 @@ export default function CadastroAlarme() {
           </FormActions>
         </form>
 
-        <Card title="Alarmes configurados" icon={AlertTriangle} action={<Pill tone="sky">{ALARMES.length} regras</Pill>} bodyClassName="p-4">
-          <DataTable columns={COLS} rows={ALARMES} />
-        </Card>
+        {error ? (
+          <ErrorBox error={error} onRetry={() => refetch()} />
+        ) : (
+          <Card
+            title="Alarmes configurados"
+            icon={AlertTriangle}
+            action={<Pill tone="sky">{isPending ? "carregando…" : `${nf(alarmes.length)} regras`}</Pill>}
+            bodyClassName="p-4"
+          >
+            {isPending ? (
+              <SkeletonRows rows={5} />
+            ) : alarmes.length ? (
+              <DataTable columns={COLS} rows={alarmes} />
+            ) : (
+              <EmptyNote>Nenhum alarme configurado retornado pela API.</EmptyNote>
+            )}
+          </Card>
+        )}
 
         <p className="pb-4 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
+          Lista de alarmes em tempo real da API — o formulário acima ainda é protótipo (sem persistência).
         </p>
       </div>
     </>

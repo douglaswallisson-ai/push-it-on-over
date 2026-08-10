@@ -69,15 +69,28 @@ const CRIT = [
 
 export default function Inicio() {
   const [notice, setNotice] = useState(true);
+  const {
+    data: resumo,
+    isPending,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({ queryKey: ["frota", "resumo"], queryFn: () => Frota.resumo() });
+
+  const kpis = resumo ? buildKpis(resumo) : [];
 
   return (
     <>
       <PageHeader
         title="Início"
-        subtitle="Visão geral da frota · atualizado às 09:42"
+        subtitle="Visão geral da frota"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
-            <RefreshCw className="h-[15px] w-[15px]" />
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary disabled:opacity-60"
+          >
+            <RefreshCw className={`h-[15px] w-[15px] ${isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </button>
         }
@@ -99,14 +112,38 @@ export default function Inicio() {
 
         <HeroValue />
 
-        {/* KPIs operacionais com tendência. */}
+        {/* KPIs operacionais — dados reais da API. */}
         <section>
-          <SectionLabel>Operação · últimos 7 dias</SectionLabel>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
-            {KPIS.map((k) => (
-              <KpiCard key={k.label} {...k} />
-            ))}
-          </div>
+          <SectionLabel>Operação · dados em tempo real</SectionLabel>
+
+          {error ? (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-coral-line bg-coral-tint px-5 py-4 text-sm text-coral"
+            >
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Não foi possível carregar os KPIs: {(error as Error).message}
+              </span>
+              <button
+                onClick={() => refetch()}
+                className="shrink-0 rounded-full bg-coral px-4 py-1.5 text-xs font-semibold text-white"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              {isPending
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[118px] animate-pulse rounded-2xl border border-border bg-secondary/60 shadow-card"
+                    />
+                  ))
+                : kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+            </div>
+          )}
         </section>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -115,10 +152,6 @@ export default function Inicio() {
         </div>
 
         <CriticalCard />
-
-        <p className="pb-4 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
-        </p>
       </div>
     </>
   );

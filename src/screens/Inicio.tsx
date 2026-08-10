@@ -235,16 +235,18 @@ function KpiCard({
         >
           <Icon className="h-[17px] w-[17px]" style={{ color }} />
         </div>
-        <span
-          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-semibold"
-          style={{
-            color: good ? "var(--leaf)" : "var(--gold)",
-            background: good ? "var(--leaf-tint)" : "var(--gold-tint)",
-          }}
-        >
-          <TrendIcon className="h-3 w-3" />
-          {delta}
-        </span>
+        {delta && (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-semibold"
+            style={{
+              color: good ? "var(--leaf)" : "var(--gold)",
+              background: good ? "var(--leaf-tint)" : "var(--gold-tint)",
+            }}
+          >
+            <TrendIcon className="h-3 w-3" />
+            {delta}
+          </span>
+        )}
       </div>
       <p className="text-[11.5px] text-muted-foreground">{label}</p>
       <div className="mt-0.5 flex items-end justify-between gap-2">
@@ -252,7 +254,7 @@ function KpiCard({
           {value}
           {unit && <span className="ml-1 text-sm font-medium text-muted-foreground">{unit}</span>}
         </p>
-        <Sparkline data={spark} color={color} />
+        {spark && <Sparkline data={spark} color={color} />}
       </div>
     </>
   );

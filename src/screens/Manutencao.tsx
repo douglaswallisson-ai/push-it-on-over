@@ -116,33 +116,47 @@ export default function Manutencao() {
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
           {/* Predições + riscos. */}
           <div data-tour="predicoes" className="space-y-5">
-            <Card title="Predições de manutenção" icon={CalendarClock} action={<Pill tone="sky">Confiança 87%</Pill>}>
-              <div className="space-y-3">
-                {PREDICOES.map((p) => (
-                  <div
-                    key={p.titulo}
-                    className={cn(
-                      "rounded-xl border p-3",
-                      p.tone === "crit" ? "border-coral-line bg-coral-tint/50" : "border-gold-line bg-gold-tint/50",
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-[13.5px] font-semibold text-foreground">{p.titulo}</p>
-                      <span className={cn("shrink-0 font-mono text-[12px] font-bold", p.tone === "crit" ? "text-coral" : "text-gold")}>
-                        {p.prazo}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue">
-                        <Wrench className="h-3.5 w-3.5" />
-                        Agendar manutenção
-                      </button>
-                      <span className="font-mono text-[12.5px] font-semibold text-foreground">{p.custo}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <Card title="Predições de manutenção" icon={CalendarClock} action={<Pill tone="sky">{veiculo?.placa ?? "—"}</Pill>}>
+              {erro ? (
+                <ErrorBox error={erro} onRetry={() => manutQ.refetch()} />
+              ) : carregando ? (
+                <SkeletonRows rows={3} />
+              ) : predicoes.length ? (
+                <div className="space-y-3">
+                  {predicoes.map((p: any, i: number) => {
+                    const crit = (p.severidade ?? p.tone) === "critico" || p.tone === "crit";
+                    return (
+                      <div
+                        key={p.id ?? p.titulo ?? i}
+                        className={cn(
+                          "rounded-xl border p-3",
+                          crit ? "border-coral-line bg-coral-tint/50" : "border-gold-line bg-gold-tint/50",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[13.5px] font-semibold text-foreground">{p.titulo ?? p.nome ?? "Predição"}</p>
+                          <span className={cn("shrink-0 font-mono text-[12px] font-bold", crit ? "text-coral" : "text-gold")}>
+                            {p.prazo ?? (p.dias != null ? `${p.dias} dias` : "—")}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue">
+                            <Wrench className="h-3.5 w-3.5" />
+                            Agendar manutenção
+                          </button>
+                          <span className="font-mono text-[12.5px] font-semibold text-foreground">
+                            {typeof p.custo === "number" ? `R$ ${p.custo}` : (p.custo ?? "—")}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyNote>{manut?._aviso ?? "Sem predições disponíveis para este veículo."}</EmptyNote>
+              )}
             </Card>
+
 
             <Card title="Componentes monitorados" icon={TrendingDown}>
               {carregando ? (

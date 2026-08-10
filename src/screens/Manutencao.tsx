@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   CalendarClock,
@@ -14,6 +15,8 @@ import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { BusInspection, HOTSPOTS } from "@/components/ss/frota/BusInspection";
+import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
+import { manutencaoQuery, veiculosQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 /**
@@ -30,30 +33,28 @@ const TABS = [
   { id: "historico", label: "Histórico", icon: History },
 ];
 
-const PREDICOES = [
-  { titulo: "Troca de óleo do motor", prazo: "8 dias", custo: "R$ 850", tone: "crit" as const },
-  { titulo: "Substituição do filtro de ar", prazo: "25 dias", custo: "R$ 320", tone: "warn" as const },
-  { titulo: "Rodízio de pneus", prazo: "30 dias", custo: "R$ 200", tone: "warn" as const },
-];
-
-const RISCOS = [
-  { fator: "Troca de óleo próxima do limite", pts: -15, tone: "coral" },
-  { fator: "Pressão do pneu traseiro baixa", pts: -5, tone: "gold" },
-  { fator: "Filtro de ar com 25% de vida útil", pts: -3, tone: "gold" },
-];
-
 /**
- * Foto real do veículo. Coloque o arquivo em `public/` (ex.: public/onibus.jpg,
- * de preferência perfil lateral) e troque para "/onibus.jpg". Enquanto for null,
- * usa a ilustração de reserva.
+ * Foto real do veículo (public/onibus.webp). A ilustração de reserva entra
+ * quando não houver foto.
  */
 const BUS_PHOTO: string | null = "/onibus.webp";
+
+const SEV_TONE: Record<string, "crit" | "warn"> = { critico: "crit", atencao: "warn" };
 
 export default function Manutencao() {
   const [tab, setTab] = useState("geral");
   const [selected, setSelected] = useState<string | null>("oleo");
   const comp = HOTSPOTS.find((h) => h.id === selected) ?? null;
-  const totalPts = RISCOS.reduce((a, r) => a + r.pts, 0);
+
+  const veiculosQ = useQuery(veiculosQuery(1, 50));
+  const veiculo = veiculosQ.data?.items?.[0];
+  const manutQ = useQuery(manutencaoQuery(veiculo?.id));
+  const manut = manutQ.data;
+  const erro = veiculosQ.error ?? manutQ.error;
+  const carregando = veiculosQ.isPending || (Boolean(veiculo) && manutQ.isPending);
+  const predicoes = manut?.predicoes ?? [];
+  const componentes = manut?.componentes ?? [];
+
 
   return (
     <>
@@ -62,7 +63,7 @@ export default function Manutencao() {
         subtitle="Frota › Inspeção visual e predições"
         actions={
           <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
-            TWIN004 · VW Constellation
+            {veiculo ? `${veiculo.placa} · ${veiculo.marca} ${veiculo.modelo}` : "Carregando…"}
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
         }
@@ -75,24 +76,31 @@ export default function Manutencao() {
           eyebrow="Frota · Manutenção"
           title={
             <span className="flex flex-wrap items-center gap-2.5">
-              TWIN004
-              <span className="rounded-full bg-coral-tint px-2.5 py-0.5 text-[12px] font-semibold text-coral">
-                Óleo crítico
-              </span>
+              {veiculo?.placa ?? "—"}
+              {typeof manut?.indiceSaude === "number" && manut.indiceSaude < 50 && (
+                <span className="rounded-full bg-coral-tint px-2.5 py-0.5 text-[12px] font-semibold text-coral">
+                  Atenção crítica
+                </span>
+              )}
             </span>
           }
-          subtitle="Volkswagen Constellation 25.460 · 2023 — inspeção visual e predições, atualizado às 10:27."
+          subtitle={
+            veiculo
+              ? `${veiculo.marca} ${veiculo.modelo} · ${veiculo.ano} — inspeção visual e predições em dados reais.`
+              : "Carregando dados do veículo…"
+          }
         >
           <div
             data-tour="score"
             className="flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-elegant"
           >
-            <ScoreGauge score={45} size={84} />
+            <ScoreGauge score={Math.round(manut?.indiceSaude ?? 0)} size={84} />
             <div className="text-[12px] leading-tight text-muted-foreground">
               <p className="font-semibold text-foreground">Índice de saúde</p>
-              <p>atualizado 10:27</p>
+              <p>{carregando ? "carregando…" : "dados da API"}</p>
             </div>
           </div>
+
         </HeroBanner>
 
         {/* Abas. */}
@@ -115,53 +123,74 @@ export default function Manutencao() {
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
           {/* Predições + riscos. */}
           <div data-tour="predicoes" className="space-y-5">
-            <Card title="Predições de manutenção" icon={CalendarClock} action={<Pill tone="sky">Confiança 87%</Pill>}>
-              <div className="space-y-3">
-                {PREDICOES.map((p) => (
-                  <div
-                    key={p.titulo}
-                    className={cn(
-                      "rounded-xl border p-3",
-                      p.tone === "crit" ? "border-coral-line bg-coral-tint/50" : "border-gold-line bg-gold-tint/50",
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-[13.5px] font-semibold text-foreground">{p.titulo}</p>
-                      <span className={cn("shrink-0 font-mono text-[12px] font-bold", p.tone === "crit" ? "text-coral" : "text-gold")}>
-                        {p.prazo}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue">
-                        <Wrench className="h-3.5 w-3.5" />
-                        Agendar manutenção
-                      </button>
-                      <span className="font-mono text-[12.5px] font-semibold text-foreground">{p.custo}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <Card title="Predições de manutenção" icon={CalendarClock} action={<Pill tone="sky">{veiculo?.placa ?? "—"}</Pill>}>
+              {erro ? (
+                <ErrorBox error={erro} onRetry={() => manutQ.refetch()} />
+              ) : carregando ? (
+                <SkeletonRows rows={3} />
+              ) : predicoes.length ? (
+                <div className="space-y-3">
+                  {predicoes.map((p: any, i: number) => {
+                    const crit = (p.severidade ?? p.tone) === "critico" || p.tone === "crit";
+                    return (
+                      <div
+                        key={p.id ?? p.titulo ?? i}
+                        className={cn(
+                          "rounded-xl border p-3",
+                          crit ? "border-coral-line bg-coral-tint/50" : "border-gold-line bg-gold-tint/50",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[13.5px] font-semibold text-foreground">{p.titulo ?? p.nome ?? "Predição"}</p>
+                          <span className={cn("shrink-0 font-mono text-[12px] font-bold", crit ? "text-coral" : "text-gold")}>
+                            {p.prazo ?? (p.dias != null ? `${p.dias} dias` : "—")}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue">
+                            <Wrench className="h-3.5 w-3.5" />
+                            Agendar manutenção
+                          </button>
+                          <span className="font-mono text-[12.5px] font-semibold text-foreground">
+                            {typeof p.custo === "number" ? `R$ ${p.custo}` : (p.custo ?? "—")}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyNote>{manut?._aviso ?? "Sem predições disponíveis para este veículo."}</EmptyNote>
+              )}
             </Card>
 
-            <Card title="Fatores de risco" icon={TrendingDown}>
-              <div className="space-y-2.5">
-                {RISCOS.map((r) => (
-                  <div key={r.fator} className="flex items-center justify-between gap-3">
-                    <span className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-                      <span className={cn("inline-block h-2 w-2 rounded-full", r.tone === "coral" ? "bg-coral" : "bg-gold")} />
-                      {r.fator}
-                    </span>
-                    <span className={cn("shrink-0 font-mono text-[12.5px] font-semibold", r.tone === "coral" ? "text-coral" : "text-gold")}>
-                      {r.pts} pts
-                    </span>
-                  </div>
-                ))}
-                <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-[13px] font-semibold text-foreground">Impacto total no índice</span>
-                  <span className="font-display text-lg font-bold text-coral">{totalPts} pts</span>
+
+            <Card title="Componentes monitorados" icon={TrendingDown}>
+              {carregando ? (
+                <SkeletonRows rows={3} />
+              ) : componentes.length ? (
+                <div className="space-y-2.5">
+                  {componentes.map((c: any, i: number) => {
+                    const saude = Number(c.saude ?? c.indice ?? 0);
+                    const critico = saude < 50;
+                    return (
+                      <div key={c.id ?? c.nome ?? i} className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+                          <span className={cn("inline-block h-2 w-2 rounded-full", critico ? "bg-coral" : "bg-gold")} />
+                          {c.nome ?? c.componente ?? "Componente"}
+                        </span>
+                        <span className={cn("shrink-0 font-mono text-[12.5px] font-semibold", critico ? "text-coral" : "text-gold")}>
+                          {saude}%
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              ) : (
+                <EmptyNote>Sem componentes retornados pela API.</EmptyNote>
+              )}
             </Card>
+
           </div>
 
           {/* Inspeção visual. */}

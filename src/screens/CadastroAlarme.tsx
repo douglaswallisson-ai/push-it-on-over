@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   Bell,
@@ -6,35 +7,43 @@ import {
   MapPin,
   Plus,
   ShieldAlert,
-  Truck,
   Zap,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/ss/ui/data";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
+import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
+import { alarmesQuery, nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import type { Alarme, Severidade } from "@/types";
 
 /**
- * Cadastro de alarme — regra de disparo + canais de notificação, com a lista
- * dos alarmes já configurados. Protótipo: sem persistência. Dados de exemplo.
+ * Cadastro de alarme — regra de disparo + canais de notificação. A lista de
+ * alarmes configurados vem da API (`GET /api/alarmes`). O formulário ainda é
+ * protótipo (sem persistência).
  */
 
-type Alarme = {
-  nome: string;
-  tipo: string;
-  condicao: string;
-  severidade: PillTone;
-  severidadeLabel: string;
-  canais: string;
-  ativo: boolean;
+const SEV_TONE: Record<Severidade, PillTone> = {
+  critico: "coral",
+  atencao: "gold",
+  operacional: "sky",
+  ok: "green",
 };
 
-const ALARMES: Alarme[] = [
-  { nome: "Excesso de velocidade", tipo: "Velocidade", condicao: "> 90 km/h por 30s", severidade: "coral", severidadeLabel: "Crítico", canais: "App, E-mail", ativo: true },
-  { nome: "Cerca violada — Pátio", tipo: "Cerca", condicao: "Saída fora de janela", severidade: "coral", severidadeLabel: "Crítico", canais: "App, SMS", ativo: true },
-  { nome: "Motor ligado parado", tipo: "Ociosidade", condicao: "> 15 min parado", severidade: "gold", severidadeLabel: "Atenção", canais: "App", ativo: true },
-  { nome: "Pane seca iminente", tipo: "Combustível", condicao: "Nível < 8%", severidade: "gold", severidadeLabel: "Atenção", canais: "App, E-mail", ativo: false },
-];
+const SEV_LABEL: Record<Severidade, string> = {
+  critico: "Crítico",
+  atencao: "Atenção",
+  operacional: "Operacional",
+  ok: "Normal",
+};
+
+const TIPO_LABEL: Record<string, string> = {
+  velocidade: "Velocidade",
+  cerca: "Cerca",
+  ociosidade: "Ociosidade",
+  panico: "Pânico",
+  combustivel: "Combustível",
+};
 
 const TIPOS = [
   { icon: Gauge, label: "Velocidade" },
@@ -45,10 +54,15 @@ const TIPOS = [
 
 const COLS: Column<Alarme>[] = [
   { key: "nome", header: "Alarme", render: (a) => <span className="font-semibold text-foreground">{a.nome}</span> },
-  { key: "tipo", header: "Tipo", render: (a) => <Pill tone="sky">{a.tipo}</Pill> },
+  { key: "tipo", header: "Tipo", render: (a) => <Pill tone="sky">{TIPO_LABEL[a.tipo] ?? a.tipo}</Pill> },
   { key: "condicao", header: "Condição", render: (a) => <span className="font-mono text-[12.5px]">{a.condicao}</span> },
-  { key: "severidade", header: "Severidade", align: "center", render: (a) => <Pill tone={a.severidade}>{a.severidadeLabel}</Pill> },
-  { key: "canais", header: "Canais" },
+  {
+    key: "severidade",
+    header: "Severidade",
+    align: "center",
+    render: (a) => <Pill tone={SEV_TONE[a.severidade] ?? "neutral"}>{SEV_LABEL[a.severidade] ?? a.severidade}</Pill>,
+  },
+  { key: "canais", header: "Canais", render: (a) => <span>{a.canais?.length ? a.canais.join(", ") : "—"}</span> },
   {
     key: "ativo",
     header: "Status",
@@ -58,6 +72,8 @@ const COLS: Column<Alarme>[] = [
 ];
 
 export default function CadastroAlarme() {
+  const { data, isPending, error, refetch } = useQuery(alarmesQuery());
+  const alarmes = data ?? [];
   const [tipo, setTipo] = useState("Velocidade");
   const [notifApp, setNotifApp] = useState(true);
   const [notifEmail, setNotifEmail] = useState(true);
@@ -177,12 +193,27 @@ export default function CadastroAlarme() {
           </FormActions>
         </form>
 
-        <Card title="Alarmes configurados" icon={AlertTriangle} action={<Pill tone="sky">{ALARMES.length} regras</Pill>} bodyClassName="p-4">
-          <DataTable columns={COLS} rows={ALARMES} />
-        </Card>
+        {error ? (
+          <ErrorBox error={error} onRetry={() => refetch()} />
+        ) : (
+          <Card
+            title="Alarmes configurados"
+            icon={AlertTriangle}
+            action={<Pill tone="sky">{isPending ? "carregando…" : `${nf(alarmes.length)} regras`}</Pill>}
+            bodyClassName="p-4"
+          >
+            {isPending ? (
+              <SkeletonRows rows={5} />
+            ) : alarmes.length ? (
+              <DataTable columns={COLS} rows={alarmes} />
+            ) : (
+              <EmptyNote>Nenhum alarme configurado retornado pela API.</EmptyNote>
+            )}
+          </Card>
+        )}
 
         <p className="pb-4 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
+          Lista de alarmes em tempo real da API — o formulário acima ainda é protótipo (sem persistência).
         </p>
       </div>
     </>

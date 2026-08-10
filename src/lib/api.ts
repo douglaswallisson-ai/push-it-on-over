@@ -23,6 +23,13 @@ import type {
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
+/** Headers enviados em toda chamada. O `ngrok-skip-browser-warning` evita a
+ *  página HTML de aviso do túnel ngrok (que quebraria o parse do JSON). */
+const DEFAULT_HEADERS: Record<string, string> = {
+  "Content-Type": "application/json",
+  "ngrok-skip-browser-warning": "true",
+};
+
 export class ApiError extends Error {
   constructor(
     public status: number,

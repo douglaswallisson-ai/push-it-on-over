@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Frota } from "@/lib/api";
+import type { ResumoOperacao } from "@/types";
 import { Link } from "@/lib/router-compat";
 import {
   AlertTriangle,

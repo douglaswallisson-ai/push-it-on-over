@@ -42,14 +42,20 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     ...init,
+    headers: { ...DEFAULT_HEADERS, ...(init?.headers ?? {}) },
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, detail || `HTTP ${res.status}`);
   }
-  return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError(res.status, "Resposta inválida da API (não é JSON).");
+  }
 }
 
 const qs = (params?: Record<string, string | number | undefined>) => {

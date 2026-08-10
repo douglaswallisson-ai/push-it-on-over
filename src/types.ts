@@ -89,6 +89,8 @@ export type Manutencao = {
   indiceSaude: number;
   componentes: ComponenteSaude[];
   predicoes: { titulo: string; prazoDias: number; custo: number; severidade: Severidade }[];
+  /** Mensagem opcional da API quando a predição não está disponível. */
+  _aviso?: string;
 };
 
 export type EmissaoResumo = {

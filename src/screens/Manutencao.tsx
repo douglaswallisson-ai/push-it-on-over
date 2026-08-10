@@ -63,7 +63,7 @@ export default function Manutencao() {
         subtitle="Frota › Inspeção visual e predições"
         actions={
           <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
-            TWIN004 · VW Constellation
+            {veiculo ? `${veiculo.placa} · ${veiculo.marca} ${veiculo.modelo}` : "Carregando…"}
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
         }
@@ -76,24 +76,31 @@ export default function Manutencao() {
           eyebrow="Frota · Manutenção"
           title={
             <span className="flex flex-wrap items-center gap-2.5">
-              TWIN004
-              <span className="rounded-full bg-coral-tint px-2.5 py-0.5 text-[12px] font-semibold text-coral">
-                Óleo crítico
-              </span>
+              {veiculo?.placa ?? "—"}
+              {typeof manut?.indiceSaude === "number" && manut.indiceSaude < 50 && (
+                <span className="rounded-full bg-coral-tint px-2.5 py-0.5 text-[12px] font-semibold text-coral">
+                  Atenção crítica
+                </span>
+              )}
             </span>
           }
-          subtitle="Volkswagen Constellation 25.460 · 2023 — inspeção visual e predições, atualizado às 10:27."
+          subtitle={
+            veiculo
+              ? `${veiculo.marca} ${veiculo.modelo} · ${veiculo.ano} — inspeção visual e predições em dados reais.`
+              : "Carregando dados do veículo…"
+          }
         >
           <div
             data-tour="score"
             className="flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-elegant"
           >
-            <ScoreGauge score={45} size={84} />
+            <ScoreGauge score={Math.round(manut?.indiceSaude ?? 0)} size={84} />
             <div className="text-[12px] leading-tight text-muted-foreground">
               <p className="font-semibold text-foreground">Índice de saúde</p>
-              <p>atualizado 10:27</p>
+              <p>{carregando ? "carregando…" : "dados da API"}</p>
             </div>
           </div>
+
         </HeroBanner>
 
         {/* Abas. */}

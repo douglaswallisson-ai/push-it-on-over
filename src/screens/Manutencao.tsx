@@ -30,30 +30,28 @@ const TABS = [
   { id: "historico", label: "Histórico", icon: History },
 ];
 
-const PREDICOES = [
-  { titulo: "Troca de óleo do motor", prazo: "8 dias", custo: "R$ 850", tone: "crit" as const },
-  { titulo: "Substituição do filtro de ar", prazo: "25 dias", custo: "R$ 320", tone: "warn" as const },
-  { titulo: "Rodízio de pneus", prazo: "30 dias", custo: "R$ 200", tone: "warn" as const },
-];
-
-const RISCOS = [
-  { fator: "Troca de óleo próxima do limite", pts: -15, tone: "coral" },
-  { fator: "Pressão do pneu traseiro baixa", pts: -5, tone: "gold" },
-  { fator: "Filtro de ar com 25% de vida útil", pts: -3, tone: "gold" },
-];
-
 /**
- * Foto real do veículo. Coloque o arquivo em `public/` (ex.: public/onibus.jpg,
- * de preferência perfil lateral) e troque para "/onibus.jpg". Enquanto for null,
- * usa a ilustração de reserva.
+ * Foto real do veículo (public/onibus.webp). A ilustração de reserva entra
+ * quando não houver foto.
  */
 const BUS_PHOTO: string | null = "/onibus.webp";
+
+const SEV_TONE: Record<string, "crit" | "warn"> = { critico: "crit", atencao: "warn" };
 
 export default function Manutencao() {
   const [tab, setTab] = useState("geral");
   const [selected, setSelected] = useState<string | null>("oleo");
   const comp = HOTSPOTS.find((h) => h.id === selected) ?? null;
-  const totalPts = RISCOS.reduce((a, r) => a + r.pts, 0);
+
+  const veiculosQ = useQuery(veiculosQuery(1, 50));
+  const veiculo = veiculosQ.data?.items?.[0];
+  const manutQ = useQuery(manutencaoQuery(veiculo?.id));
+  const manut = manutQ.data;
+  const erro = veiculosQ.error ?? manutQ.error;
+  const carregando = veiculosQ.isPending || (Boolean(veiculo) && manutQ.isPending);
+  const predicoes = manut?.predicoes ?? [];
+  const componentes = manut?.componentes ?? [];
+
 
   return (
     <>

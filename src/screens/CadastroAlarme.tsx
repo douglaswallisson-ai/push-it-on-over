@@ -72,6 +72,8 @@ const COLS: Column<Alarme>[] = [
 ];
 
 export default function CadastroAlarme() {
+  const { data, isPending, error, refetch } = useQuery(alarmesQuery());
+  const alarmes = data ?? [];
   const [tipo, setTipo] = useState("Velocidade");
   const [notifApp, setNotifApp] = useState(true);
   const [notifEmail, setNotifEmail] = useState(true);

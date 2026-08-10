@@ -222,8 +222,8 @@ function KpiCard({
   spark,
   color,
   to,
-}: (typeof KPIS)[number]) {
-  const TrendIcon = trend === "up" ? ArrowUpRight : ArrowDownRight;
+}: Kpi) {
+  const TrendIcon = trend === "down" ? ArrowDownRight : ArrowUpRight;
   const cls =
     "group block rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2]";
   const content = (

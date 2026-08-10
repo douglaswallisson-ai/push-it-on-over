@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   CalendarClock,
@@ -14,6 +15,8 @@ import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { BusInspection, HOTSPOTS } from "@/components/ss/frota/BusInspection";
+import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
+import { manutencaoQuery, veiculosQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 /**

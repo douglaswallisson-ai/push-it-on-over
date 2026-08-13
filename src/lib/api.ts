@@ -20,6 +20,7 @@ import type {
   Veiculo,
   Viagem,
 } from "@/types";
+import * as M from "@/lib/mock-data";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -74,10 +75,24 @@ export const api = {
 
 /* ---------------- Recursos (contrato com o back Python) ---------------- */
 
+/**
+ * MODO MOCK — a API externa está desligada temporariamente.
+ * Coloque `false` aqui para voltar a chamar o back-end real; nenhuma tela
+ * precisa ser alterada.
+ */
+export const USE_MOCK = true;
+
+const mock = <T>(value: T): Promise<T> => Promise.resolve(value);
+
 export const Motoristas = {
   list: (params?: Record<string, string | number>) =>
-    api.get<Paginated<Motorista>>(`/api/motoristas${qs(params)}`),
-  get: (id: string) => api.get<Motorista>(`/api/motoristas/${id}`),
+    USE_MOCK
+      ? mock<Paginated<Motorista>>({ items: M.MOCK_MOTORISTAS, total: M.MOCK_MOTORISTAS.length, page: 1, pageSize: 50 })
+      : api.get<Paginated<Motorista>>(`/api/motoristas${qs(params)}`),
+  get: (id: string) =>
+    USE_MOCK
+      ? mock<Motorista>(M.MOCK_MOTORISTAS.find((m) => m.id === id) ?? M.MOCK_MOTORISTAS[0])
+      : api.get<Motorista>(`/api/motoristas/${id}`),
   create: (data: Partial<Motorista>) => api.post<Motorista>(`/api/motoristas`, data),
   update: (id: string, data: Partial<Motorista>) => api.put<Motorista>(`/api/motoristas/${id}`, data),
   remove: (id: string) => api.del(`/api/motoristas/${id}`),
@@ -85,28 +100,37 @@ export const Motoristas = {
 
 export const Veiculos = {
   list: (params?: Record<string, string | number>) =>
-    api.get<Paginated<Veiculo>>(`/api/veiculos${qs(params)}`),
-  get: (id: string) => api.get<Veiculo>(`/api/veiculos/${id}`),
+    USE_MOCK
+      ? mock(M.mockVeiculosPage(Number(params?.page ?? 1), Number(params?.pageSize ?? 50)))
+      : api.get<Paginated<Veiculo>>(`/api/veiculos${qs(params)}`),
+  get: (id: string) =>
+    USE_MOCK
+      ? mock<Veiculo>(M.MOCK_VEICULOS.find((v) => v.id === id) ?? M.MOCK_VEICULOS[0])
+      : api.get<Veiculo>(`/api/veiculos/${id}`),
   create: (data: Partial<Veiculo>) => api.post<Veiculo>(`/api/veiculos`, data),
-  manutencao: (id: string) => api.get<Manutencao>(`/api/veiculos/${id}/manutencao`),
+  manutencao: (id: string) =>
+    USE_MOCK ? mock(M.mockManutencao(id)) : api.get<Manutencao>(`/api/veiculos/${id}/manutencao`),
 };
 
 export const Frota = {
-  posicoes: () => api.get<PosicaoVeiculo[]>(`/api/frota/posicoes`),
-  resumo: () => api.get<ResumoOperacao>(`/api/frota/resumo`),
+  posicoes: () => (USE_MOCK ? mock(M.MOCK_POSICOES) : api.get<PosicaoVeiculo[]>(`/api/frota/posicoes`)),
+  resumo: () => (USE_MOCK ? mock(M.MOCK_RESUMO) : api.get<ResumoOperacao>(`/api/frota/resumo`)),
 };
 
 export const Viagens = {
   list: (params?: Record<string, string | number>) =>
-    api.get<Paginated<Viagem>>(`/api/viagens${qs(params)}`),
+    USE_MOCK
+      ? mock<Paginated<Viagem>>({ items: M.MOCK_VIAGENS, total: M.MOCK_VIAGENS.length, page: 1, pageSize: 50 })
+      : api.get<Paginated<Viagem>>(`/api/viagens${qs(params)}`),
   create: (data: Partial<Viagem>) => api.post<Viagem>(`/api/viagens`, data),
 };
 
 export const Alarmes = {
-  list: () => api.get<Alarme[]>(`/api/alarmes`),
+  list: () => (USE_MOCK ? mock(M.MOCK_ALARMES) : api.get<Alarme[]>(`/api/alarmes`)),
   create: (data: Partial<Alarme>) => api.post<Alarme>(`/api/alarmes`, data),
 };
 
 export const CO2 = {
-  resumo: (params?: Record<string, string>) => api.get<EmissaoResumo>(`/api/co2/resumo${qs(params)}`),
+  resumo: (params?: Record<string, string>) =>
+    USE_MOCK ? mock(M.MOCK_CO2) : api.get<EmissaoResumo>(`/api/co2/resumo${qs(params)}`),
 };

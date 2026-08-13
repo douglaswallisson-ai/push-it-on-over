@@ -24,6 +24,7 @@ import { Card, Pill } from "@/components/ss/ui/data";
 import { AccelBands, IndicatorCard, ScoreGauge } from "@/components/ss/ui/gauges";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
+import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
 import { cn } from "@/lib/utils";
 
 /**
@@ -177,6 +178,9 @@ export default function AcompanhamentoMotorista() {
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">A IA pode se enganar — confirme cada evento ou marque como falso positivo.</p>
         </Card>
+
+        {/* Veículos que este motorista dirigiu. */}
+        <HistoricoConducao modo="motorista" motoristaNome={motorista} />
 
         <p className="pb-4 text-center text-xs text-muted-foreground">Dados de exemplo — protótipo de interface, sem dados reais.</p>
       </div>

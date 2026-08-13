@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { BarChart3, Gauge, Layers, Trophy } from "lucide-react";
+import { BarChart3, Clock, Droplet, Gauge, Layers, Leaf, TrendingDown, Trophy, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
-import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/ss/ui/data";
+import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
+import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { cn } from "@/lib/utils";
 
@@ -122,8 +123,84 @@ export default function DesempenhoFrota() {
           </ol>
         </Card>
 
+        {/* Motor ligado parado — antes era rota separada. */}
+        <div>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="text-[15px] font-semibold text-foreground">Motor ligado parado</h2>
+            <span className="text-[11.5px] text-muted-foreground">últimos 7 dias · toda a frota</span>
+          </div>
+          <MotorLigadoParado />
+        </div>
+
         <p className="pb-4 text-center text-xs text-muted-foreground">Dados de exemplo — protótipo de interface, sem dados reais.</p>
       </div>
     </>
+  );
+}
+
+/* --------------------------- Motor ligado parado --------------------------- */
+
+/**
+ * Motor ligado parado passou a viver aqui dentro: é um indicador de eficiência
+ * de condução, não um módulo próprio. Antes ocupava uma rota e um item de menu
+ * separados, o que quebrava a leitura de "desempenho da frota" em dois lugares.
+ */
+
+type OciosoRow = {
+  placa: string;
+  motorista: string;
+  tempo: string;
+  litros: string;
+  custo: string;
+  trend: number[];
+};
+
+const OCIOSO: OciosoRow[] = [
+  { placa: "EBZ3590", motorista: "Remildo N. Lima", tempo: "03:44", litros: "11,2 L", custo: "R$ 67,20", trend: [2, 3, 3, 4, 3, 4, 4] },
+  { placa: "QHH1360", motorista: "Henrique", tempo: "02:27", litros: "7,4 L", custo: "R$ 44,40", trend: [1, 2, 2, 3, 2, 3, 3] },
+  { placa: "GAP4C73", motorista: "Roberto Tomaz", tempo: "01:50", litros: "5,5 L", custo: "R$ 33,00", trend: [3, 2, 2, 2, 1, 2, 2] },
+  { placa: "OUH0C81", motorista: "Thiago Bora", tempo: "01:31", litros: "4,6 L", custo: "R$ 27,60", trend: [1, 1, 2, 2, 2, 1, 2] },
+  { placa: "SMS1J35", motorista: "\u2014", tempo: "01:17", litros: "3,9 L", custo: "R$ 23,40", trend: [2, 1, 1, 1, 2, 1, 1] },
+];
+
+const OCIOSO_COLS: Column<OciosoRow & Record<string, unknown>>[] = [
+  {
+    key: "placa",
+    header: "Ve\u00edculo",
+    render: (r) => (
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-tint">
+          <Truck className="h-4 w-4 text-brand-navy" />
+        </div>
+        <div>
+          <div className="font-mono font-semibold text-foreground">{r.placa}</div>
+          <div className="text-[11.5px] text-muted-foreground">{r.motorista}</div>
+        </div>
+      </div>
+    ),
+  },
+  { key: "tempo", header: "Tempo parado", align: "right", render: (r) => <span className="font-mono font-semibold text-foreground">{r.tempo}</span> },
+  { key: "litros", header: "Combust\u00edvel", align: "right", render: (r) => <span className="font-mono text-coral">{r.litros}</span> },
+  { key: "custo", header: "Custo estimado", align: "right", render: (r) => <span className="font-semibold text-foreground">{r.custo}</span> },
+  { key: "trend", header: "Tend\u00eancia (7d)", align: "right", render: (r) => <div className="flex justify-end"><Sparkline data={r.trend} color="var(--coral)" width={80} height={26} /></div> },
+];
+
+function MotorLigadoParado() {
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatTile icon={Clock} label="Tempo total ocioso" value="41h" color="var(--gold)" />
+        <StatTile icon={Droplet} label="Litros desperdi\u00e7ados" value="530" unit="L" color="var(--coral)" />
+        <StatTile icon={TrendingDown} label="Custo estimado" value="R$ 3.180" color="var(--brand-navy)" />
+        <StatTile icon={Leaf} label="CO\u2082 evit\u00e1vel" value="1,4" unit="t" color="var(--leaf)" />
+      </div>
+
+      <Card title="Ranking \u2014 maiores tempos parados" icon={Clock} bodyClassName="p-4">
+        <DataTable columns={OCIOSO_COLS} rows={OCIOSO as (OciosoRow & Record<string, unknown>)[]} />
+        <p className="mt-3 text-[11.5px] text-muted-foreground">
+          Motor ligado com o ve\u00edculo parado \u2014 combust\u00edvel queimado sem rodar um metro.
+        </p>
+      </Card>
+    </div>
   );
 }

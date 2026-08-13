@@ -24,6 +24,7 @@ import { Route as AppCadastrosAlarmeRouteImport } from './routes/app.cadastros.a
 import { Route as AppCadastrosCercaRouteImport } from './routes/app.cadastros.cerca'
 import { Route as AppCadastrosCombustivelRouteImport } from './routes/app.cadastros.combustivel'
 import { Route as AppCadastrosDispositivosRouteImport } from './routes/app.cadastros.dispositivos'
+import { Route as AppCadastrosGaragensRouteImport } from './routes/app.cadastros.garagens'
 import { Route as AppCadastrosGruposRouteImport } from './routes/app.cadastros.grupos'
 import { Route as AppCadastrosUnidadesRouteImport } from './routes/app.cadastros.unidades'
 import { Route as AppCadastrosUsuariosRouteImport } from './routes/app.cadastros.usuarios'
@@ -35,9 +36,8 @@ import { Route as AppFretamentoRoteirizacaoRouteImport } from './routes/app.fret
 import { Route as AppFrotaAnaliseRouteImport } from './routes/app.frota.analise'
 import { Route as AppFrotaDesempenhoRouteImport } from './routes/app.frota.desempenho'
 import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manutencao'
-import { Route as AppFrotaMotorParadoRouteImport } from './routes/app.frota.motor-parado'
-import { Route as AppFrotaPosicionamentoRouteImport } from './routes/app.frota.posicionamento'
 import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.regeneracao'
+import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
@@ -122,6 +122,11 @@ const AppCadastrosDispositivosRoute =
     path: '/cadastros/dispositivos',
     getParentRoute: () => AppRoute,
   } as any)
+const AppCadastrosGaragensRoute = AppCadastrosGaragensRouteImport.update({
+  id: '/cadastros/garagens',
+  path: '/cadastros/garagens',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCadastrosGruposRoute = AppCadastrosGruposRouteImport.update({
   id: '/cadastros/grupos',
   path: '/cadastros/grupos',
@@ -179,19 +184,14 @@ const AppFrotaManutencaoRoute = AppFrotaManutencaoRouteImport.update({
   path: '/frota/manutencao',
   getParentRoute: () => AppRoute,
 } as any)
-const AppFrotaMotorParadoRoute = AppFrotaMotorParadoRouteImport.update({
-  id: '/frota/motor-parado',
-  path: '/frota/motor-parado',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFrotaPosicionamentoRoute = AppFrotaPosicionamentoRouteImport.update({
-  id: '/frota/posicionamento',
-  path: '/frota/posicionamento',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppFrotaRegeneracaoRoute = AppFrotaRegeneracaoRouteImport.update({
   id: '/frota/regeneracao',
   path: '/frota/regeneracao',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFrotaTelemetriaRoute = AppFrotaTelemetriaRouteImport.update({
+  id: '/frota/telemetria',
+  path: '/frota/telemetria',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMotoristasIndexRoute = AppMotoristasIndexRouteImport.update({
@@ -248,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
@@ -259,9 +260,8 @@ export interface FileRoutesByFullPath {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
-  '/app/frota/motor-parado': typeof AppFrotaMotorParadoRoute
-  '/app/frota/posicionamento': typeof AppFrotaPosicionamentoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -285,6 +285,7 @@ export interface FileRoutesByTo {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
@@ -296,9 +297,8 @@ export interface FileRoutesByTo {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
-  '/app/frota/motor-parado': typeof AppFrotaMotorParadoRoute
-  '/app/frota/posicionamento': typeof AppFrotaPosicionamentoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
@@ -324,6 +324,7 @@ export interface FileRoutesById {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
@@ -335,9 +336,8 @@ export interface FileRoutesById {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
-  '/app/frota/motor-parado': typeof AppFrotaMotorParadoRoute
-  '/app/frota/posicionamento': typeof AppFrotaPosicionamentoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -364,6 +364,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
@@ -375,9 +376,8 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/desempenho'
     | '/app/frota/manutencao'
-    | '/app/frota/motor-parado'
-    | '/app/frota/posicionamento'
     | '/app/frota/regeneracao'
+    | '/app/frota/telemetria'
     | '/app/motoristas/novo'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
@@ -401,6 +401,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
@@ -412,9 +413,8 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/desempenho'
     | '/app/frota/manutencao'
-    | '/app/frota/motor-parado'
-    | '/app/frota/posicionamento'
     | '/app/frota/regeneracao'
+    | '/app/frota/telemetria'
     | '/app/motoristas/novo'
     | '/app/veiculos/novo'
     | '/app/motoristas'
@@ -439,6 +439,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
@@ -450,9 +451,8 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/desempenho'
     | '/app/frota/manutencao'
-    | '/app/frota/motor-parado'
-    | '/app/frota/posicionamento'
     | '/app/frota/regeneracao'
+    | '/app/frota/telemetria'
     | '/app/motoristas/novo'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
@@ -575,6 +575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCadastrosDispositivosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/cadastros/garagens': {
+      id: '/app/cadastros/garagens'
+      path: '/cadastros/garagens'
+      fullPath: '/app/cadastros/garagens'
+      preLoaderRoute: typeof AppCadastrosGaragensRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cadastros/grupos': {
       id: '/app/cadastros/grupos'
       path: '/cadastros/grupos'
@@ -652,25 +659,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFrotaManutencaoRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/frota/motor-parado': {
-      id: '/app/frota/motor-parado'
-      path: '/frota/motor-parado'
-      fullPath: '/app/frota/motor-parado'
-      preLoaderRoute: typeof AppFrotaMotorParadoRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/frota/posicionamento': {
-      id: '/app/frota/posicionamento'
-      path: '/frota/posicionamento'
-      fullPath: '/app/frota/posicionamento'
-      preLoaderRoute: typeof AppFrotaPosicionamentoRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/frota/regeneracao': {
       id: '/app/frota/regeneracao'
       path: '/frota/regeneracao'
       fullPath: '/app/frota/regeneracao'
       preLoaderRoute: typeof AppFrotaRegeneracaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/telemetria': {
+      id: '/app/frota/telemetria'
+      path: '/frota/telemetria'
+      fullPath: '/app/frota/telemetria'
+      preLoaderRoute: typeof AppFrotaTelemetriaRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/motoristas/': {
@@ -738,6 +738,7 @@ interface AppRouteChildren {
   AppCadastrosCercaRoute: typeof AppCadastrosCercaRoute
   AppCadastrosCombustivelRoute: typeof AppCadastrosCombustivelRoute
   AppCadastrosDispositivosRoute: typeof AppCadastrosDispositivosRoute
+  AppCadastrosGaragensRoute: typeof AppCadastrosGaragensRoute
   AppCadastrosGruposRoute: typeof AppCadastrosGruposRoute
   AppCadastrosUnidadesRoute: typeof AppCadastrosUnidadesRoute
   AppCadastrosUsuariosRoute: typeof AppCadastrosUsuariosRoute
@@ -749,9 +750,8 @@ interface AppRouteChildren {
   AppFrotaAnaliseRoute: typeof AppFrotaAnaliseRoute
   AppFrotaDesempenhoRoute: typeof AppFrotaDesempenhoRoute
   AppFrotaManutencaoRoute: typeof AppFrotaManutencaoRoute
-  AppFrotaMotorParadoRoute: typeof AppFrotaMotorParadoRoute
-  AppFrotaPosicionamentoRoute: typeof AppFrotaPosicionamentoRoute
   AppFrotaRegeneracaoRoute: typeof AppFrotaRegeneracaoRoute
+  AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
@@ -774,6 +774,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosCercaRoute: AppCadastrosCercaRoute,
   AppCadastrosCombustivelRoute: AppCadastrosCombustivelRoute,
   AppCadastrosDispositivosRoute: AppCadastrosDispositivosRoute,
+  AppCadastrosGaragensRoute: AppCadastrosGaragensRoute,
   AppCadastrosGruposRoute: AppCadastrosGruposRoute,
   AppCadastrosUnidadesRoute: AppCadastrosUnidadesRoute,
   AppCadastrosUsuariosRoute: AppCadastrosUsuariosRoute,
@@ -785,9 +786,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaAnaliseRoute: AppFrotaAnaliseRoute,
   AppFrotaDesempenhoRoute: AppFrotaDesempenhoRoute,
   AppFrotaManutencaoRoute: AppFrotaManutencaoRoute,
-  AppFrotaMotorParadoRoute: AppFrotaMotorParadoRoute,
-  AppFrotaPosicionamentoRoute: AppFrotaPosicionamentoRoute,
   AppFrotaRegeneracaoRoute: AppFrotaRegeneracaoRoute,
+  AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,

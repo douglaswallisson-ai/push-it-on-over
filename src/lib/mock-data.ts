@@ -106,3 +106,98 @@ export const MOCK_CO2: EmissaoResumo = {
   arvoresCompensacao: 1180,
   consumoLitros: 12480,
 };
+
+/* ------------------------------------------------------------------ */
+/* Garagens, equipamentos, kanban de manutenção e conduções            */
+/* ------------------------------------------------------------------ */
+
+import type { CardManutencao, Conducao, Equipamento, Garagem, IndicadoresConducao } from "@/types";
+
+const horasAtras = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
+const diasAtras = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
+
+export const MOCK_GARAGENS: Garagem[] = [
+  { id: "g1", nome: "Garagem Central", unidadeId: "u1", unidade: "Matriz São Paulo", endereco: "Av. do Estado, 4200", cidade: "São Paulo", uf: "SP", responsavel: "Marco Taborda", vagas: 80, veiculos: 72, ativa: true },
+  { id: "g2", nome: "Garagem Zona Leste", unidadeId: "u1", unidade: "Matriz São Paulo", endereco: "Av. Aricanduva, 1500", cidade: "São Paulo", uf: "SP", responsavel: "Rafael Sabini", vagas: 60, veiculos: 48, ativa: true },
+  { id: "g3", nome: "Pátio Guarulhos", unidadeId: "u1", unidade: "Matriz São Paulo", endereco: "Rod. Pres. Dutra, km 225", cidade: "Guarulhos", uf: "SP", responsavel: "Thiago Bora", vagas: 40, veiculos: 21, ativa: true },
+  { id: "g4", nome: "Garagem Caju", unidadeId: "u2", unidade: "Filial Rio de Janeiro", endereco: "Av. Brasil, 2200", cidade: "Rio de Janeiro", uf: "RJ", responsavel: "Richard Acácio", vagas: 50, veiculos: 46, ativa: true },
+  { id: "g5", nome: "Garagem CIC", unidadeId: "u3", unidade: "Filial Paraná", endereco: "Av. Juscelino K., 900", cidade: "Curitiba", uf: "PR", responsavel: "Najla Maltaca", vagas: 45, veiculos: 38, ativa: true },
+  { id: "g6", nome: "Pátio Salvador", unidadeId: "u4", unidade: "Filial Bahia", endereco: "Via Regional, 77", cidade: "Salvador", uf: "BA", responsavel: "Remildo N. de Lima", vagas: 20, veiculos: 12, ativa: false },
+];
+
+export const MOCK_EQUIPAMENTOS: Equipamento[] = [
+  { id: "e1", serial: "SS-4412-0091", modelo: "SS Track 4G", firmware: "3.8.2", veiculoId: "v1", placa: "BCA7A56", garagemId: "g1", ultimaComunicacao: horasAtras(0.05), simOperadora: "Vivo" },
+  { id: "e2", serial: "SS-4412-0114", modelo: "SS Track 4G", firmware: "3.8.2", veiculoId: "v2", placa: "SXD1J61", garagemId: "g1", ultimaComunicacao: horasAtras(0.1), simOperadora: "Vivo" },
+  { id: "e3", serial: "SS-4412-0155", modelo: "SS Track 4G", firmware: "3.7.9", veiculoId: "v3", placa: "EBZ3590", garagemId: "g4", ultimaComunicacao: horasAtras(0.4), simOperadora: "Claro" },
+  { id: "e4", serial: "SS-5200-0007", modelo: "SS Vision DMS", firmware: "2.1.4", veiculoId: "v4", placa: "QHH1360", garagemId: "g4", ultimaComunicacao: horasAtras(2.5), simOperadora: "Claro" },
+  { id: "e5", serial: "SS-4412-0203", modelo: "SS Track 4G", firmware: "3.8.2", veiculoId: "v5", placa: "LUO5I08", garagemId: "g5", ultimaComunicacao: horasAtras(9), simOperadora: "TIM" },
+  { id: "e6", serial: "SS-4412-0219", modelo: "SS Track 4G", firmware: "3.6.1", veiculoId: "v6", placa: "JBE6H85", garagemId: "g5", ultimaComunicacao: horasAtras(52), simOperadora: "TIM" },
+  { id: "e7", serial: "SS-5200-0021", modelo: "SS Vision DMS", firmware: "2.1.4", veiculoId: "v7", placa: "SB157940", garagemId: "g2", ultimaComunicacao: horasAtras(0.3), simOperadora: "Vivo" },
+  { id: "e8", serial: "SS-4412-0244", modelo: "SS Track 4G", firmware: "3.8.2", veiculoId: "v8", placa: "AYK7080", garagemId: "g2", ultimaComunicacao: horasAtras(0.02), simOperadora: "Vivo" },
+  { id: "e9", serial: "SS-4412-0250", modelo: "SS Track 4G", firmware: "3.8.0", veiculoId: "v9", placa: "TPA1106", garagemId: "g3", ultimaComunicacao: horasAtras(1.2), simOperadora: "Claro" },
+  { id: "e10", serial: "SS-4412-0261", modelo: "SS Track 4G", firmware: "3.5.4", veiculoId: "v10", placa: "GAP4C73", garagemId: "g3", ultimaComunicacao: horasAtras(180), simOperadora: "TIM" },
+  { id: "e11", serial: "SS-5200-0033", modelo: "SS Vision DMS", firmware: "2.0.9", veiculoId: null, placa: null, garagemId: "g1", ultimaComunicacao: horasAtras(720), simOperadora: "Vivo" },
+  { id: "e12", serial: "SS-4412-0288", modelo: "SS Track 4G", firmware: "3.8.2", veiculoId: null, placa: null, garagemId: "g1", ultimaComunicacao: null },
+];
+
+/**
+ * Kanban de manutenção — um card por placa. A coluna segue a regra de
+ * precedência: corretiva > preventiva > preditiva > em dia. Um veículo com
+ * mais de uma pendência aparece na mais grave e informa o total em `pendencias`.
+ */
+export const MOCK_KANBAN: CardManutencao[] = [
+  { veiculoId: "v1", placa: "BCA7A56", marca: "Volvo", modelo: "FH 540", status: "em_dia", servico: "Nenhuma pendência", prazoDias: null, indiceSaude: 94, custoEstimado: null, pendencias: 0, garagem: "Garagem Central" },
+  { veiculoId: "v2", placa: "SXD1J61", marca: "Scania", modelo: "R 450", status: "preditiva", servico: "Desgaste de embreagem acima do previsto", prazoDias: 18, indiceSaude: 71, custoEstimado: 2400, pendencias: 1, garagem: "Garagem Central" },
+  { veiculoId: "v3", placa: "EBZ3590", marca: "Mercedes-Benz", modelo: "Actros 2651", status: "corretiva", servico: "Falha no sensor de pressão do turbo", prazoDias: -2, indiceSaude: 38, custoEstimado: 1850, pendencias: 3, garagem: "Garagem Caju" },
+  { veiculoId: "v4", placa: "QHH1360", marca: "DAF", modelo: "XF 480", status: "preventiva", servico: "Revisão de 180.000 km", prazoDias: 6, indiceSaude: 66, custoEstimado: 3200, pendencias: 1, garagem: "Garagem Caju" },
+  { veiculoId: "v5", placa: "LUO5I08", marca: "Volvo", modelo: "FH 460", status: "corretiva", servico: "Vazamento no sistema de arrefecimento", prazoDias: -5, indiceSaude: 29, custoEstimado: 980, pendencias: 2, garagem: "Garagem CIC" },
+  { veiculoId: "v6", placa: "JBE6H85", marca: "Iveco", modelo: "S-Way 480", status: "preditiva", servico: "Tendência de queda na bateria", prazoDias: 24, indiceSaude: 74, custoEstimado: 620, pendencias: 1, garagem: "Garagem CIC" },
+  { veiculoId: "v7", placa: "SB157940", marca: "Scania", modelo: "P 320", status: "liberado", servico: "Troca de óleo concluída em 09/08", prazoDias: null, indiceSaude: 88, custoEstimado: null, pendencias: 0, garagem: "Garagem Zona Leste" },
+  { veiculoId: "v8", placa: "AYK7080", marca: "Volkswagen", modelo: "Constellation 25.460", status: "em_dia", servico: "Nenhuma pendência", prazoDias: null, indiceSaude: 91, custoEstimado: null, pendencias: 0, garagem: "Garagem Zona Leste" },
+  { veiculoId: "v9", placa: "TPA1106", marca: "Mercedes-Benz", modelo: "Axor 2544", status: "preventiva", servico: "Rodízio de pneus + alinhamento", prazoDias: 11, indiceSaude: 69, custoEstimado: 740, pendencias: 1, garagem: "Pátio Guarulhos" },
+  { veiculoId: "v10", placa: "GAP4C73", marca: "Ford", modelo: "Cargo 2429", status: "liberado", servico: "Revisão de freios concluída em 05/08", prazoDias: null, indiceSaude: 83, custoEstimado: null, pendencias: 0, garagem: "Pátio Guarulhos" },
+];
+
+/** Histórico de conduções — sustenta o cruzamento motorista ↔ veículo. */
+export const MOCK_CONDUCOES: Conducao[] = [
+  { id: "c1", veiculoId: "v1", placa: "BCA7A56", motoristaId: "m1", motorista: "Marco Taborda", inicio: diasAtras(2), fim: null, km: 412, notaGeral: 88 },
+  { id: "c2", veiculoId: "v1", placa: "BCA7A56", motoristaId: "m4", motorista: "Richard Acácio", inicio: diasAtras(9), fim: diasAtras(6), km: 1890, notaGeral: 79 },
+  { id: "c3", veiculoId: "v1", placa: "BCA7A56", motoristaId: "m2", motorista: "Najla Maltaca", inicio: diasAtras(21), fim: diasAtras(17), km: 2240, notaGeral: 65 },
+  { id: "c4", veiculoId: "v3", placa: "EBZ3590", motoristaId: "m3", motorista: "Remildo N. de Lima", inicio: diasAtras(1), fim: null, km: 180, notaGeral: 52 },
+  { id: "c5", veiculoId: "v3", placa: "EBZ3590", motoristaId: "m1", motorista: "Marco Taborda", inicio: diasAtras(14), fim: diasAtras(11), km: 1420, notaGeral: 86 },
+  { id: "c6", veiculoId: "v5", placa: "LUO5I08", motoristaId: "m5", motorista: "Rafael Sabini", inicio: diasAtras(30), fim: diasAtras(26), km: 890, notaGeral: 41 },
+  { id: "c7", veiculoId: "v5", placa: "LUO5I08", motoristaId: "m2", motorista: "Najla Maltaca", inicio: diasAtras(8), fim: diasAtras(4), km: 1610, notaGeral: 67 },
+  { id: "c8", veiculoId: "v8", placa: "AYK7080", motoristaId: "m4", motorista: "Richard Acácio", inicio: diasAtras(3), fim: null, km: 720, notaGeral: 84 },
+  { id: "c9", veiculoId: "v8", placa: "AYK7080", motoristaId: "m1", motorista: "Marco Taborda", inicio: diasAtras(19), fim: diasAtras(15), km: 2010, notaGeral: 90 },
+  { id: "c10", veiculoId: "v9", placa: "TPA1106", motoristaId: "m2", motorista: "Najla Maltaca", inicio: diasAtras(5), fim: diasAtras(1), km: 1780, notaGeral: 63 },
+  { id: "c11", veiculoId: "v2", placa: "SXD1J61", motoristaId: "m1", motorista: "Marco Taborda", inicio: diasAtras(12), fim: diasAtras(10), km: 940, notaGeral: 87 },
+  { id: "c12", veiculoId: "v6", placa: "JBE6H85", motoristaId: "m3", motorista: "Remildo N. de Lima", inicio: diasAtras(25), fim: diasAtras(22), km: 1330, notaGeral: 58 },
+];
+
+/** Indicadores de condução por veículo — mesma escala usada em Motoristas. */
+export const MOCK_INDICADORES_VEICULO: Record<string, IndicadoresConducao> = {
+  v1: { iv: 4.5, ae: 4, mp: 4.5, av: 4, pa: 5, ev: 4.5, fm: 3.5, pac: 4 },
+  v2: { iv: 3.5, ae: 3, mp: 3, av: 3.5, pa: 4, ev: 3, fm: 2.5, pac: 3 },
+  v3: { iv: 1, ae: 1.5, mp: 0.5, av: 1, pa: 2, ev: 1, fm: null, pac: 1.5 },
+  v4: { iv: 3, ae: 3.5, mp: 2.5, av: 3, pa: 4, ev: 3.5, fm: 2, pac: 3 },
+  v5: { iv: 0.5, ae: 1, mp: 1, av: 0.5, pa: 1.5, ev: 0.5, fm: null, pac: 1 },
+  v6: { iv: 3.5, ae: 3, mp: 3.5, av: 3, pa: 4, ev: 3, fm: 2.5, pac: 2.5 },
+  v7: { iv: 4, ae: 4.5, mp: 4, av: 4.5, pa: 5, ev: 4, fm: 3, pac: 4 },
+  v8: { iv: 4.5, ae: 4.5, mp: 5, av: 4, pa: 5, ev: 4.5, fm: 4, pac: 4.5 },
+  v9: { iv: 2.5, ae: 3, mp: 2, av: 2.5, pa: 3.5, ev: 2.5, fm: 2, pac: 2 },
+  v10: { iv: 4, ae: 3.5, mp: 4, av: 4, pa: 4.5, ev: 4, fm: 3, pac: 3.5 },
+};
+
+/** Motoristas que dirigiram um veículo, mais recentes primeiro. */
+export const conducoesDoVeiculo = (veiculoId: string) =>
+  MOCK_CONDUCOES.filter((c) => c.veiculoId === veiculoId).sort((a, b) => b.inicio.localeCompare(a.inicio));
+
+/** Veículos que um motorista dirigiu, mais recentes primeiro. */
+export const conducoesDoMotorista = (motoristaId: string) =>
+  MOCK_CONDUCOES.filter((c) => c.motoristaId === motoristaId).sort((a, b) => b.inicio.localeCompare(a.inicio));
+
+/** Mesma busca, por nome — as telas de motorista navegam por nome hoje. */
+export const conducoesPorNome = (nome: string) =>
+  MOCK_CONDUCOES.filter((c) => c.motorista.toLowerCase() === nome.toLowerCase()).sort((a, b) =>
+    b.inicio.localeCompare(a.inicio),
+  );

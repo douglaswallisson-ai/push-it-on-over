@@ -134,3 +134,37 @@ export const CO2 = {
   resumo: (params?: Record<string, string>) =>
     USE_MOCK ? mock(M.MOCK_CO2) : api.get<EmissaoResumo>(`/api/co2/resumo${qs(params)}`),
 };
+
+/* ------------------------------------------------------------------ */
+/* Garagens, equipamentos, kanban de manutenção e conduções            */
+/* ------------------------------------------------------------------ */
+
+export const Garagens = {
+  list: () => (USE_MOCK ? mock(M.MOCK_GARAGENS) : api.get<import("@/types").Garagem[]>(`/api/garagens`)),
+  create: (data: Partial<import("@/types").Garagem>) => api.post(`/api/garagens`, data),
+  update: (id: string, data: Partial<import("@/types").Garagem>) => api.put(`/api/garagens/${id}`, data),
+  remove: (id: string) => api.del(`/api/garagens/${id}`),
+};
+
+export const Equipamentos = {
+  list: () => (USE_MOCK ? mock(M.MOCK_EQUIPAMENTOS) : api.get<import("@/types").Equipamento[]>(`/api/equipamentos`)),
+};
+
+export const ManutencaoKanban = {
+  list: () => (USE_MOCK ? mock(M.MOCK_KANBAN) : api.get<import("@/types").CardManutencao[]>(`/api/manutencao/kanban`)),
+};
+
+export const Conducoes = {
+  porVeiculo: (veiculoId: string) =>
+    USE_MOCK
+      ? mock(M.conducoesDoVeiculo(veiculoId))
+      : api.get<import("@/types").Conducao[]>(`/api/veiculos/${veiculoId}/conducoes`),
+  porMotorista: (motoristaId: string) =>
+    USE_MOCK
+      ? mock(M.conducoesDoMotorista(motoristaId))
+      : api.get<import("@/types").Conducao[]>(`/api/motoristas/${motoristaId}/conducoes`),
+  porNome: (nome: string) =>
+    USE_MOCK
+      ? mock(M.conducoesPorNome(nome))
+      : api.get<import("@/types").Conducao[]>(`/api/conducoes${qs({ motorista: nome })}`),
+};

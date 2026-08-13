@@ -41,6 +41,8 @@ export type Veiculo = {
   odometro: number;
   grupoId?: string;
   unidadeId?: string;
+  /** Garagem onde o veículo está lotado — menor escopo de permissão. */
+  garagemId?: string;
 };
 
 export type PosicaoVeiculo = {

@@ -24,6 +24,9 @@ import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState
 import { MANUTENCAO_COLUNAS, kanbanManutencaoQuery, manutencaoQuery, nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { filtrarPorGaragem } from "@/lib/escopo";
+import { useSessao } from "@/hooks/use-sessao";
+import { MOCK_GARAGENS } from "@/lib/mock-data";
 import type { CardManutencao, StatusManutencao } from "@/types";
 
 /**
@@ -70,11 +73,16 @@ export default function Manutencao() {
    * que veio da API para o quadro refletir a ação na hora.
    */
   const [ajustes, setAjustes] = useState<Record<string, StatusManutencao>>({});
+  const { sessao } = useSessao();
 
-  const cards = useMemo(
-    () => (kanbanQ.data ?? []).map((c) => (ajustes[c.veiculoId] ? { ...c, status: ajustes[c.veiculoId] } : c)),
-    [kanbanQ.data, ajustes],
-  );
+  const cards = useMemo(() => {
+    const comAjuste = (kanbanQ.data ?? []).map((c) =>
+      ajustes[c.veiculoId] ? { ...c, status: ajustes[c.veiculoId] } : c,
+    );
+    // O kanban traz o nome da garagem; o escopo trabalha com id.
+    const idPorNome = new Map(MOCK_GARAGENS.map((g) => [g.nome, g.id]));
+    return filtrarPorGaragem(comAjuste, sessao, (c) => (c.garagem ? idPorNome.get(c.garagem) : undefined));
+  }, [kanbanQ.data, ajustes, sessao]);
 
   const mudarStatus = (card: CardManutencao, status: StatusManutencao, mensagem: string) => {
     setAjustes((a) => ({ ...a, [card.veiculoId]: status }));

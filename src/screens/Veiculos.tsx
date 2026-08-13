@@ -8,6 +8,8 @@ import { StarRating } from "@/components/ss/ui/gauges";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosQuery } from "@/lib/queries";
 import { MOCK_INDICADORES_VEICULO, faixasDoVeiculo } from "@/lib/mock-data";
+import { escopoGaragens, filtrarPorGaragem } from "@/lib/escopo";
+import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
@@ -81,9 +83,15 @@ export default function Veiculos() {
   const kanbanQ = useQuery(kanbanManutencaoQuery());
   const [busca, setBusca] = useState("");
   const [faixasDe, setFaixasDe] = useState<string | null>(null);
+  const { sessao } = useSessao();
 
-  const itens = useMemo(() => data?.items ?? [], [data]);
-  const total = data?.total ?? 0;
+  // O escopo de garagem é aplicado antes de qualquer contagem: os KPIs precisam
+  // refletir o que a pessoa pode ver, não a frota inteira.
+  const itens = useMemo(
+    () => filtrarPorGaragem(data?.items ?? [], sessao, (v) => v.garagemId),
+    [data, sessao],
+  );
+  const total = itens.length;
 
   const linhas: Linha[] = useMemo(() => {
     const porVeiculo = new Map((kanbanQ.data ?? []).map((c) => [c.veiculoId, c]));
@@ -236,6 +244,15 @@ export default function Veiculos() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-6 px-6 py-6 md:px-8">
+        {/* Sem garagem atribuída a lista fica vazia; dizer o porquê evita que
+            pareça erro do sistema. */}
+        {escopoGaragens(sessao)?.length === 0 && (
+          <div className="rounded-xl border border-gold-line bg-gold-tint/50 px-4 py-3 text-[13px] text-gold">
+            <strong>Nenhuma garagem atribuída ao seu usuário.</strong> Por isso não há veículos nesta lista. Peça ao
+            administrador da sua organização para vincular ao menos uma garagem ao seu acesso.
+          </div>
+        )}
+
         {error ? (
           <ErrorBox error={error} onRetry={() => refetch()} />
         ) : (

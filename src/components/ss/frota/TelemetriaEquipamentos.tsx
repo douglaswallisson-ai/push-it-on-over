@@ -14,6 +14,8 @@ import {
   statusComunicacao,
 } from "@/lib/queries";
 import type { Equipamento, StatusComunicacao } from "@/types";
+import { filtrarPorGaragem } from "@/lib/escopo";
+import { useSessao } from "@/hooks/use-sessao";
 import { cn } from "@/lib/utils";
 
 /**
@@ -110,7 +112,11 @@ export function TelemetriaEquipamentos({
   const [filtro, setFiltro] = useState<StatusComunicacao | "todos">(filtroInicial);
   const [busca, setBusca] = useState("");
 
-  const equipamentos = useMemo(() => data ?? [], [data]);
+  const { sessao } = useSessao();
+  const equipamentos = useMemo(
+    () => filtrarPorGaragem(data ?? [], sessao, (e) => e.garagemId),
+    [data, sessao],
+  );
 
   const conta = (s: StatusComunicacao) =>
     equipamentos.filter((e) => statusComunicacao(e.ultimaComunicacao) === s).length;

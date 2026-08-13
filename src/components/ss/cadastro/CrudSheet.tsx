@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { Input, Select, Textarea, Toggle } from "@/components/ss/ui/form";
 import { VeiculoPicker } from "@/components/ss/cadastro/VeiculoPicker";
+import { GaragemPicker } from "@/components/ss/cadastro/GaragemPicker";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,7 +14,16 @@ import { cn } from "@/lib/utils";
  * comportamento (validação, cancelar, excluir, foco) é igual em todos.
  */
 
-export type CampoTipo = "texto" | "numero" | "select" | "textarea" | "toggle" | "data" | "veiculos" | "cor";
+export type CampoTipo =
+  | "texto"
+  | "numero"
+  | "select"
+  | "textarea"
+  | "toggle"
+  | "data"
+  | "veiculos"
+  | "garagens"
+  | "cor";
 
 export type Campo<T> = {
   nome: keyof T & string;
@@ -135,7 +145,7 @@ export function CrudSheet<T extends Record<string, unknown>>({
 
           <div className="grid gap-4 sm:grid-cols-2">
             {campos.map((c) => (
-              <div key={c.nome} className={cn("space-y-1.5", (c.full || c.tipo === "veiculos") && "sm:col-span-2")}>
+              <div key={c.nome} className={cn("space-y-1.5", (c.full || c.tipo === "veiculos" || c.tipo === "garagens") && "sm:col-span-2")}>
                 <label className="block text-[12px] font-medium text-ink-soft">
                   {c.label}
                   {c.obrigatorio ? (
@@ -170,6 +180,11 @@ export function CrudSheet<T extends Record<string, unknown>>({
                   </div>
                 ) : c.tipo === "veiculos" ? (
                   <VeiculoPicker
+                    selecionadas={(form[c.nome] as string[]) ?? []}
+                    onChange={(v) => set(c.nome, v)}
+                  />
+                ) : c.tipo === "garagens" ? (
+                  <GaragemPicker
                     selecionadas={(form[c.nome] as string[]) ?? []}
                     onChange={(v) => set(c.nome, v)}
                   />

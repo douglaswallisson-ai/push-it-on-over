@@ -12,6 +12,8 @@ type Usuario = {
   perfil: "Administrador" | "Gestor" | "Operador" | "Consulta";
   acesso: string;
   ativo: boolean;
+  /** IDs das garagens que o usuário enxerga. Administrador vê todas. */
+  garagens: string[];
 };
 
 const perfilTone: Record<Usuario["perfil"], PillTone> = {
@@ -22,11 +24,11 @@ const perfilTone: Record<Usuario["perfil"], PillTone> = {
 };
 
 const DADOS: Usuario[] = [
-  { nome: "Douglas Morais", email: "douglas.morais@sstelematica.com.br", perfil: "Administrador", acesso: "agora", ativo: true },
-  { nome: "Marco Taborda", email: "marco.taborda@empresa.com.br", perfil: "Gestor", acesso: "há 2 h", ativo: true },
-  { nome: "Rosemeri Tuono", email: "rosemeri.t@empresa.com.br", perfil: "Operador", acesso: "há 1 dia", ativo: true },
-  { nome: "Vitor Duarte", email: "vitor.duarte@empresa.com.br", perfil: "Operador", acesso: "há 3 dias", ativo: true },
-  { nome: "Najla Maltaca", email: "najla.m@empresa.com.br", perfil: "Consulta", acesso: "há 12 dias", ativo: false },
+  { nome: "Douglas Morais", email: "douglas.morais@sstelematica.com.br", perfil: "Administrador", acesso: "agora", ativo: true, garagens: [] },
+  { nome: "Marco Taborda", email: "marco.taborda@empresa.com.br", perfil: "Gestor", acesso: "há 2 h", ativo: true, garagens: ["g1", "g2", "g3"] },
+  { nome: "Rosemeri Tuono", email: "rosemeri.t@empresa.com.br", perfil: "Operador", acesso: "há 1 dia", ativo: true, garagens: ["g4"] },
+  { nome: "Vitor Duarte", email: "vitor.duarte@empresa.com.br", perfil: "Operador", acesso: "há 3 dias", ativo: true, garagens: ["g5"] },
+  { nome: "Najla Maltaca", email: "najla.m@empresa.com.br", perfil: "Consulta", acesso: "há 12 dias", ativo: false, garagens: [] },
 ];
 
 const COLS: Column<Usuario>[] = [
@@ -46,6 +48,20 @@ const COLS: Column<Usuario>[] = [
     ),
   },
   { key: "perfil", header: "Perfil", render: (u) => <Pill tone={perfilTone[u.perfil]}>{u.perfil}</Pill> },
+  {
+    key: "garagens",
+    header: "Escopo",
+    render: (u) =>
+      u.perfil === "Administrador" ? (
+        <Pill tone="sky">Todas as garagens</Pill>
+      ) : u.garagens?.length ? (
+        <span className="whitespace-nowrap text-[12.5px] text-ink-soft">
+          {u.garagens.length} garage{u.garagens.length > 1 ? "ns" : "m"}
+        </span>
+      ) : (
+        <span className="whitespace-nowrap text-[12.5px] text-gold">sem garagem</span>
+      ),
+  },
   { key: "acesso", header: "Último acesso", align: "right", render: (u) => <span className="text-muted-foreground">{u.acesso}</span> },
   {
     key: "ativo",
@@ -66,9 +82,15 @@ const CAMPOS: Campo<Usuario>[] = [
   { nome: "perfil", label: "Perfil de permissão", tipo: "select", obrigatorio: true, opcoes: ["Administrador", "Gestor", "Operador", "Consulta"] },
   { nome: "acesso", label: "Último acesso", tipo: "texto", placeholder: "nunca" },
   { nome: "ativo", label: "Acesso liberado", tipo: "toggle", hint: "Desativar preserva o histórico; excluir remove o registro." },
+  {
+    nome: "garagens",
+    label: "Garagens que este usuário enxerga",
+    tipo: "garagens",
+    hint: "Vale para Gestor, Operador e Consulta. Administrador enxerga todas, independente da seleção.",
+  },
 ];
 
-const NOVO: Partial<Usuario> = { perfil: "Consulta", ativo: true, acesso: "nunca", nome: "", email: "" };
+const NOVO: Partial<Usuario> = { perfil: "Consulta", ativo: true, acesso: "nunca", nome: "", email: "", garagens: [] };
 
 export default function Usuarios() {
   return (

@@ -85,6 +85,14 @@ export type Sessao = {
    */
   organizacaoAtivaId: string;
   organizacaoAtiva: string;
+  /**
+   * Garagens que o usuário pode acessar. Vazio com perfil restrito significa
+   * sem acesso a dado operacional. Ignorado para super admin e administrador
+   * da organização, que veem todas.
+   */
+  garagens: string[];
+  /** Garagem escolhida para focar a navegação. null = todas as do escopo. */
+  garagemFocoId: string | null;
   entrouEm: string;
 };
 
@@ -129,6 +137,8 @@ export function entrar(email: string, senha: string): { ok: boolean; erro?: stri
     organizacaoId: orgId,
     organizacaoAtivaId: orgId,
     organizacaoAtiva: org,
+    garagens: [],
+    garagemFocoId: null,
     entrouEm: new Date().toISOString(),
   });
   registrarAuditoria("login", `Entrou no sistema como ${perfil}.`);
@@ -162,6 +172,28 @@ export function trocarOrganizacao(id: string, nome: string): boolean {
 export function estaVisitandoOutraOrg(): boolean {
   const s = lerSessao();
   return Boolean(s && s.organizacaoAtivaId !== s.organizacaoId);
+}
+
+/* ------------------------------------------------------------------ */
+/* Escopo de garagem                                                   */
+/* ------------------------------------------------------------------ */
+
+/** Foca a navegação numa garagem específica. `null` volta para todas. */
+export function focarGaragem(id: string | null, nome?: string): void {
+  const s = lerSessao();
+  if (!s) return;
+  gravar<Sessao>(CHAVE_SESSAO, { ...s, garagemFocoId: id });
+  registrarAuditoria(
+    "foco_garagem",
+    id ? `Passou a visualizar apenas ${nome ?? id}.` : "Voltou a visualizar todas as garagens do escopo.",
+  );
+}
+
+/** Define as garagens do usuário. Usado pelo cadastro de usuários. */
+export function definirGaragens(ids: string[]): void {
+  const s = lerSessao();
+  if (!s) return;
+  gravar<Sessao>(CHAVE_SESSAO, { ...s, garagens: ids, garagemFocoId: null });
 }
 
 /* ------------------------------------------------------------------ */

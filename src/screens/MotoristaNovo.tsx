@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
-import { acrescentar } from "@/lib/session";
+import { acrescentar, registrarAuditoria } from "@/lib/session";
 import { toast } from "sonner";
 
 /**
@@ -69,6 +69,7 @@ export default function MotoristaNovo() {
       return;
     }
     acrescentar("motoristas", { ...form, id: `m${Date.now()}`, criadoEm: new Date().toISOString() });
+    registrarAuditoria("criacao", `Motorista cadastrado: ${form.nome}.`);
     toast.success(`Motorista ${form.nome} cadastrado.`, {
       description: form.validade ? undefined : "CNH sem validade informada — não haverá alerta de vencimento.",
     });

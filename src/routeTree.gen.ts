@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
+import { Route as AppAuditoriaRouteImport } from './routes/app.auditoria'
 import { Route as AppCo2RouteImport } from './routes/app.co2'
 import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
@@ -70,6 +71,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppSplatRoute = AppSplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditoriaRoute = AppAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCo2Route = AppCo2RouteImport.update({
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
@@ -281,6 +288,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
@@ -362,6 +371,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/app/$'
+    | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/app/$'
+    | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/app/$'
+    | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/app/$'
       preLoaderRoute: typeof AppSplatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/auditoria': {
+      id: '/app/auditoria'
+      path: '/auditoria'
+      fullPath: '/app/auditoria'
+      preLoaderRoute: typeof AppAuditoriaRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/co2': {
@@ -746,6 +765,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
+  AppAuditoriaRoute: typeof AppAuditoriaRoute
   AppCo2Route: typeof AppCo2Route
   AppEstrategicoRoute: typeof AppEstrategicoRoute
   AppEventosRoute: typeof AppEventosRoute
@@ -783,6 +803,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppSplatRoute: AppSplatRoute,
+  AppAuditoriaRoute: AppAuditoriaRoute,
   AppCo2Route: AppCo2Route,
   AppEstrategicoRoute: AppEstrategicoRoute,
   AppEventosRoute: AppEventosRoute,

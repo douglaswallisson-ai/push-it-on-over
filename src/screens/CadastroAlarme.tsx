@@ -14,7 +14,7 @@ import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { VeiculoPicker } from "@/components/ss/cadastro/VeiculoPicker";
 import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
-import { acrescentar } from "@/lib/session";
+import { acrescentar, registrarAuditoria } from "@/lib/session";
 import { toast } from "sonner";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { alarmesQuery, nf } from "@/lib/queries";
@@ -127,6 +127,7 @@ export default function CadastroAlarme() {
       veiculos: escopo === "Veículos específicos" ? placas : [],
     };
     acrescentar("alarmes", novo);
+    registrarAuditoria("criacao", `Alarme criado: ${novo.nome} (${novo.veiculos?.length ? novo.veiculos.length + " veículos" : "toda a frota"}).`);
     setLocais([novo, ...alarmes]);
     toast.success(`Alarme "${novo.nome}" criado.`, {
       description: novo.veiculos?.length ? `${novo.veiculos.length} veículo(s)` : "Toda a frota",

@@ -5,6 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { TourProvider } from "@/components/ss/tour/TourProvider";
 import { SelmaLauncher } from "@/components/ss/selma/SelmaLauncher";
 import { Toaster } from "@/components/ui/sonner";
+import { ContextoOrganizacao } from "@/components/ss/layout/ContextoOrganizacao";
 
 /**
  * Casca do sistema: trilho de ícones fixo + conteúdo sobre o canvas
@@ -30,6 +31,7 @@ export function AppShell() {
         </button>
 
         <div className="min-w-0 lg:ml-[68px]">
+          <ContextoOrganizacao />
           <Outlet />
         </div>
 

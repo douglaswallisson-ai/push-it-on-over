@@ -13,6 +13,8 @@
  * em `window`.
  */
 
+import type { Perfil } from "@/lib/permissoes";
+
 const isBrowser = typeof window !== "undefined";
 
 /* ------------------------------------------------------------------ */
@@ -73,12 +75,21 @@ export function acrescentar<T>(chave: string, item: T): T[] {
 export type Sessao = {
   email: string;
   nome: string;
-  perfil: "Administrador" | "Gestor" | "Operador" | "Consulta";
+  perfil: Perfil;
+  /** Organização de origem do usuário — não muda. */
   organizacao: string;
+  organizacaoId: string;
+  /**
+   * Organização cujos dados estão sendo exibidos. Para todo mundo é igual à de
+   * origem; só o super admin consegue apontar para outra.
+   */
+  organizacaoAtivaId: string;
+  organizacaoAtiva: string;
   entrouEm: string;
 };
 
 const CHAVE_SESSAO = "sessao";
+const CHAVE_AUDITORIA = "auditoria";
 
 export const lerSessao = (): Sessao | null => ler<Sessao | null>(CHAVE_SESSAO, null);
 
@@ -103,19 +114,91 @@ export function entrar(email: string, senha: string): { ok: boolean; erro?: stri
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join(" ");
 
+  // Enquanto não há servidor, quem entra com domínio da SS assume o perfil de
+  // super admin. Trocar pela claim do token quando a API de auth existir.
+  const interno = /@sstelematica\.com(\.br)?$/i.test(email.trim());
+  const perfil: Perfil = interno ? "super_admin" : "admin_empresa";
+  const org = interno ? "SS Telemática (interno)" : "Organização do usuário";
+  const orgId = interno ? "ss-matriz" : "cliente";
+
   gravar<Sessao>(CHAVE_SESSAO, {
     email: email.trim(),
     nome: nome || "Usuário",
-    perfil: "Administrador",
-    organizacao: "SS Telemática (interno)",
+    perfil,
+    organizacao: org,
+    organizacaoId: orgId,
+    organizacaoAtivaId: orgId,
+    organizacaoAtiva: org,
     entrouEm: new Date().toISOString(),
   });
+  registrarAuditoria("login", `Entrou no sistema como ${perfil}.`);
   return { ok: true };
 }
 
 export function sair(): void {
+  registrarAuditoria("logout", "Encerrou a sessão.");
   limpar(CHAVE_SESSAO);
 }
+
+/* ------------------------------------------------------------------ */
+/* Troca de organização (super admin)                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Aponta a sessão para a base de outra organização. Antes o seletor só trocava
+ * o rótulo na barra lateral — o comentário no código dizia "TODO: disparar
+ * troca de contexto real aqui".
+ */
+export function trocarOrganizacao(id: string, nome: string): boolean {
+  const s = lerSessao();
+  if (!s) return false;
+  if (s.perfil !== "super_admin" && id !== s.organizacaoId) return false;
+  gravar<Sessao>(CHAVE_SESSAO, { ...s, organizacaoAtivaId: id, organizacaoAtiva: nome });
+  registrarAuditoria("troca_organizacao", `Passou a visualizar a base de ${nome}.`, nome);
+  return true;
+}
+
+/** true quando o super admin está olhando a base de outro cliente. */
+export function estaVisitandoOutraOrg(): boolean {
+  const s = lerSessao();
+  return Boolean(s && s.organizacaoAtivaId !== s.organizacaoId);
+}
+
+/* ------------------------------------------------------------------ */
+/* Auditoria                                                           */
+/* ------------------------------------------------------------------ */
+
+export type RegistroAuditoria = {
+  id: string;
+  em: string;
+  usuario: string;
+  perfil: string;
+  organizacao: string;
+  acao: string;
+  detalhe: string;
+};
+
+/**
+ * Registra uma ação. Como o super admin pode tudo e em qualquer base, o log é o
+ * que permite responder depois "quem alterou o dado deste cliente e quando".
+ */
+export function registrarAuditoria(acao: string, detalhe: string, orgForcada?: string): void {
+  const s = lerSessao();
+  const registro: RegistroAuditoria = {
+    id: `log${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+    em: new Date().toISOString(),
+    usuario: s?.email ?? "anônimo",
+    perfil: s?.perfil ?? "—",
+    organizacao: orgForcada ?? s?.organizacaoAtiva ?? "—",
+    acao,
+    detalhe,
+  };
+  const atual = ler<RegistroAuditoria[]>(CHAVE_AUDITORIA, []);
+  // Mantém os 500 mais recentes para não estourar a cota do sessionStorage.
+  gravar(CHAVE_AUDITORIA, [registro, ...atual].slice(0, 500));
+}
+
+export const lerAuditoria = (): RegistroAuditoria[] => ler<RegistroAuditoria[]>(CHAVE_AUDITORIA, []);
 
 /** Registra o pedido de redefinição para o fluxo de "esqueci minha senha". */
 export function pedirRedefinicaoSenha(email: string): { ok: boolean; erro?: string } {

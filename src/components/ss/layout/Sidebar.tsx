@@ -10,6 +10,7 @@ import {
   Leaf,
   LogOut,
   MapPin,
+  ShieldCheck,
   Siren,
   Sparkles,
   Truck,
@@ -19,7 +20,9 @@ import {
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
-import { lerSessao, sair } from "@/lib/session";
+import { sair } from "@/lib/session";
+import { useSessao } from "@/hooks/use-sessao";
+import { pode } from "@/lib/permissoes";
 
 /**
  * Menu lateral em trilho de ícones.
@@ -93,6 +96,7 @@ const NAV_PRIMARY: Entry[] = [
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
+  { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 
 const NAV_SECONDARY: Entry[] = [
@@ -125,7 +129,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const isDesktop = useIsDesktop();
 
   // Identidade do usuário logado — antes estava fixa no código como "Douglas Morais".
-  const sessao = lerSessao();
+  const { sessao } = useSessao();
   const nomeUsuario = sessao?.nome ?? "Visitante";
   const orgUsuario = sessao?.organizacao ?? "SS Telemática";
   const iniciais = nomeUsuario
@@ -179,8 +183,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </span>
         </div>
 
+        {/* Itens sensíveis só aparecem para quem tem permissão. */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
-          {NAV_PRIMARY.map((entry) => (
+          {NAV_PRIMARY.filter(
+            (entry) => !("to" in entry && entry.to === "/app/auditoria") || pode(sessao?.perfil, "ver_auditoria"),
+          ).map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}

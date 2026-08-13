@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
+import { registrarAuditoria } from "@/lib/session";
 
 /**
  * Esqueleto comum das telas de cadastro: cabeçalho, faixa hero, KPIs e tabela
@@ -92,17 +93,22 @@ export function CadastroScaffold<T extends Record<string, unknown>>({
   };
 
   const salvar = (v: Partial<T>) => {
+    const rotuloRegistro = String((v as Record<string, unknown>).nome ?? (v as Record<string, unknown>).serial ?? "");
     if (editando) {
       setLista((l) => l.map((r) => (r === editando ? ({ ...r, ...v } as T) : r)));
+      registrarAuditoria("edicao", `${singular} alterado: ${rotuloRegistro || "registro"}.`);
       notificar(`${singular} atualizado.`);
     } else {
       setLista((l) => [{ ...(novoPadrao ?? {}), ...v } as T, ...l]);
+      registrarAuditoria("criacao", `${singular} criado: ${rotuloRegistro || "registro"}.`);
       notificar(`${singular} criado.`);
     }
     setAberto(false);
   };
 
   const excluir = (r: T) => {
+    const rotuloRegistro = String((r as Record<string, unknown>).nome ?? (r as Record<string, unknown>).serial ?? "");
+    registrarAuditoria("exclusao", `${singular} excluído: ${rotuloRegistro || "registro"}.`);
     setLista((l) => l.filter((x) => x !== r));
     setAberto(false);
     notificar(`${singular} excluído.`);

@@ -40,16 +40,16 @@ export const MOCK_POSICOES: PosicaoVeiculo[] = [
 ];
 
 export const MOCK_VEICULOS: Veiculo[] = [
-  { id: "v1", placa: "BCA7A56", marca: "Volvo", modelo: "FH 540", ano: 2022, operacao: "Longa distância", situacao: "em_rota", kml: 2.9, odometro: 812977 , garagemId: "g1" },
-  { id: "v2", placa: "SXD1J61", marca: "Scania", modelo: "R 450", ano: 2021, operacao: "Longa distância", situacao: "em_rota", kml: 3.1, odometro: 489020 , garagemId: "g1" },
-  { id: "v3", placa: "EBZ3590", marca: "Mercedes-Benz", modelo: "Actros 2651", ano: 2020, operacao: "Regional", situacao: "parado", kml: 2.6, odometro: 913006 , garagemId: "g4" },
-  { id: "v4", placa: "QHH1360", marca: "DAF", modelo: "XF 480", ano: 2023, operacao: "Regional", situacao: "parado", kml: 2.8, odometro: 174320 , garagemId: "g4" },
-  { id: "v5", placa: "LUO5I08", marca: "Volvo", modelo: "FH 460", ano: 2019, operacao: "Urbano", situacao: "manutencao", kml: 2.4, odometro: 1024500 , garagemId: "g5" },
-  { id: "v6", placa: "JBE6H85", marca: "Iveco", modelo: "S-Way 480", ano: 2022, operacao: "Longa distância", situacao: "sem_sinal", kml: 2.7, odometro: 322110 , garagemId: "g5" },
-  { id: "v7", placa: "SB157940", marca: "Scania", modelo: "P 320", ano: 2018, operacao: "Urbano", situacao: "parado", kml: 3.4, odometro: 640980 , garagemId: "g2" },
-  { id: "v8", placa: "AYK7080", marca: "Volkswagen", modelo: "Constellation 25.460", ano: 2021, operacao: "Regional", situacao: "em_rota", kml: 3.0, odometro: 401220 , garagemId: "g2" },
-  { id: "v9", placa: "TPA1106", marca: "Mercedes-Benz", modelo: "Axor 2544", ano: 2020, operacao: "Longa distância", situacao: "em_rota", kml: 2.5, odometro: 634210 , garagemId: "g3" },
-  { id: "v10", placa: "GAP4C73", marca: "Ford", modelo: "Cargo 2429", ano: 2017, operacao: "Urbano", situacao: "parado", kml: 3.2, odometro: 201774 , garagemId: "g3" },
+  { id: "v1", prefixo: "11596", placa: "BCA7A56", marca: "Volvo", modelo: "FH 540", ano: 2022, operacao: "Longa distância", situacao: "em_rota", kml: 2.9, odometro: 812977 , garagemId: "g1" },
+  { id: "v2", prefixo: "11278", placa: "SXD1J61", marca: "Scania", modelo: "R 450", ano: 2021, operacao: "Longa distância", situacao: "em_rota", kml: 3.1, odometro: 489020 , garagemId: "g1" },
+  { id: "v3", prefixo: "11275", placa: "EBZ3590", marca: "Mercedes-Benz", modelo: "Actros 2651", ano: 2020, operacao: "Regional", situacao: "parado", kml: 2.6, odometro: 913006 , garagemId: "g4" },
+  { id: "v4", prefixo: "11107", placa: "QHH1360", marca: "DAF", modelo: "XF 480", ano: 2023, operacao: "Regional", situacao: "parado", kml: 2.8, odometro: 174320 , garagemId: "g4" },
+  { id: "v5", prefixo: "11005", placa: "LUO5I08", marca: "Volvo", modelo: "FH 460", ano: 2019, operacao: "Urbano", situacao: "manutencao", kml: 2.4, odometro: 1024500 , garagemId: "g5" },
+  { id: "v6", prefixo: "11589", placa: "JBE6H85", marca: "Iveco", modelo: "S-Way 480", ano: 2022, operacao: "Longa distância", situacao: "sem_sinal", kml: 2.7, odometro: 322110 , garagemId: "g5" },
+  { id: "v7", prefixo: "11505", placa: "SB157940", marca: "Scania", modelo: "P 320", ano: 2018, operacao: "Urbano", situacao: "parado", kml: 3.4, odometro: 640980 , garagemId: "g2" },
+  { id: "v8", prefixo: "11509", placa: "AYK7080", marca: "Volkswagen", modelo: "Constellation 25.460", ano: 2021, operacao: "Regional", situacao: "em_rota", kml: 3.0, odometro: 401220 , garagemId: "g2" },
+  { id: "v9", prefixo: "11096", placa: "TPA1106", marca: "Mercedes-Benz", modelo: "Axor 2544", ano: 2020, operacao: "Longa distância", situacao: "em_rota", kml: 2.5, odometro: 634210 , garagemId: "g3" },
+  { id: "v10", prefixo: "11455", placa: "GAP4C73", marca: "Ford", modelo: "Cargo 2429", ano: 2017, operacao: "Urbano", situacao: "parado", kml: 3.2, odometro: 201774 , garagemId: "g3" },
 ];
 
 export const mockVeiculosPage = (page = 1, pageSize = 50): Paginated<Veiculo> => ({
@@ -269,3 +269,143 @@ export const MOCK_CNH: Record<string, { numero?: string; categoria?: string; val
   "Davi Nadalin": { numero: "06778899001", categoria: "E", validade: "2026-10-15" },
   "Guilherme Souza": { numero: "05544332211", categoria: "D", validade: "2029-03-22" },
 };
+
+/* ------------------------------------------------------------------ */
+/* BLOCO 0 — Linhas, itinerários, pontos, programação e realizado      */
+/* ------------------------------------------------------------------ */
+
+import type {
+  AlarmeOperacional,
+  GrupoLinhas,
+  Itinerario,
+  Linha,
+  PontoParada,
+  ViagemProgramada,
+  ViagemRealizada,
+} from "@/types";
+import { classificarViagem } from "@/lib/operacao";
+
+export const MOCK_GRUPOS_LINHAS: GrupoLinhas[] = [
+  { id: "gl1", nome: "Corredor Norte", descricao: "Eixo estrutural norte-sul", cor: "#1B3A6B" },
+  { id: "gl2", nome: "Alimentadoras Leste", descricao: "Linhas de bairro que alimentam o terminal leste", cor: "#2E86C1" },
+  { id: "gl3", nome: "Fretamento contínuo", descricao: "Transporte de colaboradores", cor: "#2E9E4F" },
+];
+
+export const MOCK_PONTOS: PontoParada[] = [
+  { id: "p1", codigo: "PC1", nome: "Terminal Central", endereco: "Praça da Sé, s/n", lat: -23.5505, lng: -46.6333, controle: true, toleranciaMin: 3, abrigo: true, acessivel: true },
+  { id: "p2", codigo: "P002", nome: "Av. Paulista, 900", endereco: "Av. Paulista, 900", lat: -23.5629, lng: -46.6544, controle: false, toleranciaMin: 2, abrigo: true, acessivel: true },
+  { id: "p3", codigo: "P003", nome: "Hospital das Clínicas", endereco: "Av. Dr. Enéas de Carvalho, 255", lat: -23.5566, lng: -46.6699, controle: false, toleranciaMin: 2, abrigo: true, acessivel: true },
+  { id: "p4", codigo: "P004", nome: "Estação Butantã", endereco: "Av. Vital Brasil, 1000", lat: -23.5714, lng: -46.7085, controle: false, toleranciaMin: 2, abrigo: true, acessivel: false },
+  { id: "p5", codigo: "PC2", nome: "Terminal Pinheiros", endereco: "Av. Pedroso de Morais, 1", lat: -23.5670, lng: -46.7020, controle: true, toleranciaMin: 3, abrigo: true, acessivel: true },
+  { id: "p6", codigo: "P006", nome: "Shopping Aricanduva", endereco: "Av. Aricanduva, 5555", lat: -23.5620, lng: -46.5060, controle: false, toleranciaMin: 2, abrigo: true, acessivel: true },
+  { id: "p7", codigo: "PC3", nome: "Terminal Itaquera", endereco: "Av. José Pinheiro Borges, s/n", lat: -23.5405, lng: -46.4666, controle: true, toleranciaMin: 3, abrigo: true, acessivel: true },
+  { id: "p8", codigo: "P008", nome: "Portaria — Fábrica Leste", endereco: "Rod. Ayrton Senna, km 21", lat: -23.5100, lng: -46.4300, controle: false, toleranciaMin: 5 },
+];
+
+export const MOCK_LINHAS: Linha[] = [
+  { id: "l1", codigo: "8207-01", nome: "Terminal Central / Terminal Pinheiros", modalidade: "publico", grupoId: "gl1", garagemId: "g1", operadora: "Viação Cometa", cor: "#1B3A6B", ativa: true, tarifa: 5.2 },
+  { id: "l2", codigo: "5550-01", nome: "Est. Pampulha / Est. São José", modalidade: "publico", grupoId: "gl1", garagemId: "g1", operadora: "Viação Cometa", cor: "#2E86C1", ativa: true, tarifa: 5.2 },
+  { id: "l3", codigo: "3450-10", nome: "Terminal Itaquera / Shopping Aricanduva", modalidade: "publico", grupoId: "gl2", garagemId: "g2", operadora: "Expresso Sul", cor: "#B8860B", ativa: true, tarifa: 5.2 },
+  { id: "l4", codigo: "FRET-012", nome: "Fábrica Leste / Centro", modalidade: "fretamento", grupoId: "gl3", garagemId: "g2", operadora: "Contrato Azul Ind.", cor: "#2E9E4F", ativa: true },
+  { id: "l5", codigo: "9110-02", nome: "Circular Butantã", modalidade: "publico", grupoId: "gl2", garagemId: "g3", operadora: "Expresso Sul", cor: "#7B3FA0", ativa: false, tarifa: 5.2 },
+];
+
+export const MOCK_ITINERARIOS: Itinerario[] = [
+  {
+    id: "it1", linhaId: "l1", sentido: "ida", nome: "Central → Pinheiros", extensaoKm: 18.4, duracaoMin: 62, ativo: true,
+    paradas: [
+      { pontoId: "p1", ordem: 1, minutosAcumulados: 0, kmAcumulado: 0 },
+      { pontoId: "p2", ordem: 2, minutosAcumulados: 14, kmAcumulado: 4.2 },
+      { pontoId: "p3", ordem: 3, minutosAcumulados: 28, kmAcumulado: 8.6 },
+      { pontoId: "p4", ordem: 4, minutosAcumulados: 48, kmAcumulado: 15.1 },
+      { pontoId: "p5", ordem: 5, minutosAcumulados: 62, kmAcumulado: 18.4 },
+    ],
+  },
+  {
+    id: "it2", linhaId: "l1", sentido: "volta", nome: "Pinheiros → Central", extensaoKm: 18.9, duracaoMin: 65, ativo: true,
+    paradas: [
+      { pontoId: "p5", ordem: 1, minutosAcumulados: 0, kmAcumulado: 0 },
+      { pontoId: "p4", ordem: 2, minutosAcumulados: 15, kmAcumulado: 3.4 },
+      { pontoId: "p3", ordem: 3, minutosAcumulados: 36, kmAcumulado: 10.2 },
+      { pontoId: "p2", ordem: 4, minutosAcumulados: 51, kmAcumulado: 14.6 },
+      { pontoId: "p1", ordem: 5, minutosAcumulados: 65, kmAcumulado: 18.9 },
+    ],
+  },
+  {
+    id: "it3", linhaId: "l3", sentido: "ida", nome: "Itaquera → Aricanduva", extensaoKm: 11.2, duracaoMin: 41, ativo: true,
+    paradas: [
+      { pontoId: "p7", ordem: 1, minutosAcumulados: 0, kmAcumulado: 0 },
+      { pontoId: "p6", ordem: 2, minutosAcumulados: 41, kmAcumulado: 11.2 },
+    ],
+  },
+  {
+    id: "it4", linhaId: "l4", sentido: "ida", nome: "Fábrica → Centro", extensaoKm: 32.6, duracaoMin: 74, ativo: true,
+    paradas: [
+      { pontoId: "p8", ordem: 1, minutosAcumulados: 0, kmAcumulado: 0 },
+      { pontoId: "p1", ordem: 2, minutosAcumulados: 74, kmAcumulado: 32.6 },
+    ],
+  },
+];
+
+/** Tabela horária do dia útil da linha 8207-01. */
+export const MOCK_PROGRAMACAO: ViagemProgramada[] = [
+  { id: "pg1", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 4, partida: "10:36", chegada: "11:38", headwayMin: 12, veiculoId: "v1" },
+  { id: "pg2", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 4, partida: "10:36", chegada: "11:41", headwayMin: 12, veiculoId: "v1" },
+  { id: "pg3", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 21, partida: "10:48", chegada: "11:50", headwayMin: 12, veiculoId: "v2" },
+  { id: "pg4", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 3, partida: "10:48", chegada: "11:53", headwayMin: 12, veiculoId: "v3" },
+  { id: "pg5", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 19, partida: "10:59", chegada: "12:01", headwayMin: 11, veiculoId: "v4" },
+  { id: "pg6", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 7, partida: "11:00", chegada: "12:05", headwayMin: 12, veiculoId: "v5" },
+  { id: "pg7", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 13, partida: "11:09", chegada: "12:11", headwayMin: 10, veiculoId: "v6" },
+  { id: "pg8", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 9, partida: "11:12", chegada: "12:17", headwayMin: 12, veiculoId: "v7" },
+  { id: "pg9", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 22, partida: "11:19", chegada: "12:21", headwayMin: 10, veiculoId: "v8" },
+  { id: "pg10", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 1, partida: "11:24", chegada: "12:29", headwayMin: 12, veiculoId: "v9" },
+  { id: "pg11", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 16, partida: "11:29", chegada: "12:31", headwayMin: 10, veiculoId: "v10" },
+  { id: "pg12", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 11, partida: "11:36", chegada: "12:41", headwayMin: 12 },
+  { id: "pg13", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 10, partida: "11:39", chegada: "12:41", headwayMin: 10 },
+  { id: "pg14", linhaId: "l1", itinerarioId: "it2", tipoDia: "util", tabela: 15, partida: "11:48", chegada: "12:53", headwayMin: 12 },
+  { id: "pg15", linhaId: "l1", itinerarioId: "it1", tipoDia: "util", tabela: 6, partida: "11:49", chegada: "12:51", headwayMin: 10 },
+];
+
+const HOJE_OP = new Date().toISOString().slice(0, 10);
+
+/** Realizado do dia, confrontado com a programação acima. */
+const REALIZADO_BRUTO: Omit<ViagemRealizada, "situacao">[] = [
+  { id: "vr1", programadaId: "pg1", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 4, sentido: "ida", partidaProgramada: "10:36", partidaRealizada: "10:36", chegadaProgramada: "11:38", chegadaRealizada: "11:59", veiculoProgramadoId: "v1", veiculoRealizadoId: "v1", motoristaRealizadoId: "m1", percursoPct: 100, headwayProgramadoMin: 12, headwayRealizadoMin: 12, passageiros: 64, kmRodado: 18.4 },
+  { id: "vr2", programadaId: "pg2", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 4, sentido: "volta", partidaProgramada: "10:36", partidaRealizada: "10:42", chegadaProgramada: "11:41", chegadaRealizada: "11:56", veiculoProgramadoId: "v1", veiculoRealizadoId: "v1", motoristaRealizadoId: "m1", percursoPct: 100, headwayProgramadoMin: 12, headwayRealizadoMin: 6, passageiros: 58, kmRodado: 18.9 },
+  { id: "vr3", programadaId: "pg3", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 21, sentido: "ida", partidaProgramada: "10:48", partidaRealizada: "10:12", chegadaProgramada: "11:50", chegadaRealizada: "11:20", veiculoProgramadoId: "v2", veiculoRealizadoId: "v2", motoristaRealizadoId: "m2", percursoPct: 100, headwayProgramadoMin: 12, passageiros: 41, kmRodado: 18.4 },
+  { id: "vr4", programadaId: "pg4", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 3, sentido: "volta", partidaProgramada: "10:48", partidaRealizada: "10:48", chegadaProgramada: "11:53", veiculoProgramadoId: "v3", veiculoRealizadoId: "v3", motoristaRealizadoId: "m3", percursoPct: 62, headwayProgramadoMin: 12, passageiros: 33, kmRodado: 11.7 },
+  { id: "vr5", programadaId: "pg5", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 19, sentido: "ida", partidaProgramada: "10:59", partidaRealizada: "10:28", chegadaProgramada: "12:01", chegadaRealizada: "11:34", veiculoProgramadoId: "v4", veiculoRealizadoId: "v4", motoristaRealizadoId: "m4", percursoPct: 100, headwayProgramadoMin: 11, passageiros: 52, kmRodado: 18.4 },
+  { id: "vr6", programadaId: "pg6", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 7, sentido: "volta", partidaProgramada: "11:00", partidaRealizada: "10:32", chegadaProgramada: "12:05", veiculoProgramadoId: "v5", veiculoRealizadoId: "v5", motoristaRealizadoId: "m5", percursoPct: 45, headwayProgramadoMin: 12, passageiros: 28, kmRodado: 8.5 },
+  { id: "vr7", programadaId: "pg7", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 13, sentido: "ida", partidaProgramada: "11:09", partidaRealizada: "10:45", chegadaProgramada: "12:11", veiculoProgramadoId: "v6", veiculoRealizadoId: "v6", motoristaRealizadoId: "m1", percursoPct: 30, headwayProgramadoMin: 10, passageiros: 19, kmRodado: 5.5 },
+  { id: "vr8", programadaId: "pg8", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 9, sentido: "volta", partidaProgramada: "11:12", partidaRealizada: "11:18", chegadaProgramada: "12:17", veiculoProgramadoId: "v7", veiculoRealizadoId: "v7", motoristaRealizadoId: "m2", percursoPct: 20, headwayProgramadoMin: 12, passageiros: 12, kmRodado: 3.8 },
+  { id: "vr9", programadaId: "pg9", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 22, sentido: "ida", partidaProgramada: "11:19", chegadaProgramada: "12:21", veiculoProgramadoId: "v8", percursoPct: 0, headwayProgramadoMin: 10 },
+  { id: "vr10", programadaId: "pg10", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 1, sentido: "volta", partidaProgramada: "11:24", chegadaProgramada: "12:29", veiculoProgramadoId: "v9", percursoPct: 0, headwayProgramadoMin: 12 },
+  { id: "vr11", programadaId: "pg11", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 16, sentido: "ida", partidaProgramada: "11:29", chegadaProgramada: "12:31", veiculoProgramadoId: "v10", percursoPct: 0, headwayProgramadoMin: 10 },
+  { id: "vr12", programadaId: "pg12", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 11, sentido: "volta", partidaProgramada: "11:36", chegadaProgramada: "12:41", percursoPct: 0, headwayProgramadoMin: 12 },
+  { id: "vr13", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 99, sentido: "ida", partidaRealizada: "11:05", chegadaRealizada: "12:04", veiculoRealizadoId: "v3", motoristaRealizadoId: "m4", percursoPct: 100, passageiros: 71, kmRodado: 18.4 },
+  { id: "vr14", programadaId: "pg13", linhaId: "l1", itinerarioId: "it1", dataOperacao: HOJE_OP, tabela: 10, sentido: "ida", partidaProgramada: "11:39", chegadaProgramada: "12:41", percursoPct: 0, headwayProgramadoMin: 10 },
+  { id: "vr15", programadaId: "pg14", linhaId: "l1", itinerarioId: "it2", dataOperacao: HOJE_OP, tabela: 15, sentido: "volta", partidaProgramada: "11:48", chegadaProgramada: "12:53", percursoPct: 0, headwayProgramadoMin: 12 },
+];
+
+const agoraHHMM = () => new Date().toTimeString().slice(0, 5);
+
+/** Realizado com a situação já classificada pela regra de tolerância. */
+export const MOCK_VIAGENS_REALIZADAS: ViagemRealizada[] = REALIZADO_BRUTO.map((v) => ({
+  ...v,
+  situacao: classificarViagem(v, agoraHHMM()),
+}));
+
+export const MOCK_ALARMES_OPERACIONAIS: AlarmeOperacional[] = [
+  { id: "ao1", tipo: "abertura_fora_pc", linhaId: "l2", sentido: "volta", veiculoId: "v3", pontoId: "p5", motoristaId: "m3", matricula: "0000553731", em: new Date(Date.now() - 34 * 60000).toISOString(), pontuacao: 5, observacao: "Cartão de operação do veículo", tratado: false },
+  { id: "ao2", tipo: "parado_com_viagem_aberta", linhaId: "l2", sentido: "ida", veiculoId: "v5", pontoId: "p5", motoristaId: "m5", matricula: "0000618362", em: new Date(Date.now() - 66 * 60000).toISOString(), pontuacao: 3, observacao: "Veículo parado no PC2 há 12 min", tratado: false },
+  { id: "ao3", tipo: "parado_com_viagem_aberta", linhaId: "l2", sentido: "ida", veiculoId: "v6", pontoId: "p5", matricula: "0000974605", em: new Date(Date.now() - 120 * 60000).toISOString(), pontuacao: 3, observacao: "Veículo parado no PC2 há 21 min", tratado: true },
+  { id: "ao4", tipo: "velocidade_maxima", linhaId: "l1", sentido: "ida", veiculoId: "v4", motoristaId: "m4", matricula: "0000555446", em: new Date(Date.now() - 18 * 60000).toISOString(), pontuacao: 8, observacao: "Permitida 60 · real 78 km/h", tratado: false },
+  { id: "ao5", tipo: "velocidade_maxima", linhaId: "l3", sentido: "ida", veiculoId: "v9", motoristaId: "m2", matricula: "0000771203", em: new Date(Date.now() - 95 * 60000).toISOString(), pontuacao: 8, observacao: "Permitida 50 · real 71 km/h", tratado: false },
+  { id: "ao6", tipo: "viagem_nao_iniciada", linhaId: "l1", sentido: "ida", veiculoId: "v8", em: new Date(Date.now() - 8 * 60000).toISOString(), pontuacao: 10, observacao: "Tabela 22 · partida 11:19", tratado: false },
+  { id: "ao7", tipo: "headway_irregular", linhaId: "l1", sentido: "volta", veiculoId: "v1", em: new Date(Date.now() - 50 * 60000).toISOString(), pontuacao: 4, observacao: "Programado 12 min · realizado 6 min", tratado: false },
+  { id: "ao8", tipo: "fora_itinerario", linhaId: "l3", sentido: "ida", veiculoId: "v10", em: new Date(Date.now() - 150 * 60000).toISOString(), pontuacao: 6, observacao: "Desvio de 1,8 km do traçado", tratado: true },
+];
+
+export const linhaPorId = (id: string) => MOCK_LINHAS.find((l) => l.id === id);
+export const pontoPorId = (id: string) => MOCK_PONTOS.find((p) => p.id === id);
+export const itinerarioPorId = (id: string) => MOCK_ITINERARIOS.find((i) => i.id === id);

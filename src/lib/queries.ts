@@ -1,5 +1,20 @@
 import { queryOptions } from "@tanstack/react-query";
-import { Alarmes, Conducoes, Equipamentos, Frota, Garagens, ManutencaoKanban, Veiculos } from "@/lib/api";
+import {
+  Alarmes,
+  AlarmesOperacionais,
+  Conducoes,
+  Equipamentos,
+  Frota,
+  Garagens,
+  GruposLinhas,
+  Itinerarios,
+  Linhas,
+  ManutencaoKanban,
+  Pontos,
+  Programacao,
+  Veiculos,
+  ViagensOperacao,
+} from "@/lib/api";
 import type { StatusComunicacao, StatusManutencao } from "@/types";
 
 /**
@@ -165,3 +180,47 @@ export const MANUTENCAO_COLUNAS: { id: StatusManutencao; label: string; cor: str
   { id: "corretiva", label: "Corretiva", cor: "var(--coral)" },
   { id: "liberado", label: "Liberado", cor: "var(--brand-navy)" },
 ];
+
+/* ------------------------------------------------------------------ */
+/* BLOCO 0 — Operação por linha                                        */
+/* ------------------------------------------------------------------ */
+
+export const linhasQuery = () =>
+  queryOptions({ queryKey: ["linhas"], queryFn: () => Linhas.list(), staleTime: 10 * MINUTE });
+
+export const gruposLinhasQuery = () =>
+  queryOptions({ queryKey: ["linhas", "grupos"], queryFn: () => GruposLinhas.list(), staleTime: 30 * MINUTE });
+
+export const pontosQuery = () =>
+  queryOptions({ queryKey: ["pontos"], queryFn: () => Pontos.list(), staleTime: 30 * MINUTE });
+
+export const itinerariosQuery = (linhaId?: string) =>
+  queryOptions({
+    queryKey: ["itinerarios", linhaId ?? "todos"],
+    queryFn: () => Itinerarios.list(linhaId),
+    staleTime: 10 * MINUTE,
+  });
+
+export const programacaoQuery = (linhaId?: string, tipoDia?: string) =>
+  queryOptions({
+    queryKey: ["programacao", linhaId ?? "todas", tipoDia ?? "todos"],
+    queryFn: () => Programacao.list(linhaId, tipoDia),
+    staleTime: 5 * MINUTE,
+  });
+
+/** Painel operacional: atualiza sozinho, é tela de CCO. */
+export const viagensOperacaoQuery = (data: string, linhaId?: string) =>
+  queryOptions({
+    queryKey: ["operacao", "viagens", data, linhaId ?? "todas"],
+    queryFn: () => ViagensOperacao.doDia(data, linhaId),
+    staleTime: 20_000,
+    refetchInterval: 30_000,
+  });
+
+export const alarmesOperacionaisQuery = (linhaId?: string) =>
+  queryOptions({
+    queryKey: ["operacao", "alarmes", linhaId ?? "todas"],
+    queryFn: () => AlarmesOperacionais.list(linhaId),
+    staleTime: 20_000,
+    refetchInterval: 30_000,
+  });

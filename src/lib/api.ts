@@ -168,3 +168,54 @@ export const Conducoes = {
       ? mock(M.conducoesPorNome(nome))
       : api.get<import("@/types").Conducao[]>(`/api/conducoes${qs({ motorista: nome })}`),
 };
+
+/* ------------------------------------------------------------------ */
+/* BLOCO 0 — Linhas, itinerários, pontos, programação e realizado      */
+/* ------------------------------------------------------------------ */
+
+export const Linhas = {
+  list: () => (USE_MOCK ? mock(M.MOCK_LINHAS) : api.get<import("@/types").Linha[]>(`/api/linhas`)),
+  create: (d: Partial<import("@/types").Linha>) => api.post(`/api/linhas`, d),
+  update: (id: string, d: Partial<import("@/types").Linha>) => api.put(`/api/linhas/${id}`, d),
+  remove: (id: string) => api.del(`/api/linhas/${id}`),
+};
+
+export const GruposLinhas = {
+  list: () => (USE_MOCK ? mock(M.MOCK_GRUPOS_LINHAS) : api.get<import("@/types").GrupoLinhas[]>(`/api/linhas/grupos`)),
+};
+
+export const Pontos = {
+  list: () => (USE_MOCK ? mock(M.MOCK_PONTOS) : api.get<import("@/types").PontoParada[]>(`/api/pontos`)),
+  create: (d: Partial<import("@/types").PontoParada>) => api.post(`/api/pontos`, d),
+  update: (id: string, d: Partial<import("@/types").PontoParada>) => api.put(`/api/pontos/${id}`, d),
+  remove: (id: string) => api.del(`/api/pontos/${id}`),
+};
+
+export const Itinerarios = {
+  list: (linhaId?: string) =>
+    USE_MOCK
+      ? mock(linhaId ? M.MOCK_ITINERARIOS.filter((i) => i.linhaId === linhaId) : M.MOCK_ITINERARIOS)
+      : api.get<import("@/types").Itinerario[]>(`/api/itinerarios${qs({ linha: linhaId })}`),
+};
+
+export const Programacao = {
+  list: (linhaId?: string, tipoDia?: string) =>
+    USE_MOCK
+      ? mock(M.MOCK_PROGRAMACAO.filter((p) => (!linhaId || p.linhaId === linhaId) && (!tipoDia || p.tipoDia === tipoDia)))
+      : api.get<import("@/types").ViagemProgramada[]>(`/api/programacao${qs({ linha: linhaId, tipoDia })}`),
+};
+
+export const ViagensOperacao = {
+  /** Realizado do dia de operação, já confrontado com a programação. */
+  doDia: (data: string, linhaId?: string) =>
+    USE_MOCK
+      ? mock(M.MOCK_VIAGENS_REALIZADAS.filter((v) => !linhaId || v.linhaId === linhaId))
+      : api.get<import("@/types").ViagemRealizada[]>(`/api/operacao/viagens${qs({ data, linha: linhaId })}`),
+};
+
+export const AlarmesOperacionais = {
+  list: (linhaId?: string) =>
+    USE_MOCK
+      ? mock(M.MOCK_ALARMES_OPERACIONAIS.filter((a) => !linhaId || a.linhaId === linhaId))
+      : api.get<import("@/types").AlarmeOperacional[]>(`/api/operacao/alarmes${qs({ linha: linhaId })}`),
+};

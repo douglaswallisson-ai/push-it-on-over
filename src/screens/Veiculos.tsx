@@ -105,6 +105,7 @@ export default function Veiculos() {
       .filter((v) =>
         termo
           ? v.placa.toLowerCase().includes(termo) ||
+            (v.prefixo ?? "").toLowerCase().includes(termo) ||
             `${v.marca} ${v.modelo}`.toLowerCase().includes(termo)
           : true,
       ) as Linha[];
@@ -123,7 +124,12 @@ export default function Veiculos() {
             <Truck className="h-4 w-4 text-brand-navy" />
           </div>
           <div>
-            <div className="whitespace-nowrap font-mono font-semibold text-foreground">{v.placa}</div>
+            {/* Prefixo na frente: é como a operação chama o carro. A placa é
+                documento e fica como apoio. */}
+            <div className="flex items-baseline gap-2 whitespace-nowrap">
+              <span className="font-mono text-[14px] font-bold text-foreground">{v.prefixo ?? "—"}</span>
+              <span className="font-mono text-[11.5px] text-muted-foreground">{v.placa}</span>
+            </div>
             <div className="whitespace-nowrap text-[11.5px] text-muted-foreground">
               {v.marca} {v.modelo}
               {v.ano ? ` · ${v.ano}` : ""}
@@ -286,7 +292,7 @@ export default function Veiculos() {
                   <input
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
-                    placeholder="Buscar placa ou modelo…"
+                    placeholder="Prefixo, placa ou modelo…"
                     className="h-9 w-52 rounded-lg border border-border bg-secondary/60 pl-8 pr-3 text-[13px] outline-none focus:border-accent focus:bg-white"
                   />
                 </div>

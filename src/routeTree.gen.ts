@@ -26,6 +26,8 @@ import { Route as AppCadastrosCombustivelRouteImport } from './routes/app.cadast
 import { Route as AppCadastrosDispositivosRouteImport } from './routes/app.cadastros.dispositivos'
 import { Route as AppCadastrosGaragensRouteImport } from './routes/app.cadastros.garagens'
 import { Route as AppCadastrosGruposRouteImport } from './routes/app.cadastros.grupos'
+import { Route as AppCadastrosLinhasRouteImport } from './routes/app.cadastros.linhas'
+import { Route as AppCadastrosPontosRouteImport } from './routes/app.cadastros.pontos'
 import { Route as AppCadastrosUnidadesRouteImport } from './routes/app.cadastros.unidades'
 import { Route as AppCadastrosUsuariosRouteImport } from './routes/app.cadastros.usuarios'
 import { Route as AppFretamentoAssentosRouteImport } from './routes/app.fretamento.assentos'
@@ -40,6 +42,8 @@ import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.rege
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
+import { Route as AppOperacaoAlarmesRouteImport } from './routes/app.operacao.alarmes'
+import { Route as AppOperacaoViagensRouteImport } from './routes/app.operacao.viagens'
 import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
 import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
@@ -134,6 +138,16 @@ const AppCadastrosGruposRoute = AppCadastrosGruposRouteImport.update({
   path: '/cadastros/grupos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCadastrosLinhasRoute = AppCadastrosLinhasRouteImport.update({
+  id: '/cadastros/linhas',
+  path: '/cadastros/linhas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCadastrosPontosRoute = AppCadastrosPontosRouteImport.update({
+  id: '/cadastros/pontos',
+  path: '/cadastros/pontos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCadastrosUnidadesRoute = AppCadastrosUnidadesRouteImport.update({
   id: '/cadastros/unidades',
   path: '/cadastros/unidades',
@@ -206,6 +220,16 @@ const AppMotoristasNovoRoute = AppMotoristasNovoRouteImport.update({
   path: '/motoristas/novo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOperacaoAlarmesRoute = AppOperacaoAlarmesRouteImport.update({
+  id: '/operacao/alarmes',
+  path: '/operacao/alarmes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOperacaoViagensRoute = AppOperacaoViagensRouteImport.update({
+  id: '/operacao/viagens',
+  path: '/operacao/viagens',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPremiacaoIndexRoute = AppPremiacaoIndexRouteImport.update({
   id: '/premiacao/',
   path: '/premiacao/',
@@ -262,6 +286,8 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
+  '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -275,6 +301,8 @@ export interface FileRoutesByFullPath {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -301,6 +329,8 @@ export interface FileRoutesByTo {
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
+  '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -314,6 +344,8 @@ export interface FileRoutesByTo {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
@@ -342,6 +374,8 @@ export interface FileRoutesById {
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
+  '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -355,6 +389,8 @@ export interface FileRoutesById {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -384,6 +420,8 @@ export interface FileRouteTypes {
     | '/app/cadastros/dispositivos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/linhas'
+    | '/app/cadastros/pontos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -397,6 +435,8 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/operacao/alarmes'
+    | '/app/operacao/viagens'
     | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
@@ -423,6 +463,8 @@ export interface FileRouteTypes {
     | '/app/cadastros/dispositivos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/linhas'
+    | '/app/cadastros/pontos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -436,6 +478,8 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/operacao/alarmes'
+    | '/app/operacao/viagens'
     | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas'
@@ -463,6 +507,8 @@ export interface FileRouteTypes {
     | '/app/cadastros/dispositivos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/linhas'
+    | '/app/cadastros/pontos'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -476,6 +522,8 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/operacao/alarmes'
+    | '/app/operacao/viagens'
     | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
@@ -613,6 +661,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCadastrosGruposRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/cadastros/linhas': {
+      id: '/app/cadastros/linhas'
+      path: '/cadastros/linhas'
+      fullPath: '/app/cadastros/linhas'
+      preLoaderRoute: typeof AppCadastrosLinhasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/pontos': {
+      id: '/app/cadastros/pontos'
+      path: '/cadastros/pontos'
+      fullPath: '/app/cadastros/pontos'
+      preLoaderRoute: typeof AppCadastrosPontosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cadastros/unidades': {
       id: '/app/cadastros/unidades'
       path: '/cadastros/unidades'
@@ -711,6 +773,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMotoristasNovoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/operacao/alarmes': {
+      id: '/app/operacao/alarmes'
+      path: '/operacao/alarmes'
+      fullPath: '/app/operacao/alarmes'
+      preLoaderRoute: typeof AppOperacaoAlarmesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/operacao/viagens': {
+      id: '/app/operacao/viagens'
+      path: '/operacao/viagens'
+      fullPath: '/app/operacao/viagens'
+      preLoaderRoute: typeof AppOperacaoViagensRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/premiacao/': {
       id: '/app/premiacao/'
       path: '/premiacao'
@@ -778,6 +854,8 @@ interface AppRouteChildren {
   AppCadastrosDispositivosRoute: typeof AppCadastrosDispositivosRoute
   AppCadastrosGaragensRoute: typeof AppCadastrosGaragensRoute
   AppCadastrosGruposRoute: typeof AppCadastrosGruposRoute
+  AppCadastrosLinhasRoute: typeof AppCadastrosLinhasRoute
+  AppCadastrosPontosRoute: typeof AppCadastrosPontosRoute
   AppCadastrosUnidadesRoute: typeof AppCadastrosUnidadesRoute
   AppCadastrosUsuariosRoute: typeof AppCadastrosUsuariosRoute
   AppFretamentoAssentosRoute: typeof AppFretamentoAssentosRoute
@@ -791,6 +869,8 @@ interface AppRouteChildren {
   AppFrotaRegeneracaoRoute: typeof AppFrotaRegeneracaoRoute
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
+  AppOperacaoAlarmesRoute: typeof AppOperacaoAlarmesRoute
+  AppOperacaoViagensRoute: typeof AppOperacaoViagensRoute
   AppPremiacaoMetasRoute: typeof AppPremiacaoMetasRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
@@ -816,6 +896,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosDispositivosRoute: AppCadastrosDispositivosRoute,
   AppCadastrosGaragensRoute: AppCadastrosGaragensRoute,
   AppCadastrosGruposRoute: AppCadastrosGruposRoute,
+  AppCadastrosLinhasRoute: AppCadastrosLinhasRoute,
+  AppCadastrosPontosRoute: AppCadastrosPontosRoute,
   AppCadastrosUnidadesRoute: AppCadastrosUnidadesRoute,
   AppCadastrosUsuariosRoute: AppCadastrosUsuariosRoute,
   AppFretamentoAssentosRoute: AppFretamentoAssentosRoute,
@@ -829,6 +911,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaRegeneracaoRoute: AppFrotaRegeneracaoRoute,
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
+  AppOperacaoAlarmesRoute: AppOperacaoAlarmesRoute,
+  AppOperacaoViagensRoute: AppOperacaoViagensRoute,
   AppPremiacaoMetasRoute: AppPremiacaoMetasRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,

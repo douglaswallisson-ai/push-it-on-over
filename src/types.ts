@@ -20,6 +20,9 @@ export type Motorista = {
   id: string;
   nome: string;
   filial: string;
+  /** Matrícula/prontuário — como a operação identifica o funcionário. */
+  matricula?: string;
+  funcao?: "motorista" | "cobrador" | "motorista_cobrador";
   cnhCategoria?: string;
   cnhValidade?: string;
   kmRodado: number;
@@ -32,6 +35,11 @@ export type Motorista = {
 export type Veiculo = {
   id: string;
   placa: string;
+  /**
+   * Identificador operacional do carro. Em transporte de passageiros a operação
+   * chama o veículo pelo prefixo, não pela placa — placa é dado de documento.
+   */
+  prefixo?: string;
   marca: string;
   modelo: string;
   ano: number;
@@ -213,4 +221,262 @@ export type IndicadoresConducao = {
   /** Excesso de velocidade. */ ev: number | null;
   /** Freio motor. */ fm: number | null;
   /** Pressão do acelerador. */ pac: number | null;
+};
+
+/* ================================================================== */
+/* BLOCO 0 — Linha, itinerário, programação e realizado               */
+/* ================================================================== */
+
+/**
+ * Modalidade da operação. O sistema atende transporte de pessoas (público e
+ * fretamento) e, por exceção, carga — os três compartilham veículo, motorista e
+ * manutenção, mas divergem em programação e conformidade.
+ */
+export type Modalidade = "publico" | "fretamento" | "carga";
+
+export const MODALIDADE_LABEL: Record<Modalidade, string> = {
+  publico: "Transporte público",
+  fretamento: "Fretamento",
+  carga: "Carga",
+};
+
+/** Sentido do itinerário. */
+export type Sentido = "ida" | "volta" | "circular";
+
+/**
+ * Tipo de dia da programação. Operação de ônibus tem tabelas distintas por tipo
+ * de dia — a mesma linha roda com frequências diferentes no sábado e no domingo.
+ */
+export type TipoDia = "util" | "sabado" | "domingo" | "feriado" | "especial";
+
+export const TIPO_DIA_LABEL: Record<TipoDia, string> = {
+  util: "Dia útil",
+  sabado: "Sábado",
+  domingo: "Domingo",
+  feriado: "Feriado",
+  especial: "Especial",
+};
+
+/** Agrupamento de linhas — corredor, região ou lote de concessão. */
+export type GrupoLinhas = {
+  id: string;
+  nome: string;
+  descricao?: string;
+  cor: string;
+};
+
+/**
+ * Ponto de parada. Quando `controle` é verdadeiro, é um PC (ponto de controle):
+ * local onde a passagem do veículo é conferida contra o horário programado, e
+ * onde a viagem é aberta e encerrada.
+ */
+export type PontoParada = {
+  id: string;
+  codigo: string;
+  nome: string;
+  endereco: string;
+  lat: number;
+  lng: number;
+  /** Ponto de controle — gera alarme de abertura de viagem fora do PC. */
+  controle: boolean;
+  /** Tolerância de passagem, em minutos, antes de contar como atraso. */
+  toleranciaMin: number;
+  abrigo?: boolean;
+  acessivel?: boolean;
+};
+
+/** Parada dentro de um itinerário, com a ordem e o tempo acumulado. */
+export type ParadaItinerario = {
+  pontoId: string;
+  ordem: number;
+  /** Minutos desde o início do itinerário até esta parada. */
+  minutosAcumulados: number;
+  /** Km desde o início do itinerário. */
+  kmAcumulado: number;
+};
+
+/** Traçado de um sentido da linha. */
+export type Itinerario = {
+  id: string;
+  linhaId: string;
+  sentido: Sentido;
+  nome: string;
+  extensaoKm: number;
+  /** Duração programada da viagem, em minutos. */
+  duracaoMin: number;
+  paradas: ParadaItinerario[];
+  ativo: boolean;
+};
+
+/** Linha — o eixo em torno do qual a operação de passageiros se organiza. */
+export type Linha = {
+  id: string;
+  codigo: string;
+  nome: string;
+  modalidade: Modalidade;
+  grupoId?: string;
+  garagemId?: string;
+  /** Concessionária ou contratante responsável. */
+  operadora?: string;
+  cor: string;
+  ativa: boolean;
+  /** Tarifa vigente, quando aplicável. */
+  tarifa?: number;
+};
+
+/**
+ * Viagem programada — uma linha da tabela horária.
+ *
+ * "Tabela" é o número da escala do carro no dia; é assim que a operação
+ * identifica qual carro faz qual sequência de viagens.
+ */
+export type ViagemProgramada = {
+  id: string;
+  linhaId: string;
+  itinerarioId: string;
+  tipoDia: TipoDia;
+  /** Número da tabela (escala do carro). */
+  tabela: number;
+  /** Horário programado de partida, HH:MM. */
+  partida: string;
+  /** Horário programado de chegada, HH:MM. */
+  chegada: string;
+  /** Intervalo programado até a próxima viagem no mesmo sentido, em minutos. */
+  headwayMin?: number;
+  /** Veículo previsto, quando a escala já foi montada. */
+  veiculoId?: string;
+  motoristaId?: string;
+  cobradorId?: string;
+};
+
+/** Situação de uma viagem no confronto entre programado e realizado. */
+export type SituacaoViagem =
+  | "aguardando"
+  | "em_andamento"
+  | "ok"
+  | "atrasada"
+  | "adiantada"
+  | "nao_realizada"
+  | "reforco";
+
+export const SITUACAO_VIAGEM_LABEL: Record<SituacaoViagem, string> = {
+  aguardando: "Aguardando",
+  em_andamento: "Em andamento",
+  ok: "Viagem OK",
+  atrasada: "Atrasada",
+  adiantada: "Adiantada",
+  nao_realizada: "Não realizada",
+  reforco: "Reforço",
+};
+
+/**
+ * Viagem realizada, confrontada com a programação.
+ *
+ * Este é o registro central do controle operacional: sem o par programado ×
+ * realizado não há como medir cumprimento de programação, que é o que o poder
+ * concedente fiscaliza.
+ */
+export type ViagemRealizada = {
+  id: string;
+  programadaId?: string;
+  linhaId: string;
+  itinerarioId: string;
+  /** Data de operação segundo o dia fiscal, não o calendário. */
+  dataOperacao: string;
+  tabela: number;
+  sentido: Sentido;
+
+  partidaProgramada?: string;
+  partidaRealizada?: string;
+  chegadaProgramada?: string;
+  chegadaRealizada?: string;
+
+  veiculoProgramadoId?: string;
+  veiculoRealizadoId?: string;
+  motoristaProgramadoId?: string;
+  motoristaRealizadoId?: string;
+  cobradorId?: string;
+
+  /** Percentual do percurso efetivamente cumprido. */
+  percursoPct: number;
+  headwayProgramadoMin?: number;
+  headwayRealizadoMin?: number;
+  passageiros?: number;
+  kmRodado?: number;
+  situacao: SituacaoViagem;
+};
+
+/** Alarme operacional — decorre do confronto com a programação. */
+export type TipoAlarmeOperacional =
+  | "abertura_fora_pc"
+  | "parado_com_viagem_aberta"
+  | "velocidade_maxima"
+  | "viagem_nao_iniciada"
+  | "fora_itinerario"
+  | "headway_irregular";
+
+export const ALARME_OPERACIONAL_LABEL: Record<TipoAlarmeOperacional, string> = {
+  abertura_fora_pc: "Abertura de viagem fora do PC",
+  parado_com_viagem_aberta: "Veículo parado no PC com viagem aberta",
+  velocidade_maxima: "Velocidade máxima excedida",
+  viagem_nao_iniciada: "Viagem não iniciada",
+  fora_itinerario: "Fora do itinerário",
+  headway_irregular: "Headway irregular",
+};
+
+export type AlarmeOperacional = {
+  id: string;
+  tipo: TipoAlarmeOperacional;
+  linhaId: string;
+  sentido?: Sentido;
+  veiculoId: string;
+  pontoId?: string;
+  motoristaId?: string;
+  matricula?: string;
+  em: string;
+  /** Pontuação de gravidade, somada no painel. */
+  pontuacao: number;
+  observacao?: string;
+  tratado: boolean;
+};
+
+/* ------------------------------------------------------------------ */
+/* Carga (exceção)                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Operação de carga. Compartilha veículo, motorista e manutenção com o
+ * transporte de pessoas, mas tem documento fiscal e conformidade próprios.
+ */
+export type OperacaoCarga = {
+  id: string;
+  /** Chave do CT-e (conhecimento de transporte). */
+  cte?: string;
+  /** Chave do MDF-e (manifesto de documentos fiscais). */
+  mdfe?: string;
+  embarcador: string;
+  destinatario: string;
+  coletaEm: string;
+  entregaPrevista: string;
+  entregaRealizada?: string;
+  pesoKg: number;
+  /** Peso por eixo, para conferência de limite legal. */
+  pesoPorEixo?: number[];
+  veiculoId: string;
+  motoristaId: string;
+  situacao: "planejada" | "em_transito" | "entregue" | "ocorrencia";
+};
+
+/* ------------------------------------------------------------------ */
+/* Dia fiscal                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Janela do dia operacional. Operação de ônibus não fecha à meia-noite: uma
+ * viagem que parte 23:40 e chega 00:20 pertence ao mesmo dia de operação.
+ */
+export type DiaFiscal = {
+  /** Hora de início, HH:MM. Ex.: "03:00". */
+  inicio: string;
+  fuso: string;
 };

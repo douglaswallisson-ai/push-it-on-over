@@ -7,6 +7,8 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { StarRating } from "@/components/ss/ui/gauges";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
+import { MOCK_CNH } from "@/lib/mock-data";
+import { CNH_TONE, exigeAtencao, prazoCNH, statusCNH } from "@/lib/cnh";
 
 /**
  * Acompanhamento dos motoristas — nota geral + os indicadores de condução em
@@ -89,6 +91,23 @@ const COLS: Column<Motorista>[] = [
   stars("ev"),
   stars("fm"),
   stars("pac"),
+  {
+    key: "cnh",
+    header: "CNH",
+    align: "center",
+    render: (m) => {
+      const validade = MOCK_CNH[m.nome]?.validade;
+      const st = statusCNH(validade);
+      if (st === "sem_informacao")
+        return <span className="whitespace-nowrap text-[12px] text-muted-foreground">não informada</span>;
+      return (
+        <Pill tone={CNH_TONE[st]}>
+          {exigeAtencao(st) && <AlertTriangle className="h-3 w-3" />}
+          {prazoCNH(validade)}
+        </Pill>
+      );
+    },
+  },
 ];
 
 export default function Motoristas() {

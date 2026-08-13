@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
+import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
+import { MOCK_FAIXAS_FROTA } from "@/lib/mock-data";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { cn } from "@/lib/utils";
 
@@ -104,6 +106,13 @@ export default function DesempenhoFrota() {
             ))}
           </div>
         </Card>
+
+        {/* Faixas de condução — média da frota. */}
+        <FaixasConducao
+          distribuicao={MOCK_FAIXAS_FROTA}
+          titulo="Faixas de condução — média da frota"
+          subtitulo="Como o tempo da frota se distribui entre as 14 faixas. Comparável com a leitura por veículo e por motorista."
+        />
 
         {/* Evolução mensal. */}
         <Card title="Evolução por mês" icon={BarChart3} bodyClassName="p-4">

@@ -12,6 +12,8 @@ import {
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/ss/ui/data";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
+import { VeiculoPicker } from "@/components/ss/cadastro/VeiculoPicker";
+import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { alarmesQuery, nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -69,11 +71,27 @@ const COLS: Column<Alarme>[] = [
     align: "center",
     render: (a) => <Pill tone={a.ativo ? "green" : "neutral"}>{a.ativo ? "Ativo" : "Inativo"}</Pill>,
   },
+  {
+    key: "veiculos",
+    header: "Abrangência",
+    render: (a) =>
+      a.veiculos?.length ? (
+        <span className="whitespace-nowrap font-mono text-[12px] text-ink-soft" title={a.veiculos.join(", ")}>
+          {a.veiculos.length} veículo{a.veiculos.length > 1 ? "s" : ""}
+        </span>
+      ) : (
+        <span className="text-[12.5px] text-muted-foreground">Toda a frota</span>
+      ),
+  },
 ];
 
 export default function CadastroAlarme() {
+  const [escopo, setEscopo] = useState("Toda a frota");
+  const [placas, setPlacas] = useState<string[]>([]);
+  const [editando, setEditando] = useState<Alarme | null>(null);
+  const [locais, setLocais] = useState<Alarme[] | null>(null);
   const { data, isPending, error, refetch } = useQuery(alarmesQuery());
-  const alarmes = data ?? [];
+  const alarmes = locais ?? data ?? [];
   const [tipo, setTipo] = useState("Velocidade");
   const [notifApp, setNotifApp] = useState(true);
   const [notifEmail, setNotifEmail] = useState(true);
@@ -144,13 +162,26 @@ export default function CadastroAlarme() {
                 </Select>
               </Field>
               <Field label="Aplicar a">
-                <Select>
+                <Select value={escopo} onChange={(e) => setEscopo(e.target.value)}>
                   <option>Toda a frota</option>
                   <option>Grupo: Refrigerado</option>
                   <option>Grupo: Seco</option>
-                  <option>Veículo específico</option>
+                  <option>Grupo: Urbano</option>
+                  <option>Veículos específicos</option>
                 </Select>
               </Field>
+
+              {/* A opção "veículos específicos" abre a busca de placas: antes ela
+                  existia no select e não levava a lugar nenhum. */}
+              {escopo === "Veículos específicos" && (
+                <Field
+                  label="Veículos do alarme"
+                  full
+                  hint="Busque por placa ou modelo. Um alarme pode cobrir quantos veículos forem necessários."
+                >
+                  <VeiculoPicker selecionadas={placas} onChange={setPlacas} />
+                </Field>
+              )}
             </FormSection>
 
             <FormSection title="Severidade e notificação" description="Peso do alarme e por onde a equipe é avisada.">
@@ -205,7 +236,11 @@ export default function CadastroAlarme() {
             {isPending ? (
               <SkeletonRows rows={5} />
             ) : alarmes.length ? (
-              <DataTable columns={COLS} rows={alarmes} />
+              <DataTable
+                columns={COLS}
+                rows={alarmes}
+                onRowClick={(a) => setEditando(a as Alarme)}
+              />
             ) : (
               <EmptyNote>Nenhum alarme configurado retornado pela API.</EmptyNote>
             )}
@@ -213,9 +248,39 @@ export default function CadastroAlarme() {
         )}
 
         <p className="pb-4 text-center text-xs text-muted-foreground">
-          Lista de alarmes em tempo real da API — o formulário acima ainda é protótipo (sem persistência).
+          Clique em qualquer alarme da lista para editar, inclusive os veículos aos quais ele se aplica.
         </p>
       </div>
+
+      <CrudSheet<Alarme>
+        aberto={Boolean(editando)}
+        onFechar={() => setEditando(null)}
+        titulo="Editar alarme"
+        campos={CAMPOS_ALARME}
+        valor={editando ?? {}}
+        editando={editando}
+        onSalvar={(v) => {
+          setLocais(alarmes.map((a) => (a === editando ? ({ ...a, ...v } as Alarme) : a)));
+          setEditando(null);
+        }}
+        onExcluir={(a) => {
+          setLocais(alarmes.filter((x) => x !== a));
+          setEditando(null);
+        }}
+      />
     </>
   );
 }
+
+/**
+ * Campos do alarme já cadastrado. "Veículos" usa o mesmo seletor com busca do
+ * formulário de criação — editar a abrangência era impossível antes.
+ */
+const CAMPOS_ALARME: Campo<Alarme>[] = [
+  { nome: "nome", label: "Nome do alarme", tipo: "texto", obrigatorio: true, full: true },
+  { nome: "tipo", label: "Tipo", tipo: "select", obrigatorio: true, opcoes: ["velocidade", "cerca", "ociosidade", "panico", "combustivel"] },
+  { nome: "severidade", label: "Severidade", tipo: "select", obrigatorio: true, opcoes: ["critico", "atencao", "operacional", "ok"] },
+  { nome: "condicao", label: "Condição de disparo", tipo: "texto", full: true, placeholder: "> 90 km/h por 30s" },
+  { nome: "veiculos", label: "Aplicar aos veículos", tipo: "veiculos", hint: "Vazio significa toda a frota." },
+  { nome: "ativo", label: "Alarme ativo", tipo: "toggle" },
+];

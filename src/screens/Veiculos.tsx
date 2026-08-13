@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router-compat";
-import { Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench } from "lucide-react";
+import { Gauge, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { StarRating } from "@/components/ss/ui/gauges";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosQuery } from "@/lib/queries";
-import { MOCK_INDICADORES_VEICULO } from "@/lib/mock-data";
+import { MOCK_INDICADORES_VEICULO, faixasDoVeiculo } from "@/lib/mock-data";
+import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 
@@ -53,6 +54,19 @@ const STATUS_TONE: Record<string, PillTone> = {
   liberado: "neutral",
 };
 
+/**
+ * O que a gestão de veículos precisa ler não é o tipo da manutenção, e sim o
+ * que fazer com o veículo agora: ele está parado na oficina, liberado para
+ * rodar, ou precisa de agendamento?
+ */
+const ACAO_LABEL: Record<string, string> = {
+  em_dia: "Liberado",
+  preditiva: "Agendar manutenção",
+  preventiva: "Agendar manutenção",
+  corretiva: "Em manutenção",
+  liberado: "Liberado de manutenção",
+};
+
 const STATUS_LABEL: Record<string, string> = {
   em_dia: "Em dia",
   preditiva: "Preditiva",
@@ -66,6 +80,7 @@ export default function Veiculos() {
   const { data, isPending, error, refetch, isFetching } = useQuery(veiculosQuery(1, 50));
   const kanbanQ = useQuery(kanbanManutencaoQuery());
   const [busca, setBusca] = useState("");
+  const [faixasDe, setFaixasDe] = useState<string | null>(null);
 
   const itens = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
@@ -144,6 +159,29 @@ export default function Veiculos() {
     stars("fm"),
     stars("pac"),
     {
+      key: "faixas",
+      header: "Faixas",
+      align: "center",
+      render: (v) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setFaixasDe(faixasDe === v.id ? null : v.id);
+          }}
+          title="Ver distribuição por faixas de condução"
+          className={cn(
+            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-[11.5px] font-medium transition-colors",
+            faixasDe === v.id
+              ? "border-brand-navy bg-navy-tint text-brand-navy"
+              : "border-border text-muted-foreground hover:bg-secondary",
+          )}
+        >
+          <Gauge className="h-3.5 w-3.5" />
+          ver
+        </button>
+      ),
+    },
+    {
       key: "manutencao",
       header: "Manutenção",
       align: "center",
@@ -162,7 +200,7 @@ export default function Veiculos() {
           >
             <Pill tone={STATUS_TONE[m.status] ?? "neutral"}>
               <Wrench className="h-3 w-3" />
-              {STATUS_LABEL[m.status] ?? m.status}
+              {ACAO_LABEL[m.status] ?? STATUS_LABEL[m.status] ?? m.status}
               {atrasado && <span className="ml-0.5 font-bold">!</span>}
             </Pill>
           </button>
@@ -254,6 +292,14 @@ export default function Veiculos() {
                 manutenção da placa.
               </p>
             </Card>
+
+            {faixasDe && (
+              <FaixasConducao
+                distribuicao={faixasDoVeiculo(faixasDe)}
+                titulo={`Faixas de condução — ${linhas.find((l) => l.id === faixasDe)?.placa ?? ""}`}
+                subtitulo="Distribuição do tempo deste veículo nas 14 faixas, na mesma leitura usada em frota e motorista."
+              />
+            )}
           </>
         )}
       </div>

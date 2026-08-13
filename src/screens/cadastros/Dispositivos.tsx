@@ -1,5 +1,6 @@
 import { Cpu, Radio, Wifi, WifiOff } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Dot, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 
@@ -55,6 +56,17 @@ const COLS: Column<Dispositivo>[] = [
   },
 ];
 
+const CAMPOS: Campo<Dispositivo>[] = [
+  { nome: "serial", label: "Serial do dispositivo", tipo: "texto", obrigatorio: true, placeholder: "864329051" },
+  { nome: "modelo", label: "Modelo", tipo: "select", obrigatorio: true, opcoes: ["GT06N", "Suntech ST310", "SS Track 4G", "SS Vision DMS"] },
+  { nome: "veiculo", label: "Veículo vinculado", tipo: "texto", placeholder: "Placa ou vazio para estoque", hint: "Deixe em branco se o equipamento está em estoque." },
+  { nome: "operadora", label: "Operadora do chip", tipo: "select", opcoes: ["Vivo", "Claro", "TIM", "Algar"] },
+  { nome: "ultima", label: "Última comunicação", tipo: "texto", placeholder: "há 30s" },
+  { nome: "online", label: "Comunicando agora", tipo: "toggle" },
+];
+
+const NOVO: Partial<Dispositivo> = { modelo: "SS Track 4G", operadora: "Vivo", online: false, veiculo: "", ultima: "—" };
+
 export default function Dispositivos() {
   return (
     <CadastroScaffold<Dispositivo>
@@ -83,6 +95,9 @@ export default function Dispositivos() {
       cardIcon={Cpu}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Dispositivo"
       searchPlaceholder="Buscar serial ou placa…"
     />
   );

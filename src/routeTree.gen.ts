@@ -18,7 +18,6 @@ import { Route as AppCo2RouteImport } from './routes/app.co2'
 import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
-import { Route as AppPremiacaoRouteImport } from './routes/app.premiacao'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppCadastrosAlarmeRouteImport } from './routes/app.cadastros.alarme'
 import { Route as AppCadastrosCercaRouteImport } from './routes/app.cadastros.cerca'
@@ -40,6 +39,8 @@ import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.rege
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
+import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
+import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
 import { Route as AppVeiculosNovoRouteImport } from './routes/app.veiculos.novo'
 import { Route as AppFretamentoViagensIndexRouteImport } from './routes/app.fretamento.viagens.index'
@@ -89,11 +90,6 @@ const AppEventosRoute = AppEventosRouteImport.update({
 const AppMapaRoute = AppMapaRouteImport.update({
   id: '/mapa',
   path: '/mapa',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPremiacaoRoute = AppPremiacaoRouteImport.update({
-  id: '/premiacao',
-  path: '/premiacao',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
@@ -204,6 +200,16 @@ const AppMotoristasNovoRoute = AppMotoristasNovoRouteImport.update({
   path: '/motoristas/novo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPremiacaoIndexRoute = AppPremiacaoIndexRouteImport.update({
+  id: '/premiacao/',
+  path: '/premiacao/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPremiacaoMetasRoute = AppPremiacaoMetasRouteImport.update({
+  id: '/premiacao/metas',
+  path: '/premiacao/metas',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVeiculosIndexRoute = AppVeiculosIndexRouteImport.update({
   id: '/veiculos/',
   path: '/veiculos/',
@@ -241,7 +247,6 @@ export interface FileRoutesByFullPath {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/premiacao': typeof AppPremiacaoRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
@@ -263,8 +268,10 @@ export interface FileRoutesByFullPath {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
+  '/app/premiacao/': typeof AppPremiacaoIndexRoute
   '/app/veiculos/': typeof AppVeiculosIndexRoute
   '/app/fretamento/viagens/nova': typeof AppFretamentoViagensNovaRoute
   '/app/motoristas/perfil/$nome': typeof AppMotoristasPerfilNomeRoute
@@ -278,7 +285,6 @@ export interface FileRoutesByTo {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/premiacao': typeof AppPremiacaoRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app': typeof AppIndexRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
@@ -300,8 +306,10 @@ export interface FileRoutesByTo {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
+  '/app/premiacao': typeof AppPremiacaoIndexRoute
   '/app/veiculos': typeof AppVeiculosIndexRoute
   '/app/fretamento/viagens/nova': typeof AppFretamentoViagensNovaRoute
   '/app/motoristas/perfil/$nome': typeof AppMotoristasPerfilNomeRoute
@@ -317,7 +325,6 @@ export interface FileRoutesById {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/premiacao': typeof AppPremiacaoRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
@@ -339,8 +346,10 @@ export interface FileRoutesById {
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
+  '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
+  '/app/premiacao/': typeof AppPremiacaoIndexRoute
   '/app/veiculos/': typeof AppVeiculosIndexRoute
   '/app/fretamento/viagens/nova': typeof AppFretamentoViagensNovaRoute
   '/app/motoristas/perfil/$nome': typeof AppMotoristasPerfilNomeRoute
@@ -357,7 +366,6 @@ export interface FileRouteTypes {
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/mapa'
-    | '/app/premiacao'
     | '/app/relatorios'
     | '/app/'
     | '/app/cadastros/alarme'
@@ -379,8 +387,10 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
+    | '/app/premiacao/'
     | '/app/veiculos/'
     | '/app/fretamento/viagens/nova'
     | '/app/motoristas/perfil/$nome'
@@ -394,7 +404,6 @@ export interface FileRouteTypes {
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/mapa'
-    | '/app/premiacao'
     | '/app/relatorios'
     | '/app'
     | '/app/cadastros/alarme'
@@ -416,8 +425,10 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas'
+    | '/app/premiacao'
     | '/app/veiculos'
     | '/app/fretamento/viagens/nova'
     | '/app/motoristas/perfil/$nome'
@@ -432,7 +443,6 @@ export interface FileRouteTypes {
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/mapa'
-    | '/app/premiacao'
     | '/app/relatorios'
     | '/app/'
     | '/app/cadastros/alarme'
@@ -454,8 +464,10 @@ export interface FileRouteTypes {
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
     | '/app/motoristas/novo'
+    | '/app/premiacao/metas'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
+    | '/app/premiacao/'
     | '/app/veiculos/'
     | '/app/fretamento/viagens/nova'
     | '/app/motoristas/perfil/$nome'
@@ -531,13 +543,6 @@ declare module '@tanstack/react-router' {
       path: '/mapa'
       fullPath: '/app/mapa'
       preLoaderRoute: typeof AppMapaRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/premiacao': {
-      id: '/app/premiacao'
-      path: '/premiacao'
-      fullPath: '/app/premiacao'
-      preLoaderRoute: typeof AppPremiacaoRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/relatorios': {
@@ -687,6 +692,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMotoristasNovoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/premiacao/': {
+      id: '/app/premiacao/'
+      path: '/premiacao'
+      fullPath: '/app/premiacao/'
+      preLoaderRoute: typeof AppPremiacaoIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/premiacao/metas': {
+      id: '/app/premiacao/metas'
+      path: '/premiacao/metas'
+      fullPath: '/app/premiacao/metas'
+      preLoaderRoute: typeof AppPremiacaoMetasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/veiculos/': {
       id: '/app/veiculos/'
       path: '/veiculos'
@@ -731,7 +750,6 @@ interface AppRouteChildren {
   AppEstrategicoRoute: typeof AppEstrategicoRoute
   AppEventosRoute: typeof AppEventosRoute
   AppMapaRoute: typeof AppMapaRoute
-  AppPremiacaoRoute: typeof AppPremiacaoRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCadastrosAlarmeRoute: typeof AppCadastrosAlarmeRoute
@@ -753,8 +771,10 @@ interface AppRouteChildren {
   AppFrotaRegeneracaoRoute: typeof AppFrotaRegeneracaoRoute
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
+  AppPremiacaoMetasRoute: typeof AppPremiacaoMetasRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
+  AppPremiacaoIndexRoute: typeof AppPremiacaoIndexRoute
   AppVeiculosIndexRoute: typeof AppVeiculosIndexRoute
   AppFretamentoViagensNovaRoute: typeof AppFretamentoViagensNovaRoute
   AppMotoristasPerfilNomeRoute: typeof AppMotoristasPerfilNomeRoute
@@ -767,7 +787,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppEstrategicoRoute: AppEstrategicoRoute,
   AppEventosRoute: AppEventosRoute,
   AppMapaRoute: AppMapaRoute,
-  AppPremiacaoRoute: AppPremiacaoRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppIndexRoute: AppIndexRoute,
   AppCadastrosAlarmeRoute: AppCadastrosAlarmeRoute,
@@ -789,8 +808,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaRegeneracaoRoute: AppFrotaRegeneracaoRoute,
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
+  AppPremiacaoMetasRoute: AppPremiacaoMetasRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,
+  AppPremiacaoIndexRoute: AppPremiacaoIndexRoute,
   AppVeiculosIndexRoute: AppVeiculosIndexRoute,
   AppFretamentoViagensNovaRoute: AppFretamentoViagensNovaRoute,
   AppMotoristasPerfilNomeRoute: AppMotoristasPerfilNomeRoute,

@@ -79,9 +79,9 @@ export const mockManutencao = (veiculoId: string): Manutencao => ({
 
 export const MOCK_ALARMES: Alarme[] = [
   { id: "a1", nome: "Excesso de velocidade", tipo: "velocidade", condicao: "> 90 km/h por 30s", severidade: "critico", canais: ["App", "E-mail"], ativo: true },
-  { id: "a2", nome: "Cerca violada — Pátio", tipo: "cerca", condicao: "Saída fora de janela", severidade: "critico", canais: ["App", "SMS"], ativo: true },
+  { id: "a2", nome: "Cerca violada — Pátio", tipo: "cerca", condicao: "Saída fora de janela", severidade: "critico", canais: ["App", "SMS"], ativo: true, veiculos: ["BCA7A56", "SXD1J61"] },
   { id: "a3", nome: "Motor ligado parado", tipo: "ociosidade", condicao: "> 15 min parado", severidade: "atencao", canais: ["App"], ativo: true },
-  { id: "a4", nome: "Pane seca iminente", tipo: "combustivel", condicao: "Nível < 8%", severidade: "atencao", canais: ["App", "E-mail"], ativo: false },
+  { id: "a4", nome: "Pane seca iminente", tipo: "combustivel", condicao: "Nível < 8%", severidade: "atencao", canais: ["App", "E-mail"], ativo: false, veiculos: ["EBZ3590"] },
   { id: "a5", nome: "Botão de pânico", tipo: "panico", condicao: "Acionamento manual", severidade: "critico", canais: ["App", "SMS", "E-mail"], ativo: true },
 ];
 
@@ -201,3 +201,71 @@ export const conducoesPorNome = (nome: string) =>
   MOCK_CONDUCOES.filter((c) => c.motorista.toLowerCase() === nome.toLowerCase()).sort((a, b) =>
     b.inicio.localeCompare(a.inicio),
   );
+
+/* ------------------------------------------------------------------ */
+/* Distribuição por faixas de condução                                 */
+/* ------------------------------------------------------------------ */
+
+import type { DistribuicaoFaixas } from "@/lib/faixas";
+
+/** Média da frota — soma 100. */
+export const MOCK_FAIXAS_FROTA: DistribuicaoFaixas = {
+  parado_ocioso: 9.4,
+  parado_produtivo: 5.1,
+  parado_acelerando: 1.2,
+  baixa_velocidade: 6.8,
+  sem_tracao: 3.6,
+  eco_roll: 4.2,
+  giro_baixo: 7.5,
+  verde: 24.8,
+  extra_economica: 15.3,
+  amarela: 9.1,
+  vermelha: 3.4,
+  inercia_simples: 5.6,
+  freio_motor: 2.4,
+  tolerancia: 1.6,
+};
+
+/** Distribuição por veículo. */
+export const MOCK_FAIXAS_VEICULO: Record<string, DistribuicaoFaixas> = {
+  v1: { parado_ocioso: 5.2, parado_produtivo: 6.0, parado_acelerando: 0.4, baixa_velocidade: 4.1, sem_tracao: 2.0, eco_roll: 6.8, giro_baixo: 5.2, verde: 28.4, extra_economica: 22.6, amarela: 6.1, vermelha: 1.2, inercia_simples: 7.4, freio_motor: 3.2, tolerancia: 1.4 },
+  v2: { parado_ocioso: 8.1, parado_produtivo: 4.8, parado_acelerando: 1.0, baixa_velocidade: 6.2, sem_tracao: 3.4, eco_roll: 4.6, giro_baixo: 7.1, verde: 25.2, extra_economica: 16.0, amarela: 9.4, vermelha: 3.0, inercia_simples: 6.0, freio_motor: 2.6, tolerancia: 2.6 },
+  v3: { parado_ocioso: 16.4, parado_produtivo: 3.2, parado_acelerando: 3.1, baixa_velocidade: 11.2, sem_tracao: 7.4, eco_roll: 1.2, giro_baixo: 11.8, verde: 17.4, extra_economica: 6.2, amarela: 12.6, vermelha: 7.1, inercia_simples: 1.6, freio_motor: 0.4, tolerancia: 0.4 },
+  v4: { parado_ocioso: 10.2, parado_produtivo: 5.4, parado_acelerando: 1.4, baixa_velocidade: 7.1, sem_tracao: 4.0, eco_roll: 3.8, giro_baixo: 8.2, verde: 23.1, extra_economica: 13.4, amarela: 10.2, vermelha: 4.0, inercia_simples: 5.2, freio_motor: 2.4, tolerancia: 1.6 },
+  v5: { parado_ocioso: 18.6, parado_produtivo: 2.8, parado_acelerando: 4.2, baixa_velocidade: 12.4, sem_tracao: 8.1, eco_roll: 0.8, giro_baixo: 12.4, verde: 15.2, extra_economica: 4.8, amarela: 12.1, vermelha: 6.4, inercia_simples: 1.4, freio_motor: 0.4, tolerancia: 0.4 },
+  v6: { parado_ocioso: 8.8, parado_produtivo: 5.0, parado_acelerando: 1.1, baixa_velocidade: 6.4, sem_tracao: 3.2, eco_roll: 4.4, giro_baixo: 7.2, verde: 24.6, extra_economica: 15.8, amarela: 9.0, vermelha: 3.2, inercia_simples: 6.2, freio_motor: 2.6, tolerancia: 2.5 },
+  v7: { parado_ocioso: 6.1, parado_produtivo: 5.8, parado_acelerando: 0.6, baixa_velocidade: 4.8, sem_tracao: 2.4, eco_roll: 6.0, giro_baixo: 5.8, verde: 27.2, extra_economica: 20.4, amarela: 7.0, vermelha: 1.8, inercia_simples: 7.0, freio_motor: 3.0, tolerancia: 2.1 },
+  v8: { parado_ocioso: 4.8, parado_produtivo: 6.2, parado_acelerando: 0.3, baixa_velocidade: 3.8, sem_tracao: 1.8, eco_roll: 7.2, giro_baixo: 4.9, verde: 29.1, extra_economica: 23.8, amarela: 5.4, vermelha: 0.9, inercia_simples: 7.8, freio_motor: 3.2, tolerancia: 0.8 },
+  v9: { parado_ocioso: 12.1, parado_produtivo: 4.2, parado_acelerando: 2.2, baixa_velocidade: 8.8, sem_tracao: 5.4, eco_roll: 2.4, giro_baixo: 9.8, verde: 20.4, extra_economica: 10.1, amarela: 11.4, vermelha: 5.2, inercia_simples: 4.2, freio_motor: 1.8, tolerancia: 2.0 },
+  v10: { parado_ocioso: 7.2, parado_produtivo: 5.6, parado_acelerando: 0.8, baixa_velocidade: 5.4, sem_tracao: 2.8, eco_roll: 5.2, giro_baixo: 6.4, verde: 26.0, extra_economica: 18.2, amarela: 8.0, vermelha: 2.4, inercia_simples: 6.6, freio_motor: 2.8, tolerancia: 2.6 },
+};
+
+/** Distribuição por motorista (chave = nome, como as telas navegam hoje). */
+export const MOCK_FAIXAS_MOTORISTA: Record<string, DistribuicaoFaixas> = {
+  "Marco Taborda": MOCK_FAIXAS_VEICULO.v8,
+  "Najla Maltaca": MOCK_FAIXAS_VEICULO.v2,
+  "Remildo N. de Lima": MOCK_FAIXAS_VEICULO.v3,
+  "Richard Acácio": MOCK_FAIXAS_VEICULO.v1,
+  "Rafael Sabini": MOCK_FAIXAS_VEICULO.v5,
+  "Crísala Boni": MOCK_FAIXAS_VEICULO.v6,
+  "Davi Nadalin": MOCK_FAIXAS_VEICULO.v9,
+  "Guilherme Souza": MOCK_FAIXAS_VEICULO.v4,
+};
+
+export const faixasDoVeiculo = (id: string): DistribuicaoFaixas =>
+  MOCK_FAIXAS_VEICULO[id] ?? MOCK_FAIXAS_FROTA;
+
+export const faixasDoMotorista = (nome: string): DistribuicaoFaixas =>
+  MOCK_FAIXAS_MOTORISTA[nome] ?? MOCK_FAIXAS_FROTA;
+
+/** Validade de CNH por motorista — alguns em branco, o campo é opcional. */
+export const MOCK_CNH: Record<string, { numero?: string; categoria?: string; validade?: string }> = {
+  "Marco Taborda": { numero: "04567890123", categoria: "E", validade: "2027-04-12" },
+  "Najla Maltaca": { numero: "03211456789", categoria: "E", validade: "2026-09-03" },
+  "Remildo N. de Lima": { numero: "02987654321", categoria: "D", validade: "2026-08-20" },
+  "Richard Acácio": { numero: "05123498760", categoria: "E", validade: "2028-01-09" },
+  "Rafael Sabini": { numero: "04001122334", categoria: "D", validade: "2026-07-01" },
+  "Crísala Boni": { categoria: "D" },
+  "Davi Nadalin": { numero: "06778899001", categoria: "E", validade: "2026-10-15" },
+  "Guilherme Souza": { numero: "05544332211", categoria: "D", validade: "2029-03-22" },
+};

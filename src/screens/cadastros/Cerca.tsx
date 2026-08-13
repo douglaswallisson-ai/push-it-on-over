@@ -1,5 +1,6 @@
 import { CircleDot, Hexagon, MapPin } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 
@@ -50,6 +51,16 @@ const COLS: Column<Cerca>[] = [
   },
 ];
 
+const CAMPOS: Campo<Cerca>[] = [
+  { nome: "nome", label: "Nome da cerca", tipo: "texto", obrigatorio: true, full: true, placeholder: "Ex.: Pátio Matriz — SP" },
+  { nome: "tipo", label: "Tipo", tipo: "select", obrigatorio: true, opcoes: ["Circular", "Polígono"] },
+  { nome: "abrangencia", label: "Abrangência", tipo: "texto", placeholder: "raio 300 m", hint: "Raio para circular, área para polígono." },
+  { nome: "veiculos", label: "Veículos abrangidos", tipo: "numero" },
+  { nome: "status", label: "Status", tipo: "select", obrigatorio: true, opcoes: ["Ativa", "Inativa"] },
+];
+
+const NOVO: Partial<Cerca> = { tipo: "Circular", status: "Ativa", veiculos: 0, abrangencia: "" };
+
 export default function Cerca() {
   return (
     <CadastroScaffold<Cerca>
@@ -78,6 +89,9 @@ export default function Cerca() {
       cardIcon={MapPin}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Cerca"
     />
   );
 }

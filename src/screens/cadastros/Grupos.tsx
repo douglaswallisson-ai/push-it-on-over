@@ -1,5 +1,6 @@
 import { Layers, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Pill, StatTile, type Column } from "@/components/ss/ui/data";
 
@@ -38,6 +39,16 @@ const COLS: Column<Grupo>[] = [
   { key: "responsavel", header: "Responsável" },
 ];
 
+const CAMPOS: Campo<Grupo>[] = [
+  { nome: "nome", label: "Nome do grupo", tipo: "texto", obrigatorio: true, full: true, placeholder: "Ex.: Refrigerado" },
+  { nome: "operacao", label: "Operação", tipo: "select", obrigatorio: true, opcoes: ["Longa distância", "Regional", "Cidade", "Passageiros", "Backup"] },
+  { nome: "responsavel", label: "Responsável", tipo: "texto" },
+  { nome: "veiculos", label: "Veículos no grupo", tipo: "numero" },
+  { nome: "cor", label: "Cor de identificação", tipo: "cor", hint: "Usada nos gráficos e no mapa." },
+];
+
+const NOVO: Partial<Grupo> = { cor: "#1B3A6B", veiculos: 0, operacao: "Regional", responsavel: "" };
+
 export default function Grupos() {
   return (
     <CadastroScaffold<Grupo>
@@ -66,6 +77,9 @@ export default function Grupos() {
       cardIcon={Layers}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Grupo"
     />
   );
 }

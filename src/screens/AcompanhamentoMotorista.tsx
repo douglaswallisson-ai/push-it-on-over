@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "@/lib/router-compat";
 import {
+  AlertTriangle,
   ArrowLeft,
   BedDouble,
   Check,
   Eye,
   Fuel,
   Gauge,
+  IdCard,
   LineChart,
   Octagon,
   Play,
@@ -25,6 +27,9 @@ import { AccelBands, IndicatorCard, ScoreGauge } from "@/components/ss/ui/gauges
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
 import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
+import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
+import { faixasDoMotorista, MOCK_CNH } from "@/lib/mock-data";
+import { CNH_LABEL, CNH_TONE, dataBR, exigeAtencao, prazoCNH, statusCNH } from "@/lib/cnh";
 import { cn } from "@/lib/utils";
 
 /**
@@ -95,6 +100,9 @@ export default function AcompanhamentoMotorista() {
             <HeroMetric value="2,11" unit="km/l" label="Média do bordo" />
           </div>
         </HeroBanner>
+
+        {/* Situação da CNH — o alerta de vencimento vive aqui, não só na lista. */}
+        <CartaoCNH nome={motorista} />
 
         {/* Desempenho + indicadores. */}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
@@ -179,6 +187,13 @@ export default function AcompanhamentoMotorista() {
           <p className="mt-3 text-[11px] text-muted-foreground">A IA pode se enganar — confirme cada evento ou marque como falso positivo.</p>
         </Card>
 
+        {/* Faixas de condução do motorista. */}
+        <FaixasConducao
+          distribuicao={faixasDoMotorista(motorista)}
+          titulo="Faixas de condução"
+          subtitulo="Distribuição do tempo de condução deste motorista nas 14 faixas."
+        />
+
         {/* Veículos que este motorista dirigiu. */}
         <HistoricoConducao modo="motorista" motoristaNome={motorista} />
 
@@ -189,5 +204,52 @@ export default function AcompanhamentoMotorista() {
         <TelemetryModal titulo={`${motorista} · veículo OUH0C81`} periodo="14/09/2026 00:00 – 23:59" onClose={() => setGrafico(false)} />
       )}
     </>
+  );
+}
+
+/* ---------------------------------- CNH ---------------------------------- */
+
+/**
+ * Situação do documento do motorista. A validade é opcional no cadastro, então
+ * "sem informação" é um estado legítimo — e visível, para o gestor saber que
+ * falta digitalizar, em vez de assumir que está tudo certo.
+ */
+function CartaoCNH({ nome }: { nome: string }) {
+  const cnh = MOCK_CNH[nome] ?? {};
+  const status = statusCNH(cnh.validade);
+  const alerta = exigeAtencao(status);
+
+  const tone = CNH_TONE[status];
+  const cls =
+    tone === "coral"
+      ? "border-coral-line bg-coral-tint/40 text-coral"
+      : tone === "gold"
+        ? "border-gold-line bg-gold-tint/40 text-gold"
+        : tone === "green"
+          ? "border-leaf-line bg-leaf-tint/40 text-leaf"
+          : "border-border bg-secondary/40 text-muted-foreground";
+
+  return (
+    <div className={cn("flex flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3", cls)}>
+      <div className="flex items-center gap-3">
+        {alerta ? <AlertTriangle className="h-5 w-5 shrink-0" /> : <IdCard className="h-5 w-5 shrink-0" />}
+        <div>
+          <p className="text-[13.5px] font-semibold">
+            {CNH_LABEL[status]}
+            {cnh.validade ? ` — ${prazoCNH(cnh.validade)}` : ""}
+          </p>
+          <p className="text-[12px] opacity-80">
+            {cnh.numero ? `CNH ${cnh.numero}` : "Número não informado"}
+            {cnh.categoria ? ` · categoria ${cnh.categoria}` : ""}
+            {cnh.validade ? ` · válida até ${dataBR(cnh.validade)}` : " · validade não informada"}
+          </p>
+        </div>
+      </div>
+      {alerta && (
+        <span className="rounded-full bg-white/70 px-3 py-1 text-[12px] font-semibold">
+          Renovação necessária antes de escalar
+        </span>
+      )}
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { ShieldCheck, UserCog, UserX, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 
@@ -59,6 +60,16 @@ const COLS: Column<Usuario>[] = [
   },
 ];
 
+const CAMPOS: Campo<Usuario>[] = [
+  { nome: "nome", label: "Nome completo", tipo: "texto", obrigatorio: true, full: true },
+  { nome: "email", label: "E-mail de acesso", tipo: "texto", obrigatorio: true, full: true, placeholder: "pessoa@empresa.com.br", hint: "O convite de acesso é enviado para este endereço." },
+  { nome: "perfil", label: "Perfil de permissão", tipo: "select", obrigatorio: true, opcoes: ["Administrador", "Gestor", "Operador", "Consulta"] },
+  { nome: "acesso", label: "Último acesso", tipo: "texto", placeholder: "nunca" },
+  { nome: "ativo", label: "Acesso liberado", tipo: "toggle", hint: "Desativar preserva o histórico; excluir remove o registro." },
+];
+
+const NOVO: Partial<Usuario> = { perfil: "Consulta", ativo: true, acesso: "nunca", nome: "", email: "" };
+
 export default function Usuarios() {
   return (
     <CadastroScaffold<Usuario>
@@ -87,6 +98,9 @@ export default function Usuarios() {
       cardIcon={Users}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Usuário"
       searchPlaceholder="Buscar nome ou e-mail…"
     />
   );

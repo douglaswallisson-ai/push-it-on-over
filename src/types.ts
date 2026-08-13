@@ -75,6 +75,11 @@ export type Alarme = {
   severidade: Severidade;
   canais: string[];
   ativo: boolean;
+  /**
+   * Placas às quais o alarme se aplica. Lista vazia (ou ausente) significa
+   * toda a frota — é o que o campo "Aplicar a" grava.
+   */
+  veiculos?: string[];
 };
 
 export type ComponenteSaude = {

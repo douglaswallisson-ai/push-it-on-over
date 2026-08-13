@@ -1,5 +1,6 @@
 import { DollarSign, Droplet, Fuel, MapPin } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { StatTile, type Column } from "@/components/ss/ui/data";
 
@@ -33,6 +34,18 @@ const COLS: Column<Abastecimento>[] = [
   { key: "km", header: "Odômetro", align: "right", render: (r) => <span className="font-mono text-muted-foreground">{r.km}</span> },
 ];
 
+const CAMPOS: Campo<Abastecimento>[] = [
+  { nome: "data", label: "Data e hora", tipo: "texto", obrigatorio: true, placeholder: "24/07 08:12" },
+  { nome: "veiculo", label: "Veículo", tipo: "texto", obrigatorio: true, placeholder: "BCA7A56" },
+  { nome: "posto", label: "Posto", tipo: "texto", obrigatorio: true, full: true, placeholder: "Posto Trevo — SP" },
+  { nome: "litros", label: "Litros", tipo: "texto", obrigatorio: true, placeholder: "320 L" },
+  { nome: "preco", label: "Preço por litro", tipo: "texto", placeholder: "R$ 6,02" },
+  { nome: "total", label: "Valor total", tipo: "texto", placeholder: "R$ 1.926,40" },
+  { nome: "km", label: "Odômetro no abastecimento", tipo: "texto", placeholder: "812.977", hint: "Usado para calcular o consumo entre abastecimentos." },
+];
+
+const NOVO: Partial<Abastecimento> = { data: "", veiculo: "", posto: "", litros: "", preco: "", total: "", km: "" };
+
 export default function Combustivel() {
   return (
     <CadastroScaffold<Abastecimento>
@@ -61,6 +74,9 @@ export default function Combustivel() {
       cardIcon={Fuel}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Abastecimento"
       searchPlaceholder="Buscar placa ou posto…"
     />
   );

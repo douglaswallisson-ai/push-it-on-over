@@ -95,7 +95,14 @@ const NAV_PRIMARY: Entry[] = [
 ];
 
 const NAV_SECONDARY: Entry[] = [
-  { label: "Premiação", icon: Award, to: "/app/premiacao" },
+  {
+    label: "Premiação",
+    icon: Award,
+    items: [
+      { label: "Acompanhamento", to: "/app/premiacao" },
+      { label: "Metas e pesos", to: "/app/premiacao/metas" },
+    ],
+  },
   { label: "Emissão de CO₂", icon: Leaf, to: "/app/co2" },
 ];
 

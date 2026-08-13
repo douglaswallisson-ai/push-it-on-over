@@ -1,5 +1,6 @@
 import { Building2, MapPin, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
+import type { Campo } from "@/components/ss/cadastro/CrudSheet";
 import { HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { StatTile, type Column } from "@/components/ss/ui/data";
 
@@ -39,6 +40,16 @@ const COLS: Column<Unidade>[] = [
   { key: "responsavel", header: "Responsável" },
 ];
 
+const CAMPOS: Campo<Unidade>[] = [
+  { nome: "nome", label: "Nome da unidade", tipo: "texto", obrigatorio: true, full: true, placeholder: "Ex.: Filial Paraná" },
+  { nome: "cidade", label: "Cidade / UF", tipo: "texto", obrigatorio: true, placeholder: "Curitiba / PR" },
+  { nome: "responsavel", label: "Responsável", tipo: "texto" },
+  { nome: "veiculos", label: "Veículos", tipo: "numero" },
+  { nome: "motoristas", label: "Motoristas", tipo: "numero" },
+];
+
+const NOVO: Partial<Unidade> = { veiculos: 0, motoristas: 0, responsavel: "" };
+
 export default function Unidades() {
   return (
     <CadastroScaffold<Unidade>
@@ -67,6 +78,9 @@ export default function Unidades() {
       cardIcon={Building2}
       columns={COLS}
       rows={DADOS}
+      campos={CAMPOS}
+      novoPadrao={NOVO}
+      rotulo="Unidade"
     />
   );
 }

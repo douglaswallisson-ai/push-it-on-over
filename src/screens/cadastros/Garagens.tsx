@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { garagensQuery, nf } from "@/lib/queries";
+import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
 import type { Garagem } from "@/types";
 
 /**
@@ -90,11 +91,28 @@ const COLS: Column<Garagem & Record<string, unknown>>[] = [
   },
 ];
 
+const CAMPOS: Campo<Garagem>[] = [
+  { nome: "nome", label: "Nome da garagem", tipo: "texto", obrigatorio: true, full: true, placeholder: "Ex.: Garagem Zona Leste" },
+  { nome: "unidade", label: "Unidade / filial", tipo: "select", obrigatorio: true, opcoes: ["Matriz São Paulo", "Filial Rio de Janeiro", "Filial Paraná", "Filial Bahia"], hint: "Uma unidade pode ter várias garagens." },
+  { nome: "endereco", label: "Endereço", tipo: "texto", full: true, placeholder: "Av. Aricanduva, 1500" },
+  { nome: "cidade", label: "Cidade", tipo: "texto", obrigatorio: true },
+  { nome: "uf", label: "UF", tipo: "texto", placeholder: "SP" },
+  { nome: "responsavel", label: "Responsável", tipo: "texto" },
+  { nome: "vagas", label: "Vagas", tipo: "numero" },
+  { nome: "veiculos", label: "Veículos alocados", tipo: "numero" },
+  { nome: "ativa", label: "Garagem ativa", tipo: "toggle" },
+];
+
+const NOVA: Partial<Garagem> = { ativa: true, vagas: 0, veiculos: 0, uf: "SP", unidade: "Matriz São Paulo" };
+
 export default function Garagens() {
   const { data, isPending, error, refetch } = useQuery(garagensQuery());
   const [busca, setBusca] = useState("");
+  const [locais, setLocais] = useState<Garagem[] | null>(null);
+  const [aberto, setAberto] = useState(false);
+  const [editando, setEditando] = useState<Garagem | null>(null);
 
-  const garagens = useMemo(() => data ?? [], [data]);
+  const garagens = useMemo(() => locais ?? data ?? [], [locais, data]);
 
   const lista = useMemo(() => {
     const t = busca.trim().toLowerCase();
@@ -119,7 +137,13 @@ export default function Garagens() {
         title="Garagens"
         subtitle="Cadastros › Garagens"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+          <button
+            onClick={() => {
+              setEditando(null);
+              setAberto(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
             <Plus className="h-[15px] w-[15px]" />
             Nova garagem
           </button>
@@ -166,7 +190,14 @@ export default function Garagens() {
               {isPending ? (
                 <SkeletonRows rows={5} />
               ) : lista.length ? (
-                <DataTable columns={COLS} rows={lista as (Garagem & Record<string, unknown>)[]} />
+                <DataTable
+                  columns={COLS}
+                  rows={lista as (Garagem & Record<string, unknown>)[]}
+                  onRowClick={(g) => {
+                    setEditando(g as Garagem);
+                    setAberto(true);
+                  }}
+                />
               ) : (
                 <EmptyNote>Nenhuma garagem encontrada com esse filtro.</EmptyNote>
               )}
@@ -178,6 +209,28 @@ export default function Garagens() {
           </>
         )}
       </div>
+
+      <CrudSheet<Garagem>
+        aberto={aberto}
+        onFechar={() => setAberto(false)}
+        titulo={editando ? "Editar garagem" : "Nova garagem"}
+        campos={CAMPOS}
+        valor={editando ?? NOVA}
+        editando={editando}
+        onSalvar={(v) => {
+          const base = garagens;
+          setLocais(
+            editando
+              ? base.map((g) => (g === editando ? ({ ...g, ...v } as Garagem) : g))
+              : [{ ...NOVA, ...v, id: `g${Date.now()}`, unidadeId: "u1" } as Garagem, ...base],
+          );
+          setAberto(false);
+        }}
+        onExcluir={(g) => {
+          setLocais(garagens.filter((x) => x !== g));
+          setAberto(false);
+        }}
+      />
     </>
   );
 }

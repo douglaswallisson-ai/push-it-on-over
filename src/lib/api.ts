@@ -20,6 +20,7 @@ import type {
   Veiculo,
   Viagem,
 } from "@/types";
+import * as M from "@/lib/mock-data";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 

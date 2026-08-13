@@ -1,5 +1,7 @@
 import { Clock, Coffee, Download, LogIn, LogOut } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { exportarCSV } from "@/lib/export";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { CalendarDays, Users } from "lucide-react";
@@ -63,7 +65,25 @@ export default function Ponto() {
         title="Ponto"
         subtitle="Fretamento · jornada de 24/07/2026"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
+          <button
+            onClick={() => {
+              const n = exportarCSV(
+                DADOS,
+                [
+                  { cabecalho: "Motorista", valor: (r) => r.nome },
+                  { cabecalho: "Entrada", valor: (r) => r.entrada },
+                  { cabecalho: "Intervalo", valor: (r) => r.intervalo },
+                  { cabecalho: "Saída", valor: (r) => r.saida },
+                  { cabecalho: "Horas", valor: (r) => r.horas },
+                  { cabecalho: "Extra", valor: (r) => r.extra },
+                  { cabecalho: "Situação", valor: (r) => r.situacao },
+                ],
+                "espelho-ponto",
+              );
+              toast.success(`Espelho exportado (${n} registros).`);
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary"
+          >
             <Download className="h-[15px] w-[15px]" />
             Exportar espelho
           </button>

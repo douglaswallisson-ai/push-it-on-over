@@ -14,6 +14,8 @@ import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { VeiculoPicker } from "@/components/ss/cadastro/VeiculoPicker";
 import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
+import { acrescentar } from "@/lib/session";
+import { toast } from "sonner";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { alarmesQuery, nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -88,6 +90,12 @@ const COLS: Column<Alarme>[] = [
 export default function CadastroAlarme() {
   const [escopo, setEscopo] = useState("Toda a frota");
   const [placas, setPlacas] = useState<string[]>([]);
+  const [nome, setNome] = useState("");
+  const [condicao, setCondicao] = useState("maior");
+  const [limite, setLimite] = useState("");
+  const [persistencia, setPersistencia] = useState("30");
+  const [severidade, setSeveridade] = useState("critico");
+  const [reincidencia, setReincidencia] = useState("15");
   const [editando, setEditando] = useState<Alarme | null>(null);
   const [locais, setLocais] = useState<Alarme[] | null>(null);
   const { data, isPending, error, refetch } = useQuery(alarmesQuery());
@@ -97,9 +105,44 @@ export default function CadastroAlarme() {
   const [notifEmail, setNotifEmail] = useState(true);
   const [notifSms, setNotifSms] = useState(false);
 
+  /** Cria o alarme com o escopo escolhido. Antes o submit não fazia nada. */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Protótipo: sem persistência.
+    if (!nome.trim()) {
+      toast.error("Dê um nome ao alarme.");
+      return;
+    }
+    if (escopo === "Veículos específicos" && placas.length === 0) {
+      toast.error("Selecione ao menos um veículo ou mude a abrangência.");
+      return;
+    }
+    const novo: Alarme = {
+      id: `a${Date.now()}`,
+      nome: nome.trim(),
+      tipo: (tipo?.toLowerCase() as Alarme["tipo"]) ?? "velocidade",
+      condicao: limite ? `${condicao === "maior" ? ">" : "<"} ${limite} km/h por ${persistencia}s` : condicao,
+      severidade: severidade as Alarme["severidade"],
+      canais: [notifApp && "App", notifEmail && "E-mail", notifSms && "SMS"].filter(Boolean) as string[],
+      ativo: true,
+      veiculos: escopo === "Veículos específicos" ? placas : [],
+    };
+    acrescentar("alarmes", novo);
+    setLocais([novo, ...alarmes]);
+    toast.success(`Alarme "${novo.nome}" criado.`, {
+      description: novo.veiculos?.length ? `${novo.veiculos.length} veículo(s)` : "Toda a frota",
+    });
+    limparFormulario();
+  }
+
+  function limparFormulario() {
+    setNome("");
+    setLimite("");
+    setCondicao("maior");
+    setPersistencia("30");
+    setSeveridade("critico");
+    setReincidencia("15");
+    setEscopo("Toda a frota");
+    setPlacas([]);
   }
 
   return (
@@ -142,19 +185,19 @@ export default function CadastroAlarme() {
 
             <FormSection title="Regra" description="Nome, condição de disparo e a que veículos se aplica.">
               <Field label="Nome do alarme" full>
-                <Input placeholder="Ex.: Excesso de velocidade em rodovia" required />
+                <Input placeholder="Ex.: Excesso de velocidade em rodovia" value={nome} onChange={(e) => setNome(e.target.value)} required />
               </Field>
               <Field label="Condição">
-                <Select defaultValue="maior">
+                <Select value={condicao} onChange={(e) => setCondicao(e.target.value)}>
                   <option value="maior">Velocidade acima de</option>
                   <option value="menor">Velocidade abaixo de</option>
                 </Select>
               </Field>
               <Field label="Limite (km/h)">
-                <Input type="number" placeholder="90" inputMode="numeric" />
+                <Input type="number" placeholder="90" inputMode="numeric" value={limite} onChange={(e) => setLimite(e.target.value)} />
               </Field>
               <Field label="Persistência" hint="Tempo mínimo na condição antes de disparar.">
-                <Select defaultValue="30">
+                <Select value={persistencia} onChange={(e) => setPersistencia(e.target.value)}>
                   <option value="0">Imediato</option>
                   <option value="30">30 segundos</option>
                   <option value="60">1 minuto</option>
@@ -186,14 +229,14 @@ export default function CadastroAlarme() {
 
             <FormSection title="Severidade e notificação" description="Peso do alarme e por onde a equipe é avisada.">
               <Field label="Severidade">
-                <Select defaultValue="critico">
+                <Select value={severidade} onChange={(e) => setSeveridade(e.target.value)}>
                   <option value="critico">Crítico</option>
                   <option value="atencao">Atenção</option>
                   <option value="info">Informativo</option>
                 </Select>
               </Field>
               <Field label="Reincidência" hint="Reenvia se o evento se repetir na janela.">
-                <Select defaultValue="15">
+                <Select value={reincidencia} onChange={(e) => setReincidencia(e.target.value)}>
                   <option value="0">Não reenviar</option>
                   <option value="15">A cada 15 min</option>
                   <option value="60">A cada 1 h</option>
@@ -210,6 +253,7 @@ export default function CadastroAlarme() {
           <FormActions>
             <button
               type="button"
+              onClick={limparFormulario}
               className="rounded-full border border-border bg-white px-5 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-secondary"
             >
               Cancelar

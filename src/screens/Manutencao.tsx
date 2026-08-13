@@ -23,7 +23,8 @@ import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MANUTENCAO_COLUNAS, kanbanManutencaoQuery, manutencaoQuery, nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
-import type { CardManutencao } from "@/types";
+import { toast } from "sonner";
+import type { CardManutencao, StatusManutencao } from "@/types";
 
 /**
  * Manutenção. A visão geral é um kanban com todas as placas da frota; clicar
@@ -63,7 +64,23 @@ export default function Manutencao() {
   const [selecionado, setSelecionado] = useState<CardManutencao | null>(null);
 
   const kanbanQ = useQuery(kanbanManutencaoQuery());
-  const cards = useMemo(() => kanbanQ.data ?? [], [kanbanQ.data]);
+
+  /**
+   * Mudanças de status feitas na sessão (agendar / liberar). Ficam por cima do
+   * que veio da API para o quadro refletir a ação na hora.
+   */
+  const [ajustes, setAjustes] = useState<Record<string, StatusManutencao>>({});
+
+  const cards = useMemo(
+    () => (kanbanQ.data ?? []).map((c) => (ajustes[c.veiculoId] ? { ...c, status: ajustes[c.veiculoId] } : c)),
+    [kanbanQ.data, ajustes],
+  );
+
+  const mudarStatus = (card: CardManutencao, status: StatusManutencao, mensagem: string) => {
+    setAjustes((a) => ({ ...a, [card.veiculoId]: status }));
+    setSelecionado((s) => (s && s.veiculoId === card.veiculoId ? { ...s, status } : s));
+    toast.success(mensagem, { description: `${card.placa} · ${card.marca} ${card.modelo}` });
+  };
 
   // Atalho vindo de outra tela: /app/frota/manutencao?placa=EBZ3590
   useEffect(() => {
@@ -111,7 +128,7 @@ export default function Manutencao() {
 
         {tab === "geral" &&
           (selecionado ? (
-            <DetalheVeiculo card={selecionado} />
+            <DetalheVeiculo card={selecionado} onMudarStatus={mudarStatus} />
           ) : (
             <VisaoGeral
               cards={cards}
@@ -191,7 +208,13 @@ function VisaoGeral({
 
 /* ----------------------------- Detalhe do veículo ---------------------------- */
 
-function DetalheVeiculo({ card }: { card: CardManutencao }) {
+function DetalheVeiculo({
+  card,
+  onMudarStatus,
+}: {
+  card: CardManutencao;
+  onMudarStatus: (c: CardManutencao, s: StatusManutencao, msg: string) => void;
+}) {
   const [selected, setSelected] = useState<string | null>("oleo");
   const comp = HOTSPOTS.find((h) => h.id === selected) ?? null;
 
@@ -229,9 +252,20 @@ function DetalheVeiculo({ card }: { card: CardManutencao }) {
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[11.5px] text-muted-foreground">Serviço a executar</p>
-          <p className="max-w-[380px] text-[13.5px] font-medium text-foreground">{card.servico}</p>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="text-right">
+            <p className="text-[11.5px] text-muted-foreground">Serviço a executar</p>
+            <p className="max-w-[380px] text-[13.5px] font-medium text-foreground">{card.servico}</p>
+          </div>
+          {card.status !== "liberado" && (
+            <button
+              onClick={() => onMudarStatus(card, "liberado", "Veículo liberado de manutenção.")}
+              className="inline-flex items-center gap-2 rounded-full bg-leaf px-4 py-2 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              <ClipboardList className="h-4 w-4" />
+              Liberar veículo
+            </button>
+          )}
         </div>
       </div>
 
@@ -263,7 +297,16 @@ function DetalheVeiculo({ card }: { card: CardManutencao }) {
                         </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between">
-                        <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue">
+                        <button
+                          onClick={() =>
+                            onMudarStatus(
+                              card,
+                              crit ? "corretiva" : "preventiva",
+                              `Manutenção agendada: ${p.titulo}.`,
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-navy hover:text-brand-blue"
+                        >
                           <Wrench className="h-3.5 w-3.5" />
                           Agendar manutenção
                         </button>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
+import { entrar, pedirRedefinicaoSenha } from "@/lib/session";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { SSLogo } from "@/components/ss/brand/SSLogo";
@@ -27,12 +28,38 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [modo, setModo] = useState<"login" | "recuperar">("login");
+  const [enviado, setEnviado] = useState(false);
 
+  /**
+   * Cria a sessão de verdade e só então navega. Antes era um setTimeout que
+   * entrava no sistema com qualquer coisa (ou com nada) preenchida.
+   */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setErro(null);
     setLoading(true);
-    // Protótipo: sem back-end ainda. A API em Python entra aqui.
-    setTimeout(() => navigate("/app"), 700);
+    const r = entrar(email, senha);
+    if (!r.ok) {
+      setErro(r.erro ?? "Não foi possível entrar.");
+      setLoading(false);
+      return;
+    }
+    navigate("/app");
+  }
+
+  function handleRecuperar(e: React.FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    const r = pedirRedefinicaoSenha(email);
+    if (!r.ok) {
+      setErro(r.erro ?? "Não foi possível enviar.");
+      return;
+    }
+    setEnviado(true);
   }
 
   return (
@@ -50,6 +77,7 @@ export default function Login() {
             Entre com as credenciais da sua conta SS Telemática.
           </p>
 
+          {modo === "login" && (
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <Field
               label="E-mail"
@@ -58,7 +86,8 @@ export default function Login() {
               name="email"
               autoComplete="username"
               placeholder="voce@empresa.com.br"
-              defaultValue="douglas.morais@sstelematica.com.br"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
 
@@ -69,6 +98,8 @@ export default function Login() {
               name="password"
               autoComplete="current-password"
               placeholder="••••••••"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
               required
               trailing={
                 <button
@@ -91,19 +122,83 @@ export default function Login() {
                 />
                 Lembrar de mim
               </label>
-              <a
-                href="#"
+              <button
+                type="button"
+                onClick={() => {
+                  setModo("recuperar");
+                  setErro(null);
+                  setEnviado(false);
+                }}
                 className="text-sm font-medium text-primary transition-colors hover:text-accent"
               >
                 Esqueci minha senha
-              </a>
+              </button>
             </div>
+
+            {erro && (
+              <p role="alert" className="rounded-lg bg-coral-tint px-3 py-2 text-sm font-medium text-coral">
+                {erro}
+              </p>
+            )}
 
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
               {loading ? "Entrando…" : "Entrar"}
               {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
+          )}
+
+          {/* Redefinição de senha — o link antes era href="#". */}
+          {modo === "recuperar" && (
+            <form onSubmit={handleRecuperar} className="mt-8 space-y-5">
+              {enviado ? (
+                <div className="space-y-4">
+                  <div className="rounded-lg bg-leaf-tint px-4 py-3 text-sm text-leaf">
+                    <p className="font-semibold">Pedido registrado.</p>
+                    <p className="mt-1">
+                      Se houver conta para <strong>{email}</strong>, as instruções de redefinição serão enviadas
+                      para esse endereço.
+                    </p>
+                  </div>
+                  <Button type="button" size="lg" className="w-full" onClick={() => setModo("login")}>
+                    Voltar para o acesso
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Informe o e-mail da conta. Enviaremos as instruções para redefinir a senha.
+                  </p>
+                  <Field
+                    label="E-mail"
+                    icon={Mail}
+                    type="email"
+                    name="email-recuperar"
+                    autoComplete="username"
+                    placeholder="voce@empresa.com.br"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  {erro && (
+                    <p role="alert" className="rounded-lg bg-coral-tint px-3 py-2 text-sm font-medium text-coral">
+                      {erro}
+                    </p>
+                  )}
+                  <Button type="submit" size="lg" className="w-full">
+                    Enviar instruções
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setModo("login")}
+                    className="w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Voltar para o acesso
+                  </button>
+                </>
+              )}
+            </form>
+          )}
 
           <div className="mt-8 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />

@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useNavigate } from "@/lib/router-compat";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 
@@ -305,6 +306,7 @@ function PlanoCard() {
 }
 
 function PendenciasCard() {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
@@ -319,7 +321,10 @@ function PendenciasCard() {
       <p className="font-display text-5xl font-bold tabular-nums">27</p>
       <p className="mt-1 text-sm text-muted-foreground">eventos pendentes de revisão</p>
 
-      <button className="mt-auto flex items-center justify-center gap-2 rounded-full bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+      <button
+        onClick={() => navigate("/app/eventos")}
+        className="mt-auto flex items-center justify-center gap-2 rounded-full bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+      >
         Revisar agora
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -329,6 +334,7 @@ function PendenciasCard() {
 
 /** Eventos críticos — o bloco de maior urgência da tela. */
 function CriticalCard() {
+  const navigate = useNavigate();
   return (
     <section className="overflow-hidden rounded-2xl border border-coral-line bg-card shadow-card">
       <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center">
@@ -360,7 +366,10 @@ function CriticalCard() {
           ))}
         </div>
 
-        <button className="shrink-0 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+        <button
+          onClick={() => navigate("/app/eventos")}
+          className="shrink-0 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+        >
           Ver eventos críticos
         </button>
       </div>

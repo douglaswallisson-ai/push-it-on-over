@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft, ArrowRight, Bus, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { acrescentar } from "@/lib/session";
+import { toast } from "sonner";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { Field, FormActions, Input, Select, Textarea } from "@/components/ss/ui/form";
 import { SeatMap, SeatLegend } from "@/components/ss/fretamento/SeatMap";
@@ -24,8 +26,26 @@ export default function CadastroViagem() {
       return next;
     });
 
+  /** Grava a viagem com os assentos escolhidos antes de navegar. */
+  const [servico, setServico] = useState("Fretamento contínuo");
+  const [veiculo, setVeiculo] = useState("Ônibus Executivo — PLA-1A23 (44 lug.)");
+  const [motorista, setMotorista] = useState("Marco Taborda");
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (selected.size === 0) {
+      toast.error("Selecione ao menos um assento para a viagem.");
+      return;
+    }
+    acrescentar("viagens", {
+      id: `t${Date.now()}`,
+      servico,
+      veiculo,
+      motorista,
+      assentos: [...selected],
+      criadoEm: new Date().toISOString(),
+    });
+    toast.success(`Viagem criada com ${selected.size} assento${selected.size > 1 ? "s" : ""}.`);
     navigate("/app/fretamento/viagens");
   }
 
@@ -57,7 +77,7 @@ export default function CadastroViagem() {
                   <Input placeholder="Ex.: Curitiba — Rodoferroviária" required />
                 </Field>
                 <Field label="Tipo de serviço">
-                  <Select>
+                  <Select value={servico} onChange={(e) => setServico(e.target.value)}>
                     <option>Fretamento contínuo</option>
                     <option>Fretamento eventual</option>
                     <option>Turismo</option>
@@ -87,14 +107,14 @@ export default function CadastroViagem() {
                   <Input type="time" />
                 </Field>
                 <Field label="Veículo">
-                  <Select>
+                  <Select value={veiculo} onChange={(e) => setVeiculo(e.target.value)}>
                     <option>Ônibus Executivo — PLA-1A23 (44 lug.)</option>
                     <option>Ônibus Leito — PLA-2B45 (36 lug.)</option>
                     <option>Micro-ônibus — PLA-3C67 (24 lug.)</option>
                   </Select>
                 </Field>
                 <Field label="Motorista">
-                  <Select>
+                  <Select value={motorista} onChange={(e) => setMotorista(e.target.value)}>
                     <option>Marco Taborda</option>
                     <option>Rosemeri Tuono</option>
                     <option>Vitor Duarte</option>

@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
+import { acrescentar } from "@/lib/session";
+import { toast } from "sonner";
 
 /**
  * Cadastro de motorista em três modos: manual, OCR da CNH (preenche o form) e
@@ -56,8 +58,20 @@ export default function MotoristaNovo() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  /**
+   * Grava o motorista antes de navegar. Antes o submit só trocava de tela e
+   * tudo que foi digitado era perdido sem aviso.
+   */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.nome.trim()) {
+      toast.error("Informe o nome do motorista.");
+      return;
+    }
+    acrescentar("motoristas", { ...form, id: `m${Date.now()}`, criadoEm: new Date().toISOString() });
+    toast.success(`Motorista ${form.nome} cadastrado.`, {
+      description: form.validade ? undefined : "CNH sem validade informada — não haverá alerta de vencimento.",
+    });
     navigate("/app/motoristas");
   }
 

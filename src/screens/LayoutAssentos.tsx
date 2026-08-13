@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Armchair, Bus, Save } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { gravar } from "@/lib/session";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { SeatMap, SeatLegend } from "@/components/ss/fretamento/SeatMap";
@@ -17,6 +19,8 @@ const OCUPADOS = new Set([3, 4, 7, 12, 15, 16, 23, 28, 31, 40]);
 export default function LayoutAssentos() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [rows, setRows] = useState(11);
+  const [veiculo, setVeiculo] = useState("Ônibus Executivo — PLA-1A23");
+  const [config, setConfig] = useState("2+2");
 
   const toggle = (n: number) =>
     setSelected((prev) => {
@@ -34,7 +38,13 @@ export default function LayoutAssentos() {
         title="Layout de assentos"
         subtitle="Fretamento › Planta do veículo"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+          <button
+            onClick={() => {
+              gravar("layout-assentos", { veiculo, config, fileiras: rows, salvoEm: new Date().toISOString() });
+              toast.success("Layout salvo.");
+            }}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
             <Save className="h-[15px] w-[15px]" />
             Salvar layout
           </button>
@@ -69,7 +79,7 @@ export default function LayoutAssentos() {
             <Card title="Configuração">
               <div className="grid gap-4">
                 <Field label="Veículo">
-                  <Select>
+                  <Select value={veiculo} onChange={(e) => setVeiculo(e.target.value)}>
                     <option>Ônibus Executivo — PLA-1A23</option>
                     <option>Ônibus Leito — PLA-2B45</option>
                     <option>Micro-ônibus — PLA-3C67</option>
@@ -85,7 +95,7 @@ export default function LayoutAssentos() {
                   />
                 </Field>
                 <Field label="Configuração">
-                  <Select defaultValue="2+2">
+                  <Select value={config} onChange={(e) => setConfig(e.target.value)}>
                     <option value="2+2">2 + 2 (executivo)</option>
                     <option value="1+2">1 + 2 (leito)</option>
                   </Select>

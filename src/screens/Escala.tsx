@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useNavigate } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, StatTile } from "@/components/ss/ui/data";
 import { cn } from "@/lib/utils";
@@ -30,13 +32,18 @@ const ESCALA: Array<{ nome: string; turnos: Turno[] }> = [
 ];
 
 export default function Escala() {
+  const navigate = useNavigate();
+  const [semana, setSemana] = useState(30);
   return (
     <>
       <PageHeader
         title="Controle de escala"
         subtitle="Fretamento · semana de 21–27 jul 2026"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+          <button
+            onClick={() => navigate("/app/fretamento/viagens/nova")}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
             <Plus className="h-[15px] w-[15px]" />
             Nova escala
           </button>
@@ -72,11 +79,19 @@ export default function Escala() {
           icon={CalendarDays}
           action={
             <div className="flex items-center gap-1">
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary">
+              <button
+                onClick={() => setSemana((n) => Math.max(1, n - 1))}
+                aria-label="Semana anterior"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="px-2 font-mono text-[12px] text-muted-foreground">Semana 30</span>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary">
+              <span className="px-2 font-mono text-[12px] text-muted-foreground">Semana {semana}</span>
+              <button
+                onClick={() => setSemana((n) => Math.min(52, n + 1))}
+                aria-label="Próxima semana"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary"
+              >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

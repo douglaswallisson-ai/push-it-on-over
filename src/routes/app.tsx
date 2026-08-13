@@ -1,7 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { estaAutenticado } from "@/lib/session";
 import { AppShell } from "@/components/ss/layout/AppShell";
 
 export const Route = createFileRoute("/app")({
+  /**
+   * Guard de acesso. Antes qualquer pessoa entrava digitando /app na barra de
+   * endereço — o login era decorativo.
+   *
+   * A checagem é client-only: no SSR não há sessão para consultar, então
+   * deixamos passar e o cliente reavalia na hidratação.
+   */
+  beforeLoad: ({ location }) => {
+    if (typeof window === "undefined") return;
+    if (!estaAutenticado()) {
+      throw redirect({ to: "/login", search: { destino: location.href } as never });
+    }
+  },
   head: () => ({
     meta: [
       { title: "SS Telemática — Plataforma de Gestão de Frota" },

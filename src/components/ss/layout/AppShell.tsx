@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { TourProvider } from "@/components/ss/tour/TourProvider";
 import { SelmaLauncher } from "@/components/ss/selma/SelmaLauncher";
+import { Toaster } from "@/components/ui/sonner";
 
 /**
  * Casca do sistema: trilho de ícones fixo + conteúdo sobre o canvas
@@ -33,6 +34,9 @@ export function AppShell() {
         </div>
 
         <SelmaLauncher />
+
+        {/* Confirmações de ação. O sonner estava instalado mas nunca montado. */}
+        <Toaster position="bottom-right" richColors closeButton />
       </div>
     </TourProvider>
   );

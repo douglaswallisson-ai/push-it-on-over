@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Clock, Flag, GripVertical, MapPin, Plus, Route, Sparkles, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useNavigate } from "@/lib/router-compat";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, StatTile } from "@/components/ss/ui/data";
 import { cn } from "@/lib/utils";
@@ -30,13 +33,18 @@ const PARADAS: Parada[] = [
 ];
 
 export default function Roteirizacao() {
+  const navigate = useNavigate();
+  const [sugestaoAplicada, setSugestaoAplicada] = useState(false);
   return (
     <>
       <PageHeader
         title="Roteirização"
         subtitle="Fretamento · planejamento de rota"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">
+          <button
+            onClick={() => navigate("/app/fretamento/viagens/nova")}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
             <Plus className="h-[15px] w-[15px]" />
             Nova rota
           </button>
@@ -68,7 +76,14 @@ export default function Roteirizacao() {
 
         <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
           {/* Sequência de paradas. */}
-          <Card title="Paradas" icon={Route} action={<button className="text-[12.5px] font-semibold text-brand-navy hover:text-brand-blue">+ Adicionar</button>}>
+          <Card title="Paradas" icon={Route} action={
+              <button
+                onClick={() => navigate("/app/fretamento/viagens/nova")}
+                className="text-[12.5px] font-semibold text-brand-navy hover:text-brand-blue"
+              >
+                + Adicionar
+              </button>
+            }>
             <ol className="space-y-1">
               {PARADAS.map((p, i) => (
                 <li key={p.nome}>
@@ -94,7 +109,18 @@ export default function Roteirizacao() {
               <span>
                 <strong>Sugestão:</strong> inverter Osasco e Barra Funda economiza ~12 min e 6 km no
                 trecho urbano.{" "}
-                <button className="font-semibold underline">Aplicar</button>
+                <button
+                  onClick={() => {
+                    setSugestaoAplicada(true);
+                    toast.success("Sugestão aplicada.", {
+                      description: "Osasco e Barra Funda invertidas — 12 min e 6 km a menos.",
+                    });
+                  }}
+                  disabled={sugestaoAplicada}
+                  className="font-semibold underline disabled:no-underline disabled:opacity-60"
+                >
+                  {sugestaoAplicada ? "Aplicada" : "Aplicar"}
+                </button>
               </span>
             </div>
           </Card>

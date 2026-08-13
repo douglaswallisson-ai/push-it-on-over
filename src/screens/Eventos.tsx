@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { StatTile, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
@@ -89,6 +90,8 @@ export default function Eventos() {
   const [vistos, setVistos] = useState<Set<string>>(() => new Set(EVENTOS.filter((e) => e.visto).map((e) => e.id)));
   const [validacao, setValidacao] = useState<Record<string, "correto" | "falso">>({});
   const [aberto, setAberto] = useState<string | null>(null);
+  const [notificados, setNotificados] = useState<Record<string, boolean>>({});
+  const [ocorrencias, setOcorrencias] = useState<Record<string, string>>({});
 
   const veiculos = uniq(EVENTOS.map((e) => e.veiculo));
   const motoristas = uniq(EVENTOS.map((e) => e.motorista));
@@ -206,6 +209,10 @@ export default function Eventos() {
           validacao={validacao[eventoAberto.id]}
           onValidar={(v) => validar(eventoAberto.id, v)}
           onClose={() => setAberto(null)}
+          notificado={Boolean(notificados[eventoAberto.id])}
+          onNotificar={() => setNotificados((n) => ({ ...n, [eventoAberto.id]: true }))}
+          ocorrencia={ocorrencias[eventoAberto.id]}
+          onGerarOcorrencia={(numero) => setOcorrencias((o) => ({ ...o, [eventoAberto.id]: numero }))}
         />
       )}
     </>
@@ -284,11 +291,21 @@ function EventoDrawer({
   validacao,
   onValidar,
   onClose,
+  notificado,
+  onNotificar,
+  ocorrencia,
+  onGerarOcorrencia,
 }: {
   evento: Evento;
   validacao?: "correto" | "falso";
   onValidar: (v: "correto" | "falso") => void;
   onClose: () => void;
+  /** Já foi enviado aviso ao motorista sobre este evento. */
+  notificado: boolean;
+  onNotificar: () => void;
+  /** Número da ocorrência aberta, se houver. */
+  ocorrencia?: string;
+  onGerarOcorrencia: (numero: string) => void;
 }) {
   const t = tone(evento.gravidade);
   return (
@@ -320,7 +337,15 @@ function EventoDrawer({
             <div>
               <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-[#122a52]">
                 <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(circle at 50% 40%, #2651A6, transparent 70%)" }} />
-                <button className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-brand-navy shadow-lg transition-transform hover:scale-105">
+                <button
+                  onClick={() =>
+                    toast.info("Reprodução de vídeo", {
+                      description: `Clipe ${evento.dur} · CAM 1 frontal · aguardando o serviço de mídia.`,
+                    })
+                  }
+                  aria-label="Reproduzir gravação do evento"
+                  className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-brand-navy shadow-lg transition-transform hover:scale-105"
+                >
                   <Play className="h-6 w-6" fill="currentColor" />
                 </button>
                 <span className="absolute bottom-2 left-3 font-mono text-[11px] text-white/70">Gravação · {evento.dur}</span>
@@ -406,11 +431,29 @@ function EventoDrawer({
 
         {/* Ações. */}
         <div className="flex items-center gap-2 border-t border-border bg-card px-5 py-3">
-          <button className="flex-1 rounded-full border border-border bg-white px-4 py-2 text-[13px] font-medium text-ink-soft hover:bg-secondary">
-            Notificar motorista
+          <button
+            onClick={() => {
+              onNotificar();
+              toast.success(`Motorista ${evento.motorista} notificado.`, {
+                description: `Evento: ${evento.tipo} · ${evento.veiculo}`,
+              });
+            }}
+            disabled={notificado}
+            className="flex-1 rounded-full border border-border bg-white px-4 py-2 text-[13px] font-medium text-ink-soft transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {notificado ? "Motorista notificado" : "Notificar motorista"}
           </button>
-          <button className="flex-1 rounded-full bg-brand-navy px-4 py-2 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5">
-            Gerar ocorrência
+          <button
+            onClick={() => {
+              const numero = `OC-${String(Date.now()).slice(-6)}`;
+              onGerarOcorrencia(numero);
+              toast.success(`Ocorrência ${numero} aberta.`, {
+                description: `${evento.tipo} · ${evento.veiculo} · ${evento.motorista}`,
+              });
+            }}
+            className="flex-1 rounded-full bg-brand-navy px-4 py-2 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
+            {ocorrencia ? `Ocorrência ${ocorrencia}` : "Gerar ocorrência"}
           </button>
         </div>
       </aside>

@@ -230,13 +230,41 @@ export function FilterChip({
   icon: Icon,
   label,
   value,
+  onClick,
+  options,
+  onSelect,
 }: {
   icon?: LucideIcon;
   label: string;
   value: string;
+  onClick?: () => void;
+  /** Quando informado, o chip abre um menu nativo de seleção. */
+  options?: string[];
+  onSelect?: (v: string) => void;
 }) {
+  // Com opções, o chip vira um select de verdade em vez de enfeite.
+  if (options?.length) {
+    return (
+      <label className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-[13px] transition-colors hover:border-[#c7d2df]">
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+        <span className="text-muted-foreground">{label}:</span>
+        <select
+          value={value}
+          onChange={(e) => onSelect?.(e.target.value)}
+          className="cursor-pointer appearance-none bg-transparent font-medium text-foreground outline-none"
+        >
+          {options.map((o) => (
+            <option key={o}>{o}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
   return (
-    <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-[13px] transition-colors hover:border-[#c7d2df]">
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-[13px] transition-colors hover:border-[#c7d2df]">
       {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       <span className="text-muted-foreground">{label}:</span>
       <span className="font-medium text-foreground">{value}</span>

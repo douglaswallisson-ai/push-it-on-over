@@ -1,5 +1,7 @@
 import { CalendarDays, Download, Leaf, TreePine, Truck, Wind } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { exportarCSV } from "@/lib/export";
+import { toast } from "sonner";
 import { SSGreenSeal, SSGreenBadge } from "@/components/ss/brand/SSGreenSeal";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
@@ -56,7 +58,26 @@ export default function EmissaoCO2() {
         title="Emissão de CO₂"
         subtitle="Pegada de carbono da frota · período selecionado"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:-translate-y-0.5">
+          <button
+            onClick={() => {
+              const linhas = MESES.map((m, i) => ({
+                mes: m,
+                emissao: EMISSAO_MES[i],
+                kgPorKm: KG_POR_KM[i],
+              }));
+              const n = exportarCSV(
+                linhas,
+                [
+                  { cabecalho: "Mês", valor: (l) => l.mes },
+                  { cabecalho: "Emissão (t CO2)", valor: (l) => l.emissao },
+                  { cabecalho: "kg CO2 por km", valor: (l) => l.kgPorKm },
+                ],
+                "emissao-co2",
+              );
+              toast.success(`Emissões exportadas (${n} meses).`);
+            }}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:-translate-y-0.5"
+          >
             <Download className="h-[15px] w-[15px]" />
             Exportar
           </button>

@@ -16,6 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { exportarCSV } from "@/lib/export";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/ss/ui/data";
 
@@ -72,6 +74,40 @@ const RECENTES: Recente[] = [
   { nome: "Faturamento por rota", categoria: "Fretamento", periodo: "Jul 2026", gerado: "agora", formato: "XLSX", status: "Processando" },
 ];
 
+/**
+ * Gera e baixa o relatório. Enquanto a API de relatórios não existe, monta um
+ * CSV com os metadados da solicitação — o botão deixa de ser decorativo e o
+ * fluxo de download já fica pronto para receber o arquivo real do servidor.
+ */
+/** Solicita a geração de um relatório do catálogo e entrega o arquivo. */
+function gerarRelatorio(titulo: string, categoria: string) {
+  exportarCSV(
+    [{ titulo, categoria, solicitadoEm: new Date().toLocaleString("pt-BR") }],
+    [
+      { cabecalho: "Relatório", valor: (x) => x.titulo },
+      { cabecalho: "Categoria", valor: (x) => x.categoria },
+      { cabecalho: "Solicitado em", valor: (x) => x.solicitadoEm },
+    ],
+    titulo.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  );
+  toast.success(`"${titulo}" gerado.`);
+}
+
+function baixarRelatorio(r: Recente) {
+  exportarCSV(
+    [r],
+    [
+      { cabecalho: "Relatório", valor: (x) => x.nome },
+      { cabecalho: "Categoria", valor: (x) => x.categoria },
+      { cabecalho: "Período", valor: (x) => x.periodo },
+      { cabecalho: "Gerado", valor: (x) => x.gerado },
+      { cabecalho: "Formato", valor: (x) => x.formato },
+    ],
+    r.nome.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  );
+  toast.success(`"${r.nome}" baixado.`);
+}
+
 const COLS: Column<Recente>[] = [
   { key: "nome", header: "Relatório", render: (r) => <span className="font-semibold text-foreground">{r.nome}</span> },
   { key: "categoria", header: "Categoria", render: (r) => <Pill tone="sky">{r.categoria}</Pill> },
@@ -85,7 +121,13 @@ const COLS: Column<Recente>[] = [
     align: "right",
     render: (r) =>
       r.status === "Pronto" ? (
-        <button className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1.5 text-[12px] font-medium text-brand-navy hover:bg-secondary">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            baixarRelatorio(r);
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1.5 text-[12px] font-medium text-brand-navy hover:bg-secondary"
+        >
           <Download className="h-3.5 w-3.5" />
           Baixar
         </button>
@@ -124,6 +166,7 @@ export default function Relatorios() {
               {cat.itens.map((r) => (
                 <button
                   key={r.title}
+                  onClick={() => gerarRelatorio(r.title, cat.grupo)}
                   className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2]"
                 >
                   <div

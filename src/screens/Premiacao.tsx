@@ -1,5 +1,7 @@
 import { Award, CalendarDays, FileText, Printer, Star, Target, TrendingUp, Trophy, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { exportarCSV, imprimir } from "@/lib/export";
+import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { RingProgress } from "@/components/ss/ui/gauges";
@@ -51,12 +53,38 @@ const COLS: Column<Premiado>[] = [
     key: "acoes",
     header: "",
     align: "right",
-    render: () => (
+    render: (p) => (
       <div className="flex justify-end gap-1.5">
-        <button title="Demonstrativo" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary hover:text-brand-navy">
+        <button
+          title={`Imprimir demonstrativo de ${p.nome}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            imprimir();
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary hover:text-brand-navy"
+        >
           <Printer className="h-3.5 w-3.5" />
         </button>
-        <button title="Relatório de viagens" className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary hover:text-brand-navy">
+        <button
+          title={`Exportar viagens de ${p.nome}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            exportarCSV(
+              [p],
+              [
+                { cabecalho: "Posição", valor: (x) => x.pos },
+                { cabecalho: "Motorista", valor: (x) => x.nome },
+                { cabecalho: "Km", valor: (x) => x.km },
+                { cabecalho: "Nota", valor: (x) => x.nota },
+                { cabecalho: "Viagens", valor: (x) => x.viagens },
+                { cabecalho: "Prêmio", valor: (x) => x.valor },
+              ],
+              `premiacao-${p.nome.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+            );
+            toast.success(`Relatório de ${p.nome} exportado.`);
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary hover:text-brand-navy"
+        >
           <FileText className="h-3.5 w-3.5" />
         </button>
       </div>

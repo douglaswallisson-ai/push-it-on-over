@@ -12,6 +12,8 @@ import {
   Truck,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useNavigate } from "@/lib/router-compat";
+import { imprimir } from "@/lib/export";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card } from "@/components/ss/ui/data";
 import { AccelBands, IndicatorCard, ScoreGauge } from "@/components/ss/ui/gauges";
@@ -48,6 +50,7 @@ const STATS: Array<{ icon: LucideIcon; label: string; value: string; unit?: stri
 const NOTA_TREND = [40, 41, 38, 44, 39, 37, 41];
 
 export default function AnaliseIndividual() {
+  const navigate = useNavigate();
   const [grafico, setGrafico] = useState(false);
   return (
     <>
@@ -60,7 +63,8 @@ export default function AnaliseIndividual() {
               <LineChart className="h-[15px] w-[15px]" />
               Gráfico
             </button>
-            <button className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
+            <button onClick={imprimir}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary">
               <Printer className="h-[15px] w-[15px]" />
               Imprimir
             </button>
@@ -75,7 +79,11 @@ export default function AnaliseIndividual() {
           title={
             <span className="flex flex-wrap items-center gap-3">
               DAF XF105 FT 460
-              <button className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[12px] font-medium backdrop-blur">
+              <button
+                onClick={() => navigate("/app/veiculos")}
+                title="Escolher outro veículo"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[12px] font-medium backdrop-blur transition-colors hover:bg-white/20"
+              >
                 EBZ3590 · Najla Maltaca
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>

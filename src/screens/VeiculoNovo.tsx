@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Field, FormActions, FormSection, Input, Select } from "@/components/ss/ui/form";
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
+import { acrescentar } from "@/lib/session";
+import { toast } from "sonner";
 
 /**
  * Cadastro de veículo em três modos: manual, OCR do CRLV (documento do veículo)
@@ -53,8 +55,15 @@ export default function VeiculoNovo() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  /** Grava o veículo antes de navegar — o submit anterior descartava o form. */
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.placa.trim()) {
+      toast.error("Informe a placa do veículo.");
+      return;
+    }
+    acrescentar("veiculos", { ...form, id: `v${Date.now()}`, criadoEm: new Date().toISOString() });
+    toast.success(`Veículo ${form.placa.toUpperCase()} cadastrado.`);
     navigate("/app/veiculos");
   }
 

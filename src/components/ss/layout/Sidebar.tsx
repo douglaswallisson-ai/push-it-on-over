@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { NavLink } from "@/lib/router-compat";
+import { useNavigate, NavLink } from "@/lib/router-compat";
 import {
   Award,
   Bus,
@@ -19,6 +19,7 @@ import {
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
+import { lerSessao, sair } from "@/lib/session";
 
 /**
  * Menu lateral em trilho de ícones.
@@ -120,7 +121,20 @@ function useIsDesktop() {
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const navigate = useNavigate();
   const isDesktop = useIsDesktop();
+
+  // Identidade do usuário logado — antes estava fixa no código como "Douglas Morais".
+  const sessao = lerSessao();
+  const nomeUsuario = sessao?.nome ?? "Visitante";
+  const orgUsuario = sessao?.organizacao ?? "SS Telemática";
+  const iniciais = nomeUsuario
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   const [hovered, setHovered] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
@@ -207,22 +221,26 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
           <div className="flex items-center gap-2.5 overflow-hidden rounded-lg px-2 py-1.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue text-[12px] font-semibold text-white">
-              DM
+              {iniciais}
             </div>
             {expanded && (
               <div className="min-w-0 flex-1 leading-tight">
-                <div className="truncate text-[13px] font-semibold text-white">Douglas Morais</div>
-                <div className="truncate text-[11px] text-white/55">SS Telemática</div>
+                <div className="truncate text-[13px] font-semibold text-white">{nomeUsuario}</div>
+                <div className="truncate text-[11px] text-white/55">{orgUsuario}</div>
               </div>
             )}
             {expanded && (
-              <NavLink
-                to="/login"
+              <button
+                onClick={() => {
+                  sair();
+                  navigate("/login");
+                }}
                 aria-label="Sair"
+                title="Sair"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/60 transition-all hover:bg-white/10 hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
-              </NavLink>
+              </button>
             )}
           </div>
         </div>

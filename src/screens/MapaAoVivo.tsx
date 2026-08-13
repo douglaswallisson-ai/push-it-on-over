@@ -200,13 +200,21 @@ function MapCanvas({
   selected: string | null;
   onSelect: (p: string) => void;
 }) {
+  // Zoom do canvas. 1 = enquadramento inteiro; até 3× para separar marcadores
+  // sobrepostos em região de frota densa.
+  const [zoom, setZoom] = useState(1);
+
   return (
     <div
-      className="relative h-[520px] w-full lg:h-[640px]"
+      className="relative h-[520px] w-full overflow-hidden lg:h-[640px]"
       style={{
         background: "radial-gradient(circle at 60% 40%, #EAF3EC 0%, #E3EDF3 45%, #DCE6EC 100%)",
       }}
     >
+      <div
+        className="absolute inset-0 origin-center transition-transform duration-200"
+        style={{ transform: `scale(${zoom})` }}
+      >
       {/* "Rodovias" decorativas. */}
       <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
         <path d="M-50 200 Q 300 120 620 260 T 1200 300" fill="none" stroke="white" strokeWidth="6" opacity="0.7" />
@@ -242,11 +250,36 @@ function MapCanvas({
         );
       })}
 
-      {/* Controles falsos de zoom. */}
+      </div>
+
+      {/* Zoom do canvas — antes os botões não faziam nada. */}
       <div className="absolute right-4 top-4 flex flex-col overflow-hidden rounded-lg border border-border bg-white shadow-card">
-        <button className="flex h-8 w-8 items-center justify-center text-lg text-muted-foreground hover:bg-secondary">+</button>
+        <button
+          onClick={() => setZoom((z) => Math.min(3, +(z + 0.25).toFixed(2)))}
+          disabled={zoom >= 3}
+          aria-label="Aproximar"
+          className="flex h-8 w-8 items-center justify-center text-lg text-muted-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+        >
+          +
+        </button>
         <div className="h-px bg-border" />
-        <button className="flex h-8 w-8 items-center justify-center text-lg text-muted-foreground hover:bg-secondary">−</button>
+        <button
+          onClick={() => setZoom(1)}
+          aria-label="Restaurar zoom"
+          title={`${Math.round(zoom * 100)}%`}
+          className="flex h-8 w-8 items-center justify-center font-mono text-[10px] text-muted-foreground transition-colors hover:bg-secondary"
+        >
+          {Math.round(zoom * 100)}
+        </button>
+        <div className="h-px bg-border" />
+        <button
+          onClick={() => setZoom((z) => Math.max(1, +(z - 0.25).toFixed(2)))}
+          disabled={zoom <= 1}
+          aria-label="Afastar"
+          className="flex h-8 w-8 items-center justify-center text-lg text-muted-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+        >
+          −
+        </button>
       </div>
 
       {selected && <SelectedCard veiculo={veiculos.find((v) => v.placa === selected)} />}

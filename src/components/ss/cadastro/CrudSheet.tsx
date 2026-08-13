@@ -115,6 +115,7 @@ export function CrudSheet<T extends Record<string, unknown>>({
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
+        data-tour="crud-sheet"
         className="relative flex h-full w-full max-w-[520px] flex-col bg-card shadow-[0_0_60px_-10px_rgba(0,0,0,0.4)]"
       >
         <header className="flex items-start justify-between gap-3 border-b border-border px-6 py-4">

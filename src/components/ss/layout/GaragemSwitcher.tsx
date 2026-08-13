@@ -57,7 +57,7 @@ export function GaragemSwitcher({ expanded }: { expanded: boolean }) {
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="garagem-switcher" className="relative">
       <button
         onClick={() => expanded && setOpen((o) => !o)}
         title={expanded ? undefined : `Garagem: ${rotulo}`}

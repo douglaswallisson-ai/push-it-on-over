@@ -216,7 +216,7 @@ function BarraPesos({
   const segmentos = INDICADORES.filter((i) => config[i.chave]?.ativo && config[i.chave].peso > 0);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+    <div data-tour="pesos" className="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-[15px] font-semibold text-foreground">

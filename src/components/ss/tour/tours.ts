@@ -34,17 +34,63 @@ function cadastroSteps(nome: string, oque: string): TourStep[] {
     { selector: '[data-tour="page-header"]', title: `Cadastro de ${nome}`, body: `Aqui você gerencia ${oque}. O botão no canto abre o formulário de novo registro.` },
     { selector: '[data-tour="hero"]', title: "Panorama", body: `Os números em destaque resumem a situação de ${nome} na operação.` },
     { selector: '[data-tour="stat"]', title: "Indicadores", body: "Contadores rápidos para leitura imediata do estado atual." },
-    { selector: '[data-tour="table"]', title: "Registros", body: `Lista completa. Use a busca no topo do quadro para filtrar. Clique numa linha para ver o detalhe.` },
+    { selector: '[data-tour="table"]', title: "Registros", body: "Lista completa. A busca no topo do quadro filtra de verdade, e clicar em qualquer linha abre o registro para ver e editar." },
+    { selector: '[data-tour="page-header"] button', title: "Criar e excluir", body: "O botão abre o painel lateral de cadastro. Nele também estão a edição e a exclusão, com confirmação antes de apagar." },
   ];
 }
 
 export const TOURS: Record<string, TourStep[]> = {
+  "/app/motoristas/perfil/:nome": [
+    { selector: '[data-tour="page-header"]', title: "Acompanhamento do motorista", body: "O desempenho individual no período, com tudo o que sustenta a nota." },
+    { selector: '[data-tour="cnh"]', title: "Situação da CNH", body: "O sistema confere a validade e avisa com 60 e 30 dias de antecedência. \"Sem informação\" também aparece: significa que falta digitalizar o documento, e não que está tudo certo." },
+    { selector: '[data-tour="faixas"]', title: "Faixas de condução", body: "Como este motorista distribui o tempo entre as 14 faixas. É a mesma leitura da frota e do veículo, então dá para comparar direto." },
+    { selector: '[data-tour="table"]', title: "Veículos dirigidos", body: "Todas as placas que este motorista conduziu, com período, km e nota. Clique para abrir o veículo — o cruzamento funciona nos dois sentidos." },
+  ],
+
+
+  "/app/frota/telemetria": [
+    { selector: '[data-tour="page-header"]', title: "Telemetria", body: "O inventário dos equipamentos instalados e quando cada um comunicou dados pela última vez." },
+    { selector: '[data-tour="stat"]', title: "Saúde da comunicação", body: "Quantos equipamentos existem, quantos comunicam agora, quantos estão em atraso e quantos sem sinal." },
+    { selector: '[data-tour="table"]', title: "Equipamento por placa", body: "Serial, modelo, firmware, placa vinculada e a última comunicação. Passe o mouse no tempo relativo para ver a data exata." },
+    { selector: '[data-tour="table"]', title: "Regra de sem sinal", body: "Comunicando até 1 h, atraso até 24 h, sem sinal acima disso. O limiar é o mesmo em todo o sistema — mudar aqui muda em todo lugar." },
+  ],
+
+  "/app/frota/desempenho": [
+    { selector: '[data-tour="page-header"]', title: "Desempenho da frota", body: "Como a frota está conduzindo, e onde o combustível está indo embora." },
+    { selector: '[data-tour="stat"]', title: "Indicadores", body: "Consumo, nota média e os números que resumem a eficiência do período." },
+    { selector: '[data-tour="faixas"]', title: "Faixas de condução", body: "As 14 faixas do diagrama, do veículo parado ao freio motor. A barra segue a ordem oficial, então a forma dela é comparável entre frota, veículo e motorista sem precisar ler número." },
+    { selector: '[data-tour="faixas"]', title: "Faixas desejáveis", body: "O percentual no canto soma as faixas que interessam: verde, extra econômica, eco-roll, inércia e parado produtivo. É a leitura rápida de eficiência." },
+  ],
+
+  "/app/premiacao/metas": [
+    { selector: '[data-tour="page-header"]', title: "Metas e pesos", body: "A configuração que define como a nota do motorista é calculada." },
+    { selector: '[data-tour="pesos"]', title: "Distribuição dos pesos", body: "A barra mostra o peso relativo de cada indicador ativo. Enquanto a soma não fechar 100%, o salvamento fica bloqueado — e o botão de ajuste redistribui automaticamente." },
+    { selector: 'main .rounded-2xl.border:nth-of-type(2)', title: "Indicadores por categoria", body: "Os 24 indicadores agrupados em faixas de condução, ociosidade, direção segura e operação. Cada grupo mostra quanto pesa no total." },
+    { selector: 'main [role="switch"]', title: "Ligar e desligar", body: "O peso é um interruptor: indicador desligado sai da conta. Normalmente uns 14 dos 24 valem para uma operação." },
+    { selector: 'main input[type="range"]', title: "Meta e peso", body: "Cada indicador diz sua unidade e a direção — ↑ quanto maior melhor, ↓ quanto menor melhor. O peso mostra a participação real na nota final." },
+  ],
+
+  "/app/cadastros/garagens": [
+    { selector: '[data-tour="page-header"]', title: "Garagens", body: "Uma empresa pode ter várias garagens, inclusive na mesma cidade. É o nível abaixo de Unidade." },
+    { selector: '[data-tour="stat"]', title: "Rede de pátios", body: "Quantas garagens existem, quantas estão ativas, quantas unidades atendem e a ocupação total." },
+    { selector: '[data-tour="table"]', title: "Ocupação por pátio", body: "Veículos alocados sobre vagas disponíveis. Clique numa linha para editar." },
+    { selector: '[data-tour="table"]', title: "Por que isso importa", body: "A garagem é o menor escopo de permissão do sistema: no cadastro de usuários você define quem enxerga quais pátios." },
+  ],
+
+  "/app/auditoria": [
+    { selector: '[data-tour="page-header"]', title: "Auditoria", body: "Quem fez o quê, quando e em qual organização." },
+    { selector: '[data-tour="stat"]', title: "Panorama", body: "Total de registros, quantas ações partiram do super admin e quantas organizações foram tocadas." },
+    { selector: '[data-tour="table"]', title: "A trilha", body: "Entrada, saída, troca de organização, criação, edição e exclusão. Cada linha guarda o usuário, o perfil e a base em que a ação ocorreu." },
+    { selector: '[data-tour="page-header"] button', title: "Exportação", body: "A trilha sai em CSV. O administrador da empresa também vê o registro da própria base, inclusive o que foi feito pela equipe da SS." },
+  ],
   "/app": [
     { selector: '[data-tour="sidebar"]', title: "Menu de navegação", body: "Passe o mouse aqui para expandir. Os itens do dia a dia ficam em cima; gestão e configuração, abaixo do divisor." },
     { selector: '[data-tour="page-header"]', title: "Barra da página", body: "Toda tela abre com um título, um resumo do contexto e ações rápidas à direita." },
     { selector: '[data-tour="hero"]', title: "Leitura do dia", body: "A abertura traz a economia gerada, o ROI e o payback — a história de valor da operação num relance." },
     { selector: '[data-tour="stat"]', title: "KPIs operacionais", body: "Cinco números que respondem se o dia está sob controle: veículos ativos, alertas, custo por km, consumo e disponibilidade." },
     { selector: '.pulse-dot', title: "Eventos críticos", body: "O que exige ação imediata aparece destacado, com o ponto pulsante chamando atenção." },
+    { selector: '[data-tour="org-switcher"]', title: "Organização", body: "Só o super admin vê este seletor. Trocar aqui muda a base de dados exibida em todo o sistema — e uma faixa no topo lembra em qual cliente você está enquanto durar a visita." },
+    { selector: '[data-tour="garagem-switcher"]', title: "Foco de garagem", body: "Restringe as telas a um pátio. A lista já vem filtrada pelo que o seu acesso permite: garagem fora do seu escopo não aparece aqui." },
   ],
 
   "/app/mapa": [
@@ -65,14 +111,21 @@ export const TOURS: Record<string, TourStep[]> = {
     header: "Gestão da equipe de motoristas. O botão abre o cadastro de um novo motorista.",
     hero: "Km rodados e premiação do mês — o impacto da equipe num relance.",
     stat: "Ativos, nota média, em atenção e afastados.",
-    table: "Cada motorista com nota, viagens e premiação. Clique numa linha para abrir o perfil.",
+    table: "Cada motorista com nota, viagens e premiação. A coluna CNH avisa quanto falta para o documento vencer. Clique numa linha para abrir o perfil.",
   }),
 
   "/app/motoristas/novo": [
     { selector: '[data-tour="page-header"]', title: "Novo motorista", body: "Formulário de cadastro dividido em seções." },
     { selector: 'form section:first-child', title: "Identificação", body: "Dados pessoais básicos. Os rótulos ficam sempre visíveis." },
-    { selector: 'form', title: "Seções seguintes", body: "Habilitação (CNH), vínculo operacional e telemetria/premiação. As chaves ligam recursos do motorista." },
-    { selector: 'form button[type="submit"]', title: "Salvar", body: "Ao salvar, o motorista volta para a lista. No protótipo não há persistência." },
+    { selector: 'form', title: "Habilitação e vínculo", body: "Os campos de CNH são opcionais, mas a validade alimenta os alertas de vencimento na lista e no acompanhamento do motorista." },
+    { selector: 'form button[type="submit"]', title: "Salvar", body: "O motorista é gravado e você volta para a lista. Se a validade da CNH ficar em branco, o sistema avisa — sem ela não há alerta de vencimento." },
+  ],
+
+  "/app/veiculos/novo": [
+    { selector: '[data-tour="page-header"]', title: "Novo veículo", body: "Cadastro de um veículo da frota, dividido em seções." },
+    { selector: 'form section:first-child', title: "Identificação", body: "Placa, marca, modelo e ano. A placa é o que amarra o veículo à telemetria e à manutenção." },
+    { selector: 'form', title: "Operação e equipamento", body: "Vínculo com grupo, unidade e garagem, e o rastreador instalado. A garagem define quem enxerga este veículo." },
+    { selector: 'form button[type="submit"]', title: "Salvar", body: "O veículo é gravado e você volta para a lista." },
   ],
 
   "/app/premiacao": [
@@ -82,12 +135,12 @@ export const TOURS: Record<string, TourStep[]> = {
     { selector: '[data-tour="table"]', title: "Detalhamento", body: "Cada motorista com nota, viagens e valor. Os ícones geram demonstrativo e relatório de viagens." },
   ],
 
-  "/app/veiculos": listSteps({
-    header: "Cadastro e situação da frota. O botão abre o cadastro de um novo veículo.",
-    hero: "Em rota agora e KML médio da frota.",
-    stat: "Em rota, parados, em manutenção e sem sinal.",
-    table: "Cada veículo com operação, situação, consumo e odômetro.",
-  }),
+  "/app/veiculos": [
+    { selector: '[data-tour="page-header"]', title: "Veículos", body: "Cadastro e situação da frota. O botão abre o cadastro de um novo veículo." },
+    { selector: '[data-tour="stat"]', title: "Indicadores clicáveis", body: "Em rota, parados, em manutenção, sem sinal e KML médio. \"Sem sinal\" leva à telemetria dos equipamentos e \"Em manutenção\" abre o quadro — não são só números." },
+    { selector: '[data-tour="table"]', title: "Frota com indicadores de condução", body: "Os mesmos oito indicadores em estrelas da tela de Motoristas, na mesma escala. A última coluna mostra a ação de manutenção da placa e abre o quadro já filtrado nela." },
+    { selector: '[data-tour="table"] tbody tr', title: "Faixas por veículo", body: "O botão \"ver\" na coluna Faixas abre a distribuição de condução daquele veículo, abaixo da tabela." },
+  ],
 
   "/app/frota/analise": [
     { selector: '[data-tour="page-header"]', title: "Análise individual", body: "Desempenho detalhado de um veículo no período." },
@@ -96,25 +149,14 @@ export const TOURS: Record<string, TourStep[]> = {
     { selector: '[data-tour="accel"]', title: "Pressão do acelerador", body: "Distribui a condução em ideal, atenção e crítico — a base da economia." },
   ],
 
-  "/app/frota/posicionamento": [
-    { selector: '[data-tour="page-header"]', title: "Posicionamento", body: "Retrato da posição atual de cada veículo (último sinal)." },
-    { selector: '[data-tour="hero"]', title: "Panorama", body: "Quantos em movimento, parados e a hora da última atualização." },
-    { selector: 'main .lg\\:grid-cols-\\[1fr_360px\\]', title: "Mapa e resumo", body: "Marcadores no mapa e um resumo por status ao lado." },
-    { selector: '[data-tour="table"]', title: "Posições", body: "Endereço, ignição e horário do último sinal por veículo." },
-  ],
 
-  "/app/frota/motor-parado": [
-    { selector: '[data-tour="page-header"]', title: "Motor ligado parado", body: "Marcha lenta ociosa — combustível gasto sem rodar." },
-    { selector: '[data-tour="hero"]', title: "O desperdício", body: "Quanto a frota queimou em R$ e litros nesta semana." },
-    { selector: '[data-tour="stat"]', title: "Indicadores", body: "Tempo ocioso, litros, custo e o CO₂ que dava para evitar." },
-    { selector: '[data-tour="table"]', title: "Ranking", body: "Os maiores tempos parados, com a tendência de cada veículo." },
-  ],
 
   "/app/frota/manutencao": [
-    { selector: '[data-tour="page-header"]', title: "Manutenção", body: "Inspeção visual do veículo e predições de manutenção." },
-    { selector: '[data-tour="score"]', title: "Índice de saúde", body: "A nota geral do veículo, calculada a partir dos componentes." },
-    { selector: '[data-tour="bus"]', title: "Inspeção visual", body: "Cada ponto na foto é um componente com sua leitura. O óleo, em vermelho e pulsando, está crítico. Clique num ponto para ver o detalhe e a recomendação." },
-    { selector: '[data-tour="predicoes"]', title: "Predições e riscos", body: "O que precisa de manutenção, quando e quanto custa — e os fatores que puxam a nota para baixo." },
+    { selector: '[data-tour="page-header"]', title: "Manutenção", body: "O estado de manutenção de toda a frota, e a inspeção detalhada de cada veículo." },
+    { selector: 'main .rounded-xl.border.bg-card.shadow-card', title: "Abas da tela", body: "Visão geral (o quadro), consumíveis, telemetria dos equipamentos, predições da frota e histórico de ordens. Cada aba tem conteúdo próprio." },
+    { selector: '[data-tour="stat"]', title: "Indicadores", body: "Placas na frota, quantas estão em dia, quantas em atraso e o custo previsto." },
+    { selector: '[data-tour="kanban"]', title: "Quadro de manutenção", body: "Um card por placa, distribuído em Em dia, Preditiva, Preventiva, Corretiva e Liberado. Veículo com mais de uma pendência aparece na coluna mais grave e informa as demais no rodapé do card." },
+    { selector: '[data-tour="kanban"] button', title: "Abrir um veículo", body: "Clique num card para ver a inspeção visual, as predições e quem dirigiu aquela placa. De lá dá para agendar a manutenção ou liberar o veículo." },
   ],
 
   "/app/frota/regeneracao": [
@@ -203,5 +245,32 @@ export const TOURS: Record<string, TourStep[]> = {
   "/app/cadastros/dispositivos": cadastroSteps("dispositivos", "os rastreadores instalados e em estoque"),
   "/app/cadastros/grupos": cadastroSteps("grupos", "os grupos que organizam a frota por operação"),
   "/app/cadastros/unidades": cadastroSteps("unidades", "as filiais da empresa"),
-  "/app/cadastros/usuarios": cadastroSteps("usuários", "quem acessa a plataforma e com qual perfil"),
+  "/app/cadastros/usuarios": [
+    { selector: '[data-tour="page-header"]', title: "Usuários", body: "Quem acessa a plataforma, com qual perfil e sobre quais garagens." },
+    { selector: '[data-tour="stat"]', title: "Indicadores", body: "Total de contas, ativas, administradores e último acesso." },
+    { selector: '[data-tour="table"]', title: "Contas e escopo", body: "A coluna Escopo mostra sobre quantas garagens cada pessoa enxerga dados. Administrador vê todas; quem está sem garagem não vê veículo nenhum." },
+    { selector: '[data-tour="page-header"] button', title: "Criar usuário", body: "No painel lateral você define perfil e marca as garagens do acesso, agrupadas por unidade. Desativar preserva o histórico; excluir remove o registro." },
+  ],
 };
+
+/**
+ * Encontra o tour de um caminho.
+ *
+ * Rotas com parâmetro (o perfil do motorista, por exemplo) chegam com o valor
+ * já preenchido — `/app/motoristas/perfil/Marco%20Taborda` — e nunca casariam
+ * numa busca por chave exata. Por isso a segunda passada compara segmento a
+ * segmento, tratando `:algo` como curinga.
+ */
+export function tourDe(pathname: string): TourStep[] {
+  const exato = TOURS[pathname];
+  if (exato) return exato;
+
+  const partes = pathname.split("/").filter(Boolean);
+  for (const [padrao, passos] of Object.entries(TOURS)) {
+    const alvo = padrao.split("/").filter(Boolean);
+    if (alvo.length !== partes.length) continue;
+    const casa = alvo.every((seg, i) => seg.startsWith(":") || seg === partes[i]);
+    if (casa) return passos;
+  }
+  return [];
+}

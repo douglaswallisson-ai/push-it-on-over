@@ -9,7 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import { useLocation } from "@/lib/router-compat";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { TOURS } from "./tours";
+import { tourDe } from "./tours";
 
 /**
  * Tour guiado por tela. Ao entrar numa rota com tour, ele abre sozinho (uma vez
@@ -31,7 +31,7 @@ const POPOVER_W = 320;
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const steps = TOURS[pathname] ?? [];
+  const steps = tourDe(pathname);
   const [active, setActive] = useState(false);
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);

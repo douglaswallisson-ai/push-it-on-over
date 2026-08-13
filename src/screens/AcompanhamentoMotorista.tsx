@@ -230,7 +230,7 @@ function CartaoCNH({ nome }: { nome: string }) {
           : "border-border bg-secondary/40 text-muted-foreground";
 
   return (
-    <div className={cn("flex flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3", cls)}>
+    <div data-tour="cnh" className={cn("flex flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3", cls)}>
       <div className="flex items-center gap-3">
         {alerta ? <AlertTriangle className="h-5 w-5 shrink-0" /> : <IdCard className="h-5 w-5 shrink-0" />}
         <div>

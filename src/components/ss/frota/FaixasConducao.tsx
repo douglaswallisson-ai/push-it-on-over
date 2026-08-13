@@ -77,7 +77,7 @@ export function FaixasConducao({
       {subtitulo && <p className="mb-3 text-[12px] text-muted-foreground">{subtitulo}</p>}
 
       {/* Barra empilhada na ordem do diagrama. */}
-      <div className="flex h-9 w-full overflow-hidden rounded-lg border border-border">
+      <div data-tour="faixas" className="flex h-9 w-full overflow-hidden rounded-lg border border-border">
         {FAIXAS.map((f) => {
           const w = larguraDe(f.id);
           if (w <= 0) return null;

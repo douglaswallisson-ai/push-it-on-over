@@ -139,7 +139,7 @@ export function TelemetriaEquipamentos({
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div data-tour="stat" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile icon={Cpu} label="Equipamentos" value={nf(equipamentos.length)} color="var(--brand-navy)" />
         <StatTile icon={Signal} label="Comunicando" value={nf(conta("online"))} color="var(--leaf)" />
         <StatTile icon={Radio} label="Em atraso" value={nf(conta("atencao"))} color="var(--gold)" />

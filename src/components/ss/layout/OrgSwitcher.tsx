@@ -86,7 +86,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="org-switcher" className="relative">
       <button
         onClick={() => expanded && setOpen((o) => !o)}
         title={expanded ? undefined : `Organização: ${ativa.name}`}

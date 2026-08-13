@@ -45,7 +45,7 @@ export function ManutencaoKanban({
   }, [cards]);
 
   return (
-    <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
+    <div data-tour="kanban" className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
       {MANUTENCAO_COLUNAS.map((col) => {
         const lista = porColuna.get(col.id) ?? [];
         return (

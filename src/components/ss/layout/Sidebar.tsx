@@ -87,6 +87,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Manutenção", to: "/app/frota/manutencao" },
       { label: "Ordens de serviço", to: "/app/frota/ordens" },
       { label: "Pneus", to: "/app/frota/pneus" },
+      { label: "Percurso do dia", to: "/app/frota/tracking" },
       { label: "Diagnóstico (DTC)", to: "/app/frota/diagnostico" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
       { label: "Regeneração (DPF)", to: "/app/frota/regeneracao" },

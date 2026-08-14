@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { PopupVeiculo } from "./PopupVeiculo";
 
 /**
  * Contrato próprio do mapa, em vez de `PosicaoVeiculo` cru.
@@ -13,13 +14,17 @@ import "leaflet/dist/leaflet.css";
 export type VeiculoMapa = {
   placa: string;
   rotulo: string;
+  veiculoId?: string;
   lat: number;
   lng: number;
+  /** Estado do mapa: define cor e pulso do marcador. */
   situacao: string;
   velocidade: number;
   endereco?: string;
   atualizado?: string;
   motorista?: string;
+  linha?: string;
+  eventosAbertos?: number;
 };
 
 /**
@@ -45,28 +50,51 @@ export type VeiculoMapa = {
 /** Centro padrão: São Paulo, usado quando não há veículo posicionado. */
 const CENTRO_PADRAO: [number, number] = [-23.5505, -46.6333];
 
-const COR_SITUACAO: Record<string, string> = {
-  em_rota: "#5a9a3c",
-  parado: "#b5590c",
-  manutencao: "#2E86C1",
-  sem_sinal: "#c0392b",
+/**
+ * Cor por estado. A leitura pretendida é de longe, num telão de CCO: verde
+ * transmitindo, âmbar parado com motor ligado, vermelho e laranja pulsando
+ * quando exigem ação, preto quando o equipamento sumiu.
+ */
+const COR_ESTADO: Record<string, string> = {
+  evento_critico: "#c0392b",
+  manutencao: "#e07b1a",
+  em_viagem: "#2f9e44",
+  ligado_parado: "#d6a419",
+  desligado: "#5a6b7d",
+  sem_transmissao: "#1c1c1c",
 };
 
-/** Marcador com o prefixo dentro, para o operador ler sem clicar. */
-function iconeVeiculo(rotulo: string, cor: string, selecionado: boolean) {
+/** Só o que exige ação pulsa — se tudo pulsa, nada chama atenção. */
+const PULSA = new Set(["evento_critico", "manutencao"]);
+
+/** Silhueta de ônibus, desenhada em SVG para herdar a cor do estado. */
+const SVG_ONIBUS = `
+<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+  <path d="M4 16V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a2 2 0 0 1-1 1.73V19a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.27A2 2 0 0 1 4 16Zm2-9v5h12V7H6Zm1.5 9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm9 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/>
+</svg>`;
+
+/**
+ * Marcador do veículo: silhueta de ônibus na cor do estado, com o prefixo ao
+ * lado para o operador identificar sem clicar.
+ */
+function iconeVeiculo(rotulo: string, estado: string, selecionado: boolean) {
+  const cor = COR_ESTADO[estado] ?? "#5a6b7d";
+  const pulsa = PULSA.has(estado);
+
   return L.divIcon({
     className: "",
     html: `
       <div style="
-        display:flex;align-items:center;gap:4px;
+        display:flex;align-items:center;gap:5px;
         background:#fff;border:2px solid ${cor};
-        border-radius:999px;padding:2px 7px;
+        border-radius:999px;padding:3px 8px 3px 5px;
         font:700 11px/1.1 ui-monospace,monospace;color:#1f2d3d;
-        box-shadow:0 2px 6px rgba(0,0,0,.25);
-        ${selecionado ? "outline:3px solid rgba(46,134,193,.45);outline-offset:2px;" : ""}
-        white-space:nowrap;
+        box-shadow:0 2px 8px rgba(0,0,0,.3);
+        ${selecionado ? "outline:3px solid rgba(46,134,193,.5);outline-offset:2px;" : ""}
+        ${pulsa ? "animation:ss-pulsar 1.1s ease-in-out infinite;" : ""}
+        white-space:nowrap;transform:translate(-50%,-50%);
       ">
-        <span style="width:7px;height:7px;border-radius:50%;background:${cor};flex:0 0 auto"></span>
+        <span style="color:${cor};display:flex;line-height:0">${SVG_ONIBUS}</span>
         ${rotulo}
       </div>`,
     iconSize: [0, 0],
@@ -116,11 +144,14 @@ export function MapaLeaflet({
   selecionado,
   onSelect,
   altura = "h-[520px] lg:h-[640px]",
+  percurso,
 }: {
   veiculos: VeiculoMapa[];
   selecionado: string | null;
   onSelect: (placa: string) => void;
   altura?: string;
+  /** Traçado do percurso do veículo selecionado, quando solicitado. */
+  percurso?: [number, number][];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -159,27 +190,38 @@ export function MapaLeaflet({
           maxZoom={19}
         />
 
-        <AjustarEnquadramento pontos={pontos} />
+        <AjustarEnquadramento pontos={percurso?.length ? percurso : pontos} />
+
+        {/* Percurso: linha grossa clara por baixo, fina escura por cima — o
+            contorno mantém o traçado legível sobre ruas de qualquer cor. */}
+        {percurso && percurso.length > 1 && (
+          <>
+            <Polyline positions={percurso} pathOptions={{ color: "#ffffff", weight: 7, opacity: 0.9 }} />
+            <Polyline positions={percurso} pathOptions={{ color: "#1B3A6B", weight: 3.5, opacity: 0.95 }} />
+          </>
+        )}
         <SeguirSelecionado posicao={posSelecionado} />
 
         {comCoordenada.map((v) => (
           <Marker
             key={v.placa}
             position={[v.lat, v.lng]}
-            icon={iconeVeiculo(v.rotulo, COR_SITUACAO[v.situacao] ?? "#8A9199", selecionado === v.placa)}
+            icon={iconeVeiculo(v.rotulo, v.situacao, selecionado === v.placa)}
             eventHandlers={{ click: () => onSelect(v.placa) }}
           >
-            <Popup>
-              <div className="min-w-[180px] text-[12.5px]">
-                <div className="font-mono text-[14px] font-bold">{v.rotulo}</div>
-                <div className="font-mono text-[11px] text-slate-500">{v.placa}</div>
-                <div className="mt-1.5 space-y-0.5">
-                  {v.motorista && <div>{v.motorista}</div>}
-                  <div>{v.velocidade} km/h</div>
-                  {v.endereco && <div className="text-slate-500">{v.endereco}</div>}
-                  {v.atualizado && <div className="text-slate-500">atualizado {v.atualizado}</div>}
-                </div>
-              </div>
+            <Popup minWidth={300} maxWidth={320} autoPanPadding={[24, 24]}>
+              <PopupVeiculo
+                placa={v.placa}
+                rotulo={v.rotulo}
+                veiculoId={v.veiculoId}
+                estado={v.situacao}
+                velocidade={v.velocidade}
+                endereco={v.endereco}
+                atualizado={v.atualizado}
+                motorista={v.motorista}
+                linha={v.linha}
+                eventosAbertos={v.eventosAbertos}
+              />
             </Popup>
           </Marker>
         ))}

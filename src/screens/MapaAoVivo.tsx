@@ -9,7 +9,7 @@ import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { ErrorBox, SkeletonBlock } from "@/components/ss/ui/QueryState";
-import { desde, nf, posicoesQuery, toCanvasXY, veiculosQuery } from "@/lib/queries";
+import { desde, nf, posicoesQuery, toCanvasXY, veiculosQuery, videoOcorrenciasQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import type { PosicaoVeiculo } from "@/types";
 
@@ -30,6 +30,9 @@ const STATUS: Record<Status, { label: string; tone: PillTone }> = {
 
 type Veiculo = {
   placa: string;
+  veiculoId?: string;
+  /** Estado usado pelo marcador: comunicação + ignição + pendências. */
+  estadoMapa: string;
   status: Status;
   vel: number;
   local: string;
@@ -54,6 +57,19 @@ export default function MapaAoVivo() {
   const [selected, setSelected] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const veiculosCadastro = useQuery(veiculosQuery(1, 200));
+  const videoQ = useQuery(videoOcorrenciasQuery());
+
+  /** Placas com ocorrência de risco alto aguardando tratativa. */
+  const criticosPorPlaca = useMemo(() => {
+    const ids = new Set(
+      (videoQ.data ?? [])
+        .filter((o) => o.risco === "alto" && o.status === "aguardando")
+        .map((o) => o.veiculoId),
+    );
+    const placas = new Set<string>();
+    for (const v of veiculosCadastro.data?.items ?? []) if (ids.has(v.id)) placas.add(v.placa);
+    return placas;
+  }, [videoQ.data, veiculosCadastro.data]);
 
   // O marcador mostra o prefixo, que é como a operação chama o carro; a placa
   // fica no popup.
@@ -64,12 +80,28 @@ export default function MapaAoVivo() {
   }, [veiculosCadastro.data]);
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "" });
 
+  /**
+   * Estado do marcador. Combina comunicação, ignição e pendências: é o que o
+   * operador precisa distinguir de longe, e não a situação cadastral.
+   */
+  const estadoDe = (p: PosicaoVeiculo, temEventoCritico: boolean, emManutencao: boolean): string => {
+    const horas = (Date.now() - new Date(p.atualizadoEm).getTime()) / 3_600_000;
+    if (Number.isNaN(horas) || horas > 24) return "sem_transmissao";
+    if (temEventoCritico) return "evento_critico";
+    if (emManutencao) return "manutencao";
+    if (!p.ignicao) return "desligado";
+    return p.velocidade > 3 ? "em_viagem" : "ligado_parado";
+  };
+
   const veiculos: Veiculo[] = useMemo(
     () =>
       (data ?? []).map((p) => {
         const { x, y } = toCanvasXY(p.lat, p.lng);
+        const cad = veiculosCadastro.data?.items.find((v) => v.placa === p.placa);
         return {
           placa: p.placa,
+          veiculoId: cad?.id,
+          estadoMapa: estadoDe(p, criticosPorPlaca.has(p.placa), cad?.situacao === "manutencao"),
           status: statusDe(p),
           vel: p.velocidade,
           local: p.endereco || "—",
@@ -80,7 +112,7 @@ export default function MapaAoVivo() {
           y,
         };
       }),
-    [data],
+    [data, veiculosCadastro.data, criticosPorPlaca],
   );
 
   const contagem = (s: Status) => veiculos.filter((v) => v.status === s).length;
@@ -238,7 +270,9 @@ export default function MapaAoVivo() {
                     rotulo: prefixoPorPlaca.get(v.placa) ?? v.placa,
                     lat: v.lat,
                     lng: v.lng,
-                    situacao: v.status,
+                    veiculoId: v.veiculoId,
+                    situacao: v.estadoMapa,
+                    eventosAbertos: criticosPorPlaca.has(v.placa) ? 1 : 0,
                     velocidade: v.vel,
                     endereco: v.local,
                     atualizado: v.atualizado,

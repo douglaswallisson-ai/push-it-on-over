@@ -317,3 +317,26 @@
     animation: none;
   }
 }
+
+/*
+ * Pulso do marcador no mapa.
+ *
+ * Reservado a veículo com evento crítico ou em manutenção: se tudo pulsa, nada
+ * chama atenção. A animação é respeitosa com quem pediu menos movimento na
+ * interface do sistema operacional.
+ */
+@keyframes ss-pulsar {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(192, 57, 43, 0.55);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 9px rgba(192, 57, 43, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="ss-pulsar"] {
+    animation: none !important;
+  }
+}

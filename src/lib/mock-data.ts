@@ -1201,3 +1201,114 @@ export const MOCK_PERFIS_ACESSO: PerfilAcesso[] = [
   { id: "pa4", nome: "Consulta", descricao: "Somente leitura.", sistema: true, usuariosVinculados: 23, acoes: ["ver_dados_operacionais"] },
   { id: "pa5", nome: "Manutenção", descricao: "Perfil sob medida para equipe de oficina: manutenção e diagnóstico, sem acesso a premiação.", usuariosVinculados: 9, acoes: ["agendar_manutencao", "editar_cadastros", "exportar_dados", "ver_dados_operacionais"] },
 ];
+
+/* ---- Tracking: eventos de percurso ---- */
+import type { EventoTracking, ResumoTracking, TipoEventoTracking } from "@/types";
+
+/**
+ * Percurso do dia por veículo. Em produção vem do processamento das posições;
+ * aqui a sequência é gerada de forma determinística, partindo da garagem e
+ * caminhando pelo corredor da linha, para a rota traçada fazer sentido no mapa.
+ */
+const gerarTracking = (): EventoTracking[] => {
+  const out: EventoTracking[] = [];
+  const base = new Date();
+  base.setHours(5, 0, 0, 0);
+
+  const rotas: Record<string, { lat: number; lng: number }[]> = {
+    v1: [
+      { lat: -23.5505, lng: -46.6333 }, { lat: -23.5560, lng: -46.6400 }, { lat: -23.5629, lng: -46.6544 },
+      { lat: -23.5566, lng: -46.6699 }, { lat: -23.5670, lng: -46.7020 }, { lat: -23.5714, lng: -46.7085 },
+    ],
+    v2: [
+      { lat: -23.5405, lng: -46.4666 }, { lat: -23.5490, lng: -46.4900 }, { lat: -23.5620, lng: -46.5060 },
+      { lat: -23.5560, lng: -46.5400 }, { lat: -23.5505, lng: -46.6333 },
+    ],
+    v4: [
+      { lat: -23.5670, lng: -46.7020 }, { lat: -23.5640, lng: -46.6800 }, { lat: -23.5566, lng: -46.6699 },
+      { lat: -23.5629, lng: -46.6544 }, { lat: -23.5505, lng: -46.6333 },
+    ],
+  };
+
+  let n = 0;
+  for (const [veiculoId, pontos] of Object.entries(rotas)) {
+    let minuto = 0;
+    const em = () => new Date(base.getTime() + minuto * 60_000).toISOString();
+
+    const push = (tipo: TipoEventoTracking, p: { lat: number; lng: number }, extra: Partial<EventoTracking> = {}) => {
+      out.push({
+        id: `tk${++n}`,
+        veiculoId,
+        tipo,
+        em: em(),
+        lat: p.lat,
+        lng: p.lng,
+        endereco: extra.endereco,
+        velocidade: extra.velocidade ?? 0,
+        odometro: 800_000 + n * 12,
+        duracaoMin: extra.duracaoMin,
+        motoristaId: veiculoId === "v1" ? "m1" : veiculoId === "v2" ? "m2" : "m4",
+      });
+    };
+
+    push("ignicao_ligada", pontos[0], { endereco: "Garagem Central" });
+    minuto += 6;
+    push("ligado_parado", pontos[0], { duracaoMin: 6, endereco: "Garagem Central — aquecimento" });
+    minuto += 4;
+    push("inicio_viagem", pontos[0], { velocidade: 18 });
+
+    for (let i = 1; i < pontos.length; i++) {
+      minuto += 22 + (i % 3) * 5;
+      const ultimo = i === pontos.length - 1;
+      if (i % 2 === 0 && !ultimo) {
+        push("parada", pontos[i], { duracaoMin: 8, velocidade: 0, endereco: `Ponto de controle ${i}` });
+        minuto += 8;
+        push("retomada", pontos[i], { velocidade: 24 });
+      } else {
+        push(ultimo ? "parada" : "retomada", pontos[i], { velocidade: ultimo ? 0 : 34 + i * 3 });
+      }
+      if (i === 2) {
+        minuto += 3;
+        push("excesso_velocidade", pontos[i], { velocidade: 71 });
+      }
+    }
+
+    minuto += 10;
+    push("ignicao_desligada", pontos[pontos.length - 1], { endereco: "Terminal — fim de tabela" });
+  }
+
+  return out;
+};
+
+export const MOCK_TRACKING: EventoTracking[] = gerarTracking();
+
+export const trackingDoVeiculo = (veiculoId: string) => MOCK_TRACKING.filter((e) => e.veiculoId === veiculoId);
+
+/** Resumo derivado dos eventos — evita recalcular em cada tela. */
+export const resumoTracking = (veiculoId: string): ResumoTracking | null => {
+  const eventos = trackingDoVeiculo(veiculoId).sort((a, b) => a.em.localeCompare(b.em));
+  if (!eventos.length) return null;
+
+  const ligada = eventos.find((e) => e.tipo === "ignicao_ligada");
+  const desligada = [...eventos].reverse().find((e) => e.tipo === "ignicao_desligada");
+  const paradas = eventos.filter((e) => e.tipo === "parada").length;
+  const ligadoParado = eventos.filter((e) => e.tipo === "ligado_parado").reduce((a, e) => a + (e.duracaoMin ?? 0), 0);
+  const paradoTotal = eventos.filter((e) => e.tipo === "parada").reduce((a, e) => a + (e.duracaoMin ?? 0), 0);
+
+  const inicio = new Date(eventos[0].em).getTime();
+  const fim = new Date(eventos[eventos.length - 1].em).getTime();
+  const minutosLigado = Math.round((fim - inicio) / 60_000);
+
+  return {
+    veiculoId,
+    data: eventos[0].em.slice(0, 10),
+    primeiraIgnicao: ligada?.em,
+    ultimaIgnicao: desligada?.em,
+    minutosLigado,
+    minutosEmMovimento: Math.max(0, minutosLigado - ligadoParado - paradoTotal),
+    minutosLigadoParado: ligadoParado,
+    paradas,
+    kmPercorrido: Math.round(((eventos[eventos.length - 1].odometro ?? 0) - (eventos[0].odometro ?? 0)) * 10) / 10,
+    velocidadeMaxima: Math.max(...eventos.map((e) => e.velocidade ?? 0)),
+  };
+};

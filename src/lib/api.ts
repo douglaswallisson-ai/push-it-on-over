@@ -342,3 +342,10 @@ export const Plataforma = {
   perfis: () =>
     modoMock() ? mock(M.MOCK_PERFIS_ACESSO) : api.get<import("@/types").PerfilAcesso[]>(`/api/plataforma/perfis`),
 };
+
+export const Tracking = {
+  porVeiculo: (veiculoId: string) =>
+    modoMock()
+      ? mock(M.trackingDoVeiculo(veiculoId))
+      : api.get<import("@/types").EventoTracking[]>(`/api/tracking${qs({ veiculo: veiculoId })}`),
+};

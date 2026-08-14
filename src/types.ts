@@ -1375,3 +1375,87 @@ export type PerfilAcesso = {
   sistema?: boolean;
   usuariosVinculados: number;
 };
+
+/* ------------------------------------------------------------------ */
+/* Tracking: eventos de ignição e percurso                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Estado do veículo no mapa. Diferente da situação cadastral: aqui interessa o
+ * que exige olhar agora.
+ */
+export type EstadoMapa =
+  | "evento_critico"
+  | "manutencao"
+  | "em_viagem"
+  | "ligado_parado"
+  | "desligado"
+  | "sem_transmissao";
+
+export const ESTADO_MAPA_LABEL: Record<EstadoMapa, string> = {
+  evento_critico: "Evento crítico",
+  manutencao: "Em manutenção",
+  em_viagem: "Em viagem",
+  ligado_parado: "Ligado parado",
+  desligado: "Desligado",
+  sem_transmissao: "Sem transmitir há mais de 24 h",
+};
+
+export type TipoEventoTracking =
+  | "ignicao_ligada"
+  | "inicio_viagem"
+  | "parada"
+  | "ligado_parado"
+  | "retomada"
+  | "ignicao_desligada"
+  | "excesso_velocidade"
+  | "cerca_entrada"
+  | "cerca_saida";
+
+export const EVENTO_TRACKING_LABEL: Record<TipoEventoTracking, string> = {
+  ignicao_ligada: "Ignição ligada",
+  inicio_viagem: "Início de viagem",
+  parada: "Parada",
+  ligado_parado: "Ligado parado",
+  retomada: "Retomada de movimento",
+  ignicao_desligada: "Ignição desligada",
+  excesso_velocidade: "Excesso de velocidade",
+  cerca_entrada: "Entrada em cerca",
+  cerca_saida: "Saída de cerca",
+};
+
+/**
+ * Evento de percurso.
+ *
+ * É o registro que faltava para reconstituir o dia do veículo: sem a sequência
+ * de ignição, parada e retomada, o mapa mostra onde o carro está mas não como
+ * chegou ali, e não há como responder "o que ele fez das 6 às 10".
+ */
+export type EventoTracking = {
+  id: string;
+  veiculoId: string;
+  tipo: TipoEventoTracking;
+  em: string;
+  lat: number;
+  lng: number;
+  endereco?: string;
+  velocidade?: number;
+  odometro?: number;
+  /** Duração do estado que começou neste evento, em minutos. */
+  duracaoMin?: number;
+  motoristaId?: string;
+};
+
+/** Resumo do dia do veículo, derivado dos eventos. */
+export type ResumoTracking = {
+  veiculoId: string;
+  data: string;
+  primeiraIgnicao?: string;
+  ultimaIgnicao?: string;
+  minutosLigado: number;
+  minutosEmMovimento: number;
+  minutosLigadoParado: number;
+  paradas: number;
+  kmPercorrido: number;
+  velocidadeMaxima: number;
+};

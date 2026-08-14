@@ -22,6 +22,7 @@ import {
   Plataforma,
   Preventiva,
   Pneus,
+  Tracking,
   Video,
   VideoAoVivo,
   Itinerarios,
@@ -351,3 +352,11 @@ export const adminsQuery = () =>
 
 export const perfisAcessoQuery = () =>
   queryOptions({ queryKey: ["plataforma", "perfis"], queryFn: () => Plataforma.perfis(), staleTime: 10 * MINUTE });
+
+export const trackingQuery = (veiculoId: string | undefined) =>
+  queryOptions({
+    queryKey: ["tracking", veiculoId],
+    queryFn: () => Tracking.porVeiculo(veiculoId!),
+    enabled: Boolean(veiculoId),
+    staleTime: MINUTE,
+  });

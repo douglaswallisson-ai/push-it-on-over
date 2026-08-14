@@ -34,6 +34,7 @@ export function MapaCliente(props: {
   selecionado: string | null;
   onSelect: (placa: string) => void;
   altura?: string;
+  percurso?: [number, number][];
 }) {
   const [montado, setMontado] = useState(false);
   const altura = props.altura ?? "h-[520px] lg:h-[640px]";

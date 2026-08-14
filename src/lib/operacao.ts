@@ -1,5 +1,7 @@
 import type {
   DiaFiscal,
+  IndicadoresCalculados,
+  IndicadoresPeriodo,
   SituacaoViagem,
   ViagemProgramada,
   ViagemRealizada,
@@ -196,3 +198,70 @@ export const custoPorPassageiro = (custo: number, passageiros: number) =>
 
 /** Score de condução normalizado: eventos por 100 km. */
 export const eventosPor100km = (eventos: number, km: number) => (km ? (eventos / km) * 100 : 0);
+
+/* ------------------------------------------------------------------ */
+/* Consolidação de indicadores                                         */
+/* ------------------------------------------------------------------ */
+
+/** MTBF em horas: tempo médio de operação entre falhas. */
+export const mtbfHoras = (horasOperacao: number, falhas: number) =>
+  falhas ? horasOperacao / falhas : horasOperacao;
+
+/** MTTR em horas: tempo médio para devolver o veículo à operação. */
+export const mttrHoras = (tempoReparoTotalMin: number, falhas: number) =>
+  falhas ? tempoReparoTotalMin / 60 / falhas : 0;
+
+/** Disponibilidade da frota, em %. */
+export const disponibilidade = (horasDisponiveis: number, horasTotais: number) =>
+  horasTotais ? (horasDisponiveis / horasTotais) * 100 : 0;
+
+/**
+ * Calcula o painel completo a partir do consolidado do período.
+ *
+ * Concentrar isso aqui evita o problema que já apareceu no sistema: o mesmo
+ * indicador calculado de dois jeitos em duas telas, divergindo e perdendo
+ * credibilidade.
+ */
+export function calcularIndicadores(p: IndicadoresPeriodo): IndicadoresCalculados {
+  const custos = p.custoPorCategoria;
+  const custoTotal = Object.values(custos).reduce((a, v) => a + v, 0);
+  const horasOperacao = p.horasDisponiveis;
+
+  return {
+    kml: p.litrosDiesel ? p.kmRodado / p.litrosDiesel : 0,
+    kwhPorKm: p.kmRodado && p.kwh ? p.kwh / p.kmRodado : 0,
+    ipk: ipk(p.passageiros, p.kmRodado),
+    cpk: cpk(custoTotal, p.kmRodado),
+    cpkPecas: cpk(custos.pecas ?? 0, p.kmRodado),
+    cpkCombustivel: cpk((custos.combustivel ?? 0) + (custos.energia ?? 0), p.kmRodado),
+    custoTotal,
+    custoPorPassageiro: custoPorPassageiro(custoTotal, p.passageiros),
+    mkbf: mkbf(p.kmRodado, p.falhas),
+    mtbfHoras: mtbfHoras(horasOperacao, p.falhas),
+    mttrHoras: mttrHoras(p.tempoReparoTotalMin, p.falhas),
+    disponibilidade: disponibilidade(p.horasDisponiveis, p.horasTotais),
+    coberturaKmPct: p.kmRodado ? (p.kmComItinerario / p.kmRodado) * 100 : 0,
+    eficienciaProgramacao: p.viagensProgramadas
+      ? (p.viagensRealizadas / p.viagensProgramadas) * 100
+      : 0,
+    eventosPor100km: eventosPor100km(p.eventosConducao, p.kmRodado),
+  };
+}
+
+/**
+ * Variação percentual entre dois períodos.
+ *
+ * `melhorQuando` importa: uma queda de 3% no CPK é boa notícia e uma queda de
+ * 3% no IPK é má. Sem isso a cor do indicador mente.
+ */
+export function variacao(
+  atual: number,
+  anterior: number,
+  melhorQuando: "maior" | "menor" = "maior",
+): { pct: number; bom: boolean | null } {
+  if (!anterior) return { pct: 0, bom: null };
+  const pct = ((atual - anterior) / Math.abs(anterior)) * 100;
+  if (Math.abs(pct) < 0.05) return { pct, bom: null };
+  const subiu = pct > 0;
+  return { pct, bom: melhorQuando === "maior" ? subiu : !subiu };
+}

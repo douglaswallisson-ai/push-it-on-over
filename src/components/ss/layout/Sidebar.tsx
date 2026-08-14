@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ClipboardList,
   FileText,
+  Gauge,
   Home,
   Leaf,
   LogOut,
@@ -72,6 +73,11 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
   { label: "Motoristas", icon: Users, to: "/app/motoristas" },
+  {
+    label: "Gerencial",
+    icon: Gauge,
+    items: [{ label: "Indicadores", to: "/app/gerencial/indicadores" }],
+  },
   {
     label: "Operação",
     icon: Route,

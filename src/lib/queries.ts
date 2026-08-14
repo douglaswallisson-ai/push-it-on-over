@@ -7,6 +7,7 @@ import {
   Frota,
   Garagens,
   GruposLinhas,
+  Indicadores,
   Itinerarios,
   Linhas,
   ManutencaoKanban,
@@ -224,3 +225,9 @@ export const alarmesOperacionaisQuery = (linhaId?: string) =>
     staleTime: 20_000,
     refetchInterval: 30_000,
   });
+
+export const indicadoresSerieQuery = () =>
+  queryOptions({ queryKey: ["indicadores", "serie"], queryFn: () => Indicadores.serie(), staleTime: 10 * MINUTE });
+
+export const falhasQuery = () =>
+  queryOptions({ queryKey: ["indicadores", "falhas"], queryFn: () => Indicadores.falhas(), staleTime: 5 * MINUTE });

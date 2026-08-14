@@ -409,3 +409,76 @@ export const MOCK_ALARMES_OPERACIONAIS: AlarmeOperacional[] = [
 export const linhaPorId = (id: string) => MOCK_LINHAS.find((l) => l.id === id);
 export const pontoPorId = (id: string) => MOCK_PONTOS.find((p) => p.id === id);
 export const itinerarioPorId = (id: string) => MOCK_ITINERARIOS.find((i) => i.id === id);
+
+/* ------------------------------------------------------------------ */
+/* BLOCO 1 — Consolidado de indicadores por período                    */
+/* ------------------------------------------------------------------ */
+
+import type { FalhaFrota, IndicadoresPeriodo } from "@/types";
+
+/**
+ * Sete meses de consolidado. Os números seguem a ordem de grandeza de uma
+ * operação urbana de ~370 carros: ~2 milhões de km e ~4,8 milhões de
+ * passageiros por mês, custo por passageiro na casa de R$ 4.
+ */
+export const MOCK_INDICADORES_PERIODO: IndicadoresPeriodo[] = [
+  {
+    periodo: "2026-02", frotaAtiva: 361, frotaTotal: 372, kmRodado: 1_985_400, kmComItinerario: 1_742_100,
+    passageiros: 4_612_800, litrosDiesel: 1_301_200, kwh: 96_400,
+    custoPorCategoria: { combustivel: 8_452_000, energia: 62_100, pecas: 2_780_000, mao_obra: 4_310_000, pneus: 890_000, terceiros: 1_120_000, outros: 640_000 },
+    falhas: 238, falhasEmRota: 71, tempoReparoTotalMin: 121_000, horasDisponiveis: 236_400, horasTotais: 249_800,
+    viagensProgramadas: 58_400, viagensRealizadas: 56_100, eventosConducao: 742_000,
+  },
+  {
+    periodo: "2026-03", frotaAtiva: 364, frotaTotal: 372, kmRodado: 2_042_700, kmComItinerario: 1_812_900,
+    passageiros: 4_780_100, litrosDiesel: 1_331_800, kwh: 101_200,
+    custoPorCategoria: { combustivel: 8_614_000, energia: 65_300, pecas: 2_690_000, mao_obra: 4_355_000, pneus: 902_000, terceiros: 1_090_000, outros: 651_000 },
+    falhas: 226, falhasEmRota: 64, tempoReparoTotalMin: 114_500, horasDisponiveis: 240_100, horasTotais: 252_300,
+    viagensProgramadas: 60_100, viagensRealizadas: 58_200, eventosConducao: 738_400,
+  },
+  {
+    periodo: "2026-04", frotaAtiva: 366, frotaTotal: 373, kmRodado: 2_058_900, kmComItinerario: 1_849_600,
+    passageiros: 4_836_400, litrosDiesel: 1_338_100, kwh: 108_700,
+    custoPorCategoria: { combustivel: 8_701_000, energia: 70_100, pecas: 2_612_000, mao_obra: 4_398_000, pneus: 915_000, terceiros: 1_064_000, outros: 662_000 },
+    falhas: 214, falhasEmRota: 58, tempoReparoTotalMin: 106_200, horasDisponiveis: 243_600, horasTotais: 254_100,
+    viagensProgramadas: 60_800, viagensRealizadas: 59_100, eventosConducao: 721_900,
+  },
+  {
+    periodo: "2026-05", frotaAtiva: 367, frotaTotal: 373, kmRodado: 2_066_200, kmComItinerario: 1_871_400,
+    passageiros: 4_901_300, litrosDiesel: 1_341_600, kwh: 114_300,
+    custoPorCategoria: { combustivel: 8_755_000, energia: 73_800, pecas: 2_548_000, mao_obra: 4_412_000, pneus: 921_000, terceiros: 1_048_000, outros: 668_000 },
+    falhas: 208, falhasEmRota: 54, tempoReparoTotalMin: 101_400, horasDisponiveis: 245_200, horasTotais: 254_900,
+    viagensProgramadas: 61_200, viagensRealizadas: 59_700, eventosConducao: 712_600,
+  },
+  {
+    periodo: "2026-06", frotaAtiva: 368, frotaTotal: 374, kmRodado: 2_075_998, kmComItinerario: 1_896_200,
+    passageiros: 4_871_456, litrosDiesel: 1_344_849, kwh: 121_900,
+    custoPorCategoria: { combustivel: 8_812_400, energia: 78_600, pecas: 2_496_300, mao_obra: 4_428_700, pneus: 928_400, terceiros: 1_032_600, outros: 671_000 },
+    falhas: 201, falhasEmRota: 51, tempoReparoTotalMin: 97_100, horasDisponiveis: 246_800, horasTotais: 255_400,
+    viagensProgramadas: 61_500, viagensRealizadas: 60_100, eventosConducao: 705_300,
+  },
+  {
+    periodo: "2026-07", frotaAtiva: 366, frotaTotal: 374, kmRodado: 2_075_413, kmComItinerario: 1_908_700,
+    passageiros: 4_724_130, litrosDiesel: 1_346_135, kwh: 128_400,
+    custoPorCategoria: { combustivel: 8_798_900, energia: 82_900, pecas: 2_441_800, mao_obra: 4_441_200, pneus: 934_100, terceiros: 1_018_400, outros: 674_500 },
+    falhas: 194, falhasEmRota: 47, tempoReparoTotalMin: 92_300, horasDisponiveis: 247_900, horasTotais: 255_800,
+    viagensProgramadas: 61_400, viagensRealizadas: 60_300, eventosConducao: 698_100,
+  },
+  {
+    periodo: "2026-08", frotaAtiva: 369, frotaTotal: 375, kmRodado: 2_089_600, kmComItinerario: 1_934_800,
+    passageiros: 4_802_900, litrosDiesel: 1_349_400, kwh: 134_800,
+    custoPorCategoria: { combustivel: 8_824_100, energia: 86_400, pecas: 2_398_600, mao_obra: 4_452_800, pneus: 940_200, terceiros: 1_004_900, outros: 678_200 },
+    falhas: 188, falhasEmRota: 44, tempoReparoTotalMin: 88_600, horasDisponiveis: 249_400, horasTotais: 256_300,
+    viagensProgramadas: 61_900, viagensRealizadas: 60_900, eventosConducao: 691_500,
+  },
+];
+
+export const MOCK_FALHAS: FalhaFrota[] = [
+  { id: "f1", veiculoId: "v3", linhaId: "l1", em: new Date(Date.now() - 5 * 3600_000).toISOString(), tempoReparoMin: 310, emRota: true, sistema: "Alimentação", descricao: "Falha no sensor de pressão do turbo" },
+  { id: "f2", veiculoId: "v5", linhaId: "l2", em: new Date(Date.now() - 26 * 3600_000).toISOString(), tempoReparoMin: 480, emRota: true, sistema: "Arrefecimento", descricao: "Vazamento no radiador" },
+  { id: "f3", veiculoId: "v9", linhaId: "l3", em: new Date(Date.now() - 52 * 3600_000).toISOString(), tempoReparoMin: 145, emRota: false, sistema: "Suspensão", descricao: "Bolsa de ar rompida" },
+  { id: "f4", veiculoId: "v6", linhaId: "l1", em: new Date(Date.now() - 74 * 3600_000).toISOString(), tempoReparoMin: 95, emRota: false, sistema: "Elétrico", descricao: "Bateria sem carga" },
+  { id: "f5", veiculoId: "v2", linhaId: "l1", em: new Date(Date.now() - 120 * 3600_000).toISOString(), tempoReparoMin: 620, emRota: true, sistema: "Transmissão", descricao: "Embreagem em fim de vida" },
+];
+
+export const periodoPorMes = (p: string) => MOCK_INDICADORES_PERIODO.find((x) => x.periodo === p);

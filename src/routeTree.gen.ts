@@ -40,6 +40,7 @@ import { Route as AppFrotaDesempenhoRouteImport } from './routes/app.frota.desem
 import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manutencao'
 import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.regeneracao'
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
+import { Route as AppGerencialIndicadoresRouteImport } from './routes/app.gerencial.indicadores'
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
 import { Route as AppOperacaoAlarmesRouteImport } from './routes/app.operacao.alarmes'
@@ -210,6 +211,11 @@ const AppFrotaTelemetriaRoute = AppFrotaTelemetriaRouteImport.update({
   path: '/frota/telemetria',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGerencialIndicadoresRoute = AppGerencialIndicadoresRouteImport.update({
+  id: '/gerencial/indicadores',
+  path: '/gerencial/indicadores',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMotoristasIndexRoute = AppMotoristasIndexRouteImport.update({
   id: '/motoristas/',
   path: '/motoristas/',
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
+  '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -343,6 +350,7 @@ export interface FileRoutesByTo {
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
+  '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
+  '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/app/frota/manutencao'
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
+    | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
     | '/app/operacao/viagens'
@@ -477,6 +487,7 @@ export interface FileRouteTypes {
     | '/app/frota/manutencao'
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
+    | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
     | '/app/operacao/viagens'
@@ -521,6 +532,7 @@ export interface FileRouteTypes {
     | '/app/frota/manutencao'
     | '/app/frota/regeneracao'
     | '/app/frota/telemetria'
+    | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
     | '/app/operacao/viagens'
@@ -759,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFrotaTelemetriaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/gerencial/indicadores': {
+      id: '/app/gerencial/indicadores'
+      path: '/gerencial/indicadores'
+      fullPath: '/app/gerencial/indicadores'
+      preLoaderRoute: typeof AppGerencialIndicadoresRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/motoristas/': {
       id: '/app/motoristas/'
       path: '/motoristas'
@@ -868,6 +887,7 @@ interface AppRouteChildren {
   AppFrotaManutencaoRoute: typeof AppFrotaManutencaoRoute
   AppFrotaRegeneracaoRoute: typeof AppFrotaRegeneracaoRoute
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
+  AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
   AppOperacaoAlarmesRoute: typeof AppOperacaoAlarmesRoute
   AppOperacaoViagensRoute: typeof AppOperacaoViagensRoute
@@ -910,6 +930,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaManutencaoRoute: AppFrotaManutencaoRoute,
   AppFrotaRegeneracaoRoute: AppFrotaRegeneracaoRoute,
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
+  AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
   AppOperacaoAlarmesRoute: AppOperacaoAlarmesRoute,
   AppOperacaoViagensRoute: AppOperacaoViagensRoute,

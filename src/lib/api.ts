@@ -219,3 +219,11 @@ export const AlarmesOperacionais = {
       ? mock(M.MOCK_ALARMES_OPERACIONAIS.filter((a) => !linhaId || a.linhaId === linhaId))
       : api.get<import("@/types").AlarmeOperacional[]>(`/api/operacao/alarmes${qs({ linha: linhaId })}`),
 };
+
+export const Indicadores = {
+  serie: () =>
+    USE_MOCK
+      ? mock(M.MOCK_INDICADORES_PERIODO)
+      : api.get<import("@/types").IndicadoresPeriodo[]>(`/api/indicadores/serie`),
+  falhas: () => (USE_MOCK ? mock(M.MOCK_FALHAS) : api.get<import("@/types").FalhaFrota[]>(`/api/indicadores/falhas`)),
+};

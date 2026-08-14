@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Route,
   TimerReset,
+  Users,
   XCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -20,6 +21,8 @@ import {
   DIA_FISCAL_PADRAO,
   dataOperacao,
   desvioMin,
+  ipk,
+  regularidadeHeadway,
   resumoViagens,
   rotuloDiaFiscal,
   tipoDiaDe,
@@ -101,6 +104,21 @@ export default function GestaoViagens() {
   }, [veiculosQ.data]);
 
   const r = resumoViagens(viagens);
+
+  // Indicadores do dia, calculados a partir do realizado.
+  const totalPassageiros = viagens.reduce((a, v) => a + (v.passageiros ?? 0), 0);
+  const totalKm = viagens.reduce((a, v) => a + (v.kmRodado ?? 0), 0);
+  const ipkDia = ipk(totalPassageiros, totalKm);
+  const regularidade = useMemo(() => {
+    const comHeadway = viagens.filter((v) => v.headwayProgramadoMin && v.headwayRealizadoMin);
+    if (!comHeadway.length) return 100;
+    return Math.round(
+      comHeadway.reduce(
+        (a, v) => a + regularidadeHeadway(v.headwayProgramadoMin!, [v.headwayRealizadoMin!]),
+        0,
+      ) / comHeadway.length,
+    );
+  }, [viagens]);
 
   const lista = useMemo(
     () => (situacao === "todas" ? viagens : viagens.filter((v) => v.situacao === situacao)),
@@ -320,6 +338,32 @@ export default function GestaoViagens() {
               <StatTile icon={Play} label="Em andamento" value={nf(r.emAndamento)} color="var(--brand-sky)" />
               <StatTile icon={TimerReset} label="Atrasadas" value={nf(r.atrasadas + r.adiantadas)} color="var(--gold)" foot="inclui adiantadas" />
               <StatTile icon={XCircle} label="Não realizadas" value={nf(r.naoRealizadas)} color="var(--coral)" />
+            </div>
+
+            {/* IPK e cobertura do dia — os mesmos indicadores do painel
+                gerencial, calculados sobre a operação corrente. */}
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <StatTile
+                icon={Users}
+                label="Passageiros"
+                value={nf(totalPassageiros)}
+                color="var(--brand-navy)"
+              />
+              <StatTile icon={Route} label="Km rodado" value={nf(Math.round(totalKm))} unit="km" color="var(--brand-sky)" />
+              <StatTile
+                icon={Users}
+                label="IPK do dia"
+                value={ipkDia.toFixed(2)}
+                color="var(--leaf)"
+                foot="passageiros por km"
+              />
+              <StatTile
+                icon={TimerReset}
+                label="Regularidade"
+                value={`${regularidade}%`}
+                color={regularidade >= 85 ? "var(--leaf)" : regularidade >= 70 ? "var(--gold)" : "var(--coral)"}
+                foot="aderência do headway"
+              />
             </div>
 
             <Card

@@ -51,6 +51,10 @@ export type Veiculo = {
   unidadeId?: string;
   /** Garagem onde o veículo está lotado — menor escopo de permissão. */
   garagemId?: string;
+  /** Diesel, elétrico ou híbrido. Muda a unidade de consumo e os indicadores. */
+  propulsao?: "diesel" | "eletrico" | "hibrido" | "gnv";
+  /** Capacidade de passageiros — base para ocupação. */
+  lotacao?: number;
 };
 
 export type PosicaoVeiculo = {
@@ -479,4 +483,95 @@ export type DiaFiscal = {
   /** Hora de início, HH:MM. Ex.: "03:00". */
   inicio: string;
   fuso: string;
+};
+
+/* ================================================================== */
+/* BLOCO 1 — Indicadores do setor                                     */
+/* ================================================================== */
+
+/**
+ * Categorias de custo operacional. O CPK isolado diz pouco; a decisão de
+ * renovar frota ou trocar fornecedor depende de saber qual categoria está
+ * puxando o número para cima.
+ */
+export type CategoriaCusto = "combustivel" | "energia" | "pecas" | "mao_obra" | "pneus" | "terceiros" | "outros";
+
+export const CATEGORIA_CUSTO_LABEL: Record<CategoriaCusto, string> = {
+  combustivel: "Combustível",
+  energia: "Energia elétrica",
+  pecas: "Peças",
+  mao_obra: "Mão de obra",
+  pneus: "Pneus",
+  terceiros: "Serviços de terceiros",
+  outros: "Outros",
+};
+
+/** Lançamento de custo, sempre atrelado a um período de apuração. */
+export type CustoOperacional = {
+  id: string;
+  periodo: string; // AAAA-MM
+  categoria: CategoriaCusto;
+  valor: number;
+  veiculoId?: string;
+  linhaId?: string;
+  garagemId?: string;
+};
+
+/**
+ * Falha que tirou o veículo de operação. É o denominador do MKBF e a origem do
+ * MTTR — só conta o que interrompeu a operação, não toda ordem de serviço.
+ */
+export type FalhaFrota = {
+  id: string;
+  veiculoId: string;
+  linhaId?: string;
+  em: string;
+  /** Minutos entre a falha e o retorno à operação. */
+  tempoReparoMin: number;
+  /** Falha em rota tira o carro da linha e exige socorro. */
+  emRota: boolean;
+  sistema: string;
+  descricao: string;
+};
+
+/** Consolidado de um período — o que alimenta o comparativo mês a mês. */
+export type IndicadoresPeriodo = {
+  periodo: string; // AAAA-MM
+  frotaAtiva: number;
+  frotaTotal: number;
+  kmRodado: number;
+  /** Km rodado dentro de itinerário cadastrado. */
+  kmComItinerario: number;
+  passageiros: number;
+  litrosDiesel: number;
+  kwh: number;
+  custoPorCategoria: Record<CategoriaCusto, number>;
+  falhas: number;
+  falhasEmRota: number;
+  tempoReparoTotalMin: number;
+  /** Horas em que a frota esteve disponível para escala. */
+  horasDisponiveis: number;
+  horasTotais: number;
+  viagensProgramadas: number;
+  viagensRealizadas: number;
+  eventosConducao: number;
+};
+
+/** Indicadores calculados a partir do consolidado. */
+export type IndicadoresCalculados = {
+  kml: number;
+  kwhPorKm: number;
+  ipk: number;
+  cpk: number;
+  cpkPecas: number;
+  cpkCombustivel: number;
+  custoTotal: number;
+  custoPorPassageiro: number;
+  mkbf: number;
+  mtbfHoras: number;
+  mttrHoras: number;
+  disponibilidade: number;
+  coberturaKmPct: number;
+  eficienciaProgramacao: number;
+  eventosPor100km: number;
 };

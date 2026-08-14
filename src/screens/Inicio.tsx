@@ -140,19 +140,21 @@ export default function Inicio() {
           )}
         </section>
 
-        <section>
-          <SectionLabel>Manutenção · situação da frota</SectionLabel>
-          <CardsManutencao />
-        </section>
-
-        <ContratoDoCliente />
-
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <PlanoCard />
           <PendenciasCard />
         </div>
 
         <CriticalCard />
+
+        {/* Manutenção e contrato ficam abaixo dos eventos críticos: o que exige
+            ação imediata vem primeiro, e estes são consulta. */}
+        <section>
+          <SectionLabel>Manutenção · situação da frota</SectionLabel>
+          <CardsManutencao />
+        </section>
+
+        <ContratoDoCliente />
       </div>
     </>
   );

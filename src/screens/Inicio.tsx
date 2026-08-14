@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import type { ResumoOperacao } from "@/types";
@@ -24,7 +23,6 @@ import {
   ShieldAlert,
   Truck,
   Users,
-  X,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -78,7 +76,6 @@ const CRIT = [
 ];
 
 export default function Inicio() {
-  const [notice, setNotice] = useState(true);
   const {
     data: resumo,
     isPending,
@@ -107,19 +104,6 @@ export default function Inicio() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
-        {notice && (
-          <div className="flex items-center justify-between gap-4 rounded-xl bg-gradient-green px-5 py-3 text-sm font-medium text-white shadow-card">
-            <span>O sistema foi atualizado para a versão 2.0 — confira as novidades.</span>
-            <button
-              onClick={() => setNotice(false)}
-              aria-label="Fechar"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/25 transition-colors hover:bg-white/40"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
-
         <HeroValue />
 
         {/* KPIs operacionais — dados reais da API. */}

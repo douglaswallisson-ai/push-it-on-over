@@ -8,7 +8,6 @@ import {
   Garagens,
   GruposLinhas,
   CCO,
-  Contratos,
   Indicadores,
   Jornadas,
   Motoristas,
@@ -252,11 +251,6 @@ export const videoVolumeQuery = () =>
 export const jornadasQuery = (data?: string) =>
   queryOptions({ queryKey: ["jornadas", data ?? "hoje"], queryFn: () => Jornadas.list(data), staleTime: MINUTE });
 export const multasQuery = () => queryOptions({ queryKey: ["multas"], queryFn: () => Multas.list(), staleTime: 5 * MINUTE });
-export const contratosQuery = () => queryOptions({ queryKey: ["contratos"], queryFn: () => Contratos.list(), staleTime: 10 * MINUTE });
-export const contratantesQuery = () => queryOptions({ queryKey: ["contratantes"], queryFn: () => Contratos.contratantes(), staleTime: 30 * MINUTE });
-export const medicoesQuery = () => queryOptions({ queryKey: ["medicoes"], queryFn: () => Contratos.medicoes(), staleTime: 10 * MINUTE });
-export const passageirosContratoQuery = () =>
-  queryOptions({ queryKey: ["contratos", "passageiros"], queryFn: () => Contratos.passageiros(), staleTime: 10 * MINUTE });
 
 export const motoristasListQuery = () =>
   queryOptions({ queryKey: ["motoristas", "lista"], queryFn: () => Motoristas.list({ page: 1, pageSize: 200 }), staleTime: 5 * MINUTE });

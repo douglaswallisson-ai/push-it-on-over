@@ -488,8 +488,8 @@ export const periodoPorMes = (p: string) => MOCK_INDICADORES_PERIODO.find((x) =>
 /* ------------------------------------------------------------------ */
 
 import type {
-  Contratante, Contrato, Jornada, Medicao, Multa, OcorrenciaVideo, OrdemServico,
-  PassageiroContrato, PlanoManutencao, Pneu, TipoAlarmeVideo,
+  Jornada, Multa, OcorrenciaVideo, OrdemServico,
+  PlanoManutencao, Pneu, TipoAlarmeVideo,
 } from "@/types";
 
 const hAtras = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
@@ -624,31 +624,9 @@ export const MOCK_MULTAS: Multa[] = [
 ];
 
 /* ---- Bloco 6: contratos ---- */
-export const MOCK_CONTRATANTES: Contratante[] = [
-  { id: "ct1", nome: "Azul Industrial S.A.", cnpj: "12.345.678/0001-90", contato: "Fernanda Lopes", email: "fernanda@azulind.com.br", telefone: "(11) 3344-5566", segmento: "Metalurgia" },
-  { id: "ct2", nome: "Vale Verde Alimentos", cnpj: "98.765.432/0001-10", contato: "Ricardo Nunes", email: "ricardo@valeverde.com.br", telefone: "(11) 2233-4455", segmento: "Alimentos" },
-  { id: "ct3", nome: "Prefeitura de Guarulhos", cnpj: "45.678.901/0001-22", contato: "Depto. de Transportes", email: "transportes@guarulhos.sp.gov.br", telefone: "(11) 2087-0000", segmento: "Público" },
-];
 
-export const MOCK_CONTRATOS: Contrato[] = [
-  { id: "c1", numero: "CT-2026-014", contratanteId: "ct1", tipo: "continuo", inicio: "2026-01-01", fim: "2026-12-31", valorMensal: 184000, kmFranquia: 22000, valorKmExcedente: 6.4, indiceReajuste: "IPCA", linhasVinculadas: ["l4"], status: "vigente" },
-  { id: "c2", numero: "CT-2025-098", contratanteId: "ct2", tipo: "continuo", inicio: "2025-07-01", fim: "2026-06-30", valorMensal: 96500, kmFranquia: 12000, valorKmExcedente: 6.9, indiceReajuste: "IGPM", linhasVinculadas: [], status: "encerrado" },
-  { id: "c3", numero: "CT-2026-021", contratanteId: "ct3", tipo: "continuo", inicio: "2026-03-01", fim: "2031-02-28", valorMensal: 1420000, kmFranquia: 210000, valorKmExcedente: 5.1, indiceReajuste: "IPCA", linhasVinculadas: ["l1", "l2", "l3"], status: "vigente" },
-  { id: "c4", numero: "CT-2026-033", contratanteId: "ct2", tipo: "eventual", inicio: "2026-09-12", fim: "2026-09-15", valorKm: 7.2, linhasVinculadas: [], status: "em_negociacao" },
-];
 
-export const MOCK_MEDICOES: Medicao[] = [
-  { id: "md1", contratoId: "c1", periodo: "2026-07", viagensPrevistas: 440, viagensRealizadas: 432, kmRodado: 23140, kmExcedente: 1140, valorBase: 184000, valorExcedente: 7296, glosas: 3200, valorLiquido: 188096, status: "faturada" },
-  { id: "md2", contratoId: "c1", periodo: "2026-08", viagensPrevistas: 440, viagensRealizadas: 436, kmRodado: 22480, kmExcedente: 480, valorBase: 184000, valorExcedente: 3072, glosas: 1600, valorLiquido: 185472, status: "aberta" },
-  { id: "md3", contratoId: "c3", periodo: "2026-07", viagensPrevistas: 61400, viagensRealizadas: 60300, kmRodado: 208900, kmExcedente: 0, valorBase: 1420000, valorExcedente: 0, glosas: 25400, valorLiquido: 1394600, status: "faturada" },
-];
 
-export const MOCK_PASSAGEIROS_CONTRATO: PassageiroContrato[] = [
-  { id: "pc1", contratoId: "c1", nome: "Ana Beatriz Correia", documento: "123.456.789-00", matriculaEmpresa: "AZ-4410", credencial: "QR-AZ4410", pontoEmbarqueId: "p8", ativo: true },
-  { id: "pc2", contratoId: "c1", nome: "Carlos Eduardo Lima", documento: "234.567.890-11", matriculaEmpresa: "AZ-4411", credencial: "QR-AZ4411", pontoEmbarqueId: "p8", ativo: true },
-  { id: "pc3", contratoId: "c1", nome: "Daniela Souza", documento: "345.678.901-22", matriculaEmpresa: "AZ-4412", credencial: "QR-AZ4412", pontoEmbarqueId: "p1", ativo: true },
-  { id: "pc4", contratoId: "c1", nome: "Eduardo Ramos", documento: "456.789.012-33", matriculaEmpresa: "AZ-4413", credencial: "QR-AZ4413", pontoEmbarqueId: "p1", ativo: false },
-];
 
 /* ---- Bloco 3: posições na linha ---- */
 import type { Despacho, PosicaoNaLinha } from "@/types";

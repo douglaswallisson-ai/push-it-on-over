@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import type { ResumoOperacao } from "@/types";
-import { Link } from "@/lib/router-compat";
+import { Link, useNavigate } from "@/lib/router-compat";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -22,7 +22,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
-import { useNavigate } from "@/lib/router-compat";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 
@@ -292,13 +291,13 @@ function PlanoCard() {
             A frota opera 4% acima da média do último mês. Os módulos de roteirização e monitoramento
             de condução são os que mais puxam o índice para cima.
           </p>
-          <a
-            href="#"
+          <Link
+            to="/app/gerencial/indicadores"
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-blue"
           >
             Ver dashboard completo
             <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
       </div>
     </div>

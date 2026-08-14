@@ -250,14 +250,6 @@ export const Jornadas = {
 export const Multas = {
   list: () => (USE_MOCK ? mock(M.MOCK_MULTAS) : api.get<import("@/types").Multa[]>(`/api/multas`)),
 };
-export const Contratos = {
-  list: () => (USE_MOCK ? mock(M.MOCK_CONTRATOS) : api.get<import("@/types").Contrato[]>(`/api/contratos`)),
-  contratantes: () =>
-    USE_MOCK ? mock(M.MOCK_CONTRATANTES) : api.get<import("@/types").Contratante[]>(`/api/contratantes`),
-  medicoes: () => (USE_MOCK ? mock(M.MOCK_MEDICOES) : api.get<import("@/types").Medicao[]>(`/api/medicoes`)),
-  passageiros: () =>
-    USE_MOCK ? mock(M.MOCK_PASSAGEIROS_CONTRATO) : api.get<import("@/types").PassageiroContrato[]>(`/api/contratos/passageiros`),
-};
 
 export const CCO = {
   posicoes: (linhaId?: string) =>

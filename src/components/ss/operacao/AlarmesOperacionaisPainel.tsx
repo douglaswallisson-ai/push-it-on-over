@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Bus, Check, RefreshCw, Siren, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { alarmesOperacionaisQuery, desde, linhasQuery, nf, veiculosQuery } from "@/lib/queries";
@@ -30,7 +29,14 @@ const TIPO_TONE: Record<TipoAlarmeOperacional, PillTone> = {
   headway_irregular: "sky",
 };
 
-export default function AlarmesOperacao() {
+/**
+ * Ocorrências operacionais.
+ *
+ * Vive dentro da tela de Alarmes porque a regra e o que ela dispara são a mesma
+ * coisa vista de dois lados. Ter a configuração num módulo e as ocorrências em
+ * outro obrigava o usuário a lembrar em qual dos dois estava o que procurava.
+ */
+export function AlarmesOperacionaisPainel() {
   const [linhaId, setLinhaId] = useState("");
   const [tratados, setTratados] = useState<Record<string, boolean>>({});
   const [mostrarTratados, setMostrarTratados] = useState(false);
@@ -157,11 +163,10 @@ export default function AlarmesOperacao() {
   ];
 
   return (
-    <>
-      <PageHeader
-        title="Alarmes operacionais"
-        subtitle="Operação › Desvios de programação"
-        actions={
+
+    <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-[15px] font-semibold text-foreground">Ocorrências operacionais</h2>
           <div className="flex items-center gap-2">
             <select
               value={linhaId}
@@ -184,10 +189,8 @@ export default function AlarmesOperacao() {
               Atualizar
             </button>
           </div>
-        }
-      />
+        </div>
 
-      <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
         {alarmesQ.error ? (
           <ErrorBox error={alarmesQ.error} onRetry={() => alarmesQ.refetch()} />
         ) : (
@@ -251,7 +254,6 @@ export default function AlarmesOperacao() {
             )}
           </>
         )}
-      </div>
-    </>
+    </div>
   );
 }

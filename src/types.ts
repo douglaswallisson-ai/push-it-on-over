@@ -829,62 +829,6 @@ export type Multa = {
 };
 
 /* ================================================================== */
-/* BLOCO 6 — Contrato e fretamento                                    */
-/* ================================================================== */
-
-export type Contratante = {
-  id: string;
-  nome: string;
-  cnpj: string;
-  contato: string;
-  email: string;
-  telefone: string;
-  segmento?: string;
-};
-
-export type Contrato = {
-  id: string;
-  numero: string;
-  contratanteId: string;
-  tipo: "continuo" | "eventual";
-  inicio: string;
-  fim: string;
-  valorMensal?: number;
-  valorKm?: number;
-  kmFranquia?: number;
-  valorKmExcedente?: number;
-  indiceReajuste?: string;
-  linhasVinculadas: string[];
-  status: "vigente" | "encerrado" | "suspenso" | "em_negociacao";
-};
-
-/** Medição mensal do contrato — base do faturamento. */
-export type Medicao = {
-  id: string;
-  contratoId: string;
-  periodo: string;
-  viagensPrevistas: number;
-  viagensRealizadas: number;
-  kmRodado: number;
-  kmExcedente: number;
-  valorBase: number;
-  valorExcedente: number;
-  glosas: number;
-  valorLiquido: number;
-  status: "aberta" | "fechada" | "faturada" | "contestada";
-};
-
-/** Passageiro nominal do fretamento de colaboradores. */
-export type PassageiroContrato = {
-  id: string;
-  contratoId: string;
-  nome: string;
-  documento: string;
-  matriculaEmpresa?: string;
-  credencial: string;
-  pontoEmbarqueId?: string;
-  ativo: boolean;
-};
 
 /* ================================================================== */
 /* BLOCO 3 — Controle operacional (CCO)                               */

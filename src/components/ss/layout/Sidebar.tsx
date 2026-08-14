@@ -56,15 +56,6 @@ const isGroup = (e: Entry): e is Group => "items" in e;
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
   {
-    label: "Pessoas",
-    icon: Users,
-    items: [
-      { label: "Motoristas", to: "/app/motoristas" },
-      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
-      { label: "Multas", to: "/app/pessoas/multas" },
-    ],
-  },
-  {
     label: "Cadastros",
     icon: ClipboardList,
     items: [
@@ -97,20 +88,27 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   {
+    label: "Pessoas",
+    icon: Users,
+    items: [
+      { label: "Motoristas", to: "/app/motoristas" },
+      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
+      { label: "Controle de escala", to: "/app/fretamento/escala" },
+      { label: "Ponto", to: "/app/fretamento/ponto" },
+      { label: "Multas", to: "/app/pessoas/multas" },
+    ],
+  },
+  {
     label: "Fretamento",
     icon: Bus,
     items: [
-      { label: "Contratos", to: "/app/fretamento/contratos" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
-      { label: "Alarmes operacionais", to: "/app/operacao/alarmes" },
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
-      { label: "Controle de escala", to: "/app/fretamento/escala" },
-      { label: "Ponto", to: "/app/fretamento/ponto" },
     ],
   },
   { label: "Eventos", icon: Siren, to: "/app/eventos" },

@@ -10,6 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { AlarmesOperacionaisPainel } from "@/components/ss/operacao/AlarmesOperacionaisPainel";
 import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/ss/ui/data";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { VeiculoPicker } from "@/components/ss/cadastro/VeiculoPicker";
@@ -148,7 +149,7 @@ export default function CadastroAlarme() {
 
   return (
     <>
-      <PageHeader title="Cadastro de alarme" subtitle="Cadastros › Alarme" />
+      <PageHeader title="Alarmes" subtitle="Cadastros › Regras e ocorrências" />
 
       <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
         <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
@@ -292,9 +293,13 @@ export default function CadastroAlarme() {
           </Card>
         )}
 
-        <p className="pb-4 text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground">
           Clique em qualquer alarme da lista para editar, inclusive os veículos aos quais ele se aplica.
         </p>
+
+        {/* Ocorrências operacionais. Antes viviam numa tela separada dentro de
+            Operação, o que separava a regra do que ela dispara. */}
+        <AlarmesOperacionaisPainel />
       </div>
 
       <CrudSheet<Alarme>

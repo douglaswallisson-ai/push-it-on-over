@@ -1184,3 +1184,160 @@ export type PreventivaPrevista = {
   /** Percentual do intervalo já consumido. */
   consumidoPct: number;
 };
+
+/* ================================================================== */
+/* Contrato comercial da organização                                  */
+/* ================================================================== */
+
+/**
+ * Modalidade contratada. Uma empresa pode ter mais de uma — é comum operar
+ * urbano e fretamento na mesma frota — e a quantidade de veículos é dividida
+ * entre elas, porque é o que define o faturamento e o escopo de módulos.
+ */
+export type ModalidadeContrato = "urbano" | "fretamento" | "carga";
+
+export const MODALIDADE_CONTRATO_LABEL: Record<ModalidadeContrato, string> = {
+  urbano: "Transporte urbano",
+  fretamento: "Fretamento",
+  carga: "Carga",
+};
+
+export type StatusContrato = "rascunho" | "ativo" | "suspenso" | "encerrado" | "cancelado";
+
+export const STATUS_CONTRATO_LABEL: Record<StatusContrato, string> = {
+  rascunho: "Rascunho",
+  ativo: "Ativo",
+  suspenso: "Suspenso",
+  encerrado: "Encerrado",
+  cancelado: "Cancelado",
+};
+
+/** Aditivo contratual: prorroga prazo, altera volume ou escopo. */
+export type AditivoContrato = {
+  id: string;
+  numero: string;
+  tipo: "prorrogacao" | "volume" | "escopo" | "valor";
+  assinadoEm: string;
+  /** Nova data de término, quando o aditivo prorroga. */
+  novoTermino?: string;
+  /** Nova distribuição de veículos, quando o aditivo altera volume. */
+  novosVeiculos?: Record<ModalidadeContrato, number>;
+  descricao: string;
+  registradoPor: string;
+};
+
+/** Usuário liberado pelo contrato. */
+export type UsuarioContrato = {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: "admin_empresa" | "gestor" | "operador" | "consulta";
+  ativo: boolean;
+};
+
+/**
+ * Contrato comercial que libera uma organização no sistema.
+ *
+ * É pré-requisito: sem contrato ativo a organização não existe operacionalmente.
+ * Isso evita o cenário em que alguém cria uma empresa "para testar", ela é
+ * esquecida ligada, e ninguém sabe se está sendo faturada.
+ */
+export type ContratoOrganizacao = {
+  id: string;
+  numero: string;
+
+  /** Organização criada a partir deste contrato. */
+  organizacaoId?: string;
+  razaoSocial: string;
+  nomeFantasia?: string;
+  cnpj: string;
+  telefone: string;
+  email: string;
+
+  responsavelNome: string;
+  responsavelCargo?: string;
+  responsavelTelefone?: string;
+  responsavelEmail?: string;
+
+  financeiroNome: string;
+  financeiroEmail: string;
+  financeiroTelefone?: string;
+
+  /** Veículos contratados por modalidade. A soma é o total do contrato. */
+  veiculosPorModalidade: Partial<Record<ModalidadeContrato, number>>;
+
+  ativacao: string;
+  termino: string;
+  /** Término efetivo após aditivos de prorrogação. */
+  terminoVigente?: string;
+
+  status: StatusContrato;
+  aditivos: AditivoContrato[];
+  usuarios: UsuarioContrato[];
+
+  canceladoEm?: string;
+  motivoCancelamento?: string;
+  observacoes?: string;
+  criadoEm: string;
+};
+
+/* ------------------------------------------------------------------ */
+/* Códigos de falha (DTC) e influência na preventiva                   */
+/* ------------------------------------------------------------------ */
+
+export type SeveridadeDTC = "informativo" | "atencao" | "critico" | "parada_imediata";
+
+export const SEVERIDADE_DTC_LABEL: Record<SeveridadeDTC, string> = {
+  informativo: "Informativo",
+  atencao: "Atenção",
+  critico: "Crítico",
+  parada_imediata: "Parada imediata",
+};
+
+/**
+ * Código de falha lido do barramento CAN.
+ *
+ * O SPN identifica o componente e o FMI o tipo de falha — é o padrão J1939 que
+ * os fabricantes usam em veículo pesado. Guardar os dois separados permite
+ * agrupar por componente mesmo quando a falha muda de natureza.
+ */
+export type CodigoDTC = {
+  id: string;
+  veiculoId: string;
+  codigo: string;
+  spn?: number;
+  fmi?: number;
+  sistema: string;
+  descricao: string;
+  severidade: SeveridadeDTC;
+  primeiraOcorrencia: string;
+  ultimaOcorrencia: string;
+  ocorrencias: number;
+  ativo: boolean;
+  /** Luz de anomalia acesa no painel. */
+  lampadaAcesa?: boolean;
+};
+
+/**
+ * Recomendação gerada a partir dos códigos de falha.
+ *
+ * A leitura sozinha não muda comportamento: o gestor recebe uma lista de
+ * códigos que não sabe interpretar. O valor está em traduzir o padrão de falhas
+ * em ação de manutenção — antecipar um item do plano, abrir corretiva ou apenas
+ * observar.
+ */
+export type RecomendacaoDTC = {
+  id: string;
+  veiculoId: string;
+  codigos: string[];
+  sistema: string;
+  /** O que fazer, em uma frase. */
+  acao: string;
+  justificativa: string;
+  /** Item do catálogo que deve ser antecipado, quando aplicável. */
+  parametroId?: string;
+  /** Percentual de antecipação sugerido no intervalo. */
+  antecipacaoPct?: number;
+  urgencia: "monitorar" | "antecipar" | "corretiva" | "imediata";
+  confianca: "alta" | "media" | "baixa";
+};

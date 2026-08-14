@@ -22,6 +22,8 @@ import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppAdminCatalogoRouteImport } from './routes/app.admin.catalogo'
+import { Route as AppAdminConfiguracoesRouteImport } from './routes/app.admin.configuracoes'
+import { Route as AppAdminContratosRouteImport } from './routes/app.admin.contratos'
 import { Route as AppCadastrosAlarmeRouteImport } from './routes/app.cadastros.alarme'
 import { Route as AppCadastrosCercaRouteImport } from './routes/app.cadastros.cerca'
 import { Route as AppCadastrosCombustivelRouteImport } from './routes/app.cadastros.combustivel'
@@ -39,6 +41,7 @@ import { Route as AppFretamentoPontoRouteImport } from './routes/app.fretamento.
 import { Route as AppFretamentoRoteirizacaoRouteImport } from './routes/app.fretamento.roteirizacao'
 import { Route as AppFrotaAnaliseRouteImport } from './routes/app.frota.analise'
 import { Route as AppFrotaDesempenhoRouteImport } from './routes/app.frota.desempenho'
+import { Route as AppFrotaDiagnosticoRouteImport } from './routes/app.frota.diagnostico'
 import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manutencao'
 import { Route as AppFrotaOrdensRouteImport } from './routes/app.frota.ordens'
 import { Route as AppFrotaPneusRouteImport } from './routes/app.frota.pneus'
@@ -124,6 +127,16 @@ const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
 const AppAdminCatalogoRoute = AppAdminCatalogoRouteImport.update({
   id: '/admin/catalogo',
   path: '/admin/catalogo',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminConfiguracoesRoute = AppAdminConfiguracoesRouteImport.update({
+  id: '/admin/configuracoes',
+  path: '/admin/configuracoes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminContratosRoute = AppAdminContratosRouteImport.update({
+  id: '/admin/contratos',
+  path: '/admin/contratos',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosAlarmeRoute = AppCadastrosAlarmeRouteImport.update({
@@ -212,6 +225,11 @@ const AppFrotaAnaliseRoute = AppFrotaAnaliseRouteImport.update({
 const AppFrotaDesempenhoRoute = AppFrotaDesempenhoRouteImport.update({
   id: '/frota/desempenho',
   path: '/frota/desempenho',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFrotaDiagnosticoRoute = AppFrotaDiagnosticoRouteImport.update({
+  id: '/frota/diagnostico',
+  path: '/frota/diagnostico',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFrotaManutencaoRoute = AppFrotaManutencaoRouteImport.update({
@@ -336,6 +354,8 @@ export interface FileRoutesByFullPath {
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
+  '/app/admin/contratos': typeof AppAdminContratosRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -353,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
+  '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
@@ -388,6 +409,8 @@ export interface FileRoutesByTo {
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app': typeof AppIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
+  '/app/admin/contratos': typeof AppAdminContratosRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -405,6 +428,7 @@ export interface FileRoutesByTo {
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
+  '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
@@ -442,6 +466,8 @@ export interface FileRoutesById {
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
+  '/app/admin/contratos': typeof AppAdminContratosRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -459,6 +485,7 @@ export interface FileRoutesById {
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
+  '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
@@ -497,6 +524,8 @@ export interface FileRouteTypes {
     | '/app/relatorios'
     | '/app/'
     | '/app/admin/catalogo'
+    | '/app/admin/configuracoes'
+    | '/app/admin/contratos'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -514,6 +543,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
     | '/app/frota/desempenho'
+    | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
     | '/app/frota/ordens'
     | '/app/frota/pneus'
@@ -549,6 +579,8 @@ export interface FileRouteTypes {
     | '/app/relatorios'
     | '/app'
     | '/app/admin/catalogo'
+    | '/app/admin/configuracoes'
+    | '/app/admin/contratos'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -566,6 +598,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
     | '/app/frota/desempenho'
+    | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
     | '/app/frota/ordens'
     | '/app/frota/pneus'
@@ -602,6 +635,8 @@ export interface FileRouteTypes {
     | '/app/relatorios'
     | '/app/'
     | '/app/admin/catalogo'
+    | '/app/admin/configuracoes'
+    | '/app/admin/contratos'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -619,6 +654,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
     | '/app/frota/desempenho'
+    | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
     | '/app/frota/ordens'
     | '/app/frota/pneus'
@@ -741,6 +777,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminCatalogoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/configuracoes': {
+      id: '/app/admin/configuracoes'
+      path: '/admin/configuracoes'
+      fullPath: '/app/admin/configuracoes'
+      preLoaderRoute: typeof AppAdminConfiguracoesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin/contratos': {
+      id: '/app/admin/contratos'
+      path: '/admin/contratos'
+      fullPath: '/app/admin/contratos'
+      preLoaderRoute: typeof AppAdminContratosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cadastros/alarme': {
       id: '/app/cadastros/alarme'
       path: '/cadastros/alarme'
@@ -858,6 +908,13 @@ declare module '@tanstack/react-router' {
       path: '/frota/desempenho'
       fullPath: '/app/frota/desempenho'
       preLoaderRoute: typeof AppFrotaDesempenhoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/frota/diagnostico': {
+      id: '/app/frota/diagnostico'
+      path: '/frota/diagnostico'
+      fullPath: '/app/frota/diagnostico'
+      preLoaderRoute: typeof AppFrotaDiagnosticoRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/frota/manutencao': {
@@ -1021,6 +1078,8 @@ interface AppRouteChildren {
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAdminCatalogoRoute: typeof AppAdminCatalogoRoute
+  AppAdminConfiguracoesRoute: typeof AppAdminConfiguracoesRoute
+  AppAdminContratosRoute: typeof AppAdminContratosRoute
   AppCadastrosAlarmeRoute: typeof AppCadastrosAlarmeRoute
   AppCadastrosCercaRoute: typeof AppCadastrosCercaRoute
   AppCadastrosCombustivelRoute: typeof AppCadastrosCombustivelRoute
@@ -1038,6 +1097,7 @@ interface AppRouteChildren {
   AppFretamentoRoteirizacaoRoute: typeof AppFretamentoRoteirizacaoRoute
   AppFrotaAnaliseRoute: typeof AppFrotaAnaliseRoute
   AppFrotaDesempenhoRoute: typeof AppFrotaDesempenhoRoute
+  AppFrotaDiagnosticoRoute: typeof AppFrotaDiagnosticoRoute
   AppFrotaManutencaoRoute: typeof AppFrotaManutencaoRoute
   AppFrotaOrdensRoute: typeof AppFrotaOrdensRoute
   AppFrotaPneusRoute: typeof AppFrotaPneusRoute
@@ -1072,6 +1132,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppIndexRoute: AppIndexRoute,
   AppAdminCatalogoRoute: AppAdminCatalogoRoute,
+  AppAdminConfiguracoesRoute: AppAdminConfiguracoesRoute,
+  AppAdminContratosRoute: AppAdminContratosRoute,
   AppCadastrosAlarmeRoute: AppCadastrosAlarmeRoute,
   AppCadastrosCercaRoute: AppCadastrosCercaRoute,
   AppCadastrosCombustivelRoute: AppCadastrosCombustivelRoute,
@@ -1089,6 +1151,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFretamentoRoteirizacaoRoute: AppFretamentoRoteirizacaoRoute,
   AppFrotaAnaliseRoute: AppFrotaAnaliseRoute,
   AppFrotaDesempenhoRoute: AppFrotaDesempenhoRoute,
+  AppFrotaDiagnosticoRoute: AppFrotaDiagnosticoRoute,
   AppFrotaManutencaoRoute: AppFrotaManutencaoRoute,
   AppFrotaOrdensRoute: AppFrotaOrdensRoute,
   AppFrotaPneusRoute: AppFrotaPneusRoute,

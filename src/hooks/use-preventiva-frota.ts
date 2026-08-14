@@ -8,7 +8,9 @@ import {
   sinaisOperacaoQuery,
   veiculosQuery,
   vinculosModeloQuery,
+  dtcQuery,
 } from "@/lib/queries";
+import { recomendarPorDTC } from "@/lib/dtc";
 import { calcularPreventivas, classificarOperacao } from "@/lib/preventiva";
 import type { ModeloVeiculo, PreventivaPrevista, TipoOperacao, Veiculo } from "@/types";
 
@@ -39,6 +41,7 @@ export function usePreventivaFrota(garagem?: string) {
   const regrasQ = useQuery(regrasAjusteQuery());
   const sinaisQ = useQuery(sinaisOperacaoQuery());
   const vinculosQ = useQuery(vinculosModeloQuery());
+  const dtcQ = useQuery(dtcQuery());
 
   const porVeiculo = useMemo<PreventivaVeiculo[]>(() => {
     const veiculos = veiculosQ.data?.items ?? [];
@@ -48,6 +51,7 @@ export function usePreventivaFrota(garagem?: string) {
     const regras = regrasQ.data ?? [];
     const sinais = sinaisQ.data ?? {};
     const vinculos = vinculosQ.data ?? {};
+    const codigos = dtcQ.data ?? [];
 
     return veiculos
       .filter((v) => !garagem || v.garagemId === garagem)
@@ -56,6 +60,10 @@ export function usePreventivaFrota(garagem?: string) {
         const modelo = modelos.find((m) => m.id === vinculo?.modeloId);
         const sinaisV = sinais[v.id] ?? {};
 
+        // Códigos de falha do veículo viram recomendações, e as de confiança
+        // alta antecipam o item de manutenção do sistema afetado.
+        const recomendacoes = recomendarPorDTC(codigos.filter((d) => d.veiculoId === v.id));
+
         const preventivas = calcularPreventivas(
           { ...v, modeloId: vinculo?.modeloId, montadoraId: vinculo?.montadoraId },
           modelo,
@@ -63,6 +71,7 @@ export function usePreventivaFrota(garagem?: string) {
           execucoes,
           regras,
           sinaisV,
+          recomendacoes,
         );
 
         return {
@@ -87,6 +96,7 @@ export function usePreventivaFrota(garagem?: string) {
     regrasQ.data,
     sinaisQ.data,
     vinculosQ.data,
+    dtcQ.data,
     garagem,
   ]);
 

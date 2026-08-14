@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router-compat";
-import { Gauge, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gauge, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench, X } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { StarRating } from "@/components/ss/ui/gauges";
@@ -86,6 +86,12 @@ export default function Veiculos() {
   const [faixasDe, setFaixasDe] = useState<string | null>(null);
   const { sessao } = useSessao();
   const [garagem, setGaragem] = useState("");
+  const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [operacao, setOperacao] = useState("");
+  const [situacao, setSituacao] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const porPagina = 15;
 
   // O escopo de garagem é aplicado antes de qualquer contagem: os KPIs precisam
   // refletir o que a pessoa pode ver, não a frota inteira.
@@ -104,14 +110,38 @@ export default function Veiculos() {
         ...(MOCK_INDICADORES_VEICULO[v.id] ?? {}),
         manutencao: porVeiculo.get(v.id),
       }))
-      .filter((v) =>
-        termo
-          ? v.placa.toLowerCase().includes(termo) ||
-            (v.prefixo ?? "").toLowerCase().includes(termo) ||
-            `${v.marca} ${v.modelo}`.toLowerCase().includes(termo)
-          : true,
-      ) as Linha[];
-  }, [itens, kanbanQ.data, busca]);
+      .filter((v) => {
+        if (marca && v.marca !== marca) return false;
+        if (modelo && v.modelo !== modelo) return false;
+        if (operacao && v.operacao !== operacao) return false;
+        if (situacao && v.situacao !== situacao) return false;
+        if (!termo) return true;
+        return (
+          v.placa.toLowerCase().includes(termo) ||
+          (v.prefixo ?? "").toLowerCase().includes(termo) ||
+          `${v.marca} ${v.modelo}`.toLowerCase().includes(termo)
+        );
+      }) as Linha[];
+  }, [itens, kanbanQ.data, busca, marca, modelo, operacao, situacao]);
+
+  // Opções derivadas do que existe na frota — lista fixa envelheceria.
+  const marcas = useMemo(() => [...new Set(itens.map((v) => v.marca))].sort(), [itens]);
+  const modelos = useMemo(
+    () => [...new Set(itens.filter((v) => !marca || v.marca === marca).map((v) => v.modelo))].sort(),
+    [itens, marca],
+  );
+  const operacoes = useMemo(() => [...new Set(itens.map((v) => v.operacao))].sort(), [itens]);
+
+  const totalPaginas = Math.max(1, Math.ceil(linhas.length / porPagina));
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const visiveis = useMemo(
+    () => linhas.slice((paginaAtual - 1) * porPagina, paginaAtual * porPagina),
+    [linhas, paginaAtual],
+  );
+  const limparFiltros = () => {
+    setMarca(""); setModelo(""); setOperacao(""); setSituacao(""); setBusca(""); setPagina(1);
+  };
+  const filtrosAtivos = [marca, modelo, operacao, situacao, busca].filter(Boolean).length;
 
   const conta = (s: string) => itens.filter((v) => v.situacao === s).length;
   const kmlMedio = itens.length ? itens.reduce((a, v) => a + (v.kml ?? 0), 0) / itens.length : 0;
@@ -290,6 +320,7 @@ export default function Veiculos() {
               icon={Truck}
               action={
                 <div className="flex items-center gap-2">
+                  <Pill tone="sky">{nf(linhas.length)} de {nf(itens.length)}</Pill>
                   <FiltroGaragem valor={garagem} onChange={setGaragem} />
                   <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -304,14 +335,110 @@ export default function Veiculos() {
               }
               bodyClassName="p-4"
             >
+              {/* Filtros. Cada seletor lista só o que existe na frota. */}
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <select
+                  value={marca}
+                  onChange={(e) => { setMarca(e.target.value); setModelo(""); setPagina(1); }}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+                >
+                  <option value="">Todas as marcas</option>
+                  {marcas.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+
+                <select
+                  value={modelo}
+                  onChange={(e) => { setModelo(e.target.value); setPagina(1); }}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+                >
+                  <option value="">Todos os modelos</option>
+                  {modelos.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+
+                <select
+                  value={operacao}
+                  onChange={(e) => { setOperacao(e.target.value); setPagina(1); }}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+                >
+                  <option value="">Todas as operações</option>
+                  {operacoes.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+
+                <select
+                  value={situacao}
+                  onChange={(e) => { setSituacao(e.target.value); setPagina(1); }}
+                  className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+                >
+                  <option value="">Todas as situações</option>
+                  {Object.entries(SITUACAO_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+
+                {filtrosAtivos > 0 && (
+                  <button
+                    onClick={limparFiltros}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-brand-navy hover:bg-secondary"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Limpar {filtrosAtivos} filtro{filtrosAtivos > 1 ? "s" : ""}
+                  </button>
+                )}
+              </div>
+
               {isPending ? (
                 <SkeletonRows rows={6} />
-              ) : linhas.length ? (
-                <DataTable
-                  columns={COLS}
-                  rows={linhas}
-                  onRowClick={(v) => navigate(`/app/frota/manutencao?placa=${v.placa}`)}
-                />
+              ) : visiveis.length ? (
+                <>
+                  <DataTable
+                    columns={COLS}
+                    rows={visiveis}
+                    onRowClick={(v) => navigate(`/app/frota/manutencao?placa=${v.placa}`)}
+                  />
+
+                  {totalPaginas > 1 && (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                      <span className="text-[12px] text-muted-foreground">
+                        {(paginaAtual - 1) * porPagina + 1}–{Math.min(paginaAtual * porPagina, linhas.length)} de{" "}
+                        {nf(linhas.length)}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setPagina(Math.max(1, paginaAtual - 1))}
+                          disabled={paginaAtual === 1}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary disabled:opacity-40"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                          .filter((n) => n === 1 || n === totalPaginas || Math.abs(n - paginaAtual) <= 1)
+                          .map((n, idx, arr) => (
+                            <span key={n} className="flex items-center">
+                              {idx > 0 && arr[idx - 1] !== n - 1 && (
+                                <span className="px-1 text-[12px] text-muted-foreground">…</span>
+                              )}
+                              <button
+                                onClick={() => setPagina(n)}
+                                className={cn(
+                                  "h-8 min-w-8 rounded-lg px-2 font-mono text-[12.5px] font-medium transition-colors",
+                                  n === paginaAtual
+                                    ? "bg-brand-navy text-white"
+                                    : "border border-border text-muted-foreground hover:bg-secondary",
+                                )}
+                              >
+                                {n}
+                              </button>
+                            </span>
+                          ))}
+                        <button
+                          onClick={() => setPagina(Math.min(totalPaginas, paginaAtual + 1))}
+                          disabled={paginaAtual === totalPaginas}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary disabled:opacity-40"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <EmptyNote>Nenhum veículo encontrado com esse filtro.</EmptyNote>
               )}

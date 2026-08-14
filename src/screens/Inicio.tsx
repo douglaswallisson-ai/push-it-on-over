@@ -3,9 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
+import { ordensQuery } from "@/lib/queries";
+import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
 import {
   AlertTriangle,
   ArrowDownRight,
+  CalendarClock,
+  FileWarning,
+  Package,
+  Wrench,
   ArrowRight,
   ArrowUpRight,
   Bell,
@@ -147,6 +153,11 @@ export default function Inicio() {
                 : kpis.map((k) => <KpiCard key={k.label} {...k} />)}
             </div>
           )}
+        </section>
+
+        <section>
+          <SectionLabel>Manutenção · situação da frota</SectionLabel>
+          <CardsManutencao />
         </section>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -407,6 +418,112 @@ function Donut({ value }: { value: number }) {
         <span className="font-display text-xl font-bold leading-none">{value}%</span>
         <span className="mt-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">índice</span>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------- Manutenção ------------------------------- */
+
+/**
+ * Situação da manutenção na abertura do sistema.
+ *
+ * Os números vêm do mesmo motor que alimenta o quadro e a aba de plano
+ * preventivo — não são um resumo à parte que poderia divergir. Cada card leva
+ * para a tela com o filtro já aplicado, para o gestor não ter que reencontrar
+ * o que acabou de ver.
+ */
+function CardsManutencao() {
+  const navigate = useNavigate();
+  const { porVeiculo, carregando } = usePreventivaFrota();
+  const ordensQ = useQuery(ordensQuery());
+
+  const todas = porVeiculo.flatMap((p) => p.preventivas);
+  const vencidas = todas.filter((p) => p.urgencia === "vencida").length;
+  const criticas = todas.filter((p) => p.urgencia === "critica" || p.urgencia === "proxima").length;
+  const semCatalogo = porVeiculo.filter((p) => p.semCatalogo).length;
+
+  const ordens = ordensQ.data ?? [];
+  const corretivas = ordens.filter((o) => o.tipo === "corretiva" && o.status !== "concluida" && o.status !== "cancelada").length;
+  const aguardandoPeca = ordens.filter((o) => o.status === "aguardando_peca").length;
+
+  const cards = [
+    {
+      label: "Preventivas vencidas",
+      valor: vencidas,
+      icone: AlertTriangle,
+      cor: "var(--coral)",
+      nota: "passaram do intervalo do fabricante",
+      destino: "/app/frota/manutencao",
+    },
+    {
+      label: "Preventivas próximas",
+      valor: criticas,
+      icone: CalendarClock,
+      cor: "var(--gold)",
+      nota: "acima de 75% do intervalo",
+      destino: "/app/frota/manutencao",
+    },
+    {
+      label: "Corretivas abertas",
+      valor: corretivas,
+      icone: Wrench,
+      cor: "var(--coral)",
+      nota: "ordens de serviço em aberto",
+      destino: "/app/frota/ordens",
+    },
+    {
+      label: "Aguardando peça",
+      valor: aguardandoPeca,
+      icone: Package,
+      cor: "var(--brand-sky)",
+      nota: "veículo parado esperando material",
+      destino: "/app/frota/ordens",
+    },
+    {
+      label: "Sem parâmetro",
+      valor: semCatalogo,
+      icone: FileWarning,
+      cor: semCatalogo ? "var(--gold)" : "var(--leaf)",
+      nota: "modelo sem catálogo configurado",
+      destino: "/app/admin/catalogo",
+    },
+  ];
+
+  if (carregando) {
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        {cards.map((c) => (
+          <div key={c.label} className="h-[104px] animate-pulse rounded-2xl border border-border bg-card" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {cards.map((c) => (
+        <button
+          key={c.label}
+          onClick={() => navigate(c.destino)}
+          className="rounded-2xl border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant"
+        >
+          <span className="flex items-center gap-2">
+            <span
+              className="flex h-7 w-7 items-center justify-center rounded-lg"
+              style={{ background: `color-mix(in oklab, ${c.cor} 14%, white)` }}
+            >
+              <c.icone className="h-4 w-4" style={{ color: c.cor }} />
+            </span>
+            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+              {c.label}
+            </span>
+          </span>
+          <span className="mt-2 block font-display text-[26px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
+            {c.valor}
+          </span>
+          <span className="mt-1 block text-[11px] leading-tight text-muted-foreground">{c.nota}</span>
+        </button>
+      ))}
     </div>
   );
 }

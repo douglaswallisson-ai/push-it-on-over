@@ -1096,3 +1096,89 @@ export const MOCK_EXECUCOES: ExecucaoManutencao[] = (() => {
 
 export const execucoesDoVeiculo = (veiculoId: string) =>
   MOCK_EXECUCOES.filter((e) => e.veiculoId === veiculoId);
+
+/* ---- Contratos comerciais das organizações ---- */
+import type { ContratoOrganizacao } from "@/types";
+
+export const MOCK_CONTRATOS_ORG: ContratoOrganizacao[] = [
+  {
+    id: "co1", numero: "SS-2026-001", organizacaoId: "viacao-cometa",
+    razaoSocial: "Viação Cometa Transportes S.A.", nomeFantasia: "Viação Cometa",
+    cnpj: "61.084.018/0001-03", telefone: "(11) 3145-2000", email: "contato@viacaocometa.com.br",
+    responsavelNome: "Giuliano Saccol", responsavelCargo: "Diretor de Operações",
+    responsavelTelefone: "(55) 99123-4567", responsavelEmail: "giuliano@viacaocometa.com.br",
+    financeiroNome: "Talita Ferreira", financeiroEmail: "financeiro@viacaocometa.com.br", financeiroTelefone: "(11) 3145-2010",
+    veiculosPorModalidade: { urbano: 138, fretamento: 26 },
+    ativacao: "2026-03-01", termino: "2027-02-28", terminoVigente: "2028-02-29",
+    status: "ativo",
+    aditivos: [
+      { id: "ad1", numero: "1º aditivo", tipo: "prorrogacao", assinadoEm: "2026-07-15", novoTermino: "2028-02-29", descricao: "Prorrogação por 12 meses nas mesmas condições comerciais.", registradoPor: "Cleicimar Soares" },
+      { id: "ad2", numero: "2º aditivo", tipo: "volume", assinadoEm: "2026-08-02", novosVeiculos: { urbano: 138, fretamento: 26, carga: 0 }, descricao: "Inclusão de 26 veículos de fretamento no escopo.", registradoPor: "Cleicimar Soares" },
+    ],
+    usuarios: [
+      { id: "uc1", nome: "Giuliano Saccol", email: "giuliano@viacaocometa.com.br", perfil: "admin_empresa", ativo: true },
+      { id: "uc2", nome: "Talita Ferreira", email: "talita@viacaocometa.com.br", perfil: "gestor", ativo: true },
+      { id: "uc3", nome: "Ronan Machado", email: "ronan@viacaocometa.com.br", perfil: "operador", ativo: true },
+    ],
+    criadoEm: "2026-02-14T10:00:00.000Z",
+  },
+  {
+    id: "co2", numero: "SS-2026-014", organizacaoId: "expresso-sul",
+    razaoSocial: "Expresso Sul Ltda.", nomeFantasia: "Expresso Sul",
+    cnpj: "12.345.678/0001-90", telefone: "(51) 3025-8800", email: "contato@expressosul.com.br",
+    responsavelNome: "Marco Taborda", responsavelCargo: "Gerente de Frota",
+    responsavelEmail: "marco@expressosul.com.br",
+    financeiroNome: "Najla Maltaca", financeiroEmail: "financeiro@expressosul.com.br",
+    veiculosPorModalidade: { urbano: 84 },
+    ativacao: "2026-01-15", termino: "2026-12-31",
+    status: "ativo", aditivos: [],
+    usuarios: [
+      { id: "uc4", nome: "Marco Taborda", email: "marco@expressosul.com.br", perfil: "admin_empresa", ativo: true },
+      { id: "uc5", nome: "Najla Maltaca", email: "najla@expressosul.com.br", perfil: "consulta", ativo: true },
+    ],
+    criadoEm: "2026-01-08T14:20:00.000Z",
+  },
+  {
+    id: "co3", numero: "SS-2025-092", organizacaoId: "trans-litoral",
+    razaoSocial: "Trans Litoral Logística S.A.", nomeFantasia: "Trans Litoral",
+    cnpj: "98.765.432/0001-10", telefone: "(13) 3221-4400", email: "contato@translitoral.com.br",
+    responsavelNome: "Richard Acácio", responsavelEmail: "richard@translitoral.com.br",
+    financeiroNome: "Davi Nadalin", financeiroEmail: "financeiro@translitoral.com.br",
+    veiculosPorModalidade: { carga: 62, fretamento: 18 },
+    ativacao: "2025-06-01", termino: "2026-05-31",
+    status: "encerrado", aditivos: [],
+    usuarios: [{ id: "uc6", nome: "Richard Acácio", email: "richard@translitoral.com.br", perfil: "admin_empresa", ativo: false }],
+    observacoes: "Contrato encerrado no vencimento. Cliente migrou para concorrente após licitação.",
+    criadoEm: "2025-05-12T09:00:00.000Z",
+  },
+  {
+    id: "co4", numero: "SS-2026-021",
+    razaoSocial: "Rápido Serrano Transportes Ltda.", nomeFantasia: "Rápido Serrano",
+    cnpj: "45.678.901/0001-22", telefone: "(54) 3218-7700", email: "contato@rapidoserrano.com.br",
+    responsavelNome: "Rafael Sabini", responsavelEmail: "rafael@rapidoserrano.com.br",
+    financeiroNome: "Crísala Boni", financeiroEmail: "financeiro@rapidoserrano.com.br",
+    veiculosPorModalidade: { urbano: 42, fretamento: 12 },
+    ativacao: "2026-09-01", termino: "2027-08-31",
+    status: "rascunho", aditivos: [], usuarios: [],
+    observacoes: "Aguardando assinatura. Cláusula de rescisão sem multa em caso de perda da licitação.",
+    criadoEm: "2026-08-10T16:45:00.000Z",
+  },
+];
+
+/* ---- Códigos de falha (DTC) ---- */
+import type { CodigoDTC } from "@/types";
+
+const dtcAtras = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
+
+export const MOCK_DTC: CodigoDTC[] = [
+  { id: "dtc1", veiculoId: "v3", codigo: "P0299", spn: 1172, fmi: 18, sistema: "Admissão", descricao: "Turbocompressor com baixa pressão de sobrealimentação", severidade: "critico", primeiraOcorrencia: dtcAtras(22), ultimaOcorrencia: dtcAtras(1), ocorrencias: 14, ativo: true, lampadaAcesa: true },
+  { id: "dtc2", veiculoId: "v3", codigo: "P0087", spn: 157, fmi: 1, sistema: "Alimentação", descricao: "Pressão do trilho de combustível abaixo do esperado", severidade: "atencao", primeiraOcorrencia: dtcAtras(18), ultimaOcorrencia: dtcAtras(2), ocorrencias: 7, ativo: true },
+  { id: "dtc3", veiculoId: "v5", codigo: "P0128", spn: 110, fmi: 15, sistema: "Arrefecimento", descricao: "Temperatura do líquido abaixo do regime de trabalho", severidade: "atencao", primeiraOcorrencia: dtcAtras(30), ultimaOcorrencia: dtcAtras(3), ocorrencias: 9, ativo: true },
+  { id: "dtc4", veiculoId: "v5", codigo: "P2002", spn: 3251, fmi: 0, sistema: "Pós-tratamento", descricao: "Eficiência do filtro de partículas abaixo do limite", severidade: "critico", primeiraOcorrencia: dtcAtras(12), ultimaOcorrencia: dtcAtras(0), ocorrencias: 5, ativo: true, lampadaAcesa: true },
+  { id: "dtc5", veiculoId: "v9", codigo: "P20EE", spn: 4364, fmi: 17, sistema: "Pós-tratamento", descricao: "Eficiência do catalisador SCR abaixo do limite", severidade: "critico", primeiraOcorrencia: dtcAtras(9), ultimaOcorrencia: dtcAtras(1), ocorrencias: 4, ativo: true, lampadaAcesa: true },
+  { id: "dtc6", veiculoId: "v2", codigo: "U0100", spn: 639, fmi: 9, sistema: "Rede", descricao: "Perda de comunicação com o módulo de controle do motor", severidade: "informativo", primeiraOcorrencia: dtcAtras(6), ultimaOcorrencia: dtcAtras(6), ocorrencias: 1, ativo: false },
+  { id: "dtc7", veiculoId: "v6", codigo: "P0401", spn: 2791, fmi: 7, sistema: "Pós-tratamento", descricao: "Fluxo insuficiente na recirculação de gases (EGR)", severidade: "atencao", primeiraOcorrencia: dtcAtras(15), ultimaOcorrencia: dtcAtras(4), ocorrencias: 6, ativo: true },
+  { id: "dtc8", veiculoId: "v6", codigo: "P0403", spn: 2791, fmi: 3, sistema: "Pós-tratamento", descricao: "Circuito da válvula EGR com falha elétrica", severidade: "atencao", primeiraOcorrencia: dtcAtras(11), ultimaOcorrencia: dtcAtras(2), ocorrencias: 4, ativo: true },
+];
+
+export const dtcDoVeiculo = (veiculoId: string) => MOCK_DTC.filter((d) => d.veiculoId === veiculoId);

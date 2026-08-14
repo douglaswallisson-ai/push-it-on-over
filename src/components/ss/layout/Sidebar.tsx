@@ -13,6 +13,7 @@ import {
   LogOut,
   MapPin,
   Route,
+  Settings,
   ShieldAlert,
   ShieldCheck,
   Siren,
@@ -85,6 +86,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Manutenção", to: "/app/frota/manutencao" },
       { label: "Ordens de serviço", to: "/app/frota/ordens" },
       { label: "Pneus", to: "/app/frota/pneus" },
+      { label: "Diagnóstico (DTC)", to: "/app/frota/diagnostico" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
       { label: "Regeneração (DPF)", to: "/app/frota/regeneracao" },
     ],
@@ -129,7 +131,15 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
-  { label: "Catálogo de manutenção", icon: Factory, to: "/app/admin/catalogo" },
+  {
+    label: "Administração",
+    icon: Settings,
+    items: [
+      { label: "Contratos", to: "/app/admin/contratos" },
+      { label: "Catálogo de manutenção", to: "/app/admin/catalogo" },
+      { label: "Configurações", to: "/app/admin/configuracoes" },
+    ],
+  },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

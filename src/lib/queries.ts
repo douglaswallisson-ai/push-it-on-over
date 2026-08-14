@@ -4,6 +4,8 @@ import {
   AlarmesOperacionais,
   Catalogo,
   Conducoes,
+  ContratosOrg,
+  DTC,
   Desempenho,
   Equipamentos,
   Frota,
@@ -30,6 +32,7 @@ import {
   ViagensOperacao,
 } from "@/lib/api";
 import type { StatusComunicacao, StatusManutencao } from "@/types";
+import { refetchInterval } from "@/lib/modo";
 
 /**
  * Opções de query compartilhadas — um único lugar definindo chaves de cache e
@@ -45,12 +48,17 @@ export const resumoQuery = () =>
     staleTime: MINUTE,
   });
 
+/**
+ * Posições do mapa. O intervalo de recarga vem da configuração de origem dos
+ * dados: com dados de exemplo não há o que recarregar, e ligado à API o
+ * administrador escolhe a frequência.
+ */
 export const posicoesQuery = () =>
   queryOptions({
     queryKey: ["frota", "posicoes"],
     queryFn: () => Frota.posicoes(),
     staleTime: 30_000,
-    refetchInterval: 60_000,
+    refetchInterval: refetchInterval(),
   });
 
 export const veiculosQuery = (page = 1, pageSize = 50) =>
@@ -330,3 +338,9 @@ export const sinaisOperacaoQuery = () =>
 
 export const vinculosModeloQuery = () =>
   queryOptions({ queryKey: ["preventiva", "vinculos"], queryFn: () => Preventiva.vinculos(), staleTime: 30 * MINUTE });
+
+export const contratosOrgQuery = () =>
+  queryOptions({ queryKey: ["contratos-org"], queryFn: () => ContratosOrg.list(), staleTime: 10 * MINUTE });
+
+export const dtcQuery = () =>
+  queryOptions({ queryKey: ["dtc"], queryFn: () => DTC.list(), staleTime: MINUTE, refetchInterval: refetchInterval() });

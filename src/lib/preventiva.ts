@@ -1,8 +1,10 @@
+import { fatorAntecipacao } from "@/lib/dtc";
 import type {
   ExecucaoManutencao,
   ModeloVeiculo,
   ParametroManutencao,
   PreventivaPrevista,
+  RecomendacaoDTC,
   RegraAjuste,
   TipoOperacao,
   UrgenciaPreventiva,
@@ -112,6 +114,12 @@ export function calcularPreventivas(
   execucoes: ExecucaoManutencao[],
   regras: RegraAjuste[],
   sinais: Record<string, number>,
+  /**
+   * Recomendações vindas dos códigos de falha. Só as de confiança alta chegam
+   * a alterar o intervalo — as demais aparecem na tela de diagnóstico para o
+   * gestor decidir, mas não mexem no cálculo sozinhas.
+   */
+  recomendacoesDTC: RecomendacaoDTC[] = [],
 ): PreventivaPrevista[] {
   if (!modelo) return [];
 
@@ -135,7 +143,23 @@ export function calcularPreventivas(
       .filter((e) => e.veiculoId === veiculo.id && e.parametroId === p.id)
       .sort((a, b) => b.em.localeCompare(a.em))[0];
 
-    const { aplicado, ajustes } = ajustarIntervalo(p.intervaloKm, regras, sinais, veiculo.montadoraId);
+    const base = ajustarIntervalo(p.intervaloKm, regras, sinais, veiculo.montadoraId);
+
+    // Códigos de falha no mesmo sistema antecipam o item.
+    const dtc = fatorAntecipacao(recomendacoesDTC, p.sistema);
+    const aplicado =
+      base.aplicado !== null && dtc.fator < 1 ? Math.round(base.aplicado * dtc.fator) : base.aplicado;
+    const ajustes =
+      dtc.motivo && dtc.fator < 1
+        ? [
+            ...base.ajustes,
+            {
+              nome: "Código de falha ativo",
+              fator: dtc.fator,
+              motivo: dtc.motivo,
+            },
+          ]
+        : base.ajustes;
 
     // Sem histórico, assume-se o odômetro atual como marco zero e o item entra
     // como programado — não como vencido, que seria alarme falso em massa.

@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Gauge, MapPin, Navigation, Search, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { Database, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { intervaloAtualizacao, usandoMock } from "@/lib/modo";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { ErrorBox, SkeletonBlock } from "@/components/ss/ui/QueryState";
@@ -42,7 +45,7 @@ function statusDe(p: PosicaoVeiculo): Status {
 }
 
 export default function MapaAoVivo() {
-  const { data, isPending, error, refetch } = useQuery(posicoesQuery());
+  const { data, isPending, error, refetch, isFetching, dataUpdatedAt } = useQuery(posicoesQuery());
   const [active, setActive] = useState<Set<Status>>(new Set(Object.keys(STATUS) as Status[]));
   const [selected, setSelected] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
@@ -91,6 +94,47 @@ export default function MapaAoVivo() {
       <PageHeader
         title="Mapa ao vivo"
         subtitle={isPending ? "Carregando posições…" : `${nf(veiculos.length)} veículos · ${veiculos[0]?.atualizado ?? "—"}`}
+        actions={
+          <div className="flex items-center gap-3">
+            {/* Estado da atualização automática. Sem isso o usuário não sabe se
+                o mapa está vivo ou congelado. */}
+            <span className="hidden items-center gap-1.5 text-[12px] text-muted-foreground sm:flex">
+              {usandoMock() ? (
+                <>
+                  <Database className="h-3.5 w-3.5" />
+                  dados de exemplo
+                </>
+              ) : intervaloAtualizacao() > 0 ? (
+                <>
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf" />
+                  atualizando a cada {intervaloAtualizacao()}s
+                </>
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+                  atualização automática desligada
+                </>
+              )}
+              {dataUpdatedAt > 0 && (
+                <span className="font-mono">
+                  · {new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                </span>
+              )}
+            </span>
+
+            <button
+              onClick={() => {
+                refetch();
+                toast.success("Posições atualizadas.");
+              }}
+              disabled={isFetching}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary disabled:opacity-60"
+            >
+              <RefreshCw className={cn("h-[15px] w-[15px]", isFetching && "animate-spin")} />
+              Atualizar
+            </button>
+          </div>
+        }
       />
 
       <div className="px-6 py-6 md:px-8">

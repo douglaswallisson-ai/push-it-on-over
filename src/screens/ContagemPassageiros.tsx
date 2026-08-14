@@ -1,7 +1,9 @@
-import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, TrendingUp, UserCheck, Users } from "lucide-react";
+import { useState } from "react";
+import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, Route, TrendingUp, UserCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
+import { nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,6 +25,8 @@ const CAP = 44;
 
 type Viagem = {
   codigo: string;
+  /** Distingue embarque de linha urbana de embarque de fretamento. */
+  modalidade: "urbano" | "fretamento";
   rota: string;
   veiculo: string;
   embarques: number;
@@ -34,14 +38,26 @@ type Viagem = {
 const ocupTone = (n: number): PillTone => (n >= 90 ? "coral" : n >= 70 ? "gold" : "green");
 
 const DADOS: Viagem[] = [
-  { codigo: "FRT-2041", rota: "SP → Curitiba", veiculo: "PLA-1A23", embarques: 51, desembarques: 51, pico: 42, ocupacao: 95 },
-  { codigo: "FRT-2042", rota: "Curitiba → Floripa", veiculo: "PLA-2B45", embarques: 34, desembarques: 32, pico: 30, ocupacao: 83 },
-  { codigo: "FRT-2043", rota: "SP → Campinas", veiculo: "PLA-3C67", embarques: 22, desembarques: 22, pico: 18, ocupacao: 75 },
-  { codigo: "FRT-2039", rota: "Santos → SP", veiculo: "PLA-1A23", embarques: 44, desembarques: 44, pico: 44, ocupacao: 100 },
+  { codigo: "8207-01 · tab 4", modalidade: "urbano", rota: "T. Central → T. Pinheiros", veiculo: "11596", embarques: 312, desembarques: 308, pico: 78, ocupacao: 98 },
+  { codigo: "8207-01 · tab 21", modalidade: "urbano", rota: "T. Pinheiros → T. Central", veiculo: "11278", embarques: 268, desembarques: 271, pico: 71, ocupacao: 89 },
+  { codigo: "3450-10 · tab 8", modalidade: "urbano", rota: "T. Itaquera → Aricanduva", veiculo: "11107", embarques: 194, desembarques: 190, pico: 62, ocupacao: 78 },
+  { codigo: "FRT-2041", modalidade: "fretamento", rota: "SP → Curitiba", veiculo: "PLA-1A23", embarques: 51, desembarques: 51, pico: 42, ocupacao: 95 },
+  { codigo: "FRT-2042", modalidade: "fretamento", rota: "Curitiba → Floripa", veiculo: "PLA-2B45", embarques: 34, desembarques: 32, pico: 30, ocupacao: 83 },
+  { codigo: "FRT-2043", modalidade: "fretamento", rota: "SP → Campinas", veiculo: "PLA-3C67", embarques: 22, desembarques: 22, pico: 18, ocupacao: 75 },
+  { codigo: "FRT-2039", modalidade: "fretamento", rota: "Santos → SP", veiculo: "PLA-1A23", embarques: 44, desembarques: 44, pico: 44, ocupacao: 100 },
 ];
 
 const COLS: Column<Viagem>[] = [
   { key: "codigo", header: "Viagem", render: (v) => <span className="font-mono font-semibold text-foreground">{v.codigo}</span> },
+  {
+    key: "modalidade",
+    header: "Modalidade",
+    render: (v) => (
+      <Pill tone={v.modalidade === "urbano" ? "sky" : "green"}>
+        {v.modalidade === "urbano" ? "Urbano" : "Fretamento"}
+      </Pill>
+    ),
+  },
   { key: "rota", header: "Rota", render: (v) => <span className="font-medium text-foreground">{v.rota}</span> },
   { key: "veiculo", header: "Veículo", render: (v) => <span className="font-mono">{v.veiculo}</span> },
   { key: "embarques", header: "Embarques", align: "right", render: (v) => <span className="font-mono text-leaf">↑ {v.embarques}</span> },
@@ -56,16 +72,25 @@ const COLS: Column<Viagem>[] = [
 ];
 
 export default function ContagemPassageiros() {
+  /**
+   * A tela serve às duas modalidades. Sem separar, embarque de linha urbana
+   * (centenas por viagem) soma com embarque de fretamento (dezenas) no mesmo
+   * número, e a média perde sentido.
+   */
+  const [modalidade, setModalidade] = useState<"todas" | "urbano" | "fretamento">("todas");
+  const linhas = modalidade === "todas" ? DADOS : DADOS.filter((d) => d.modalidade === modalidade);
+  const totalEmbarques = linhas.reduce((a, d) => a + d.embarques, 0);
+
   return (
     <>
-      <PageHeader title="Contagem de passageiros" subtitle="Fretamento · embarque e desembarque por parada" />
+      <PageHeader title="Contagem de passageiros" subtitle="Embarque e desembarque por parada · urbano e fretamento" />
 
       <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
         <div className="mb-6">
           <HeroBanner
             orb
-            eyebrow="Fretamento · Contagem de passageiros"
-            title="642 passageiros transportados hoje"
+            eyebrow="Operação · Contagem de passageiros"
+            title={`${nf(totalEmbarques)} passageiros transportados hoje`}
             subtitle="Embarque e desembarque por parada, direto dos sensores de porta."
           >
             <div className="flex items-center gap-6">
@@ -77,6 +102,13 @@ export default function ContagemPassageiros() {
         </div>
 
         <FilterBar>
+          <FilterChip
+            icon={Route}
+            label="Modalidade"
+            value={modalidade === "todas" ? "Todas" : modalidade === "urbano" ? "Urbano" : "Fretamento"}
+            options={["Todas", "Urbano", "Fretamento"]}
+            onSelect={(v) => setModalidade(v === "Todas" ? "todas" : v === "Urbano" ? "urbano" : "fretamento")}
+          />
           <FilterChip icon={CalendarDays} label="Dia" value="24/07/2026" />
           <FilterChip icon={Bus} label="Viagem" value="FRT-2041" />
         </FilterBar>
@@ -94,7 +126,7 @@ export default function ContagemPassageiros() {
         </Card>
 
         <Card title="Ocupação por viagem" icon={Users} bodyClassName="p-4">
-          <DataTable columns={COLS} rows={DADOS} />
+          <DataTable columns={COLS} rows={linhas} />
         </Card>
 
         <p className="py-6 text-center text-xs text-muted-foreground">

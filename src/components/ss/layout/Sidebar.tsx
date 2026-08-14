@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Siren,
+  UsersRound,
   Sparkles,
   Truck,
   Users,
@@ -99,18 +100,25 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   {
+    label: "Transporte urbano",
+    icon: Route,
+    items: [
+      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
+      { label: "Gestão de viagens", to: "/app/operacao/viagens" },
+    ],
+  },
+  {
     label: "Fretamento",
     icon: Bus,
     items: [
-      { label: "Gestão de viagens", to: "/app/operacao/viagens" },
-      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
-      { label: "Layout de assentos", to: "/app/fretamento/assentos" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
-      { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
+      { label: "Layout de assentos", to: "/app/fretamento/assentos" },
     ],
   },
+  // Serve às duas modalidades, por isso não fica dentro de nenhuma.
+  { label: "Contagem de passageiros", icon: UsersRound, to: "/app/fretamento/passageiros" },
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
   {
     label: "Gerencial",

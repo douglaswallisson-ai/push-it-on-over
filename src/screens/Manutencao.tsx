@@ -20,6 +20,10 @@ import { BusInspection, HOTSPOTS } from "@/components/ss/frota/BusInspection";
 import { ManutencaoKanban } from "@/components/ss/frota/ManutencaoKanban";
 import { TelemetriaEquipamentos } from "@/components/ss/frota/TelemetriaEquipamentos";
 import { PlanoPreventivo } from "@/components/ss/frota/PlanoPreventivo";
+import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
+import { colunaKanban } from "@/lib/preventiva";
+import { acrescentar, registrarAuditoria } from "@/lib/session";
+import type { PreventivaPrevista } from "@/types";
 import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MANUTENCAO_COLUNAS, kanbanManutencaoQuery, manutencaoQuery, nf } from "@/lib/queries";
@@ -79,6 +83,12 @@ export default function Manutencao() {
   const { sessao } = useSessao();
   const [garagem, setGaragem] = useState("");
 
+  // Preventiva calculada pelo catálogo. O mesmo resultado alimenta a aba
+  // "Plano preventivo" e o quadro — calcular nos dois lugares abriria espaço
+  // para o kanban e a lista discordarem sobre a mesma placa.
+  const { porVeiculo } = usePreventivaFrota(garagem || undefined);
+  const [agendadas, setAgendadas] = useState<Record<string, boolean>>({});
+
   const cards = useMemo(() => {
     const comAjuste = (kanbanQ.data ?? []).map((c) =>
       ajustes[c.veiculoId] ? { ...c, status: ajustes[c.veiculoId] } : c,
@@ -86,8 +96,68 @@ export default function Manutencao() {
     // O kanban traz o nome da garagem; o escopo trabalha com id.
     const idPorNome = new Map(MOCK_GARAGENS.map((g) => [g.nome, g.id]));
     const noEscopo = filtrarPorGaragem(comAjuste, sessao, (c) => (c.garagem ? idPorNome.get(c.garagem) : undefined));
-    return garagem ? noEscopo.filter((c) => (c.garagem ? idPorNome.get(c.garagem) : undefined) === garagem) : noEscopo;
-  }, [kanbanQ.data, ajustes, sessao, garagem]);
+    const filtrados = garagem
+      ? noEscopo.filter((c) => (c.garagem ? idPorNome.get(c.garagem) : undefined) === garagem)
+      : noEscopo;
+
+    // A preventiva calculada tem precedência sobre o status estático: ela vem
+    // do parâmetro do fabricante cruzado com o odômetro real. Ajuste manual do
+    // operador continua vencendo os dois — quem está na oficina sabe mais que
+    // o cálculo.
+    return filtrados.map((c) => {
+      if (ajustes[c.veiculoId]) return c;
+
+      const calc = porVeiculo.find((p) => p.veiculo.id === c.veiculoId);
+      const top = calc?.preventivas[0];
+      if (!top || top.urgencia === "em_dia" || top.urgencia === "programada") return c;
+
+      const agendado = agendadas[`${c.veiculoId}-${top.parametroId}`];
+      const coluna = agendado ? "preventiva" : colunaKanban(top.urgencia);
+
+      return {
+        ...c,
+        status: coluna as CardManutencao["status"],
+        servico: agendado ? `${top.item} — agendada` : top.item,
+        prazoDias: top.diasRestante ?? (top.kmRestante !== null && top.kmRestante < 0 ? -1 : null),
+        pendencias: calc?.preventivas.filter((x) => x.urgencia === "vencida" || x.urgencia === "critica").length ?? 0,
+      };
+    });
+  }, [kanbanQ.data, ajustes, sessao, garagem, porVeiculo, agendadas]);
+
+  /**
+   * Agendar gera a ordem de serviço e move o card para Preventiva. Antes o
+   * botão marcava um estado local e o quadro seguia mostrando o veículo como
+   * se nada tivesse sido feito.
+   */
+  const agendarPreventiva = (veiculoId: string, p: PreventivaPrevista, prefixo: string) => {
+    const numero = `OS-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+
+    acrescentar("ordens-servico", {
+      id: `os${Date.now()}`,
+      numero,
+      veiculoId,
+      abertaEm: new Date().toISOString(),
+      status: "aberta",
+      tipo: "preventiva",
+      origem: "plano",
+      descricao: p.item,
+      oficina: "A definir",
+      interna: true,
+      itens: [],
+      custoPrevisto: 0,
+      odometro: porVeiculo.find((x) => x.veiculo.id === veiculoId)?.veiculo.odometro ?? 0,
+      parametroId: p.parametroId,
+    });
+
+    setAgendadas((a) => ({ ...a, [`${veiculoId}-${p.parametroId}`]: true }));
+    registrarAuditoria(
+      "manutencao_preventiva",
+      `Preventiva agendada — ${prefixo}: ${p.item}. ${numero}${p.intervaloAplicadoKm ? ` · intervalo ${nf(p.intervaloAplicadoKm)} km` : ""}.`,
+    );
+    toast.success(`${numero} aberta.`, {
+      description: `${prefixo} · ${p.item} — o veículo passou para Preventiva no quadro.`,
+    });
+  };
 
   const mudarStatus = (card: CardManutencao, status: StatusManutencao, mensagem: string) => {
     setAjustes((a) => ({ ...a, [card.veiculoId]: status }));
@@ -155,7 +225,9 @@ export default function Manutencao() {
             />
           ))}
 
-        {tab === "preventiva" && <PlanoPreventivo garagem={garagem || undefined} />}
+        {tab === "preventiva" && (
+          <PlanoPreventivo garagem={garagem || undefined} agendadas={agendadas} onAgendar={agendarPreventiva} />
+        )}
 
         {tab === "consumiveis" && <Consumiveis card={selecionado} />}
 

@@ -1,0 +1,102 @@
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  execucoesQuery,
+  modelosQuery,
+  parametrosCatalogoQuery,
+  regrasAjusteQuery,
+  sinaisOperacaoQuery,
+  veiculosQuery,
+  vinculosModeloQuery,
+} from "@/lib/queries";
+import { calcularPreventivas, classificarOperacao } from "@/lib/preventiva";
+import type { ModeloVeiculo, PreventivaPrevista, TipoOperacao, Veiculo } from "@/types";
+
+/**
+ * Cálculo da preventiva de toda a frota.
+ *
+ * Vive num hook porque duas superfícies consomem o mesmo resultado: a aba
+ * "Plano preventivo", que mostra item a item, e o quadro kanban, que precisa
+ * saber em qual coluna cada placa entra. Calcular nos dois lugares abriria a
+ * porta para o kanban e a lista discordarem sobre o mesmo veículo.
+ */
+
+export type PreventivaVeiculo = {
+  veiculo: Veiculo;
+  modelo: ModeloVeiculo | undefined;
+  operacao: TipoOperacao;
+  sinais: Record<string, number>;
+  preventivas: PreventivaPrevista[];
+  /** Sem modelo vinculado ou sem parâmetro com intervalo utilizável. */
+  semCatalogo: boolean;
+};
+
+export function usePreventivaFrota(garagem?: string) {
+  const veiculosQ = useQuery(veiculosQuery(1, 200));
+  const modelosQ = useQuery(modelosQuery());
+  const parametrosQ = useQuery(parametrosCatalogoQuery());
+  const execucoesQ = useQuery(execucoesQuery());
+  const regrasQ = useQuery(regrasAjusteQuery());
+  const sinaisQ = useQuery(sinaisOperacaoQuery());
+  const vinculosQ = useQuery(vinculosModeloQuery());
+
+  const porVeiculo = useMemo<PreventivaVeiculo[]>(() => {
+    const veiculos = veiculosQ.data?.items ?? [];
+    const modelos = modelosQ.data ?? [];
+    const parametros = parametrosQ.data ?? [];
+    const execucoes = execucoesQ.data ?? [];
+    const regras = regrasQ.data ?? [];
+    const sinais = sinaisQ.data ?? {};
+    const vinculos = vinculosQ.data ?? {};
+
+    return veiculos
+      .filter((v) => !garagem || v.garagemId === garagem)
+      .map((v) => {
+        const vinculo = vinculos[v.id];
+        const modelo = modelos.find((m) => m.id === vinculo?.modeloId);
+        const sinaisV = sinais[v.id] ?? {};
+
+        const preventivas = calcularPreventivas(
+          { ...v, modeloId: vinculo?.modeloId, montadoraId: vinculo?.montadoraId },
+          modelo,
+          parametros,
+          execucoes,
+          regras,
+          sinaisV,
+        );
+
+        return {
+          veiculo: v,
+          modelo,
+          operacao: classificarOperacao({
+            marchaLentaPct: sinaisV.parado_motor_ligado,
+            velocidadeMediaKmh: sinaisV.velocidade_media,
+            paradasPorDia: sinaisV.paradas_por_dia,
+          }),
+          sinais: sinaisV,
+          preventivas,
+          semCatalogo: !modelo || preventivas.length === 0,
+        };
+      })
+      .sort((a, b) => (b.preventivas[0]?.consumidoPct ?? 0) - (a.preventivas[0]?.consumidoPct ?? 0));
+  }, [
+    veiculosQ.data,
+    modelosQ.data,
+    parametrosQ.data,
+    execucoesQ.data,
+    regrasQ.data,
+    sinaisQ.data,
+    vinculosQ.data,
+    garagem,
+  ]);
+
+  return {
+    porVeiculo,
+    carregando: veiculosQ.isPending || modelosQ.isPending || parametrosQ.isPending || execucoesQ.isPending,
+    erro: veiculosQ.error ?? modelosQ.error ?? parametrosQ.error,
+    recarregar: () => {
+      veiculosQ.refetch();
+      execucoesQ.refetch();
+    },
+  };
+}

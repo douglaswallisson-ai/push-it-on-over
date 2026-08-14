@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { nf, ordensQuery, veiculosQuery } from "@/lib/queries";
+import { ler } from "@/lib/session";
 import { exportarCSV } from "@/lib/export";
 import { STATUS_OS_LABEL, type OrdemServico, type StatusOS } from "@/types";
 import { cn } from "@/lib/utils";
@@ -46,7 +47,15 @@ export default function OrdensServico() {
     return m;
   }, [veiculosQ.data]);
 
-  const ordens = useMemo(() => data ?? [], [data]);
+  /**
+   * As ordens abertas pelo plano preventivo entram junto das do servidor. Sem
+   * isso, agendar na aba de preventiva não apareceria aqui e o usuário acharia
+   * que o agendamento se perdeu.
+   */
+  const ordens = useMemo(() => {
+    const doPlano = ler<OrdemServico[]>("ordens-servico", []);
+    return [...doPlano, ...(data ?? [])];
+  }, [data]);
   const lista = filtro === "todas" ? ordens : ordens.filter((o) => o.status === filtro);
 
   const abertas = ordens.filter((o) => o.status !== "concluida" && o.status !== "cancelada");

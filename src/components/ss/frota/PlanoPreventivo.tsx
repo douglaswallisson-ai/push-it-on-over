@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   CalendarClock,
@@ -11,21 +10,10 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
-import {
-  execucoesQuery,
-  modelosQuery,
-  nf,
-  parametrosCatalogoQuery,
-  regrasAjusteQuery,
-  sinaisOperacaoQuery,
-  veiculosQuery,
-  vinculosModeloQuery,
-} from "@/lib/queries";
-import { calcularPreventivas, classificarOperacao } from "@/lib/preventiva";
-import { registrarAuditoria } from "@/lib/session";
+import { nf } from "@/lib/queries";
+import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
 import { TIPO_OPERACAO_LABEL, URGENCIA_LABEL, type PreventivaPrevista, type UrgenciaPreventiva } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -48,63 +36,20 @@ const URGENCIA_TONE: Record<UrgenciaPreventiva, PillTone> = {
   em_dia: "green",
 };
 
-export function PlanoPreventivo({ garagem }: { garagem?: string }) {
-  const veiculosQ = useQuery(veiculosQuery(1, 200));
-  const modelosQ = useQuery(modelosQuery());
-  const parametrosQ = useQuery(parametrosCatalogoQuery());
-  const execucoesQ = useQuery(execucoesQuery());
-  const regrasQ = useQuery(regrasAjusteQuery());
-  const sinaisQ = useQuery(sinaisOperacaoQuery());
-  const vinculosQ = useQuery(vinculosModeloQuery());
+export function PlanoPreventivo({
+  garagem,
+  agendadas,
+  onAgendar,
+}: {
+  garagem?: string;
+  /** Chave `veiculoId-parametroId` das preventivas já agendadas. */
+  agendadas: Record<string, boolean>;
+  onAgendar: (veiculoId: string, p: PreventivaPrevista, prefixo: string) => void;
+}) {
+  const { porVeiculo, carregando, erro, recarregar } = usePreventivaFrota(garagem);
 
   const [filtro, setFiltro] = useState<UrgenciaPreventiva | "todas">("todas");
   const [aberto, setAberto] = useState<string | null>(null);
-  const [agendadas, setAgendadas] = useState<Record<string, boolean>>({});
-
-  const carregando =
-    veiculosQ.isPending || modelosQ.isPending || parametrosQ.isPending || execucoesQ.isPending;
-
-  /** Calcula tudo de uma vez: veículo → preventivas ordenadas por urgência. */
-  const porVeiculo = useMemo(() => {
-    const veiculos = veiculosQ.data?.items ?? [];
-    const modelos = modelosQ.data ?? [];
-    const parametros = parametrosQ.data ?? [];
-    const execucoes = execucoesQ.data ?? [];
-    const regras = regrasQ.data ?? [];
-    const sinais = sinaisQ.data ?? {};
-    const vinculos = vinculosQ.data ?? {};
-
-    return veiculos
-      .filter((v) => !garagem || v.garagemId === garagem)
-      .map((v) => {
-        const vinculo = vinculos[v.id];
-        const modelo = modelos.find((m) => m.id === vinculo?.modeloId);
-        const sinaisV = sinais[v.id] ?? {};
-
-        const preventivas = calcularPreventivas(
-          { ...v, modeloId: vinculo?.modeloId, montadoraId: vinculo?.montadoraId },
-          modelo,
-          parametros,
-          execucoes,
-          regras,
-          sinaisV,
-        );
-
-        return {
-          veiculo: v,
-          modelo,
-          operacao: classificarOperacao({
-            marchaLentaPct: sinaisV.parado_motor_ligado,
-            velocidadeMediaKmh: sinaisV.velocidade_media,
-            paradasPorDia: sinaisV.paradas_por_dia,
-          }),
-          sinais: sinaisV,
-          preventivas,
-          semCatalogo: !modelo || preventivas.length === 0,
-        };
-      })
-      .sort((a, b) => (b.preventivas[0]?.consumidoPct ?? 0) - (a.preventivas[0]?.consumidoPct ?? 0));
-  }, [veiculosQ.data, modelosQ.data, parametrosQ.data, execucoesQ.data, regrasQ.data, sinaisQ.data, vinculosQ.data, garagem]);
 
   const todas = porVeiculo.flatMap((p) => p.preventivas);
   const conta = (u: UrgenciaPreventiva) => todas.filter((p) => p.urgencia === u).length;
@@ -118,16 +63,7 @@ export function PlanoPreventivo({ garagem }: { garagem?: string }) {
     [porVeiculo, filtro],
   );
 
-  const agendar = (veiculoId: string, p: PreventivaPrevista, prefixo: string) => {
-    setAgendadas((a) => ({ ...a, [`${veiculoId}-${p.parametroId}`]: true }));
-    registrarAuditoria(
-      "manutencao_preventiva",
-      `Preventiva agendada — ${prefixo}: ${p.item}${p.intervaloAplicadoKm ? ` (intervalo ${nf(p.intervaloAplicadoKm)} km)` : ""}.`,
-    );
-    toast.success("Preventiva agendada.", { description: `${prefixo} · ${p.item}` });
-  };
-
-  if (veiculosQ.error) return <ErrorBox error={veiculosQ.error} onRetry={() => veiculosQ.refetch()} />;
+  if (erro) return <ErrorBox error={erro} onRetry={recarregar} />;
 
   return (
     <div className="space-y-5">
@@ -242,7 +178,7 @@ export function PlanoPreventivo({ garagem }: { garagem?: string }) {
                             key={p.parametroId}
                             p={p}
                             agendada={Boolean(agendadas[`${veiculo.id}-${p.parametroId}`])}
-                            onAgendar={() => agendar(veiculo.id, p, prefixo)}
+                            onAgendar={() => onAgendar(veiculo.id, p, prefixo)}
                           />
                         ))}
                       </ul>

@@ -188,12 +188,41 @@
   width: 9px;
   height: 9px;
 }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
   background: #d3d9e2;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #b7c1d1;
+}
+
+/*
+ * Rolagem sobre fundo escuro.
+ *
+ * O cinza claro do padrão global é pensado para o canvas e destoa sobre o navy
+ * da barra lateral. Aqui o polegar é o próprio tom da barra, só que mais claro,
+ * e a trilha some — assim a rolagem se lê como parte do painel e não como um
+ * elemento colado por cima.
+ */
+.rolagem-escura {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.rolagem-escura::-webkit-scrollbar {
+  width: 6px;
+}
+.rolagem-escura::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rolagem-escura::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+}
+.rolagem-escura::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 :focus-visible {
   outline: 2px solid var(--brand-sky);

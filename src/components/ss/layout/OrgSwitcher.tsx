@@ -125,7 +125,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
             />
           </div>
 
-          <div className="max-h-64 overflow-y-auto py-1">
+          <div className="rolagem-escura max-h-64 overflow-y-auto py-1">
             {filtradas.length === 0 ? (
               <p className="px-3 py-4 text-center text-[12px] text-white/40">Nenhuma organização.</p>
             ) : (

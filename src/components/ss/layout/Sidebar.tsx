@@ -215,7 +215,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         {/* Itens sensíveis só aparecem para quem tem permissão. */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
+        <nav className="rolagem-escura flex-1 overflow-y-auto overflow-x-hidden py-3">
           {NAV_PRIMARY.filter(
             (entry) => !("to" in entry && entry.to === "/app/auditoria") || pode(sessao?.perfil, "ver_auditoria"),
           ).map((entry) => (

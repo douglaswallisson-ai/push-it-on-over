@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import {
   Alarmes,
   AlarmesOperacionais,
+  Catalogo,
   Conducoes,
   Desempenho,
   Equipamentos,
@@ -307,3 +308,15 @@ export const desempenhoMotoristaQuery = (motoristaId: string | undefined) =>
 
 export const desempenhoTodosQuery = () =>
   queryOptions({ queryKey: ["desempenho", "todos"], queryFn: () => Desempenho.todos(), staleTime: 5 * MINUTE });
+
+export const montadorasQuery = () =>
+  queryOptions({ queryKey: ["catalogo", "montadoras"], queryFn: () => Catalogo.montadoras(), staleTime: 30 * MINUTE });
+
+export const modelosQuery = () =>
+  queryOptions({ queryKey: ["catalogo", "modelos"], queryFn: () => Catalogo.modelos(), staleTime: 30 * MINUTE });
+
+export const parametrosCatalogoQuery = () =>
+  queryOptions({ queryKey: ["catalogo", "parametros"], queryFn: () => Catalogo.parametros(), staleTime: 30 * MINUTE });
+
+export const regrasAjusteQuery = () =>
+  queryOptions({ queryKey: ["catalogo", "regras"], queryFn: () => Catalogo.regras(), staleTime: 30 * MINUTE });

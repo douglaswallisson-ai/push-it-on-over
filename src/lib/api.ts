@@ -287,3 +287,14 @@ export const Desempenho = {
   todos: () =>
     USE_MOCK ? mock(M.MOCK_DESEMPENHO_VIAGENS) : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho`),
 };
+
+export const Catalogo = {
+  montadoras: () =>
+    USE_MOCK ? mock(M.MOCK_MONTADORAS) : api.get<import("@/types").Montadora[]>(`/api/catalogo/montadoras`),
+  modelos: () =>
+    USE_MOCK ? mock(M.MOCK_MODELOS) : api.get<import("@/types").ModeloVeiculo[]>(`/api/catalogo/modelos`),
+  parametros: () =>
+    USE_MOCK ? mock(M.MOCK_PARAMETROS) : api.get<import("@/types").ParametroManutencao[]>(`/api/catalogo/parametros`),
+  regras: () =>
+    USE_MOCK ? mock(M.MOCK_REGRAS_AJUSTE) : api.get<import("@/types").RegraAjuste[]>(`/api/catalogo/regras`),
+};

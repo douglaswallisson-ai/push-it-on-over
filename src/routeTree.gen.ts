@@ -21,6 +21,7 @@ import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
+import { Route as AppAdminCatalogoRouteImport } from './routes/app.admin.catalogo'
 import { Route as AppCadastrosAlarmeRouteImport } from './routes/app.cadastros.alarme'
 import { Route as AppCadastrosCercaRouteImport } from './routes/app.cadastros.cerca'
 import { Route as AppCadastrosCombustivelRouteImport } from './routes/app.cadastros.combustivel'
@@ -118,6 +119,11 @@ const AppMapaRoute = AppMapaRouteImport.update({
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminCatalogoRoute = AppAdminCatalogoRouteImport.update({
+  id: '/admin/catalogo',
+  path: '/admin/catalogo',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCadastrosAlarmeRoute = AppCadastrosAlarmeRouteImport.update({
@@ -329,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app': typeof AppIndexRoute
+  '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -433,6 +441,7 @@ export interface FileRoutesById {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/cadastros/alarme': typeof AppCadastrosAlarmeRoute
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
@@ -487,6 +496,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app/'
+    | '/app/admin/catalogo'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -538,6 +548,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app'
+    | '/app/admin/catalogo'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app/'
+    | '/app/admin/catalogo'
     | '/app/cadastros/alarme'
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
@@ -720,6 +732,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/app/relatorios'
       preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin/catalogo': {
+      id: '/app/admin/catalogo'
+      path: '/admin/catalogo'
+      fullPath: '/app/admin/catalogo'
+      preLoaderRoute: typeof AppAdminCatalogoRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/cadastros/alarme': {
@@ -1001,6 +1020,7 @@ interface AppRouteChildren {
   AppMapaRoute: typeof AppMapaRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAdminCatalogoRoute: typeof AppAdminCatalogoRoute
   AppCadastrosAlarmeRoute: typeof AppCadastrosAlarmeRoute
   AppCadastrosCercaRoute: typeof AppCadastrosCercaRoute
   AppCadastrosCombustivelRoute: typeof AppCadastrosCombustivelRoute
@@ -1051,6 +1071,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMapaRoute: AppMapaRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAdminCatalogoRoute: AppAdminCatalogoRoute,
   AppCadastrosAlarmeRoute: AppCadastrosAlarmeRoute,
   AppCadastrosCercaRoute: AppCadastrosCercaRoute,
   AppCadastrosCombustivelRoute: AppCadastrosCombustivelRoute,

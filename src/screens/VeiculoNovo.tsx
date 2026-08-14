@@ -6,6 +6,7 @@ import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Field, FormActions, FormSection, Input, Select } from "@/components/ss/ui/form";
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
 import { acrescentar, registrarAuditoria } from "@/lib/session";
+import { SeletorMarcaModelo, type SelecaoVeiculo } from "@/components/ss/cadastro/SeletorMarcaModelo";
 import { toast } from "sonner";
 
 /**
@@ -48,6 +49,7 @@ export default function VeiculoNovo() {
   const navigate = useNavigate();
   const [mode, setMode] = useState("manual");
   const [form, setForm] = useState({ ...empty });
+  const [selecao, setSelecao] = useState<Partial<SelecaoVeiculo>>({});
   const [prefilled, setPrefilled] = useState(false);
 
   const upd =
@@ -62,7 +64,21 @@ export default function VeiculoNovo() {
       toast.error("Informe a placa do veículo.");
       return;
     }
-    acrescentar("veiculos", { ...form, id: `v${Date.now()}`, criadoEm: new Date().toISOString() });
+    // Marca e modelo são obrigatórios: sem eles o veículo não se liga ao
+    // catálogo e nunca geraria manutenção preventiva.
+    if (!selecao.montadoraId || !selecao.modeloId) {
+      toast.error("Escolha a marca do chassi e o modelo.", {
+        description: "São eles que definem os parâmetros de manutenção aplicáveis.",
+      });
+      return;
+    }
+    acrescentar("veiculos", {
+      ...form,
+      id: `v${Date.now()}`,
+      montadoraId: selecao.montadoraId,
+      modeloId: selecao.modeloId,
+      criadoEm: new Date().toISOString(),
+    });
     registrarAuditoria("criacao", `Veículo cadastrado: ${form.placa.toUpperCase()}.`);
     toast.success(`Veículo ${form.placa.toUpperCase()} cadastrado.`);
     navigate("/app/veiculos");
@@ -141,12 +157,19 @@ export default function VeiculoNovo() {
                   </Field>
                 </FormSection>
 
-                <FormSection title="Modelo" description="Marca, modelo e ano — usados nos parâmetros de consumo e manutenção.">
-                  <Field label="Marca">
-                    <Input placeholder="Ex.: Volvo" value={form.marca} onChange={upd("marca")} />
-                  </Field>
-                  <Field label="Modelo">
-                    <Input placeholder="Ex.: FH 460" value={form.modelo} onChange={upd("modelo")} />
+                <FormSection
+                  title="Modelo"
+                  description="Marca e modelo vêm do catálogo — é o que amarra o veículo aos parâmetros de manutenção do fabricante."
+                >
+                  <Field label="" full>
+                    <SeletorMarcaModelo
+                      valor={selecao}
+                      onChange={(v) => {
+                        setSelecao(v);
+                        upd("marca")({ target: { value: v.montadoraNome } } as never);
+                        upd("modelo")({ target: { value: v.modeloNome } } as never);
+                      }}
+                    />
                   </Field>
                   <Field label="Ano">
                     <Input placeholder="2022" inputMode="numeric" value={form.ano} onChange={upd("ano")} />

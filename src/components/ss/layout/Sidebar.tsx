@@ -5,6 +5,7 @@ import {
   Bus,
   ChevronRight,
   ClipboardList,
+  Factory,
   FileText,
   Gauge,
   Home,
@@ -128,6 +129,7 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
+  { label: "Catálogo de manutenção", icon: Factory, to: "/app/admin/catalogo" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

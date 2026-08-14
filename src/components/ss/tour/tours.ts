@@ -52,6 +52,48 @@ function cadastroSteps(nome: string, oque: string): TourStep[] {
 }
 
 export const TOURS: Record<string, TourStep[]> = {
+  "/app/admin/catalogo": [
+    {
+      selector: '[data-tour="page-header"]',
+      title: "O que este catálogo controla",
+      amplo: true,
+      body: "Aqui ficam os parâmetros que cada montadora exige por modelo: o que trocar, a cada quantos quilômetros, horas ou meses. É a partir daqui que a manutenção preventiva sabe quando chamar um veículo para a oficina.",
+      detalhes: [
+        "A regra de disparo dos fabricantes é sempre a mesma: o que ocorrer primeiro entre quilometragem, horas de motor e tempo. Preencher só um dos três é comum e válido — um item pode ser controlado só por tempo, como a aferição do tacógrafo.",
+      ],
+    },
+    {
+      selector: '[data-tour="pendencias"]',
+      title: "Modelos que não geram preventiva",
+      amplo: true,
+      body: "Este bloco é o que exige ação do administrador. Modelo sem parâmetro utilizável significa que os veículos dele passam batido: rodam, acumulam quilometragem e nunca entram na fila de manutenção.",
+      detalhes: [
+        "Há duas origens. A primeira: alguém cadastrou um veículo cujo modelo não existia, e o sistema criou o modelo na hora em vez de travar o cadastro — o veículo precisa entrar em operação hoje, mas os parâmetros ficam devendo.",
+        "A segunda: o parâmetro existe mas sem número oficial. A Mercedes-Benz é o caso mais comum — o escopo dos itens é público, o quilômetro exato de cada marco não. Nesses casos o sistema não estima; pede confirmação com a concessionária.",
+      ],
+      exemplo: "Um número inventado que pareça plausível é pior que nenhum: o cliente segue, o motor quebra e a garantia é negada.",
+    },
+    {
+      selector: '[data-tour="arvore"]',
+      title: "Montadora, modelo e parâmetros",
+      amplo: true,
+      body: "A navegação segue a hierarquia real: montadora, depois os modelos daquela marca, depois os itens de manutenção de cada modelo.",
+      detalhes: [
+        "Cada parâmetro mostra o intervalo, o tipo de operação a que se aplica e a procedência do dado. Verde é tabela oficial do fabricante e pode virar regra; âmbar precisa de confirmação.",
+        "O mesmo item pode ter vários parâmetros, um por tipo de operação. Não é redundância: o mesmo motor Scania DC13 troca óleo a cada 120.000 km em longa distância leve e a cada 20.000 km em construção. Um plano sem tipo de operação erraria por um fator de seis.",
+      ],
+    },
+    {
+      selector: '[data-tour="stat"]',
+      title: "Leitura de cobertura",
+      amplo: true,
+      body: "Os dois últimos números são os que importam para confiar no módulo: quantos parâmetros têm fonte oficial e quantos aguardam confirmação.",
+      detalhes: [
+        "Só os oficiais disparam alerta automático. Os demais ficam registrados para não se perderem, mas não geram ordem de serviço — é a diferença entre o sistema informar e o sistema decidir.",
+      ],
+    },
+  ],
+
   /*
    * Padrão por linha é o único conceito realmente novo do sistema — herança de
    * valores entre três níveis. Por isso este tour usa passos amplos, com

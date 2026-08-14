@@ -824,3 +824,198 @@ export const desempenhoDoMotorista = (motoristaId: string) =>
 /** Mapeia nome → id, já que as telas de motorista navegam por nome. */
 export const motoristaIdPorNome = (nome: string) =>
   MOCK_MOTORISTAS.find((m) => m.nome.toLowerCase() === nome.toLowerCase())?.id;
+
+/* ------------------------------------------------------------------ */
+/* Catálogo de manutenção do fabricante                                */
+/* ------------------------------------------------------------------ */
+
+import type { Montadora, ModeloVeiculo, ParametroManutencao, RegraAjuste } from "@/types";
+
+/**
+ * Semente do catálogo, extraída do levantamento de planos de manutenção
+ * preventiva de fabricante (frota comercial Brasil, ano-modelo 2010+).
+ *
+ * A procedência de cada linha foi preservada: onde a fonte pública não trouxe o
+ * número, o parâmetro entra como `nao_localizado` e NÃO dispara alerta — vira
+ * pendência de confirmação com a concessionária. Estimar número nesse caso
+ * seria pior que não ter.
+ */
+
+export const MOCK_MONTADORAS: Montadora[] = [
+  { id: "mt-scania", nome: "Scania", tipo: "chassi" },
+  { id: "mt-volvo", nome: "Volvo", tipo: "chassi" },
+  { id: "mt-mb", nome: "Mercedes-Benz", tipo: "chassi" },
+  { id: "mt-vw", nome: "VW / MAN", tipo: "chassi" },
+  { id: "mt-iveco", nome: "Iveco", tipo: "chassi" },
+  { id: "mt-agrale", nome: "Agrale", tipo: "chassi" },
+  { id: "mt-byd", nome: "BYD", tipo: "encarroçado" },
+  { id: "mt-volare", nome: "Marcopolo / Volare", tipo: "encarroçado" },
+  { id: "mt-carroceria", nome: "Carrocerias (Marcopolo, Caio, Comil, Busscar)", tipo: "carroceria" },
+];
+
+export const MOCK_MODELOS: ModeloVeiculo[] = [
+  // Scania — a base mais completa do levantamento.
+  { id: "md-sc-k-dc13", montadoraId: "mt-scania", nome: "K / F (ônibus) — DC13", motor: "DC13 (13 L)", anos: "2010+", faseProconve: "Euro 5 / Euro 6", propulsao: "diesel" },
+  { id: "md-sc-k-dc09", montadoraId: "mt-scania", nome: "K / F (ônibus) — DC09", motor: "DC09 (9 L)", anos: "2010+", faseProconve: "Euro 5 / Euro 6", propulsao: "diesel" },
+  { id: "md-sc-k-dc07", montadoraId: "mt-scania", nome: "K / F (ônibus) — DC07", motor: "DC07 (7 L)", anos: "2010+", faseProconve: "Euro 5 / Euro 6", propulsao: "diesel" },
+
+  // Volvo
+  { id: "md-vo-urbano", montadoraId: "mt-volvo", nome: "B270F / B250R / B7R / B8R — urbano", motor: "MWM 7.2 / D8 / D11", anos: "2010+", faseProconve: "Euro 5/6", propulsao: "diesel" },
+  { id: "md-vo-rodo", montadoraId: "mt-volvo", nome: "B270F / B250R / B290R / B7R / B8R / B9R / B11R", motor: "MWM 7.2 / D8 / D11 / D13", anos: "2010+", faseProconve: "Euro 5/6", propulsao: "diesel" },
+  { id: "md-vo-bzl", montadoraId: "mt-volvo", nome: "BZL (elétrico)", motor: "Elétrico", anos: "2022+", faseProconve: "Zero emissão", propulsao: "eletrico" },
+
+  // Mercedes-Benz — maior frota urbana do país e a maior lacuna de dados.
+  { id: "md-mb-of", montadoraId: "mt-mb", nome: "OF / OH (urbano)", motor: "OM 924 / OM 926", anos: "2010+", faseProconve: "Euro 5 (P7) / Euro 6 (P8)", propulsao: "diesel" },
+  { id: "md-mb-o500", montadoraId: "mt-mb", nome: "O-500 / OC-500", motor: "OM 457 / OM 471", anos: "2010+", faseProconve: "Euro 5 (P7) / Euro 6 (P8)", propulsao: "diesel" },
+
+  // VW / MAN
+  { id: "md-vw-volksbus", montadoraId: "mt-vw", nome: "Volksbus 15.190 / 17.230 / 17.260 / 18.280", motor: "MAN D08", anos: "2010+", faseProconve: "Euro 5/6", propulsao: "diesel" },
+
+  // BYD
+  { id: "md-byd-d9w", montadoraId: "mt-byd", nome: "D9W / D11B (elétrico)", motor: "2 motores de 150 kW no eixo traseiro", anos: "2018+", faseProconve: "Zero emissão", propulsao: "eletrico" },
+
+  // Agrale
+  { id: "md-ag-ma", montadoraId: "mt-agrale", nome: "MA 8.5 / MA 9.2 / MA 10.0 / MA 12.0", motor: "Cummins ISF 3.8 / MWM", anos: "2010+", propulsao: "diesel" },
+
+  // Carrocerias
+  { id: "md-carr-urbana", montadoraId: "mt-carroceria", nome: "Carrocerias urbanas e rodoviárias", anos: "2010+" },
+];
+
+const FONTE_SCANIA = "Scania — Prefácio da manutenção periódica 00:17-30, Séries L/P/G/R/S, Ed. 29 pt-BR";
+const FONTE_VOLVO = "volvotrucks.com.br / volvopecas.com.br / oleocerto.com";
+const FONTE_MB = "mercedes-benz-trucks.com.br / release MB OM 471";
+
+let seqParam = 0;
+const par = (p: Omit<ParametroManutencao, "id" | "ativo"> & { ativo?: boolean }): ParametroManutencao => ({
+  id: `pm${++seqParam}`,
+  ativo: p.ativo ?? true,
+  ...p,
+});
+
+/** Óleo do motor Scania: seis intervalos, um por tipo de operação. */
+const oleoScania = (modeloId: string, esp: string, km: Record<string, number>) =>
+  (Object.entries(km) as [ParametroManutencao["tipoOperacao"] & string, number][]).map(([op, v]) =>
+    par({
+      modeloId, tipoOperacao: op as never, sistema: "Motor",
+      item: "Óleo do motor + filtro de óleo", acao: "Trocar",
+      intervaloKm: v, intervaloMeses: 18, intervaloHoras: null,
+      especificacao: esp,
+      obsUsoSevero:
+        "Intervalo = distância OU 1,5 ano, o que ocorrer primeiro. Diesel 351-1000 ppm S: dividir por 1,5; 1001-2000 ppm: dividir por 2.",
+      statusDado: "oficial", fonte: FONTE_SCANIA,
+    }),
+  );
+
+export const MOCK_PARAMETROS: ParametroManutencao[] = [
+  ...oleoScania("md-sc-k-dc13", "LDF-4 ou LDF-3", {
+    longa_muito_leve: 120000, longa_leve: 90000, longa: 60000, longa_pesado: 45000, construcao: 20000, urbano: 45000,
+  }),
+  ...oleoScania("md-sc-k-dc09", "LDF-4 / LDF-3", {
+    longa_muito_leve: 90000, longa_leve: 90000, longa: 60000, longa_pesado: 30000, construcao: 20000, urbano: 45000,
+  }),
+  ...oleoScania("md-sc-k-dc07", "LDF-4 / LDF-3", {
+    longa_muito_leve: 60000, longa_leve: 60000, longa: 45000, longa_pesado: 30000, construcao: 20000, urbano: 45000,
+  }),
+
+  // Volvo — a regra de marcha-lenta é a base do ajuste adaptativo.
+  par({ modeloId: "md-vo-urbano", tipoOperacao: "urbano", sistema: "Motor", item: "Óleo do motor + filtro", acao: "Trocar", intervaloKm: 30000, intervaloMeses: 12, intervaloHoras: null, especificacao: "VDS conforme fase (Euro 6 = VDS-4.5)", obsUsoSevero: "Rotas de baixa velocidade reduzem o intervalo de 40.000 para 30.000 km. Marcha-lenta acima de 30% reduz mais um nível.", statusDado: "divulgado", fonte: FONTE_VOLVO }),
+  par({ modeloId: "md-vo-rodo", tipoOperacao: "longa", sistema: "Motor", item: "Óleo do motor + filtro", acao: "Trocar", intervaloKm: 40000, intervaloMeses: 12, intervaloHoras: null, especificacao: "VDS conforme fase", obsUsoSevero: "Exige filtro original Volvo. Velocidade média acima de 15 km/h.", statusDado: "divulgado", fonte: FONTE_VOLVO }),
+  par({ modeloId: "md-vo-bzl", tipoOperacao: "urbano", sistema: "Trem de força elétrico", item: "Plano de manutenção do chassi elétrico", acao: "Inspecionar", intervaloKm: null, intervaloMeses: null, intervaloHoras: null, especificacao: "n/a — sem óleo de motor", statusDado: "nao_localizado", fonte: "Buscar manual do chassi BZL na Volvo Bus" }),
+
+  // Mercedes-Benz — escopo conhecido, números não. Fica explícito.
+  ...[
+    ["Motor", "Óleo do motor + filtro de óleo", "Euro 5: MB 228.3 (15W-40 mineral). Euro 6 (OM 471): MB 228.31 / 228.51 Low-SAPS"],
+    ["Alimentação", "Filtro de combustível", "Original MB"],
+    ["Alimentação", "Filtro separador de água (racor)", "Original MB"],
+    ["Admissão", "Filtro de ar", "Original MB"],
+    ["Ar comprimido", "Filtro secador de ar (APU)", "Cartucho secador"],
+    ["Transmissão", "Óleo da caixa de câmbio", "Conforme aplicação"],
+    ["Eixo", "Óleo do diferencial / eixo traseiro", "Linha MB 235.x"],
+    ["Arrefecimento", "Fluido de arrefecimento + aditivo", "Aditivo homologado MB (OAT/HOAT)"],
+    ["Freios", "Lonas/pastilhas, tambores/discos", "Original MB"],
+    ["Pós-tratamento", "Filtro de ureia / sistema SCR-ARLA 32", "ARLA 32 — ABNT NBR 16700"],
+  ].flatMap(([sistema, item, esp]) =>
+    ["md-mb-of", "md-mb-o500"].map((modeloId) =>
+      par({
+        modeloId, tipoOperacao: null, sistema, item, acao: "Trocar/Inspecionar",
+        intervaloKm: null, intervaloMeses: null, intervaloHoras: null,
+        especificacao: esp,
+        obsUsoSevero: "Uso severo reduz o intervalo — ver manual do chassi.",
+        statusDado: "nao_localizado",
+        fonte: FONTE_MB + " — km exato por marco não localizado em fonte aberta",
+      }),
+    ),
+  ),
+
+  // VW / MAN
+  par({ modeloId: "md-vw-volksbus", tipoOperacao: "urbano", sistema: "Geral", item: "Revisões escalonadas MP1 a MP5", acao: "Inspecionar/Trocar", intervaloKm: null, intervaloMeses: null, intervaloHoras: null, especificacao: "Grupo II = urbano", statusDado: "nao_localizado", fonte: "VW Caminhões e Ônibus — estrutura MP1-MP5 confirmada, km por marco não localizado" }),
+
+  // BYD — elétrico, sem óleo de motor.
+  ...[
+    ["Freios", "Fluido de freio"],
+    ["Freios", "Freio regenerativo a disco com ABS"],
+    ["Freios", "Interruptor EPB (freio de estacionamento elétrico)"],
+    ["Pneus", "Calibragem de pneus"],
+    ["Tração", "Bateria de tração e componentes elétricos"],
+    ["Segurança", "Sistema automático anti-incêndio"],
+  ].map(([sistema, item]) =>
+    par({
+      modeloId: "md-byd-d9w", tipoOperacao: "urbano", sistema, item, acao: "Inspecionar",
+      intervaloKm: null, intervaloMeses: 6, intervaloHoras: null,
+      especificacao: "n/a — sem troca de óleo de motor",
+      statusDado: "oficial", fonte: "BYD — manual do chassi D9W / D11B",
+    }),
+  ),
+
+  // Carroceria — itens que o plano de chassi não cobre.
+  ...[
+    "Estrutura e reaperto de fixações",
+    "Ar-condicionado (filtro, gás, limpeza do evaporador)",
+    "Portas pneumáticas",
+    "Elevador / rampa PCD",
+    "Chicote elétrico",
+    "Vedações e borrachas",
+  ].map((item) =>
+    par({
+      modeloId: "md-carr-urbana", tipoOperacao: null, sistema: "Carroceria", item, acao: "Inspecionar",
+      intervaloKm: null, intervaloMeses: null, intervaloHoras: null,
+      statusDado: "nao_localizado",
+      fonte: "Encarroçadoras — intervalo numérico não divulgado em fonte aberta",
+    }),
+  ),
+];
+
+/**
+ * Regras de ajuste automático. A da Volvo é publicada pelo fabricante e usa um
+ * dado que o sistema já coleta; as demais derivam do perfil de operação urbana
+ * descrito pela Scania.
+ */
+export const MOCK_REGRAS_AJUSTE: RegraAjuste[] = [
+  {
+    id: "ra1", nome: "Marcha-lenta elevada reduz o intervalo",
+    indicador: "parado_motor_ligado", operador: "maior_que", limiar: 30, fator: 0.7,
+    montadoraId: "mt-volvo",
+    fonte: "Volvo — marcha-lenta acima de 30% obriga a usar o intervalo imediatamente menor",
+    ativa: true,
+  },
+  {
+    id: "ra2", nome: "Marcha-lenta acima de 25% classifica como operação urbana",
+    indicador: "parado_motor_ligado", operador: "maior_que", limiar: 25, fator: 1,
+    montadoraId: "mt-scania",
+    fonte: "Scania — perfil da Operação 4: marcha-lenta + PTO acima de 25%, mais de 250 paradas/dia, velocidade média abaixo de 40 km/h",
+    ativa: true,
+  },
+  {
+    id: "ra3", nome: "Velocidade média baixa reduz o intervalo",
+    indicador: "velocidade_media", operador: "menor_que", limiar: 15, fator: 0.75,
+    montadoraId: "mt-volvo",
+    fonte: "Volvo — rotas de baixa velocidade reduzem o intervalo de 40.000 para 30.000 km",
+    ativa: true,
+  },
+];
+
+export const modelosDaMontadora = (montadoraId: string) =>
+  MOCK_MODELOS.filter((m) => m.montadoraId === montadoraId);
+
+export const parametrosDoModelo = (modeloId: string) =>
+  MOCK_PARAMETROS.filter((p) => p.modeloId === modeloId);

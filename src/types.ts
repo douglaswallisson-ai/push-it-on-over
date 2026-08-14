@@ -1000,3 +1000,118 @@ export const ORIGEM_PADRAO_LABEL: Record<OrigemPadrao, string> = {
   linha: "Definido nesta linha",
   global: "Padrão global",
 };
+
+/* ================================================================== */
+/* Catálogo de manutenção do fabricante                               */
+/* ================================================================== */
+
+/**
+ * Procedência do parâmetro. Sobe da planilha para o produto de propósito: se o
+ * sistema disser "troque em 45.000 km", o cliente seguir e o motor quebrar com
+ * garantia negada, a pergunta vai ser de onde saiu o número.
+ */
+export type StatusDado = "oficial" | "divulgado" | "norma" | "nao_localizado";
+
+export const STATUS_DADO_LABEL: Record<StatusDado, string> = {
+  oficial: "Oficial — tabela do fabricante",
+  divulgado: "Divulgado pelo fabricante",
+  norma: "Norma técnica ou legislação",
+  nao_localizado: "Não localizado — confirmar",
+};
+
+/**
+ * Tipo de operação. É a variável que mais muda o intervalo: o mesmo motor
+ * Scania DC13 vai de 20.000 km em construção a 120.000 km em longa distância
+ * leve. Sem classificar a operação, um plano por modelo é quase inútil.
+ */
+export type TipoOperacao =
+  | "longa_muito_leve"
+  | "longa_leve"
+  | "longa"
+  | "longa_pesado"
+  | "construcao"
+  | "urbano"
+  | "todos";
+
+export const TIPO_OPERACAO_LABEL: Record<TipoOperacao, string> = {
+  longa_muito_leve: "0:0 — Longa distância muito leve",
+  longa_leve: "0 — Longa distância leve",
+  longa: "1 — Longa distância",
+  longa_pesado: "2 — Longa distância pesado",
+  construcao: "3 — Construção / fora de estrada",
+  urbano: "4 — Distribuição / curta distância (urbano)",
+  todos: "Todas as operações",
+};
+
+export type TipoMontadora = "chassi" | "carroceria" | "encarroçado";
+
+export type Montadora = {
+  id: string;
+  nome: string;
+  tipo: TipoMontadora;
+  /** Marca criada automaticamente ao cadastrar um veículo. */
+  criadaAutomaticamente?: boolean;
+};
+
+export type ModeloVeiculo = {
+  id: string;
+  montadoraId: string;
+  nome: string;
+  motor?: string;
+  anos?: string;
+  faseProconve?: string;
+  propulsao?: "diesel" | "eletrico" | "hibrido" | "gnv";
+  /**
+   * Criado automaticamente no cadastro de veículo, sem parâmetros. Vira
+   * pendência para o administrador configurar.
+   */
+  pendenteConfiguracao?: boolean;
+  criadoEm?: string;
+};
+
+/**
+ * Parâmetro de manutenção preventiva.
+ *
+ * O disparo segue a regra de ouro dos fabricantes: **o que ocorrer primeiro**
+ * entre quilometragem, horas de motor e tempo. Preencher só um dos três é
+ * comum e válido.
+ */
+export type ParametroManutencao = {
+  id: string;
+  modeloId: string;
+  /** null = vale para qualquer operação. */
+  tipoOperacao: TipoOperacao | null;
+  sistema: string;
+  item: string;
+  acao: string;
+  intervaloKm: number | null;
+  intervaloMeses: number | null;
+  intervaloHoras: number | null;
+  especificacao?: string;
+  capacidade?: string;
+  obsUsoSevero?: string;
+  statusDado: StatusDado;
+  fonte?: string;
+  ativo: boolean;
+};
+
+/**
+ * Regra de ajuste automático do intervalo a partir da telemetria.
+ *
+ * É o que separa catálogo de plano adaptativo. A Volvo publica a regra
+ * "marcha-lenta acima de 30% → usar o intervalo imediatamente menor", e o
+ * percentual de motor ligado parado já é coletado pelo sistema.
+ */
+export type RegraAjuste = {
+  id: string;
+  nome: string;
+  /** Indicador de telemetria observado. */
+  indicador: string;
+  operador: "maior_que" | "menor_que";
+  limiar: number;
+  /** Fator aplicado ao intervalo. 0.7 = reduz para 70%. */
+  fator: number;
+  montadoraId?: string;
+  fonte?: string;
+  ativa: boolean;
+};

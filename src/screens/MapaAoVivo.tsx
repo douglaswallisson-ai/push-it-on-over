@@ -5,10 +5,11 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Database, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { intervaloAtualizacao, usandoMock } from "@/lib/modo";
+import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { ErrorBox, SkeletonBlock } from "@/components/ss/ui/QueryState";
-import { desde, nf, posicoesQuery, toCanvasXY } from "@/lib/queries";
+import { desde, nf, posicoesQuery, toCanvasXY, veiculosQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import type { PosicaoVeiculo } from "@/types";
 
@@ -33,6 +34,9 @@ type Veiculo = {
   vel: number;
   local: string;
   atualizado: string;
+  lat: number;
+  lng: number;
+  /** Coordenada do canvas antigo, mantida para o painel sinótico interno. */
   x: number;
   y: number;
 };
@@ -49,6 +53,15 @@ export default function MapaAoVivo() {
   const [active, setActive] = useState<Set<Status>>(new Set(Object.keys(STATUS) as Status[]));
   const [selected, setSelected] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
+  const veiculosCadastro = useQuery(veiculosQuery(1, 200));
+
+  // O marcador mostra o prefixo, que é como a operação chama o carro; a placa
+  // fica no popup.
+  const prefixoPorPlaca = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const v of veiculosCadastro.data?.items ?? []) if (v.prefixo) m.set(v.placa, v.prefixo);
+    return m;
+  }, [veiculosCadastro.data]);
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "" });
 
   const veiculos: Veiculo[] = useMemo(
@@ -61,6 +74,8 @@ export default function MapaAoVivo() {
           vel: p.velocidade,
           local: p.endereco || "—",
           atualizado: desde(p.atualizadoEm),
+          lat: p.lat,
+          lng: p.lng,
           x,
           y,
         };
@@ -217,13 +232,23 @@ export default function MapaAoVivo() {
 
               {/* Área de mapa. */}
               <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-                <MapCanvas veiculos={visiveis.slice(0, 80)} selected={selected} onSelect={setSelected} />
-                <div className="pointer-events-none absolute left-4 top-4 rounded-lg bg-white/90 px-3 py-2 text-xs shadow-card backdrop-blur">
+                <MapaCliente
+                  veiculos={visiveis.map((v) => ({
+                    placa: v.placa,
+                    rotulo: prefixoPorPlaca.get(v.placa) ?? v.placa,
+                    lat: v.lat,
+                    lng: v.lng,
+                    situacao: v.status,
+                    velocidade: v.vel,
+                    endereco: v.local,
+                    atualizado: v.atualizado,
+                  }))}
+                  selecionado={selected}
+                  onSelect={setSelected}
+                />
+                <div className="pointer-events-none absolute left-4 top-4 z-[400] rounded-lg bg-white/90 px-3 py-2 text-xs shadow-card backdrop-blur">
                   <span className="font-semibold text-foreground">{nf(visiveis.length)}</span>{" "}
                   <span className="text-muted-foreground">veículos visíveis</span>
-                </div>
-                <div className="absolute bottom-4 right-4 rounded-lg border border-border bg-white/90 px-3 py-2 text-[11px] text-muted-foreground shadow-card backdrop-blur">
-                  Representação ilustrativa · posições reais por lat/lng
                 </div>
               </div>
             </div>

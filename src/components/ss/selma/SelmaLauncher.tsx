@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "@/lib/router-compat";
-import { ArrowUpRight, Compass, Send, Sparkles, X } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Compass, Maximize2, Send, Sparkles, X } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { useTour } from "@/components/ss/tour/TourProvider";
+import { SUGESTOES_ASSISTENTE, useAssistente } from "@/hooks/use-assistente";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,34 +39,41 @@ type Msg = { from: "selma" | "user"; text: string };
 
 const SAUDACAO: Msg = {
   from: "selma",
-  text: "Oi! Eu sou a Selma, a copiloto da SS. Posso te ajudar a navegar, explicar uma tela ou tirar dúvidas da operação. Como posso ajudar?",
+  text: "Oi! Eu sou a Selma, a copiloto da SS. Posso responder sobre os dados da sua operação — indicadores, programação, manutenção, pneus, multas e segurança. O que você quer saber?",
 };
 
 export function SelmaLauncher() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([SAUDACAO]);
   const [draft, setDraft] = useState("");
+  const [pensando, setPensando] = useState(false);
   const { start, hasTour } = useTour();
+
+  // Mesmo motor da tela cheia do assistente: as respostas saem dos dados
+  // carregados, não de texto fixo.
+  const { responder, carregando } = useAssistente();
+
+  function perguntar(text: string) {
+    const t = text.trim();
+    if (!t) return;
+    setMsgs((m) => [...m, { from: "user", text: t }]);
+    setDraft("");
+    setPensando(true);
+    setTimeout(() => {
+      setMsgs((m) => [...m, { from: "selma", text: responder(t) }]);
+      setPensando(false);
+    }, 420);
+  }
 
   function send(e: React.FormEvent) {
     e.preventDefault();
-    const text = draft.trim();
-    if (!text) return;
-    setMsgs((m) => [
-      ...m,
-      { from: "user", text },
-      {
-        from: "selma",
-        text: "Entendi! No protótipo eu ainda não respondo de verdade — mas no sistema eu vou te ajudar com isso. Quer que eu te mostre a tela atual? É só tocar em “Tour desta tela”.",
-      },
-    ]);
-    setDraft("");
+    perguntar(draft);
   }
 
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-6 z-[201] flex w-[340px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-elegant">
+        <div className="fixed bottom-24 right-6 z-[201] flex w-[400px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-elegant">
           {/* Cabeçalho na faixa da marca. */}
           <div className="flex items-center gap-3 bg-gradient-hero px-4 py-3.5 text-white">
             <SelmaAvatar size={38} />
@@ -86,7 +94,7 @@ export function SelmaLauncher() {
           </div>
 
           {/* Mensagens. */}
-          <div className="flex max-h-[300px] flex-col gap-2.5 overflow-y-auto p-4">
+          <div className="flex max-h-[340px] flex-col gap-2.5 overflow-y-auto p-4">
             {msgs.map((m, i) => (
               <div
                 key={i}
@@ -97,10 +105,42 @@ export function SelmaLauncher() {
                     : "self-end rounded-tr-sm bg-brand-navy text-white",
                 )}
               >
-                {m.text}
+                {m.text.split("\n").map((linha, j) =>
+                  linha.startsWith("⚠") ? (
+                    <span key={j} className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-gold-tint/70 px-2 py-1 text-[12px] text-gold">
+                      <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                      <span>{linha.replace("⚠ ", "")}</span>
+                    </span>
+                  ) : (
+                    <span key={j} className={cn("block", linha === "" && "h-1.5")}>
+                      {linha}
+                    </span>
+                  ),
+                )}
               </div>
             ))}
+            {pensando && (
+              <div className="max-w-[85%] self-start rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2 text-[13px] text-muted-foreground">
+                Consultando os dados…
+              </div>
+            )}
           </div>
+
+          {/* Sugestões — só enquanto a conversa está no início. */}
+          {msgs.length === 1 && (
+            <div className="flex flex-wrap gap-1.5 px-4 pb-1">
+              {SUGESTOES_ASSISTENTE.slice(0, 3).map((sug) => (
+                <button
+                  key={sug}
+                  onClick={() => perguntar(sug)}
+                  disabled={carregando}
+                  className="rounded-full border border-border bg-white px-2.5 py-1 text-left text-[11.5px] text-ink-soft transition-colors hover:bg-secondary disabled:opacity-50"
+                >
+                  {sug}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Ação sugerida do dia (do IA Fleet Manager). */}
           <div className="mx-4 mb-2 rounded-xl border border-navy-line bg-navy-tint/60 p-3">
@@ -123,8 +163,8 @@ export function SelmaLauncher() {
           </div>
 
           {/* Atalhos. */}
-          {hasTour && (
-            <div className="px-4 pb-2">
+          <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+            {hasTour && (
               <button
                 onClick={() => {
                   setOpen(false);
@@ -135,8 +175,16 @@ export function SelmaLauncher() {
                 <Compass className="h-3.5 w-3.5" />
                 Tour desta tela
               </button>
-            </div>
-          )}
+            )}
+            <Link
+              to="/app/assistente"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12px] font-medium text-brand-navy hover:bg-secondary"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              Abrir em tela cheia
+            </Link>
+          </div>
 
           {/* Entrada. */}
           <form onSubmit={send} className="flex items-center gap-2 border-t border-border p-3">

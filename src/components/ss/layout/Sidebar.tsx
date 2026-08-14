@@ -56,14 +56,6 @@ const isGroup = (e: Entry): e is Group => "items" in e;
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
   {
-    label: "Segurança",
-    icon: ShieldAlert,
-    items: [
-      { label: "Videotelemetria", to: "/app/seguranca/video" },
-      { label: "Eventos de condução", to: "/app/eventos" },
-    ],
-  },
-  {
     label: "Pessoas",
     icon: Users,
     items: [
@@ -89,21 +81,6 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
-  { label: "Motoristas", icon: Users, to: "/app/motoristas" },
-  {
-    label: "Gerencial",
-    icon: Gauge,
-    items: [{ label: "Indicadores", to: "/app/gerencial/indicadores" }],
-  },
-  {
-    label: "Operação",
-    icon: Route,
-    items: [
-      { label: "Gestão de viagens", to: "/app/operacao/viagens" },
-      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
-      { label: "Alarmes operacionais", to: "/app/operacao/alarmes" },
-    ],
-  },
   {
     label: "Frota",
     icon: Truck,
@@ -111,6 +88,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
+      { label: "Videotelemetria", to: "/app/seguranca/video" },
       { label: "Manutenção", to: "/app/frota/manutencao" },
       { label: "Ordens de serviço", to: "/app/frota/ordens" },
       { label: "Pneus", to: "/app/frota/pneus" },
@@ -123,6 +101,9 @@ const NAV_PRIMARY: Entry[] = [
     icon: Bus,
     items: [
       { label: "Contratos", to: "/app/fretamento/contratos" },
+      { label: "Gestão de viagens", to: "/app/operacao/viagens" },
+      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
+      { label: "Alarmes operacionais", to: "/app/operacao/alarmes" },
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
@@ -133,9 +114,13 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
+  {
+    label: "Gerencial",
+    icon: Gauge,
+    items: [{ label: "Indicadores", to: "/app/gerencial/indicadores" }],
+  },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
-  { label: "Assistente", icon: Sparkles, to: "/app/assistente" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

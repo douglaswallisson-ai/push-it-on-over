@@ -258,3 +258,11 @@ export const Contratos = {
   passageiros: () =>
     USE_MOCK ? mock(M.MOCK_PASSAGEIROS_CONTRATO) : api.get<import("@/types").PassageiroContrato[]>(`/api/contratos/passageiros`),
 };
+
+export const CCO = {
+  posicoes: (linhaId?: string) =>
+    USE_MOCK
+      ? mock(M.MOCK_POSICOES_LINHA.filter((p) => !linhaId || p.linhaId === linhaId))
+      : api.get<import("@/types").PosicaoNaLinha[]>(`/api/cco/posicoes${qs({ linha: linhaId })}`),
+  despachos: () => (USE_MOCK ? mock(M.MOCK_DESPACHOS) : api.get<import("@/types").Despacho[]>(`/api/cco/despachos`)),
+};

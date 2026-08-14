@@ -70,6 +70,7 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Motoristas", to: "/app/motoristas" },
       { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
+      { label: "Multas", to: "/app/pessoas/multas" },
     ],
   },
   {
@@ -100,6 +101,7 @@ const NAV_PRIMARY: Entry[] = [
     icon: Route,
     items: [
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
+      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Alarmes operacionais", to: "/app/operacao/alarmes" },
     ],
   },
@@ -134,6 +136,7 @@ const NAV_PRIMARY: Entry[] = [
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
+  { label: "Assistente", icon: Sparkles, to: "/app/assistente" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

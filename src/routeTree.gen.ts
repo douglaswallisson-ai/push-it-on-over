@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
+import { Route as AppAssistenteRouteImport } from './routes/app.assistente'
 import { Route as AppAuditoriaRouteImport } from './routes/app.auditoria'
 import { Route as AppCo2RouteImport } from './routes/app.co2'
 import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
@@ -47,8 +48,10 @@ import { Route as AppGerencialIndicadoresRouteImport } from './routes/app.gerenc
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
 import { Route as AppOperacaoAlarmesRouteImport } from './routes/app.operacao.alarmes'
+import { Route as AppOperacaoSinoticoRouteImport } from './routes/app.operacao.sinotico'
 import { Route as AppOperacaoViagensRouteImport } from './routes/app.operacao.viagens'
 import { Route as AppPessoasJornadaRouteImport } from './routes/app.pessoas.jornada'
+import { Route as AppPessoasMultasRouteImport } from './routes/app.pessoas.multas'
 import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
 import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
 import { Route as AppSegurancaVideoRouteImport } from './routes/app.seguranca.video'
@@ -81,6 +84,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppSplatRoute = AppSplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssistenteRoute = AppAssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAuditoriaRoute = AppAuditoriaRouteImport.update({
@@ -251,6 +259,11 @@ const AppOperacaoAlarmesRoute = AppOperacaoAlarmesRouteImport.update({
   path: '/operacao/alarmes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOperacaoSinoticoRoute = AppOperacaoSinoticoRouteImport.update({
+  id: '/operacao/sinotico',
+  path: '/operacao/sinotico',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOperacaoViagensRoute = AppOperacaoViagensRouteImport.update({
   id: '/operacao/viagens',
   path: '/operacao/viagens',
@@ -259,6 +272,11 @@ const AppOperacaoViagensRoute = AppOperacaoViagensRouteImport.update({
 const AppPessoasJornadaRoute = AppPessoasJornadaRouteImport.update({
   id: '/pessoas/jornada',
   path: '/pessoas/jornada',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPessoasMultasRoute = AppPessoasMultasRouteImport.update({
+  id: '/pessoas/multas',
+  path: '/pessoas/multas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPremiacaoIndexRoute = AppPremiacaoIndexRouteImport.update({
@@ -309,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
@@ -342,8 +361,10 @@ export interface FileRoutesByFullPath {
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
+  '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -358,6 +379,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
@@ -391,8 +413,10 @@ export interface FileRoutesByTo {
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
+  '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -409,6 +433,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
+  '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
@@ -442,8 +467,10 @@ export interface FileRoutesById {
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/alarmes': typeof AppOperacaoAlarmesRoute
+  '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
+  '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -461,6 +488,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/app/$'
+    | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
@@ -494,8 +522,10 @@ export interface FileRouteTypes {
     | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
+    | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
     | '/app/pessoas/jornada'
+    | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
     | '/app/veiculos/novo'
@@ -510,6 +540,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/app/$'
+    | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
@@ -543,8 +574,10 @@ export interface FileRouteTypes {
     | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
+    | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
     | '/app/pessoas/jornada'
+    | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
     | '/app/veiculos/novo'
@@ -560,6 +593,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/app/$'
+    | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
     | '/app/estrategico'
@@ -593,8 +627,10 @@ export interface FileRouteTypes {
     | '/app/gerencial/indicadores'
     | '/app/motoristas/novo'
     | '/app/operacao/alarmes'
+    | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
     | '/app/pessoas/jornada'
+    | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
     | '/app/veiculos/novo'
@@ -647,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/app/$'
       preLoaderRoute: typeof AppSplatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/assistente': {
+      id: '/app/assistente'
+      path: '/assistente'
+      fullPath: '/app/assistente'
+      preLoaderRoute: typeof AppAssistenteRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/auditoria': {
@@ -880,6 +923,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOperacaoAlarmesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/operacao/sinotico': {
+      id: '/app/operacao/sinotico'
+      path: '/operacao/sinotico'
+      fullPath: '/app/operacao/sinotico'
+      preLoaderRoute: typeof AppOperacaoSinoticoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/operacao/viagens': {
       id: '/app/operacao/viagens'
       path: '/operacao/viagens'
@@ -892,6 +942,13 @@ declare module '@tanstack/react-router' {
       path: '/pessoas/jornada'
       fullPath: '/app/pessoas/jornada'
       preLoaderRoute: typeof AppPessoasJornadaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pessoas/multas': {
+      id: '/app/pessoas/multas'
+      path: '/pessoas/multas'
+      fullPath: '/app/pessoas/multas'
+      preLoaderRoute: typeof AppPessoasMultasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/premiacao/': {
@@ -955,6 +1012,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
+  AppAssistenteRoute: typeof AppAssistenteRoute
   AppAuditoriaRoute: typeof AppAuditoriaRoute
   AppCo2Route: typeof AppCo2Route
   AppEstrategicoRoute: typeof AppEstrategicoRoute
@@ -988,8 +1046,10 @@ interface AppRouteChildren {
   AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
   AppOperacaoAlarmesRoute: typeof AppOperacaoAlarmesRoute
+  AppOperacaoSinoticoRoute: typeof AppOperacaoSinoticoRoute
   AppOperacaoViagensRoute: typeof AppOperacaoViagensRoute
   AppPessoasJornadaRoute: typeof AppPessoasJornadaRoute
+  AppPessoasMultasRoute: typeof AppPessoasMultasRoute
   AppPremiacaoMetasRoute: typeof AppPremiacaoMetasRoute
   AppSegurancaVideoRoute: typeof AppSegurancaVideoRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
@@ -1003,6 +1063,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppSplatRoute: AppSplatRoute,
+  AppAssistenteRoute: AppAssistenteRoute,
   AppAuditoriaRoute: AppAuditoriaRoute,
   AppCo2Route: AppCo2Route,
   AppEstrategicoRoute: AppEstrategicoRoute,
@@ -1036,8 +1097,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
   AppOperacaoAlarmesRoute: AppOperacaoAlarmesRoute,
+  AppOperacaoSinoticoRoute: AppOperacaoSinoticoRoute,
   AppOperacaoViagensRoute: AppOperacaoViagensRoute,
   AppPessoasJornadaRoute: AppPessoasJornadaRoute,
+  AppPessoasMultasRoute: AppPessoasMultasRoute,
   AppPremiacaoMetasRoute: AppPremiacaoMetasRoute,
   AppSegurancaVideoRoute: AppSegurancaVideoRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,

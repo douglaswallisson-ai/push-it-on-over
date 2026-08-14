@@ -649,3 +649,23 @@ export const MOCK_PASSAGEIROS_CONTRATO: PassageiroContrato[] = [
   { id: "pc3", contratoId: "c1", nome: "Daniela Souza", documento: "345.678.901-22", matriculaEmpresa: "AZ-4412", credencial: "QR-AZ4412", pontoEmbarqueId: "p1", ativo: true },
   { id: "pc4", contratoId: "c1", nome: "Eduardo Ramos", documento: "456.789.012-33", matriculaEmpresa: "AZ-4413", credencial: "QR-AZ4413", pontoEmbarqueId: "p1", ativo: false },
 ];
+
+/* ---- Bloco 3: posições na linha ---- */
+import type { Despacho, PosicaoNaLinha } from "@/types";
+
+const agoraISO = () => new Date().toISOString();
+
+export const MOCK_POSICOES_LINHA: PosicaoNaLinha[] = [
+  { veiculoId: "v1", linhaId: "l1", itinerarioId: "it1", sentido: "ida", tabela: 4, motoristaId: "m1", ultimoPontoId: "p2", progresso: 0.45, desvioMin: 0, headwayAnteriorMin: 12, velocidadeKmh: 34, passageirosABordo: 48, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v2", linhaId: "l1", itinerarioId: "it1", sentido: "ida", tabela: 21, motoristaId: "m2", ultimoPontoId: "p1", progresso: 0.20, desvioMin: -6, headwayAnteriorMin: 6, velocidadeKmh: 41, passageirosABordo: 22, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v4", linhaId: "l1", itinerarioId: "it1", sentido: "ida", tabela: 19, motoristaId: "m4", ultimoPontoId: "p3", progresso: 0.70, desvioMin: 9, headwayAnteriorMin: 21, velocidadeKmh: 12, passageirosABordo: 71, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v6", linhaId: "l1", itinerarioId: "it1", sentido: "ida", tabela: 13, motoristaId: "m1", ultimoPontoId: "p4", progresso: 0.30, desvioMin: 3, headwayAnteriorMin: 11, velocidadeKmh: 28, passageirosABordo: 55, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v3", linhaId: "l1", itinerarioId: "it2", sentido: "volta", tabela: 3, motoristaId: "m3", ultimoPontoId: "p5", progresso: 0.15, desvioMin: 14, headwayAnteriorMin: 26, velocidadeKmh: 0, passageirosABordo: 12, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v5", linhaId: "l1", itinerarioId: "it2", sentido: "volta", tabela: 7, motoristaId: "m5", ultimoPontoId: "p4", progresso: 0.55, desvioMin: -4, headwayAnteriorMin: 7, velocidadeKmh: 46, passageirosABordo: 38, lotacao: 80, em: agoraISO() },
+  { veiculoId: "v7", linhaId: "l1", itinerarioId: "it2", sentido: "volta", tabela: 9, motoristaId: "m2", ultimoPontoId: "p3", progresso: 0.80, desvioMin: 2, headwayAnteriorMin: 13, velocidadeKmh: 31, passageirosABordo: 63, lotacao: 80, em: agoraISO() },
+];
+
+export const MOCK_DESPACHOS: Despacho[] = [
+  { id: "d1", tipo: "retido", veiculoId: "v2", linhaId: "l1", em: new Date(Date.now() - 12 * 60000).toISOString(), operador: "Rosemeri Tuono", motivo: "Adiantado 6 min — regularizar headway", minutos: 5 },
+  { id: "d2", tipo: "reforco", veiculoId: "v8", linhaId: "l1", em: new Date(Date.now() - 40 * 60000).toISOString(), operador: "Vitor Duarte", motivo: "Intervalo de 21 min entre carros no pico" },
+];

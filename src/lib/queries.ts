@@ -7,6 +7,7 @@ import {
   Frota,
   Garagens,
   GruposLinhas,
+  CCO,
   Contratos,
   Indicadores,
   Jornadas,
@@ -258,3 +259,14 @@ export const passageirosContratoQuery = () =>
 
 export const motoristasListQuery = () =>
   queryOptions({ queryKey: ["motoristas", "lista"], queryFn: () => Motoristas.list({ page: 1, pageSize: 200 }), staleTime: 5 * MINUTE });
+
+export const posicoesLinhaQuery = (linhaId?: string) =>
+  queryOptions({
+    queryKey: ["cco", "posicoes", linhaId ?? "todas"],
+    queryFn: () => CCO.posicoes(linhaId),
+    staleTime: 10_000,
+    refetchInterval: 20_000,
+  });
+
+export const despachosQuery = () =>
+  queryOptions({ queryKey: ["cco", "despachos"], queryFn: () => CCO.despachos(), staleTime: 30_000 });

@@ -885,3 +885,52 @@ export type PassageiroContrato = {
   pontoEmbarqueId?: string;
   ativo: boolean;
 };
+
+/* ================================================================== */
+/* BLOCO 3 — Controle operacional (CCO)                               */
+/* ================================================================== */
+
+/** Situação do carro no traçado da linha, para o painel sinótico. */
+export type PosicaoNaLinha = {
+  veiculoId: string;
+  linhaId: string;
+  itinerarioId: string;
+  sentido: Sentido;
+  tabela: number;
+  motoristaId?: string;
+  /** Ponto de onde saiu por último. */
+  ultimoPontoId: string;
+  /** Progresso entre o último ponto e o próximo, de 0 a 1. */
+  progresso: number;
+  /** Desvio contra o horário programado, em minutos. Negativo = adiantado. */
+  desvioMin: number;
+  headwayAnteriorMin?: number;
+  velocidadeKmh: number;
+  passageirosABordo?: number;
+  lotacao?: number;
+  em: string;
+};
+
+/** Ação de despacho tomada pelo CCO sobre um carro em operação. */
+export type TipoDespacho = "retido" | "liberado" | "recolhido" | "reforco" | "troca_veiculo" | "troca_motorista" | "retorno";
+
+export const DESPACHO_LABEL: Record<TipoDespacho, string> = {
+  retido: "Reter no ponto",
+  liberado: "Liberar",
+  recolhido: "Recolher à garagem",
+  reforco: "Enviar reforço",
+  troca_veiculo: "Trocar veículo",
+  troca_motorista: "Trocar motorista",
+  retorno: "Retornar sem completar",
+};
+
+export type Despacho = {
+  id: string;
+  tipo: TipoDespacho;
+  veiculoId: string;
+  linhaId: string;
+  em: string;
+  operador: string;
+  motivo: string;
+  minutos?: number;
+};

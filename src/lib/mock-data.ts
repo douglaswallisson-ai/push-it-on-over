@@ -482,3 +482,170 @@ export const MOCK_FALHAS: FalhaFrota[] = [
 ];
 
 export const periodoPorMes = (p: string) => MOCK_INDICADORES_PERIODO.find((x) => x.periodo === p);
+
+/* ------------------------------------------------------------------ */
+/* BLOCOS 2, 4, 5, 6                                                   */
+/* ------------------------------------------------------------------ */
+
+import type {
+  Contratante, Contrato, Jornada, Medicao, Multa, OcorrenciaVideo, OrdemServico,
+  PassageiroContrato, PlanoManutencao, Pneu, TipoAlarmeVideo,
+} from "@/types";
+
+const hAtras = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
+const dAtras = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
+
+/* ---- Bloco 2: ordens de serviço ---- */
+export const MOCK_ORDENS: OrdemServico[] = [
+  { id: "os1", numero: "OS-2026-0841", veiculoId: "v3", abertaEm: dAtras(2), status: "em_execucao", tipo: "corretiva", origem: "falha", descricao: "Substituição do sensor de pressão do turbo", oficina: "Oficina Central", interna: true, responsavel: "Marcos Pereira", odometro: 913006, horasParado: 26, custoPrevisto: 1850, falhaId: "f1",
+    itens: [{ descricao: "Sensor de pressão MAP", tipo: "peca", quantidade: 1, valorUnitario: 980 }, { descricao: "Mão de obra mecânica", tipo: "servico", quantidade: 4, valorUnitario: 145 }] },
+  { id: "os2", numero: "OS-2026-0839", veiculoId: "v5", abertaEm: dAtras(4), status: "aguardando_peca", tipo: "corretiva", origem: "falha", descricao: "Reparo no sistema de arrefecimento", oficina: "Oficina CIC", interna: true, responsavel: "Najla Maltaca", odometro: 704112, horasParado: 52, custoPrevisto: 980, falhaId: "f2",
+    itens: [{ descricao: "Radiador completo", tipo: "peca", quantidade: 1, valorUnitario: 2400 }] },
+  { id: "os3", numero: "OS-2026-0836", veiculoId: "v9", abertaEm: dAtras(6), concluidaEm: dAtras(5), status: "concluida", tipo: "preventiva", origem: "plano", descricao: "Rodízio de pneus e alinhamento", oficina: "Oficina Zona Leste", interna: true, odometro: 388940, horasParado: 6, custoPrevisto: 740,
+    itens: [{ descricao: "Alinhamento", tipo: "servico", quantidade: 1, valorUnitario: 320 }, { descricao: "Rodízio", tipo: "servico", quantidade: 1, valorUnitario: 180 }] },
+  { id: "os4", numero: "OS-2026-0834", veiculoId: "v4", abertaEm: dAtras(1), status: "aberta", tipo: "preventiva", origem: "plano", descricao: "Revisão de 180.000 km", oficina: "Terceirizada RJ", interna: false, odometro: 180450, custoPrevisto: 3200, itens: [] },
+  { id: "os5", numero: "OS-2026-0830", veiculoId: "v2", abertaEm: dAtras(9), concluidaEm: dAtras(7), status: "concluida", tipo: "preditiva", origem: "predicao", descricao: "Substituição preventiva da embreagem", oficina: "Oficina Central", interna: true, odometro: 489020, horasParado: 34, custoPrevisto: 2400,
+    itens: [{ descricao: "Kit embreagem", tipo: "peca", quantidade: 1, valorUnitario: 3180 }, { descricao: "Mão de obra", tipo: "servico", quantidade: 8, valorUnitario: 145 }] },
+  { id: "os6", numero: "OS-2026-0828", veiculoId: "v6", abertaEm: dAtras(12), concluidaEm: dAtras(12), status: "concluida", tipo: "corretiva", origem: "falha", descricao: "Troca de bateria", oficina: "Oficina CIC", interna: true, odometro: 552310, horasParado: 3, custoPrevisto: 620,
+    itens: [{ descricao: "Bateria 150Ah", tipo: "peca", quantidade: 2, valorUnitario: 890 }] },
+];
+
+/* ---- Bloco 2: planos por modelo ---- */
+export const MOCK_PLANOS: PlanoManutencao[] = [
+  { id: "pl1", nome: "Volvo FH — plano padrão", marca: "Volvo", modelo: "FH 460/540", motor: "D13K", veiculosAplicados: 2, itens: [
+    { id: "i1", descricao: "Troca de óleo do motor e filtros", sistema: "Motor", intervaloKm: 60000, custoEstimado: 1450 },
+    { id: "i2", descricao: "Filtro de ar", sistema: "Motor", intervaloKm: 90000, custoEstimado: 420 },
+    { id: "i3", descricao: "Filtro de combustível", sistema: "Alimentação", intervaloKm: 60000, custoEstimado: 380 },
+    { id: "i4", descricao: "Óleo da transmissão", sistema: "Transmissão", intervaloKm: 240000, custoEstimado: 2100 },
+    { id: "i5", descricao: "Revisão de freios", sistema: "Freios", intervaloKm: 80000, custoEstimado: 1800 },
+  ]},
+  { id: "pl2", nome: "Scania R/P — plano padrão", marca: "Scania", modelo: "R 450 / P 320", motor: "DC13", veiculosAplicados: 2, itens: [
+    { id: "i6", descricao: "Troca de óleo e filtros", sistema: "Motor", intervaloKm: 45000, custoEstimado: 1380 },
+    { id: "i7", descricao: "Filtro de ar", sistema: "Motor", intervaloKm: 75000, custoEstimado: 390 },
+    { id: "i8", descricao: "Correia do alternador", sistema: "Elétrico", intervaloKm: 120000, custoEstimado: 640 },
+    { id: "i9", descricao: "Aferição do tacógrafo", sistema: "Legal", intervaloDias: 730, custoEstimado: 280 },
+  ]},
+  { id: "pl3", nome: "Mercedes-Benz — urbano", marca: "Mercedes-Benz", modelo: "Actros / Axor", motor: "OM 470", veiculosAplicados: 2, itens: [
+    { id: "i10", descricao: "Troca de óleo do motor", sistema: "Motor", intervaloKm: 40000, custoEstimado: 1240 },
+    { id: "i11", descricao: "Limpeza do DPF", sistema: "Pós-tratamento", intervaloKm: 150000, custoEstimado: 3400 },
+    { id: "i12", descricao: "Filtro de ureia (ARLA)", sistema: "Pós-tratamento", intervaloKm: 120000, custoEstimado: 520 },
+  ]},
+];
+
+/* ---- Bloco 2: pneus ---- */
+export const MOCK_PNEUS: Pneu[] = [
+  { id: "pn1", fogo: "F-10241", marca: "Michelin", medida: "295/80 R22.5", veiculoId: "v1", posicao: "1DE", vidas: 0, maxVidas: 3, sulcoMm: 12.4, sulcoMinimoMm: 1.6, pressaoPsi: 118, kmAcumulado: 42800, custoAquisicao: 2890, instaladoEm: dAtras(180), status: "em_uso" },
+  { id: "pn2", fogo: "F-10242", marca: "Michelin", medida: "295/80 R22.5", veiculoId: "v1", posicao: "1DD", vidas: 0, maxVidas: 3, sulcoMm: 12.1, sulcoMinimoMm: 1.6, pressaoPsi: 116, kmAcumulado: 42800, custoAquisicao: 2890, instaladoEm: dAtras(180), status: "em_uso" },
+  { id: "pn3", fogo: "F-09877", marca: "Pirelli", medida: "295/80 R22.5", veiculoId: "v1", posicao: "2TEE", vidas: 1, maxVidas: 3, sulcoMm: 4.2, sulcoMinimoMm: 1.6, pressaoPsi: 112, kmAcumulado: 118400, custoAquisicao: 2650, instaladoEm: dAtras(410), status: "em_uso" },
+  { id: "pn4", fogo: "F-09878", marca: "Pirelli", medida: "295/80 R22.5", veiculoId: "v1", posicao: "2TEI", vidas: 1, maxVidas: 3, sulcoMm: 2.1, sulcoMinimoMm: 1.6, pressaoPsi: 109, kmAcumulado: 121200, custoAquisicao: 2650, instaladoEm: dAtras(410), status: "em_uso" },
+  { id: "pn5", fogo: "F-11002", marca: "Goodyear", medida: "295/80 R22.5", veiculoId: "v3", posicao: "1DE", vidas: 0, maxVidas: 3, sulcoMm: 9.8, sulcoMinimoMm: 1.6, pressaoPsi: 120, kmAcumulado: 61300, custoAquisicao: 2740, instaladoEm: dAtras(240), status: "em_uso" },
+  { id: "pn6", fogo: "F-08120", marca: "Bridgestone", medida: "295/80 R22.5", veiculoId: "v5", posicao: "2TDE", vidas: 2, maxVidas: 3, sulcoMm: 1.4, sulcoMinimoMm: 1.6, pressaoPsi: 104, kmAcumulado: 198700, custoAquisicao: 2810, instaladoEm: dAtras(620), status: "em_uso" },
+  { id: "pn7", fogo: "F-11540", marca: "Michelin", medida: "295/80 R22.5", vidas: 0, maxVidas: 3, sulcoMm: 14.0, sulcoMinimoMm: 1.6, kmAcumulado: 0, custoAquisicao: 2890, status: "estoque" },
+  { id: "pn8", fogo: "F-07430", marca: "Pirelli", medida: "295/80 R22.5", vidas: 2, maxVidas: 3, sulcoMm: 1.8, sulcoMinimoMm: 1.6, kmAcumulado: 214500, custoAquisicao: 2650, status: "recapagem" },
+  { id: "pn9", fogo: "F-06011", marca: "Goodyear", medida: "295/80 R22.5", vidas: 3, maxVidas: 3, sulcoMm: 0.9, sulcoMinimoMm: 1.6, kmAcumulado: 289300, custoAquisicao: 2740, status: "sucata" },
+];
+
+/* ---- Bloco 4: ocorrências de vídeo ---- */
+const TIPOS_VIDEO: { t: TipoAlarmeVideo; r: "baixo" | "medio" | "alto"; n: number }[] = [
+  { t: "distracao", r: "alto", n: 42 }, { t: "risco_colisao", r: "alto", n: 31 },
+  { t: "proximidade_dianteira", r: "medio", n: 28 }, { t: "olhos_fechados", r: "alto", n: 24 },
+  { t: "vibracao", r: "baixo", n: 17 }, { t: "colisao", r: "alto", n: 9 },
+  { t: "bocejo", r: "medio", n: 14 }, { t: "sem_rosto", r: "medio", n: 11 },
+  { t: "celular", r: "alto", n: 8 }, { t: "curva_brusca", r: "medio", n: 7 },
+  { t: "excesso_velocidade", r: "alto", n: 6 }, { t: "fumando", r: "baixo", n: 5 },
+  { t: "sos", r: "alto", n: 3 }, { t: "calibracao_anormal", r: "baixo", n: 4 },
+  { t: "desconexao_eletrica", r: "medio", n: 2 }, { t: "baixa_voltagem", r: "baixo", n: 3 },
+  { t: "fadiga", r: "alto", n: 2 }, { t: "freada_brusca", r: "medio", n: 6 },
+];
+
+const VEIC = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"];
+const MOTS = ["m1", "m2", "m3", "m4", "m5"];
+
+export const MOCK_OCORRENCIAS_VIDEO: OcorrenciaVideo[] = TIPOS_VIDEO.flatMap((cfg, gi) =>
+  Array.from({ length: Math.min(cfg.n, 9) }, (_, i) => {
+    const idx = gi * 7 + i;
+    const status: OcorrenciaVideo["status"] =
+      i === 0 ? "aguardando" : i === 1 ? "em_analise" : i < 4 ? "aguardando" : i < 7 ? "tratado" : "descartado";
+    return {
+      id: `ov${gi}-${i}`,
+      tipo: cfg.t,
+      risco: cfg.r,
+      veiculoId: VEIC[idx % VEIC.length],
+      motoristaId: MOTS[idx % MOTS.length],
+      linhaId: ["l1", "l2", "l3"][idx % 3],
+      em: hAtras(i * 3 + gi),
+      imei: `86499306040${6200 + idx}`,
+      duracaoS: 8 + (idx % 12),
+      velocidadeKmh: 30 + (idx % 45),
+      clipeDisponivel: idx % 5 !== 0,
+      status,
+      tratativa: status === "tratado" ? "Feedback aplicado ao motorista." : undefined,
+      tratadoPor: status === "tratado" ? "Rosemeri Tuono" : undefined,
+      tratadoEm: status === "tratado" ? hAtras(i) : undefined,
+    };
+  }),
+);
+
+/** Volume total por tipo — o gráfico usa o número real, não a amostra. */
+export const MOCK_VOLUME_VIDEO: Record<string, number> = Object.fromEntries(
+  TIPOS_VIDEO.map((c) => [c.t, c.n * 47]),
+);
+
+/* ---- Bloco 5: jornada e multas ---- */
+const hoje = new Date().toISOString().slice(0, 10);
+const marc = (tipo: string, hhmm: string, origem: "automatica" | "manual" = "automatica", local?: string) =>
+  ({ tipo, em: `${hoje}T${hhmm}:00`, origem, local }) as Jornada["marcacoes"][number];
+
+export const MOCK_JORNADAS: Jornada[] = [
+  { id: "j1", motoristaId: "m1", matricula: "0000553731", data: hoje, linhaId: "l1", tabela: 4,
+    marcacoes: [marc("inicio_jornada", "04:51", "automatica", "Garagem Central"), marc("inicio_direcao", "05:02"), marc("fim_direcao", "09:17"), marc("inicio_refeicao", "09:20", "automatica", "Terminal Pinheiros"), marc("fim_refeicao", "10:15"), marc("inicio_direcao", "10:22"), marc("fim_direcao", "13:37")],
+    minutosTrabalhados: 466, minutosDirecao: 450, minutosEspera: 15, minutosRefeicao: 55, minutosExtras: 46, limiteExtrasMin: 120, fechada: false,
+    infracoes: [{ tipo: "direcao_continua", descricao: "4h15 de direção contínua sem parada de 30 min", gravidade: "media", minutos: 255 }] },
+  { id: "j2", motoristaId: "m2", matricula: "0000618362", data: hoje, linhaId: "l1", tabela: 21,
+    marcacoes: [marc("inicio_jornada", "05:10"), marc("inicio_direcao", "05:18"), marc("fim_direcao", "08:40"), marc("inicio_refeicao", "08:45"), marc("fim_refeicao", "09:50"), marc("inicio_direcao", "09:58")],
+    minutosTrabalhados: 402, minutosDirecao: 380, minutosEspera: 22, minutosRefeicao: 65, minutosExtras: 0, limiteExtrasMin: 120, fechada: false, infracoes: [] },
+  { id: "j3", motoristaId: "m3", matricula: "0000974605", data: hoje, linhaId: "l2",
+    marcacoes: [marc("inicio_jornada", "04:30"), marc("inicio_direcao", "04:40"), marc("fim_direcao", "12:10")],
+    minutosTrabalhados: 540, minutosDirecao: 450, minutosEspera: 90, minutosRefeicao: 0, minutosExtras: 60, limiteExtrasMin: 120, fechada: false,
+    infracoes: [
+      { tipo: "intervalo_insuficiente", descricao: "Jornada sem intervalo de refeição registrado", gravidade: "grave", minutos: 0 },
+      { tipo: "direcao_continua", descricao: "7h30 de direção contínua", gravidade: "grave", minutos: 450 },
+    ] },
+  { id: "j4", motoristaId: "m4", matricula: "0000555446", data: hoje, linhaId: "l3", tabela: 8,
+    marcacoes: [marc("inicio_jornada", "06:00"), marc("inicio_direcao", "06:12"), marc("fim_direcao", "10:02"), marc("inicio_refeicao", "10:05"), marc("fim_refeicao", "11:10"), marc("inicio_direcao", "11:18"), marc("fim_direcao", "14:40"), marc("fim_jornada", "14:52")],
+    minutosTrabalhados: 532, minutosDirecao: 432, minutosEspera: 35, minutosRefeicao: 65, minutosExtras: 52, limiteExtrasMin: 120, fechada: true, infracoes: [] },
+];
+
+export const MOCK_MULTAS: Multa[] = [
+  { id: "mu1", ait: "AE-2026-884210", veiculoId: "v4", motoristaId: "m4", em: dAtras(9), local: "Av. Paulista, km 2", infracao: "Excesso de velocidade até 20%", gravidade: "media", pontos: 4, valor: 130.16, vencimento: dAtras(-21), prazoIndicacao: dAtras(-6), status: "pendente_indicacao" },
+  { id: "mu2", ait: "AE-2026-881944", veiculoId: "v9", motoristaId: "m2", em: dAtras(24), local: "Rod. Ayrton Senna, km 21", infracao: "Avanço de sinal vermelho", gravidade: "gravissima", pontos: 7, valor: 293.47, vencimento: dAtras(-6), status: "indicada" },
+  { id: "mu3", ait: "AE-2026-878330", veiculoId: "v3", em: dAtras(41), local: "Av. Aricanduva, 5555", infracao: "Estacionar em local proibido", gravidade: "media", pontos: 4, valor: 195.23, vencimento: dAtras(11), status: "em_recurso" },
+  { id: "mu4", ait: "AE-2026-870112", veiculoId: "v1", motoristaId: "m1", em: dAtras(62), local: "Marginal Tietê", infracao: "Faixa exclusiva de ônibus", gravidade: "grave", pontos: 5, valor: 195.23, vencimento: dAtras(32), status: "paga" },
+];
+
+/* ---- Bloco 6: contratos ---- */
+export const MOCK_CONTRATANTES: Contratante[] = [
+  { id: "ct1", nome: "Azul Industrial S.A.", cnpj: "12.345.678/0001-90", contato: "Fernanda Lopes", email: "fernanda@azulind.com.br", telefone: "(11) 3344-5566", segmento: "Metalurgia" },
+  { id: "ct2", nome: "Vale Verde Alimentos", cnpj: "98.765.432/0001-10", contato: "Ricardo Nunes", email: "ricardo@valeverde.com.br", telefone: "(11) 2233-4455", segmento: "Alimentos" },
+  { id: "ct3", nome: "Prefeitura de Guarulhos", cnpj: "45.678.901/0001-22", contato: "Depto. de Transportes", email: "transportes@guarulhos.sp.gov.br", telefone: "(11) 2087-0000", segmento: "Público" },
+];
+
+export const MOCK_CONTRATOS: Contrato[] = [
+  { id: "c1", numero: "CT-2026-014", contratanteId: "ct1", tipo: "continuo", inicio: "2026-01-01", fim: "2026-12-31", valorMensal: 184000, kmFranquia: 22000, valorKmExcedente: 6.4, indiceReajuste: "IPCA", linhasVinculadas: ["l4"], status: "vigente" },
+  { id: "c2", numero: "CT-2025-098", contratanteId: "ct2", tipo: "continuo", inicio: "2025-07-01", fim: "2026-06-30", valorMensal: 96500, kmFranquia: 12000, valorKmExcedente: 6.9, indiceReajuste: "IGPM", linhasVinculadas: [], status: "encerrado" },
+  { id: "c3", numero: "CT-2026-021", contratanteId: "ct3", tipo: "continuo", inicio: "2026-03-01", fim: "2031-02-28", valorMensal: 1420000, kmFranquia: 210000, valorKmExcedente: 5.1, indiceReajuste: "IPCA", linhasVinculadas: ["l1", "l2", "l3"], status: "vigente" },
+  { id: "c4", numero: "CT-2026-033", contratanteId: "ct2", tipo: "eventual", inicio: "2026-09-12", fim: "2026-09-15", valorKm: 7.2, linhasVinculadas: [], status: "em_negociacao" },
+];
+
+export const MOCK_MEDICOES: Medicao[] = [
+  { id: "md1", contratoId: "c1", periodo: "2026-07", viagensPrevistas: 440, viagensRealizadas: 432, kmRodado: 23140, kmExcedente: 1140, valorBase: 184000, valorExcedente: 7296, glosas: 3200, valorLiquido: 188096, status: "faturada" },
+  { id: "md2", contratoId: "c1", periodo: "2026-08", viagensPrevistas: 440, viagensRealizadas: 436, kmRodado: 22480, kmExcedente: 480, valorBase: 184000, valorExcedente: 3072, glosas: 1600, valorLiquido: 185472, status: "aberta" },
+  { id: "md3", contratoId: "c3", periodo: "2026-07", viagensPrevistas: 61400, viagensRealizadas: 60300, kmRodado: 208900, kmExcedente: 0, valorBase: 1420000, valorExcedente: 0, glosas: 25400, valorLiquido: 1394600, status: "faturada" },
+];
+
+export const MOCK_PASSAGEIROS_CONTRATO: PassageiroContrato[] = [
+  { id: "pc1", contratoId: "c1", nome: "Ana Beatriz Correia", documento: "123.456.789-00", matriculaEmpresa: "AZ-4410", credencial: "QR-AZ4410", pontoEmbarqueId: "p8", ativo: true },
+  { id: "pc2", contratoId: "c1", nome: "Carlos Eduardo Lima", documento: "234.567.890-11", matriculaEmpresa: "AZ-4411", credencial: "QR-AZ4411", pontoEmbarqueId: "p8", ativo: true },
+  { id: "pc3", contratoId: "c1", nome: "Daniela Souza", documento: "345.678.901-22", matriculaEmpresa: "AZ-4412", credencial: "QR-AZ4412", pontoEmbarqueId: "p1", ativo: true },
+  { id: "pc4", contratoId: "c1", nome: "Eduardo Ramos", documento: "456.789.012-33", matriculaEmpresa: "AZ-4413", credencial: "QR-AZ4413", pontoEmbarqueId: "p1", ativo: false },
+];

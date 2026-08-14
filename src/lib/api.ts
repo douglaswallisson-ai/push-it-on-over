@@ -227,3 +227,34 @@ export const Indicadores = {
       : api.get<import("@/types").IndicadoresPeriodo[]>(`/api/indicadores/serie`),
   falhas: () => (USE_MOCK ? mock(M.MOCK_FALHAS) : api.get<import("@/types").FalhaFrota[]>(`/api/indicadores/falhas`)),
 };
+
+/* ---- Blocos 2, 4, 5, 6 ---- */
+export const Ordens = {
+  list: () => (USE_MOCK ? mock(M.MOCK_ORDENS) : api.get<import("@/types").OrdemServico[]>(`/api/ordens`)),
+};
+export const Planos = {
+  list: () => (USE_MOCK ? mock(M.MOCK_PLANOS) : api.get<import("@/types").PlanoManutencao[]>(`/api/planos`)),
+};
+export const Pneus = {
+  list: () => (USE_MOCK ? mock(M.MOCK_PNEUS) : api.get<import("@/types").Pneu[]>(`/api/pneus`)),
+};
+export const Video = {
+  ocorrencias: () =>
+    USE_MOCK ? mock(M.MOCK_OCORRENCIAS_VIDEO) : api.get<import("@/types").OcorrenciaVideo[]>(`/api/video/ocorrencias`),
+  volume: () => (USE_MOCK ? mock(M.MOCK_VOLUME_VIDEO) : api.get<Record<string, number>>(`/api/video/volume`)),
+};
+export const Jornadas = {
+  list: (data?: string) =>
+    USE_MOCK ? mock(M.MOCK_JORNADAS) : api.get<import("@/types").Jornada[]>(`/api/jornadas${qs({ data })}`),
+};
+export const Multas = {
+  list: () => (USE_MOCK ? mock(M.MOCK_MULTAS) : api.get<import("@/types").Multa[]>(`/api/multas`)),
+};
+export const Contratos = {
+  list: () => (USE_MOCK ? mock(M.MOCK_CONTRATOS) : api.get<import("@/types").Contrato[]>(`/api/contratos`)),
+  contratantes: () =>
+    USE_MOCK ? mock(M.MOCK_CONTRATANTES) : api.get<import("@/types").Contratante[]>(`/api/contratantes`),
+  medicoes: () => (USE_MOCK ? mock(M.MOCK_MEDICOES) : api.get<import("@/types").Medicao[]>(`/api/medicoes`)),
+  passageiros: () =>
+    USE_MOCK ? mock(M.MOCK_PASSAGEIROS_CONTRATO) : api.get<import("@/types").PassageiroContrato[]>(`/api/contratos/passageiros`),
+};

@@ -7,7 +7,15 @@ import {
   Frota,
   Garagens,
   GruposLinhas,
+  Contratos,
   Indicadores,
+  Jornadas,
+  Motoristas,
+  Multas,
+  Ordens,
+  Planos,
+  Pneus,
+  Video,
   Itinerarios,
   Linhas,
   ManutencaoKanban,
@@ -231,3 +239,22 @@ export const indicadoresSerieQuery = () =>
 
 export const falhasQuery = () =>
   queryOptions({ queryKey: ["indicadores", "falhas"], queryFn: () => Indicadores.falhas(), staleTime: 5 * MINUTE });
+
+export const ordensQuery = () => queryOptions({ queryKey: ["ordens"], queryFn: () => Ordens.list(), staleTime: MINUTE });
+export const planosQuery = () => queryOptions({ queryKey: ["planos"], queryFn: () => Planos.list(), staleTime: 30 * MINUTE });
+export const pneusQuery = () => queryOptions({ queryKey: ["pneus"], queryFn: () => Pneus.list(), staleTime: 5 * MINUTE });
+export const videoOcorrenciasQuery = () =>
+  queryOptions({ queryKey: ["video", "ocorrencias"], queryFn: () => Video.ocorrencias(), staleTime: 30_000, refetchInterval: 60_000 });
+export const videoVolumeQuery = () =>
+  queryOptions({ queryKey: ["video", "volume"], queryFn: () => Video.volume(), staleTime: 5 * MINUTE });
+export const jornadasQuery = (data?: string) =>
+  queryOptions({ queryKey: ["jornadas", data ?? "hoje"], queryFn: () => Jornadas.list(data), staleTime: MINUTE });
+export const multasQuery = () => queryOptions({ queryKey: ["multas"], queryFn: () => Multas.list(), staleTime: 5 * MINUTE });
+export const contratosQuery = () => queryOptions({ queryKey: ["contratos"], queryFn: () => Contratos.list(), staleTime: 10 * MINUTE });
+export const contratantesQuery = () => queryOptions({ queryKey: ["contratantes"], queryFn: () => Contratos.contratantes(), staleTime: 30 * MINUTE });
+export const medicoesQuery = () => queryOptions({ queryKey: ["medicoes"], queryFn: () => Contratos.medicoes(), staleTime: 10 * MINUTE });
+export const passageirosContratoQuery = () =>
+  queryOptions({ queryKey: ["contratos", "passageiros"], queryFn: () => Contratos.passageiros(), staleTime: 10 * MINUTE });
+
+export const motoristasListQuery = () =>
+  queryOptions({ queryKey: ["motoristas", "lista"], queryFn: () => Motoristas.list({ page: 1, pageSize: 200 }), staleTime: 5 * MINUTE });

@@ -6,6 +6,7 @@ import { TourProvider } from "@/components/ss/tour/TourProvider";
 import { SelmaLauncher } from "@/components/ss/selma/SelmaLauncher";
 import { Toaster } from "@/components/ui/sonner";
 import { ContextoOrganizacao } from "@/components/ss/layout/ContextoOrganizacao";
+import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
 
 /**
  * Casca do sistema: trilho de ícones fixo + conteúdo sobre o canvas
@@ -36,6 +37,7 @@ export function AppShell() {
         </div>
 
         <SelmaLauncher />
+        <BuscaGlobal />
 
         {/* Confirmações de ação. O sonner estava instalado mas nunca montado. */}
         <Toaster position="bottom-right" richColors closeButton />

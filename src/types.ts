@@ -575,3 +575,313 @@ export type IndicadoresCalculados = {
   eficienciaProgramacao: number;
   eventosPor100km: number;
 };
+
+/* ================================================================== */
+/* BLOCO 2 — Ordem de serviço, plano de manutenção e pneus            */
+/* ================================================================== */
+
+export type StatusOS = "aberta" | "aguardando_peca" | "em_execucao" | "concluida" | "cancelada";
+
+export const STATUS_OS_LABEL: Record<StatusOS, string> = {
+  aberta: "Aberta",
+  aguardando_peca: "Aguardando peça",
+  em_execucao: "Em execução",
+  concluida: "Concluída",
+  cancelada: "Cancelada",
+};
+
+export type ItemOS = {
+  descricao: string;
+  tipo: "peca" | "servico";
+  quantidade: number;
+  valorUnitario: number;
+};
+
+/**
+ * Ordem de serviço. O kanban mostra o estado do veículo; a OS registra a
+ * execução — é ela que permite responder quanto custou manter uma placa.
+ */
+export type OrdemServico = {
+  id: string;
+  numero: string;
+  veiculoId: string;
+  abertaEm: string;
+  concluidaEm?: string;
+  status: StatusOS;
+  tipo: "preventiva" | "preditiva" | "corretiva";
+  origem: "plano" | "predicao" | "falha" | "checklist" | "manual";
+  descricao: string;
+  oficina: string;
+  /** Interna consome mão de obra própria; terceira gera nota. */
+  interna: boolean;
+  responsavel?: string;
+  itens: ItemOS[];
+  custoPrevisto: number;
+  /** Horas em que o veículo ficou fora de operação. */
+  horasParado?: number;
+  odometro: number;
+  falhaId?: string;
+};
+
+/** Item de um plano de manutenção — intervalo por km, horas ou dias. */
+export type ItemPlano = {
+  id: string;
+  descricao: string;
+  sistema: string;
+  intervaloKm?: number;
+  intervaloDias?: number;
+  intervaloHoras?: number;
+  custoEstimado: number;
+};
+
+/**
+ * Plano por modelo. Uma frota mista tem planos diferentes por marca e motor;
+ * tratar todos igual é o que a lista fixa de consumíveis fazia.
+ */
+export type PlanoManutencao = {
+  id: string;
+  nome: string;
+  marca: string;
+  modelo: string;
+  motor?: string;
+  itens: ItemPlano[];
+  veiculosAplicados: number;
+};
+
+/** Posição do pneu no veículo, no padrão eixo/lado. */
+export type PosicaoPneu =
+  | "1DE" | "1DD"
+  | "2TEI" | "2TEE" | "2TDI" | "2TDE"
+  | "3TEI" | "3TEE" | "3TDI" | "3TDE"
+  | "estepe";
+
+export type Pneu = {
+  id: string;
+  fogo: string;
+  marca: string;
+  medida: string;
+  veiculoId?: string;
+  posicao?: PosicaoPneu;
+  /** Quantas recapagens já sofreu. Zero = pneu novo. */
+  vidas: number;
+  maxVidas: number;
+  sulcoMm: number;
+  sulcoMinimoMm: number;
+  pressaoPsi?: number;
+  kmAcumulado: number;
+  custoAquisicao: number;
+  instaladoEm?: string;
+  status: "em_uso" | "estoque" | "recapagem" | "sucata";
+};
+
+/* ================================================================== */
+/* BLOCO 4 — Videotelemetria (DMS/ADAS)                               */
+/* ================================================================== */
+
+export type TipoAlarmeVideo =
+  | "distracao" | "olhos_fechados" | "bocejo" | "fadiga" | "celular" | "fumando" | "sem_rosto"
+  | "colisao" | "risco_colisao" | "proximidade_dianteira" | "curva_brusca" | "freada_brusca"
+  | "aceleracao_brusca" | "excesso_velocidade" | "sos" | "vibracao"
+  | "calibracao_anormal" | "desconexao_eletrica" | "baixa_voltagem" | "falha_gravacao";
+
+export const ALARME_VIDEO_LABEL: Record<TipoAlarmeVideo, string> = {
+  distracao: "Distração",
+  olhos_fechados: "Olhos fechados",
+  bocejo: "Bocejo",
+  fadiga: "Fadiga",
+  celular: "Uso de celular",
+  fumando: "Fumando",
+  sem_rosto: "Nenhum rosto detectado",
+  colisao: "Colisão",
+  risco_colisao: "Risco de colisão",
+  proximidade_dianteira: "Proximidade do veículo dianteiro",
+  curva_brusca: "Curva brusca",
+  freada_brusca: "Freada brusca",
+  aceleracao_brusca: "Aceleração brusca",
+  excesso_velocidade: "Excesso de velocidade",
+  sos: "SOS",
+  vibracao: "Vibração",
+  calibracao_anormal: "Calibração anormal",
+  desconexao_eletrica: "Desconexão elétrica externa",
+  baixa_voltagem: "Baixa voltagem",
+  falha_gravacao: "Falha de gravação",
+};
+
+/** Alarme de comportamento x alarme de saúde do próprio equipamento. */
+export const ALARME_VIDEO_CLASSE: Record<TipoAlarmeVideo, "comportamento" | "seguranca" | "equipamento"> = {
+  distracao: "comportamento", olhos_fechados: "comportamento", bocejo: "comportamento",
+  fadiga: "comportamento", celular: "comportamento", fumando: "comportamento", sem_rosto: "comportamento",
+  colisao: "seguranca", risco_colisao: "seguranca", proximidade_dianteira: "seguranca",
+  curva_brusca: "seguranca", freada_brusca: "seguranca", aceleracao_brusca: "seguranca",
+  excesso_velocidade: "seguranca", sos: "seguranca", vibracao: "seguranca",
+  calibracao_anormal: "equipamento", desconexao_eletrica: "equipamento",
+  baixa_voltagem: "equipamento", falha_gravacao: "equipamento",
+};
+
+export type NivelRisco = "baixo" | "medio" | "alto";
+export type StatusTratativa = "aguardando" | "em_analise" | "tratado" | "descartado";
+
+export const TRATATIVA_LABEL: Record<StatusTratativa, string> = {
+  aguardando: "Aguardando tratativa",
+  em_analise: "Em análise",
+  tratado: "Tratado",
+  descartado: "Descartado — falso positivo",
+};
+
+/**
+ * Ocorrência de vídeo. O diferencial do concorrente não está na detecção e sim
+ * na gestão: fila de tratativa com estado e classificação de risco.
+ */
+export type OcorrenciaVideo = {
+  id: string;
+  tipo: TipoAlarmeVideo;
+  risco: NivelRisco;
+  veiculoId: string;
+  motoristaId?: string;
+  linhaId?: string;
+  em: string;
+  imei: string;
+  duracaoS?: number;
+  velocidadeKmh?: number;
+  clipeDisponivel: boolean;
+  status: StatusTratativa;
+  tratativa?: string;
+  tratadoPor?: string;
+  tratadoEm?: string;
+};
+
+/* ================================================================== */
+/* BLOCO 5 — Jornada, Lei 13.103 e multas                             */
+/* ================================================================== */
+
+export type TipoMarcacao =
+  | "inicio_jornada" | "inicio_direcao" | "fim_direcao" | "inicio_refeicao"
+  | "fim_refeicao" | "inicio_espera" | "fim_espera" | "inicio_descanso"
+  | "fim_descanso" | "fim_jornada";
+
+export const MARCACAO_LABEL: Record<TipoMarcacao, string> = {
+  inicio_jornada: "Início de jornada",
+  inicio_direcao: "Início de direção",
+  fim_direcao: "Fim de direção",
+  inicio_refeicao: "Início de refeição",
+  fim_refeicao: "Fim de refeição",
+  inicio_espera: "Início de espera",
+  fim_espera: "Fim de espera",
+  inicio_descanso: "Início de descanso",
+  fim_descanso: "Fim de descanso",
+  fim_jornada: "Fim de jornada",
+};
+
+export type Marcacao = {
+  tipo: TipoMarcacao;
+  em: string;
+  /** Automática vem da telemetria; manual foi lançada pelo motorista. */
+  origem: "automatica" | "manual" | "ajuste";
+  pontoId?: string;
+  local?: string;
+};
+
+/** Infração à Lei 13.103 detectada na jornada. */
+export type InfracaoJornada = {
+  tipo: "direcao_continua" | "intervalo_insuficiente" | "interjornada" | "jornada_excedida" | "sem_descanso_semanal";
+  descricao: string;
+  gravidade: "leve" | "media" | "grave";
+  minutos: number;
+};
+
+/**
+ * Jornada de trabalho do dia. Substitui a ficha de papel: as marcações vêm da
+ * operação em vez de serem redigitadas a partir do que o motorista escreveu.
+ */
+export type Jornada = {
+  id: string;
+  motoristaId: string;
+  matricula: string;
+  data: string;
+  linhaId?: string;
+  tabela?: number;
+  marcacoes: Marcacao[];
+  minutosTrabalhados: number;
+  minutosDirecao: number;
+  minutosEspera: number;
+  minutosRefeicao: number;
+  minutosExtras: number;
+  limiteExtrasMin: number;
+  infracoes: InfracaoJornada[];
+  fechada: boolean;
+};
+
+export type Multa = {
+  id: string;
+  ait: string;
+  veiculoId: string;
+  motoristaId?: string;
+  em: string;
+  local: string;
+  infracao: string;
+  gravidade: "leve" | "media" | "grave" | "gravissima";
+  pontos: number;
+  valor: number;
+  vencimento: string;
+  /** Prazo legal para indicar o condutor. */
+  prazoIndicacao?: string;
+  status: "pendente_indicacao" | "indicada" | "em_recurso" | "paga" | "vencida";
+};
+
+/* ================================================================== */
+/* BLOCO 6 — Contrato e fretamento                                    */
+/* ================================================================== */
+
+export type Contratante = {
+  id: string;
+  nome: string;
+  cnpj: string;
+  contato: string;
+  email: string;
+  telefone: string;
+  segmento?: string;
+};
+
+export type Contrato = {
+  id: string;
+  numero: string;
+  contratanteId: string;
+  tipo: "continuo" | "eventual";
+  inicio: string;
+  fim: string;
+  valorMensal?: number;
+  valorKm?: number;
+  kmFranquia?: number;
+  valorKmExcedente?: number;
+  indiceReajuste?: string;
+  linhasVinculadas: string[];
+  status: "vigente" | "encerrado" | "suspenso" | "em_negociacao";
+};
+
+/** Medição mensal do contrato — base do faturamento. */
+export type Medicao = {
+  id: string;
+  contratoId: string;
+  periodo: string;
+  viagensPrevistas: number;
+  viagensRealizadas: number;
+  kmRodado: number;
+  kmExcedente: number;
+  valorBase: number;
+  valorExcedente: number;
+  glosas: number;
+  valorLiquido: number;
+  status: "aberta" | "fechada" | "faturada" | "contestada";
+};
+
+/** Passageiro nominal do fretamento de colaboradores. */
+export type PassageiroContrato = {
+  id: string;
+  contratoId: string;
+  nome: string;
+  documento: string;
+  matriculaEmpresa?: string;
+  credencial: string;
+  pontoEmbarqueId?: string;
+  ativo: boolean;
+};

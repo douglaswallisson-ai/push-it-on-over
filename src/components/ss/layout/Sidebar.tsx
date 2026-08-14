@@ -12,6 +12,7 @@ import {
   LogOut,
   MapPin,
   Route,
+  ShieldAlert,
   ShieldCheck,
   Siren,
   Sparkles,
@@ -56,6 +57,22 @@ const isGroup = (e: Entry): e is Group => "items" in e;
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
   {
+    label: "Segurança",
+    icon: ShieldAlert,
+    items: [
+      { label: "Videotelemetria", to: "/app/seguranca/video" },
+      { label: "Eventos", to: "/app/eventos" },
+    ],
+  },
+  {
+    label: "Pessoas",
+    icon: Users,
+    items: [
+      { label: "Motoristas", to: "/app/motoristas" },
+      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
+    ],
+  },
+  {
     label: "Cadastros",
     icon: ClipboardList,
     items: [
@@ -94,6 +111,8 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Manutenção", to: "/app/frota/manutencao" },
+      { label: "Ordens de serviço", to: "/app/frota/ordens" },
+      { label: "Pneus", to: "/app/frota/pneus" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
       { label: "Regeneração (DPF)", to: "/app/frota/regeneracao" },
     ],
@@ -102,6 +121,7 @@ const NAV_PRIMARY: Entry[] = [
     label: "Fretamento",
     icon: Bus,
     items: [
+      { label: "Contratos", to: "/app/fretamento/contratos" },
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },

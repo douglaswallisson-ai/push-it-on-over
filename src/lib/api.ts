@@ -266,3 +266,14 @@ export const CCO = {
       : api.get<import("@/types").PosicaoNaLinha[]>(`/api/cco/posicoes${qs({ linha: linhaId })}`),
   despachos: () => (USE_MOCK ? mock(M.MOCK_DESPACHOS) : api.get<import("@/types").Despacho[]>(`/api/cco/despachos`)),
 };
+
+export const VideoAoVivo = {
+  dispositivos: () =>
+    USE_MOCK ? mock(M.MOCK_DISPOSITIVOS_VIDEO) : api.get<import("@/types").DispositivoVideo[]>(`/api/video/dispositivos`),
+  trechos: (veiculoId?: string) =>
+    USE_MOCK
+      ? mock(M.MOCK_TRECHOS.filter((t) => !veiculoId || t.veiculoId === veiculoId))
+      : api.get<import("@/types").TrechoGravacao[]>(`/api/video/gravacoes${qs({ veiculo: veiculoId })}`),
+  solicitacoes: () =>
+    USE_MOCK ? mock(M.MOCK_SOLICITACOES) : api.get<import("@/types").SolicitacaoGravacao[]>(`/api/video/solicitacoes`),
+};

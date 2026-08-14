@@ -15,6 +15,7 @@ import {
 } from "@/lib/queries";
 import type { Equipamento, StatusComunicacao } from "@/types";
 import { filtrarPorGaragem } from "@/lib/escopo";
+import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { useSessao } from "@/hooks/use-sessao";
 import { cn } from "@/lib/utils";
 
@@ -111,12 +112,13 @@ export function TelemetriaEquipamentos({
   const { data, isPending, error, refetch, isFetching } = useQuery(equipamentosQuery());
   const [filtro, setFiltro] = useState<StatusComunicacao | "todos">(filtroInicial);
   const [busca, setBusca] = useState("");
+  const [garagem, setGaragem] = useState("");
 
   const { sessao } = useSessao();
-  const equipamentos = useMemo(
-    () => filtrarPorGaragem(data ?? [], sessao, (e) => e.garagemId),
-    [data, sessao],
-  );
+  const equipamentos = useMemo(() => {
+    const noEscopo = filtrarPorGaragem(data ?? [], sessao, (e) => e.garagemId);
+    return garagem ? noEscopo.filter((e) => e.garagemId === garagem) : noEscopo;
+  }, [data, sessao, garagem]);
 
   const conta = (s: StatusComunicacao) =>
     equipamentos.filter((e) => statusComunicacao(e.ultimaComunicacao) === s).length;
@@ -151,6 +153,7 @@ export function TelemetriaEquipamentos({
         icon={Cpu}
         action={
           <div className="flex items-center gap-2">
+            <FiltroGaragem valor={garagem} onChange={setGaragem} />
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input

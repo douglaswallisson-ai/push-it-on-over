@@ -669,3 +669,58 @@ export const MOCK_DESPACHOS: Despacho[] = [
   { id: "d1", tipo: "retido", veiculoId: "v2", linhaId: "l1", em: new Date(Date.now() - 12 * 60000).toISOString(), operador: "Rosemeri Tuono", motivo: "Adiantado 6 min — regularizar headway", minutos: 5 },
   { id: "d2", tipo: "reforco", veiculoId: "v8", linhaId: "l1", em: new Date(Date.now() - 40 * 60000).toISOString(), operador: "Vitor Duarte", motivo: "Intervalo de 21 min entre carros no pico" },
 ];
+
+/* ---- Videotelemetria: tempo real e gravações ---- */
+import type { DispositivoVideo, SolicitacaoGravacao, TrechoGravacao } from "@/types";
+
+const CANAIS_PADRAO = [
+  { numero: 1, nome: "CAM 1 — Frontal", posicao: "frontal" as const, online: true },
+  { numero: 2, nome: "CAM 2 — Motorista (DMS)", posicao: "motorista" as const, online: true },
+  { numero: 3, nome: "CAM 3 — Salão", posicao: "salao" as const, online: true },
+  { numero: 4, nome: "CAM 4 — Porta", posicao: "porta" as const, online: true },
+];
+
+export const MOCK_DISPOSITIVOS_VIDEO: DispositivoVideo[] = [
+  { imei: "864993060406221", veiculoId: "v1", modelo: "SS Vision 4CH", status: "gravando", canais: CANAIS_PADRAO, ultimaComunicacao: new Date(Date.now() - 8_000).toISOString(), armazenamentoPct: 62, retencaoDias: 21, gpsLat: -23.5629, gpsLng: -46.6544, velocidadeKmh: 34 },
+  { imei: "864993060406238", veiculoId: "v2", modelo: "SS Vision 4CH", status: "gravando", canais: CANAIS_PADRAO, ultimaComunicacao: new Date(Date.now() - 12_000).toISOString(), armazenamentoPct: 71, retencaoDias: 18, gpsLat: -23.5505, gpsLng: -46.6333, velocidadeKmh: 41 },
+  { imei: "864993060406245", veiculoId: "v3", modelo: "SS Vision 4CH", status: "online", canais: CANAIS_PADRAO.map((c) => (c.numero === 3 ? { ...c, online: false } : c)), ultimaComunicacao: new Date(Date.now() - 40_000).toISOString(), armazenamentoPct: 88, retencaoDias: 12, gpsLat: -23.5670, gpsLng: -46.7020, velocidadeKmh: 0 },
+  { imei: "864993060406252", veiculoId: "v4", modelo: "SS Vision 4CH", status: "gravando", canais: CANAIS_PADRAO, ultimaComunicacao: new Date(Date.now() - 6_000).toISOString(), armazenamentoPct: 44, retencaoDias: 26, gpsLat: -23.5566, gpsLng: -46.6699, velocidadeKmh: 12 },
+  { imei: "864993060406269", veiculoId: "v5", modelo: "SS Vision 2CH", status: "sem_sinal_gps", canais: CANAIS_PADRAO.slice(0, 2), ultimaComunicacao: new Date(Date.now() - 180_000).toISOString(), armazenamentoPct: 55, retencaoDias: 20, velocidadeKmh: 46 },
+  { imei: "864993060406276", veiculoId: "v6", modelo: "SS Vision 4CH", status: "offline", canais: CANAIS_PADRAO.map((c) => ({ ...c, online: false })), ultimaComunicacao: new Date(Date.now() - 9 * 3_600_000).toISOString(), armazenamentoPct: 93, retencaoDias: 9 },
+  { imei: "864993060406283", veiculoId: "v7", modelo: "SS Vision 4CH", status: "gravando", canais: CANAIS_PADRAO, ultimaComunicacao: new Date(Date.now() - 15_000).toISOString(), armazenamentoPct: 38, retencaoDias: 28, gpsLat: -23.5714, gpsLng: -46.7085, velocidadeKmh: 31 },
+  { imei: "864993060406290", veiculoId: "v8", modelo: "SS Vision 4CH", status: "gravando", canais: CANAIS_PADRAO, ultimaComunicacao: new Date(Date.now() - 10_000).toISOString(), armazenamentoPct: 51, retencaoDias: 24, gpsLat: -23.5620, gpsLng: -46.5060, velocidadeKmh: 28 },
+];
+
+/** Trechos contínuos disponíveis — o dia é fatiado em blocos de gravação. */
+export const MOCK_TRECHOS: TrechoGravacao[] = (() => {
+  const out: TrechoGravacao[] = [];
+  const base = new Date();
+  base.setHours(4, 0, 0, 0);
+  for (const v of ["v1", "v2", "v3", "v4", "v7", "v8"]) {
+    for (let bloco = 0; bloco < 9; bloco++) {
+      // Simula lacuna de gravação em alguns veículos — acontece na prática.
+      if (v === "v3" && (bloco === 3 || bloco === 4)) continue;
+      if (v === "v8" && bloco === 6) continue;
+      const ini = new Date(base.getTime() + bloco * 2 * 3_600_000);
+      const fim = new Date(ini.getTime() + 2 * 3_600_000);
+      if (ini.getTime() > Date.now()) continue;
+      for (const canal of [1, 2]) {
+        out.push({
+          id: `tr-${v}-${bloco}-${canal}`,
+          veiculoId: v,
+          canal,
+          inicio: ini.toISOString(),
+          fim: fim.toISOString(),
+          local: bloco < 2 ? "servidor" : "dispositivo",
+          tamanhoMb: 640 + bloco * 35,
+        });
+      }
+    }
+  }
+  return out;
+})();
+
+export const MOCK_SOLICITACOES: SolicitacaoGravacao[] = [
+  { id: "sg1", veiculoId: "v3", canal: 1, inicio: new Date(Date.now() - 5 * 3_600_000).toISOString(), fim: new Date(Date.now() - 4.5 * 3_600_000).toISOString(), solicitadoPor: "Rosemeri Tuono", solicitadoEm: new Date(Date.now() - 25 * 60_000).toISOString(), status: "disponivel", progressoPct: 100, motivo: "Análise de sinistro" },
+  { id: "sg2", veiculoId: "v5", canal: 2, inicio: new Date(Date.now() - 8 * 3_600_000).toISOString(), fim: new Date(Date.now() - 7.5 * 3_600_000).toISOString(), solicitadoPor: "Vitor Duarte", solicitadoEm: new Date(Date.now() - 6 * 60_000).toISOString(), status: "baixando", progressoPct: 43, motivo: "Reclamação de passageiro" },
+];

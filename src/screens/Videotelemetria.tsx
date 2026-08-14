@@ -9,12 +9,15 @@ import {
   Play,
   ShieldAlert,
   ThumbsDown,
+  Radio,
   Video,
   Wifi,
   WifiOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { AoVivo } from "@/components/ss/video/AoVivo";
+import { Gravacoes } from "@/components/ss/video/Gravacoes";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { desde, nf, veiculosQuery, videoOcorrenciasQuery, videoVolumeQuery } from "@/lib/queries";
@@ -64,6 +67,7 @@ export default function Videotelemetria() {
   const volumeQ = useQuery(videoVolumeQuery());
   const veiculosQ = useQuery(veiculosQuery(1, 200));
 
+  const [aba, setAba] = useState<"ao_vivo" | "ocorrencias" | "gravacoes">("ao_vivo");
   const [statusFiltro, setStatusFiltro] = useState<StatusTratativa | "todas">("aguardando");
   const [riscoFiltro, setRiscoFiltro] = useState<NivelRisco | "todos">("todos");
   const [classeFiltro, setClasseFiltro] = useState<keyof typeof CLASSE_LABEL | "todas">("todas");
@@ -229,10 +233,41 @@ export default function Videotelemetria() {
 
   return (
     <>
-      <PageHeader title="Videotelemetria" subtitle="Segurança › Ocorrências DMS/ADAS" />
+      <PageHeader title="Videotelemetria" subtitle="Segurança › Câmeras, ocorrências e gravações" />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        {ocorrenciasQ.error ? (
+        {/* Três formas de olhar o mesmo veículo: agora, o que já aconteceu e
+            o que ficou gravado. */}
+        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">
+          {([
+            { id: "ao_vivo", label: "Tempo real", icon: Radio },
+            { id: "ocorrencias", label: "Ocorrências", icon: Eye },
+            { id: "gravacoes", label: "Gravações", icon: Video },
+          ] as const).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setAba(t.id)}
+              aria-current={aba === t.id}
+              className={cn(
+                "inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-[13px] font-medium transition-colors",
+                aba === t.id ? "bg-brand-navy text-white" : "text-muted-foreground hover:bg-secondary",
+              )}
+            >
+              <t.icon className="h-4 w-4" />
+              {t.label}
+              {t.id === "ocorrencias" && aguardando.length > 0 && (
+                <span className={cn("rounded-full px-1.5 font-mono text-[10.5px] font-bold", aba === t.id ? "bg-white/20" : "bg-coral text-white")}>
+                  {aguardando.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {aba === "ao_vivo" && <AoVivo />}
+        {aba === "gravacoes" && <Gravacoes />}
+
+        {aba === "ocorrencias" && (ocorrenciasQ.error ? (
           <ErrorBox error={ocorrenciasQ.error} onRetry={() => ocorrenciasQ.refetch()} />
         ) : (
           <>
@@ -404,7 +439,7 @@ export default function Videotelemetria() {
               </p>
             </Card>
           </>
-        )}
+        ))}
       </div>
     </>
   );

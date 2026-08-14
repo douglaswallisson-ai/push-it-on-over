@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
-import { GaragemSwitcher } from "@/components/ss/layout/GaragemSwitcher";
 import { cn } from "@/lib/utils";
 import { sair } from "@/lib/session";
 import { useSessao } from "@/hooks/use-sessao";
@@ -61,7 +60,7 @@ const NAV_PRIMARY: Entry[] = [
     icon: ShieldAlert,
     items: [
       { label: "Videotelemetria", to: "/app/seguranca/video" },
-      { label: "Eventos", to: "/app/eventos" },
+      { label: "Eventos de condução", to: "/app/eventos" },
     ],
   },
   {
@@ -264,7 +263,6 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         <div className="shrink-0 border-t border-white/10 px-[14px] py-3">
           <OrgSwitcher expanded={expanded} />
-          <GaragemSwitcher expanded={expanded} />
 
           <div className="my-2 border-t border-white/10" />
 

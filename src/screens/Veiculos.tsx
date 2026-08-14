@@ -11,6 +11,7 @@ import { MOCK_INDICADORES_VEICULO, faixasDoVeiculo } from "@/lib/mock-data";
 import { escopoGaragens, filtrarPorGaragem } from "@/lib/escopo";
 import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
+import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 
@@ -84,13 +85,14 @@ export default function Veiculos() {
   const [busca, setBusca] = useState("");
   const [faixasDe, setFaixasDe] = useState<string | null>(null);
   const { sessao } = useSessao();
+  const [garagem, setGaragem] = useState("");
 
   // O escopo de garagem é aplicado antes de qualquer contagem: os KPIs precisam
   // refletir o que a pessoa pode ver, não a frota inteira.
-  const itens = useMemo(
-    () => filtrarPorGaragem(data?.items ?? [], sessao, (v) => v.garagemId),
-    [data, sessao],
-  );
+  const itens = useMemo(() => {
+    const noEscopo = filtrarPorGaragem(data?.items ?? [], sessao, (v) => v.garagemId);
+    return garagem ? noEscopo.filter((v) => v.garagemId === garagem) : noEscopo;
+  }, [data, sessao, garagem]);
   const total = itens.length;
 
   const linhas: Linha[] = useMemo(() => {
@@ -287,14 +289,17 @@ export default function Veiculos() {
               title="Frota cadastrada"
               icon={Truck}
               action={
-                <div className="relative">
+                <div className="flex items-center gap-2">
+                  <FiltroGaragem valor={garagem} onChange={setGaragem} />
+                  <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
                     placeholder="Prefixo, placa ou modelo…"
                     className="h-9 w-52 rounded-lg border border-border bg-secondary/60 pl-8 pr-3 text-[13px] outline-none focus:border-accent focus:bg-white"
-                  />
+                    />
+                  </div>
                 </div>
               }
               bodyClassName="p-4"

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   BedDouble,
+  Info,
   Check,
   ChevronRight,
   Clock,
@@ -22,6 +23,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { Link } from "@/lib/router-compat";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -123,8 +125,8 @@ export default function Eventos() {
   return (
     <>
       <PageHeader
-        title="Eventos"
-        subtitle="Ocorrências do dia · 24/07/2026"
+        title="Eventos de condução"
+        subtitle="Segurança › Eventos de telemetria (CAN)"
         actions={
           <button
             onClick={() => setVistos(new Set(EVENTOS.map((e) => e.id)))}
@@ -149,6 +151,22 @@ export default function Eventos() {
             <HeroMetric value={String(naoVistos)} label="Não visualizados" />
           </div>
         </HeroBanner>
+
+        {/* A sobreposição com Videotelemetria confundia. A separação é pela
+            origem do dado, não pelo tipo de risco. */}
+        <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
+          <p className="text-[12.5px] text-muted-foreground">
+            Esta tela mostra eventos vindos da <strong className="text-foreground">telemetria do veículo (CAN)</strong> —
+            freada, curva, aceleração, excesso de velocidade — que existem em toda a frota, com ou sem câmera. O que a
+            <strong className="text-foreground"> câmera</strong> detecta (distração, fadiga, celular, risco de colisão),
+            junto da transmissão ao vivo e das gravações, está em{" "}
+            <Link to="/app/seguranca/video" className="font-medium text-brand-navy underline">
+              Videotelemetria
+            </Link>
+            .
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={Siren} label="Eventos hoje" value={String(lista.length)} color="var(--brand-navy)" />

@@ -934,3 +934,67 @@ export type Despacho = {
   motivo: string;
   minutos?: number;
 };
+
+/* ------------------------------------------------------------------ */
+/* Videotelemetria — tempo real e gravações                            */
+/* ------------------------------------------------------------------ */
+
+/** Canal de câmera instalado no veículo. */
+export type CanalCamera = {
+  numero: number;
+  nome: string;
+  posicao: "frontal" | "motorista" | "salao" | "traseira" | "porta" | "lateral";
+  online: boolean;
+};
+
+export type StatusDVR = "online" | "offline" | "sem_sinal_gps" | "gravando";
+
+/** Equipamento de vídeo embarcado (DVR/MDVR). */
+export type DispositivoVideo = {
+  imei: string;
+  veiculoId: string;
+  modelo: string;
+  status: StatusDVR;
+  canais: CanalCamera[];
+  ultimaComunicacao: string;
+  /** Armazenamento local usado, em percentual. */
+  armazenamentoPct: number;
+  /** Dias de gravação retidos no cartão do veículo. */
+  retencaoDias: number;
+  gpsLat?: number;
+  gpsLng?: number;
+  velocidadeKmh?: number;
+};
+
+/**
+ * Trecho de gravação contínua disponível no equipamento.
+ *
+ * Diferente do clipe de evento: o clipe tem segundos e já veio para o servidor;
+ * a gravação contínua fica no cartão do veículo e precisa ser solicitada.
+ */
+export type TrechoGravacao = {
+  id: string;
+  veiculoId: string;
+  canal: number;
+  inicio: string;
+  fim: string;
+  /** Onde o arquivo está: no equipamento ou já no servidor. */
+  local: "dispositivo" | "servidor";
+  tamanhoMb: number;
+};
+
+export type StatusDownload = "solicitado" | "baixando" | "disponivel" | "falhou";
+
+/** Pedido de download de gravação contínua. */
+export type SolicitacaoGravacao = {
+  id: string;
+  veiculoId: string;
+  canal: number;
+  inicio: string;
+  fim: string;
+  solicitadoPor: string;
+  solicitadoEm: string;
+  status: StatusDownload;
+  progressoPct: number;
+  motivo?: string;
+};

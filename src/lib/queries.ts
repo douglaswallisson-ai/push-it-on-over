@@ -17,6 +17,7 @@ import {
   Planos,
   Pneus,
   Video,
+  VideoAoVivo,
   Itinerarios,
   Linhas,
   ManutencaoKanban,
@@ -270,3 +271,26 @@ export const posicoesLinhaQuery = (linhaId?: string) =>
 
 export const despachosQuery = () =>
   queryOptions({ queryKey: ["cco", "despachos"], queryFn: () => CCO.despachos(), staleTime: 30_000 });
+
+export const dispositivosVideoQuery = () =>
+  queryOptions({
+    queryKey: ["video", "dispositivos"],
+    queryFn: () => VideoAoVivo.dispositivos(),
+    staleTime: 5_000,
+    refetchInterval: 15_000,
+  });
+
+export const trechosGravacaoQuery = (veiculoId?: string) =>
+  queryOptions({
+    queryKey: ["video", "trechos", veiculoId ?? "todos"],
+    queryFn: () => VideoAoVivo.trechos(veiculoId),
+    staleTime: MINUTE,
+  });
+
+export const solicitacoesGravacaoQuery = () =>
+  queryOptions({
+    queryKey: ["video", "solicitacoes"],
+    queryFn: () => VideoAoVivo.solicitacoes(),
+    staleTime: 15_000,
+    refetchInterval: 20_000,
+  });

@@ -25,6 +25,7 @@ import { MANUTENCAO_COLUNAS, kanbanManutencaoQuery, manutencaoQuery, nf } from "
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { filtrarPorGaragem } from "@/lib/escopo";
+import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { useSessao } from "@/hooks/use-sessao";
 import { MOCK_GARAGENS } from "@/lib/mock-data";
 import type { CardManutencao, StatusManutencao } from "@/types";
@@ -74,6 +75,7 @@ export default function Manutencao() {
    */
   const [ajustes, setAjustes] = useState<Record<string, StatusManutencao>>({});
   const { sessao } = useSessao();
+  const [garagem, setGaragem] = useState("");
 
   const cards = useMemo(() => {
     const comAjuste = (kanbanQ.data ?? []).map((c) =>
@@ -81,8 +83,9 @@ export default function Manutencao() {
     );
     // O kanban traz o nome da garagem; o escopo trabalha com id.
     const idPorNome = new Map(MOCK_GARAGENS.map((g) => [g.nome, g.id]));
-    return filtrarPorGaragem(comAjuste, sessao, (c) => (c.garagem ? idPorNome.get(c.garagem) : undefined));
-  }, [kanbanQ.data, ajustes, sessao]);
+    const noEscopo = filtrarPorGaragem(comAjuste, sessao, (c) => (c.garagem ? idPorNome.get(c.garagem) : undefined));
+    return garagem ? noEscopo.filter((c) => (c.garagem ? idPorNome.get(c.garagem) : undefined) === garagem) : noEscopo;
+  }, [kanbanQ.data, ajustes, sessao, garagem]);
 
   const mudarStatus = (card: CardManutencao, status: StatusManutencao, mensagem: string) => {
     setAjustes((a) => ({ ...a, [card.veiculoId]: status }));
@@ -116,8 +119,9 @@ export default function Manutencao() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        {/* Abas. */}
-        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">
+        {/* Abas e filtro de garagem. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -132,6 +136,8 @@ export default function Manutencao() {
               {t.label}
             </button>
           ))}
+          </div>
+          <FiltroGaragem valor={garagem} onChange={setGaragem} />
         </div>
 
         {tab === "geral" &&

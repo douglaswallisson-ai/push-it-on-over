@@ -3,6 +3,7 @@ import {
   Alarmes,
   AlarmesOperacionais,
   Conducoes,
+  Desempenho,
   Equipamentos,
   Frota,
   Garagens,
@@ -295,3 +296,14 @@ export const padroesLinhaQuery = () =>
 
 export const amostraContextoQuery = () =>
   queryOptions({ queryKey: ["padroes-linha", "amostra"], queryFn: () => PadroesLinha.amostra(), staleTime: 30 * MINUTE });
+
+export const desempenhoMotoristaQuery = (motoristaId: string | undefined) =>
+  queryOptions({
+    queryKey: ["desempenho", motoristaId],
+    queryFn: () => Desempenho.porMotorista(motoristaId!),
+    enabled: Boolean(motoristaId),
+    staleTime: 5 * MINUTE,
+  });
+
+export const desempenhoTodosQuery = () =>
+  queryOptions({ queryKey: ["desempenho", "todos"], queryFn: () => Desempenho.todos(), staleTime: 5 * MINUTE });

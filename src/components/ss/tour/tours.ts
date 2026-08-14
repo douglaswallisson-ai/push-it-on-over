@@ -130,6 +130,19 @@ export const TOURS: Record<string, TourStep[]> = {
   "/app/motoristas/perfil/:nome": [
     { selector: '[data-tour="page-header"]', title: "Acompanhamento do motorista", body: "O desempenho individual no período, com tudo o que sustenta a nota." },
     { selector: '[data-tour="cnh"]', title: "Situação da CNH", body: "O sistema confere a validade e avisa com 60 e 30 dias de antecedência. \"Sem informação\" também aparece: significa que falta digitalizar o documento, e não que está tudo certo." },
+    {
+      selector: '[data-tour="contexto"]',
+      title: "Nota por linha e horário",
+      amplo: true,
+      body: "Esta é a nota que vale. O motorista é comparado com o padrão da linha e da faixa horária que ele efetivamente rodou — não com a média geral da frota.",
+      detalhes: [
+        "No topo aparecem as duas notas lado a lado: contra o padrão de cada linha e contra a média geral. A diferença entre elas é o quanto a dificuldade da linha estava distorcendo a avaliação.",
+        "Cada bloco abaixo é um contexto que ele rodou. Para cada indicador você vê o valor dele, o padrão daquele contexto e o desvio — é o que permite responder uma contestação com número, em vez de discussão.",
+        "A etiqueta ao final de cada linha (global, linha ou faixa) mostra de onde veio o valor de referência. O motorista precisa poder conferir contra o que foi medido.",
+      ],
+      exemplo:
+        "Um motorista que só roda pico pode ter nota baixa contra a média geral e nota alta contra o padrão do pico — porque no pico todo mundo consome mais, e isso não é culpa dele.",
+    },
     { selector: '[data-tour="faixas"]', title: "Faixas de condução", body: "Como este motorista distribui o tempo entre as 14 faixas. É a mesma leitura da frota e do veículo, então dá para comparar direto." },
     { selector: '[data-tour="table"]', title: "Veículos dirigidos", body: "Todas as placas que este motorista conduziu, com período, km e nota. Clique para abrir o veículo — o cruzamento funciona nos dois sentidos." },
   ],

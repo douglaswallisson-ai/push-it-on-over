@@ -7,7 +7,12 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { StarRating } from "@/components/ss/ui/gauges";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
-import { MOCK_CNH } from "@/lib/mock-data";
+import { MOCK_CNH, MOCK_DESEMPENHO_VIAGENS, motoristaIdPorNome } from "@/lib/mock-data";
+import { padroesLinhaQuery } from "@/lib/queries";
+import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import { avaliarMotorista, avaliarSemContexto } from "@/lib/scoring";
+import type { PadraoLinha } from "@/types";
 import { CNH_TONE, exigeAtencao, prazoCNH, statusCNH } from "@/lib/cnh";
 
 /**
@@ -63,7 +68,7 @@ const HEADERS: Record<string, string> = {
   pac: "Pressão do acelerador",
 };
 
-const COLS: Column<Motorista>[] = [
+const colunas = (PADROES_ATUAIS: PadraoLinha[]): Column<Motorista>[] => [
   {
     key: "nome",
     header: "Motorista",
@@ -92,6 +97,34 @@ const COLS: Column<Motorista>[] = [
   stars("fm"),
   stars("pac"),
   {
+    key: "notaContexto",
+    header: "Nota por linha",
+    align: "center",
+    render: (m) => {
+      // A lista local identifica o motorista pelo nome; o desempenho, por id.
+      const id = motoristaIdPorNome(m.nome);
+      const viagens = id ? MOCK_DESEMPENHO_VIAGENS.filter((v) => v.motoristaId === id) : [];
+      if (!viagens.length) return <span className="text-[12px] text-muted-foreground">—</span>;
+      const comCtx = avaliarMotorista(viagens, PADROES_ATUAIS).nota;
+      const semCtx = avaliarSemContexto(viagens);
+      const dif = comCtx - semCtx;
+      return (
+        <span
+          className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
+          title={`Contra o padrão de cada linha: ${comCtx}. Contra a média geral: ${semCtx}.`}
+        >
+          <span className="font-mono text-[13px] font-bold text-foreground">{comCtx}</span>
+          {dif !== 0 && (
+            <span className={cn("font-mono text-[11px] font-semibold", dif > 0 ? "text-leaf" : "text-coral")}>
+              {dif > 0 ? "+" : ""}
+              {dif}
+            </span>
+          )}
+        </span>
+      );
+    },
+  },
+  {
     key: "cnh",
     header: "CNH",
     align: "center",
@@ -112,6 +145,7 @@ const COLS: Column<Motorista>[] = [
 
 export default function Motoristas() {
   const navigate = useNavigate();
+  const padroesQ = useQuery(padroesLinhaQuery());
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
   const [grafico, setGrafico] = useState<string | null>(null);
   const lista = useMemo(
@@ -189,7 +223,7 @@ export default function Motoristas() {
           bodyClassName="p-4"
         >
           <DataTable
-            columns={[...COLS, acoesCol]}
+            columns={[...colunas(padroesQ.data ?? []), acoesCol]}
             rows={lista}
             onRowClick={(m) => navigate(`/app/motoristas/perfil/${encodeURIComponent(m.nome)}`)}
           />

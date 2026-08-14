@@ -278,3 +278,12 @@ export const PadroesLinha = {
       ? mock(M.MOCK_AMOSTRA_CONTEXTO)
       : api.get<Record<string, { viagens: number; p75: Record<string, number> }>>(`/api/padroes-linha/amostra`),
 };
+
+export const Desempenho = {
+  porMotorista: (motoristaId: string) =>
+    USE_MOCK
+      ? mock(M.desempenhoDoMotorista(motoristaId))
+      : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho${qs({ motorista: motoristaId })}`),
+  todos: () =>
+    USE_MOCK ? mock(M.MOCK_DESEMPENHO_VIAGENS) : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho`),
+};

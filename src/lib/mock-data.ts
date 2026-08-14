@@ -749,3 +749,78 @@ export const MOCK_AMOSTRA_CONTEXTO: Record<string, { viagens: number; p75: Recor
   "l3|null": { viagens: 604, p75: { verde: 70, extra_economica: 36, amarela: 6, vermelha: 2, parado_motor_ligado: 7, inercia: 23, baixa_velocidade: 5, sem_tracao: 3 } },
   "l3|pico_manha": { viagens: 21, p75: { verde: 66, extra_economica: 31, parado_motor_ligado: 9 } },
 };
+
+/* ---- Desempenho por viagem, para a nota contextual ---- */
+import type { DesempenhoViagem } from "@/lib/scoring";
+
+/**
+ * Viagens com indicadores observados. Em produção isso vem do processamento da
+ * telemetria por viagem; aqui é uma amostra que cobre motoristas em linhas e
+ * faixas diferentes, para a nota contextual ter o que comparar.
+ *
+ * Os valores foram montados para reproduzir o caso descrito pelo cliente: o
+ * mesmo motorista parece bom numa linha fácil e ruim numa difícil quando se usa
+ * a média geral, e o quadro muda ao comparar com o padrão de cada linha.
+ */
+const gerarViagens = (): DesempenhoViagem[] => {
+  const out: DesempenhoViagem[] = [];
+  const cfgs: {
+    mot: string; linha: string; veic: string; partidas: string[]; km: number;
+    base: Record<string, number>;
+  }[] = [
+    // Marco: roda a 8207 no pico (difícil) e a 3450 no entrepico (fácil).
+    { mot: "m1", linha: "l1", veic: "v1", partidas: ["06:12", "07:05", "06:48"], km: 18.4,
+      base: { verde: 59, extra_economica: 26, amarela: 10, vermelha: 3, parado_motor_ligado: 15, inercia: 17, baixa_velocidade: 13, sem_tracao: 5 } },
+    { mot: "m1", linha: "l3", veic: "v9", partidas: ["10:20", "11:40"], km: 11.2,
+      base: { verde: 71, extra_economica: 37, amarela: 6, vermelha: 2, parado_motor_ligado: 6, inercia: 24, baixa_velocidade: 4, sem_tracao: 2 } },
+
+    // Najla: só entrepico na 8207 — contexto mais leve.
+    { mot: "m2", linha: "l1", veic: "v2", partidas: ["09:30", "13:15", "14:50"], km: 18.4,
+      base: { verde: 64, extra_economica: 31, amarela: 8, vermelha: 3, parado_motor_ligado: 9, inercia: 20, baixa_velocidade: 7, sem_tracao: 4 } },
+
+    // Remildo: pico da 8207, desempenho fraco mesmo para o contexto.
+    { mot: "m3", linha: "l1", veic: "v3", partidas: ["06:30", "07:20", "17:10"], km: 18.4,
+      base: { verde: 48, extra_economica: 17, amarela: 16, vermelha: 7, parado_motor_ligado: 23, inercia: 11, baixa_velocidade: 19, sem_tracao: 9 } },
+
+    // Richard: noturno na 8207 — contexto fácil, números altos.
+    { mot: "m4", linha: "l1", veic: "v8", partidas: ["20:40", "22:10", "21:25"], km: 18.4,
+      base: { verde: 72, extra_economica: 39, amarela: 5, vermelha: 1, parado_motor_ligado: 4, inercia: 26, baixa_velocidade: 3, sem_tracao: 2 } },
+    { mot: "m4", linha: "l3", veic: "v10", partidas: ["19:50"], km: 11.2,
+      base: { verde: 68, extra_economica: 33, amarela: 7, vermelha: 2, parado_motor_ligado: 8, inercia: 21, baixa_velocidade: 6, sem_tracao: 3 } },
+
+    // Rafael: pico tarde na 8207, com oscilação.
+    { mot: "m5", linha: "l1", veic: "v5", partidas: ["17:30", "18:15"], km: 18.4,
+      base: { verde: 55, extra_economica: 22, amarela: 13, vermelha: 5, parado_motor_ligado: 19, inercia: 13, baixa_velocidade: 17, sem_tracao: 7 } },
+    { mot: "m5", linha: "l2", veic: "v6", partidas: ["12:40"], km: 15.0,
+      base: { verde: 63, extra_economica: 29, amarela: 9, vermelha: 3, parado_motor_ligado: 11, inercia: 19, baixa_velocidade: 8, sem_tracao: 4 } },
+  ];
+
+  let n = 0;
+  for (const c of cfgs) {
+    for (const p of c.partidas) {
+      n++;
+      // Pequena variação por viagem, determinística, para não parecer sintético.
+      const jitter = (chave: string) => Math.round((c.base[chave] ?? 0) * (1 + ((n % 5) - 2) * 0.02) * 10) / 10;
+      out.push({
+        id: `dv${n}`,
+        motoristaId: c.mot,
+        linhaId: c.linha,
+        veiculoId: c.veic,
+        partida: p,
+        data: new Date(Date.now() - (n % 20) * 86_400_000).toISOString().slice(0, 10),
+        km: c.km,
+        observado: Object.fromEntries(Object.keys(c.base).map((k) => [k, jitter(k)])),
+      });
+    }
+  }
+  return out;
+};
+
+export const MOCK_DESEMPENHO_VIAGENS: DesempenhoViagem[] = gerarViagens();
+
+export const desempenhoDoMotorista = (motoristaId: string) =>
+  MOCK_DESEMPENHO_VIAGENS.filter((v) => v.motoristaId === motoristaId);
+
+/** Mapeia nome → id, já que as telas de motorista navegam por nome. */
+export const motoristaIdPorNome = (nome: string) =>
+  MOCK_MOTORISTAS.find((m) => m.nome.toLowerCase() === nome.toLowerCase())?.id;

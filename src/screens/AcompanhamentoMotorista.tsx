@@ -28,6 +28,7 @@ import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
 import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
+import { DesempenhoPorContexto } from "@/components/ss/frota/DesempenhoPorContexto";
 import { faixasDoMotorista, MOCK_CNH } from "@/lib/mock-data";
 import { CNH_LABEL, CNH_TONE, dataBR, exigeAtencao, prazoCNH, statusCNH } from "@/lib/cnh";
 import { cn } from "@/lib/utils";
@@ -186,6 +187,11 @@ export default function AcompanhamentoMotorista() {
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">A IA pode se enganar — confirme cada evento ou marque como falso positivo.</p>
         </Card>
+
+        {/* Nota contra o padrão de cada linha que ele rodou. */}
+        <div data-tour="contexto">
+          <DesempenhoPorContexto motorista={motorista} />
+        </div>
 
         {/* Faixas de condução do motorista. */}
         <FaixasConducao

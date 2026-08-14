@@ -11,6 +11,18 @@ export type TourStep = {
   selector: string;
   title: string;
   body: string;
+  /**
+   * Passo largo, para explicações que não cabem em três linhas.
+   *
+   * O balão padrão de 320px foi dimensionado para legendas curtas. Conceito
+   * novo — herança de padrão, resolução por faixa horária — precisa de espaço
+   * e de mais de um parágrafo, senão vira texto espremido que ninguém lê.
+   */
+  amplo?: boolean;
+  /** Parágrafos adicionais, exibidos abaixo do corpo. */
+  detalhes?: string[];
+  /** Exemplo concreto, destacado ao final. */
+  exemplo?: string;
 };
 
 /** Passos comuns às telas de lista (hero + KPIs + tabela). */
@@ -40,6 +52,81 @@ function cadastroSteps(nome: string, oque: string): TourStep[] {
 }
 
 export const TOURS: Record<string, TourStep[]> = {
+  /*
+   * Padrão por linha é o único conceito realmente novo do sistema — herança de
+   * valores entre três níveis. Por isso este tour usa passos amplos, com
+   * exemplo concreto: explicação curta aqui não seria entendida.
+   */
+  "/app/urbano/padrao": [
+    {
+      selector: '[data-tour="page-header"]',
+      title: "Por que esta tela existe",
+      amplo: true,
+      body: "Até agora o motorista era avaliado contra a média geral da frota. Isso é injusto nos dois sentidos: pune quem roda em linha de morro, com muitos semáforos e trânsito, e premia quem roda em linha plana e livre.",
+      detalhes: [
+        "Aqui cada linha declara o que se espera dela. Quando o motorista roda a linha 8207, ele passa a ser comparado com o padrão da 8207 — não com a frota inteira.",
+        "Configurar é opcional. Linha sem padrão próprio continua usando o padrão global, e nada quebra. Você configura só as linhas que realmente destoam.",
+      ],
+      exemplo:
+        "Um motorista reduziu o motor ligado parado de 25% para 18%. Melhorou — mas isso é bom? Depende: se na linha dele o padrão é 16%, ainda está acima. Se é 20%, já superou.",
+    },
+    {
+      selector: '[data-tour="seletor-linha"]',
+      title: "Escolha da linha",
+      amplo: true,
+      body: "Comece escolhendo a linha. O ✓ ao lado do nome indica que ela já tem padrão próprio configurado; as demais estão usando o padrão global.",
+      detalhes: [
+        "Não é preciso configurar todas. Na prática, poucas linhas destoam o suficiente para justificar padrão próprio — normalmente as de topografia difícil, as de corredor congestionado e as expressas.",
+      ],
+    },
+    {
+      selector: '[data-tour="faixa-horaria"]',
+      title: "Faixa horária — o segundo nível",
+      amplo: true,
+      body: "A mesma linha no pico e no entrepico são operações diferentes: no pico há mais trânsito, mais lotação e mais paradas efetivas, e o consumo sobe por motivos que não têm relação com o motorista.",
+      detalhes: [
+        '"Linha inteira" vale para qualquer horário. As abas de faixa valem só naquele intervalo e têm prioridade sobre a linha inteira.',
+        "O número em cada aba mostra quantos indicadores foram definidos ali. Aba com zero não significa problema — significa que ela está herdando, que é o comportamento normal.",
+      ],
+      exemplo:
+        "Linha 8207 · linha inteira: motor parado 11%.\nLinha 8207 · pico manhã: motor parado 16%.\n\nNo pico vale 16%. Nos demais horários, 11%.",
+    },
+    {
+      selector: '[data-tour="indicadores"]',
+      title: "Herdado × definido aqui",
+      amplo: true,
+      body: "Cada indicador mostra de onde vem o valor aplicado. Esse rótulo é a parte mais importante da tela: sem ele você não sabe se está olhando um número que alguém definiu ou um número que veio de cima.",
+      detalhes: [
+        "«Padrão global» — ninguém definiu nada para esta linha; o valor vem da configuração geral da empresa. O campo fica desabilitado.",
+        "«Definido nesta linha» ou «Definido nesta faixa» — alguém configurou aqui. O campo fica editável, e o botão de desfazer devolve o indicador à herança.",
+        "Você não precisa preencher os 24 indicadores. Definir dois ou três e deixar o resto herdando é o uso esperado — e é o que mantém a manutenção viável quando o padrão global mudar.",
+      ],
+      exemplo:
+        "Se você definir só «faixa verde» na linha 8207, os outros 23 indicadores continuam vindo do padrão global — e continuam se atualizando sozinhos quando o global for alterado.",
+    },
+    {
+      selector: '[data-tour="sugestao"]',
+      title: "Sugerir do histórico",
+      amplo: true,
+      body: 'Para a pergunta "qual é o padrão que esta linha deveria ter?", o botão calcula a partir das viagens já realizadas neste mesmo contexto.',
+      detalhes: [
+        "O cálculo usa o percentil 75, não a média. A média incorporaria a ineficiência de quem dirige mal e congelaria o problema; o P75 responde o que o quarto superior dos motoristas consegue fazer nesta linha — desempenho comprovadamente atingível ali, não meta inventada.",
+        "É apoio, não imposição: os valores entram nos campos e continuam editáveis. E quando não há viagens suficientes no contexto, o botão avisa em vez de sugerir um número frágil.",
+      ],
+    },
+    {
+      selector: '[data-tour="conceito"]',
+      title: "Como o padrão é aplicado",
+      amplo: true,
+      body: "Na hora de pontuar uma viagem, o sistema procura o valor na ordem do mais específico para o mais geral, e o primeiro que encontrar vence.",
+      detalhes: [
+        "1. Padrão da linha na faixa horária da partida — se existir.\n2. Padrão da linha inteira — se existir.\n3. Padrão global da empresa — sempre existe.",
+        "A faixa é definida pelo horário de partida da viagem, não pelo instante de cada evento. Se fosse pelo evento, uma viagem que atravessa o limite de faixa seria avaliada por dois padrões diferentes.",
+        "Motorista que rodou três linhas no mês é avaliado pelo padrão de cada uma, proporcionalmente ao quilômetro rodado em cada.",
+      ],
+    },
+  ],
+
   "/app/motoristas/perfil/:nome": [
     { selector: '[data-tour="page-header"]', title: "Acompanhamento do motorista", body: "O desempenho individual no período, com tudo o que sustenta a nota." },
     { selector: '[data-tour="cnh"]', title: "Situação da CNH", body: "O sistema confere a validade e avisa com 60 e 30 dias de antecedência. \"Sem informação\" também aparece: significa que falta digitalizar o documento, e não que está tudo certo." },

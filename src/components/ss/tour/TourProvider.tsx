@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import { useLocation } from "@/lib/router-compat";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { tourDe } from "./tours";
+import { cn } from "@/lib/utils";
 
 /**
  * Tour guiado por tela. Ao entrar numa rota com tour, ele abre sozinho (uma vez
@@ -28,6 +29,7 @@ export const useTour = () => useContext(TourCtx);
 const doneKey = (p: string) => `ss-tour-done:${p}`;
 const DISABLED_KEY = "ss-tour-disabled";
 const POPOVER_W = 320;
+const POPOVER_W_AMPLO = 520;
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
@@ -126,6 +128,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
             rect={rect}
             title={step.title}
             body={step.body}
+            amplo={step.amplo}
+            detalhes={step.detalhes}
+            exemplo={step.exemplo}
             index={i}
             total={steps.length}
             onNext={next}
@@ -143,6 +148,9 @@ function TourOverlay({
   rect,
   title,
   body,
+  amplo,
+  detalhes,
+  exemplo,
   index,
   total,
   onNext,
@@ -153,6 +161,9 @@ function TourOverlay({
   rect: DOMRect;
   title: string;
   body: string;
+  amplo?: boolean;
+  detalhes?: string[];
+  exemplo?: string;
   index: number;
   total: number;
   onNext: () => void;
@@ -167,12 +178,12 @@ function TourOverlay({
   const hh = rect.height + pad * 2;
 
   // Balão: abaixo do alvo se couber, senão acima. Horizontal preso à viewport.
-  const below = rect.bottom + 190 < window.innerHeight;
-  const top = below ? rect.bottom + 14 : Math.max(14, rect.top - 190);
-  const left = Math.min(
-    Math.max(14, rect.left),
-    window.innerWidth - POPOVER_W - 14,
-  );
+  // O passo amplo é mais alto e mais largo, então precisa de folga maior.
+  const largura = amplo ? POPOVER_W_AMPLO : POPOVER_W;
+  const altura = amplo ? 340 : 190;
+  const below = rect.bottom + altura < window.innerHeight;
+  const top = below ? rect.bottom + 14 : Math.max(14, rect.top - altura);
+  const left = Math.min(Math.max(14, rect.left), window.innerWidth - largura - 14);
 
   return (
     <>
@@ -193,7 +204,10 @@ function TourOverlay({
 
       {/* Balão. */}
       <div
-        className="fixed z-[301] w-[320px] rounded-2xl border border-border bg-card p-4 shadow-elegant"
+        className={cn(
+          "fixed z-[301] rounded-2xl border border-border bg-card shadow-elegant",
+          amplo ? "w-[520px] max-w-[calc(100vw-2rem)] p-5" : "w-[320px] p-4",
+        )}
         style={{ left, top }}
       >
         <div className="flex items-start justify-between gap-3">
@@ -206,7 +220,22 @@ function TourOverlay({
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{body}</p>
+        <p className={cn("mt-2 leading-relaxed text-ink-soft", amplo ? "text-[13.5px]" : "text-[13px]")}>{body}</p>
+
+        {detalhes?.map((d, k) => (
+          <p key={k} className="mt-2.5 text-[13px] leading-relaxed text-ink-soft">
+            {d}
+          </p>
+        ))}
+
+        {exemplo && (
+          <div className="mt-3 rounded-lg border border-border bg-secondary/50 px-3 py-2.5">
+            <span className="mb-1 block font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              Exemplo
+            </span>
+            <p className="whitespace-pre-line text-[12.5px] leading-relaxed text-ink-soft">{exemplo}</p>
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-1.5">

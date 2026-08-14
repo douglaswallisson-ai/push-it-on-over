@@ -702,3 +702,50 @@ export const MOCK_SOLICITACOES: SolicitacaoGravacao[] = [
   { id: "sg1", veiculoId: "v3", canal: 1, inicio: new Date(Date.now() - 5 * 3_600_000).toISOString(), fim: new Date(Date.now() - 4.5 * 3_600_000).toISOString(), solicitadoPor: "Rosemeri Tuono", solicitadoEm: new Date(Date.now() - 25 * 60_000).toISOString(), status: "disponivel", progressoPct: 100, motivo: "Análise de sinistro" },
   { id: "sg2", veiculoId: "v5", canal: 2, inicio: new Date(Date.now() - 8 * 3_600_000).toISOString(), fim: new Date(Date.now() - 7.5 * 3_600_000).toISOString(), solicitadoPor: "Vitor Duarte", solicitadoEm: new Date(Date.now() - 6 * 60_000).toISOString(), status: "baixando", progressoPct: 43, motivo: "Reclamação de passageiro" },
 ];
+
+/* ---- Padrão de condução por linha ---- */
+import type { PadraoLinha } from "@/types";
+
+export const MOCK_PADROES_LINHA: PadraoLinha[] = [
+  {
+    id: "pdl1", linhaId: "l1", faixaHorariaId: null,
+    indicadores: {
+      verde: { esperado: 64 },
+      extra_economica: { esperado: 31 },
+      parado_motor_ligado: { esperado: 11 },
+    },
+    observacao: "Corredor com muitos semáforos; ociosidade maior que a média da frota.",
+    atualizadoEm: new Date(Date.now() - 6 * 86_400_000).toISOString(), atualizadoPor: "Marco Taborda",
+  },
+  {
+    id: "pdl2", linhaId: "l1", faixaHorariaId: "pico_manha",
+    indicadores: {
+      parado_motor_ligado: { esperado: 16 },
+      verde: { esperado: 58 },
+      baixa_velocidade: { esperado: 14 },
+    },
+    observacao: "Congestionamento entre a Paulista e o HC; ociosidade sobe muito.",
+    atualizadoEm: new Date(Date.now() - 2 * 86_400_000).toISOString(), atualizadoPor: "Marco Taborda",
+  },
+  {
+    id: "pdl3", linhaId: "l3", faixaHorariaId: null,
+    indicadores: { verde: { esperado: 69 }, vermelha: { esperado: 2 } },
+    observacao: "Via expressa, poucos pontos. Padrão mais exigente que o global.",
+    atualizadoEm: new Date(Date.now() - 20 * 86_400_000).toISOString(), atualizadoPor: "Rafael Sabini",
+  },
+];
+
+/**
+ * Amostra observada por contexto, para o botão de sugestão. Em produção isso
+ * sai das viagens realizadas; aqui é um resumo pré-calculado.
+ */
+export const MOCK_AMOSTRA_CONTEXTO: Record<string, { viagens: number; p75: Record<string, number> }> = {
+  "l1|null": { viagens: 1284, p75: { verde: 63, extra_economica: 30, amarela: 9, vermelha: 3, parado_motor_ligado: 12, inercia: 19, baixa_velocidade: 9, sem_tracao: 4 } },
+  "l1|pico_manha": { viagens: 342, p75: { verde: 57, extra_economica: 24, amarela: 12, vermelha: 4, parado_motor_ligado: 17, inercia: 15, baixa_velocidade: 15, sem_tracao: 6 } },
+  "l1|entrepico": { viagens: 511, p75: { verde: 67, extra_economica: 34, amarela: 7, vermelha: 2, parado_motor_ligado: 8, inercia: 22, baixa_velocidade: 6, sem_tracao: 3 } },
+  "l1|pico_tarde": { viagens: 298, p75: { verde: 56, extra_economica: 23, amarela: 13, vermelha: 5, parado_motor_ligado: 18, inercia: 14, baixa_velocidade: 16, sem_tracao: 6 } },
+  "l1|noturno": { viagens: 133, p75: { verde: 71, extra_economica: 38, amarela: 6, vermelha: 2, parado_motor_ligado: 5, inercia: 25, baixa_velocidade: 4, sem_tracao: 2 } },
+  "l2|null": { viagens: 967, p75: { verde: 61, extra_economica: 28, amarela: 10, vermelha: 3, parado_motor_ligado: 13, inercia: 18, baixa_velocidade: 10, sem_tracao: 4 } },
+  "l3|null": { viagens: 604, p75: { verde: 70, extra_economica: 36, amarela: 6, vermelha: 2, parado_motor_ligado: 7, inercia: 23, baixa_velocidade: 5, sem_tracao: 3 } },
+  "l3|pico_manha": { viagens: 21, p75: { verde: 66, extra_economica: 31, parado_motor_ligado: 9 } },
+};

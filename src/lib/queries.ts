@@ -13,6 +13,7 @@ import {
   Motoristas,
   Multas,
   Ordens,
+  PadroesLinha,
   Planos,
   Pneus,
   Video,
@@ -288,3 +289,9 @@ export const solicitacoesGravacaoQuery = () =>
     staleTime: 15_000,
     refetchInterval: 20_000,
   });
+
+export const padroesLinhaQuery = () =>
+  queryOptions({ queryKey: ["padroes-linha"], queryFn: () => PadroesLinha.list(), staleTime: 10 * MINUTE });
+
+export const amostraContextoQuery = () =>
+  queryOptions({ queryKey: ["padroes-linha", "amostra"], queryFn: () => PadroesLinha.amostra(), staleTime: 30 * MINUTE });

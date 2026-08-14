@@ -269,3 +269,12 @@ export const VideoAoVivo = {
   solicitacoes: () =>
     USE_MOCK ? mock(M.MOCK_SOLICITACOES) : api.get<import("@/types").SolicitacaoGravacao[]>(`/api/video/solicitacoes`),
 };
+
+export const PadroesLinha = {
+  list: () =>
+    USE_MOCK ? mock(M.MOCK_PADROES_LINHA) : api.get<import("@/types").PadraoLinha[]>(`/api/padroes-linha`),
+  amostra: () =>
+    USE_MOCK
+      ? mock(M.MOCK_AMOSTRA_CONTEXTO)
+      : api.get<Record<string, { viagens: number; p75: Record<string, number> }>>(`/api/padroes-linha/amostra`),
+};

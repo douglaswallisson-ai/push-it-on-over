@@ -53,6 +53,7 @@ import { Route as AppPessoasMultasRouteImport } from './routes/app.pessoas.multa
 import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
 import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
 import { Route as AppSegurancaVideoRouteImport } from './routes/app.seguranca.video'
+import { Route as AppUrbanoPadraoRouteImport } from './routes/app.urbano.padrao'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
 import { Route as AppVeiculosNovoRouteImport } from './routes/app.veiculos.novo'
 import { Route as AppFretamentoViagensIndexRouteImport } from './routes/app.fretamento.viagens.index'
@@ -282,6 +283,11 @@ const AppSegurancaVideoRoute = AppSegurancaVideoRouteImport.update({
   path: '/seguranca/video',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUrbanoPadraoRoute = AppUrbanoPadraoRouteImport.update({
+  id: '/urbano/padrao',
+  path: '/urbano/padrao',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVeiculosIndexRoute = AppVeiculosIndexRouteImport.update({
   id: '/veiculos/',
   path: '/veiculos/',
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
+  '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
   '/app/premiacao/': typeof AppPremiacaoIndexRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
+  '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
   '/app/premiacao': typeof AppPremiacaoIndexRoute
@@ -455,6 +463,7 @@ export interface FileRoutesById {
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
+  '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
   '/app/premiacao/': typeof AppPremiacaoIndexRoute
@@ -508,6 +517,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
+    | '/app/urbano/padrao'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
     | '/app/premiacao/'
@@ -558,6 +568,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
+    | '/app/urbano/padrao'
     | '/app/veiculos/novo'
     | '/app/motoristas'
     | '/app/premiacao'
@@ -609,6 +620,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
     | '/app/seguranca/video'
+    | '/app/urbano/padrao'
     | '/app/veiculos/novo'
     | '/app/motoristas/'
     | '/app/premiacao/'
@@ -934,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSegurancaVideoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/urbano/padrao': {
+      id: '/app/urbano/padrao'
+      path: '/urbano/padrao'
+      fullPath: '/app/urbano/padrao'
+      preLoaderRoute: typeof AppUrbanoPadraoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/veiculos/': {
       id: '/app/veiculos/'
       path: '/veiculos'
@@ -1012,6 +1031,7 @@ interface AppRouteChildren {
   AppPessoasMultasRoute: typeof AppPessoasMultasRoute
   AppPremiacaoMetasRoute: typeof AppPremiacaoMetasRoute
   AppSegurancaVideoRoute: typeof AppSegurancaVideoRoute
+  AppUrbanoPadraoRoute: typeof AppUrbanoPadraoRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
   AppPremiacaoIndexRoute: typeof AppPremiacaoIndexRoute
@@ -1061,6 +1081,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPessoasMultasRoute: AppPessoasMultasRoute,
   AppPremiacaoMetasRoute: AppPremiacaoMetasRoute,
   AppSegurancaVideoRoute: AppSegurancaVideoRoute,
+  AppUrbanoPadraoRoute: AppUrbanoPadraoRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,
   AppPremiacaoIndexRoute: AppPremiacaoIndexRoute,

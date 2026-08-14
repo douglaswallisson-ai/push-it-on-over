@@ -942,3 +942,61 @@ export type SolicitacaoGravacao = {
   progressoPct: number;
   motivo?: string;
 };
+
+/* ================================================================== */
+/* Padrão de condução por linha                                       */
+/* ================================================================== */
+
+/**
+ * Faixa horária da operação. Pico e entrepico na mesma linha são operações
+ * diferentes: trânsito, lotação e número de paradas efetivas mudam, e com eles
+ * o que é um bom desempenho.
+ */
+export type FaixaHoraria = {
+  id: string;
+  nome: string;
+  /** HH:MM inclusivo. */
+  inicio: string;
+  /** HH:MM exclusivo. Pode cruzar a meia-noite (noturno). */
+  fim: string;
+  ordem: number;
+};
+
+/**
+ * Valor esperado de um indicador. `null` significa "não definido aqui" — o
+ * sistema busca no nível acima.
+ */
+export type EsperadoIndicador = {
+  /** Valor de referência para a linha/faixa. */
+  esperado: number | null;
+  /** Tolerância aceita antes de contar como desvio. */
+  toleranciaPct?: number | null;
+};
+
+/**
+ * Padrão de condução de uma linha, opcionalmente restrito a uma faixa horária.
+ *
+ * Guarda apenas o que difere do padrão global: linha que só precisa ajustar
+ * faixa verde grava um indicador, não os vinte e quatro. Isso é o que impede a
+ * explosão combinatória de perfis — o cadastro é um delta, não uma cópia.
+ */
+export type PadraoLinha = {
+  id: string;
+  linhaId: string;
+  /** null = vale para a linha inteira, independente do horário. */
+  faixaHorariaId: string | null;
+  /** Chave do indicador → valor esperado. Ausente = herda. */
+  indicadores: Record<string, EsperadoIndicador>;
+  observacao?: string;
+  atualizadoEm: string;
+  atualizadoPor: string;
+};
+
+/** De onde veio o valor aplicado — exibido ao lado de cada campo. */
+export type OrigemPadrao = "linha_faixa" | "linha" | "global";
+
+export const ORIGEM_PADRAO_LABEL: Record<OrigemPadrao, string> = {
+  linha_faixa: "Definido nesta faixa",
+  linha: "Definido nesta linha",
+  global: "Padrão global",
+};

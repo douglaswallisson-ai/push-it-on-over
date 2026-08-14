@@ -105,6 +105,7 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
+      { label: "Padrão por linha", to: "/app/urbano/padrao" },
     ],
   },
   {

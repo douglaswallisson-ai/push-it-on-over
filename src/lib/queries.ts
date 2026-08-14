@@ -19,6 +19,7 @@ import {
   Ordens,
   PadroesLinha,
   Planos,
+  Plataforma,
   Preventiva,
   Pneus,
   Video,
@@ -344,3 +345,9 @@ export const contratosOrgQuery = () =>
 
 export const dtcQuery = () =>
   queryOptions({ queryKey: ["dtc"], queryFn: () => DTC.list(), staleTime: MINUTE, refetchInterval: refetchInterval() });
+
+export const adminsQuery = () =>
+  queryOptions({ queryKey: ["plataforma", "admins"], queryFn: () => Plataforma.admins(), staleTime: 10 * MINUTE });
+
+export const perfisAcessoQuery = () =>
+  queryOptions({ queryKey: ["plataforma", "perfis"], queryFn: () => Plataforma.perfis(), staleTime: 10 * MINUTE });

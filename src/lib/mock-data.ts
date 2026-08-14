@@ -1182,3 +1182,22 @@ export const MOCK_DTC: CodigoDTC[] = [
 ];
 
 export const dtcDoVeiculo = (veiculoId: string) => MOCK_DTC.filter((d) => d.veiculoId === veiculoId);
+
+/* ---- Administradores da plataforma e perfis de acesso ---- */
+import type { AdministradorPlataforma, PerfilAcesso } from "@/types";
+
+export const MOCK_ADMINS: AdministradorPlataforma[] = [
+  { id: "adm1", nome: "Douglas Morais", email: "douglas.morais@sstelematica.com.br", fundador: true, ativo: true, criadoEm: "2025-01-10T09:00:00.000Z", criadoPor: "sistema", ultimoAcesso: new Date().toISOString() },
+  { id: "adm2", nome: "Paulo Cesar de Souza Jr", email: "paulo.souza@sstelematica.com.br", fundador: true, ativo: true, criadoEm: "2025-01-10T09:00:00.000Z", criadoPor: "sistema", ultimoAcesso: new Date(Date.now() - 3 * 3_600_000).toISOString() },
+  { id: "adm3", nome: "Cleicimar Soares", email: "cleicimar@sstelematica.com.br", ativo: true, criadoEm: "2025-06-02T14:30:00.000Z", criadoPor: "Douglas Morais", ultimoAcesso: new Date(Date.now() - 2 * 86_400_000).toISOString() },
+  { id: "adm4", nome: "Luiz Barreto", email: "luiz.barreto@sstelematica.com.br", ativo: true, criadoEm: "2025-09-18T11:15:00.000Z", criadoPor: "Douglas Morais", ultimoAcesso: new Date(Date.now() - 5 * 86_400_000).toISOString() },
+  { id: "adm5", nome: "Hortensia Ramires", email: "hortensia@sstelematica.com.br", ativo: false, criadoEm: "2025-03-22T08:00:00.000Z", criadoPor: "Paulo Cesar de Souza Jr" },
+];
+
+export const MOCK_PERFIS_ACESSO: PerfilAcesso[] = [
+  { id: "pa1", nome: "Administrador", descricao: "Administra a própria organização: usuários, cadastros e configurações.", sistema: true, usuariosVinculados: 12, acoes: ["gerenciar_usuarios", "redefinir_senha_de_terceiro", "editar_cadastros", "excluir_registros", "configurar_alarmes", "configurar_metas", "tratar_eventos", "agendar_manutencao", "exportar_dados", "ver_auditoria", "ver_dados_operacionais"] },
+  { id: "pa2", nome: "Gestor", descricao: "Opera e trata a frota das garagens a que tem acesso.", sistema: true, usuariosVinculados: 41, acoes: ["editar_cadastros", "configurar_alarmes", "tratar_eventos", "agendar_manutencao", "exportar_dados", "ver_dados_operacionais"] },
+  { id: "pa3", nome: "Operador", descricao: "Registra e acompanha o dia a dia, sem alterar configuração.", sistema: true, usuariosVinculados: 87, acoes: ["tratar_eventos", "agendar_manutencao", "ver_dados_operacionais"] },
+  { id: "pa4", nome: "Consulta", descricao: "Somente leitura.", sistema: true, usuariosVinculados: 23, acoes: ["ver_dados_operacionais"] },
+  { id: "pa5", nome: "Manutenção", descricao: "Perfil sob medida para equipe de oficina: manutenção e diagnóstico, sem acesso a premiação.", usuariosVinculados: 9, acoes: ["agendar_manutencao", "editar_cadastros", "exportar_dados", "ver_dados_operacionais"] },
+];

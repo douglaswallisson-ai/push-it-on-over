@@ -1341,3 +1341,37 @@ export type RecomendacaoDTC = {
   urgencia: "monitorar" | "antecipar" | "corretiva" | "imediata";
   confianca: "alta" | "media" | "baixa";
 };
+
+/* ------------------------------------------------------------------ */
+/* Administradores da plataforma                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Administrador do software — quem opera o console de gestão.
+ *
+ * Distinto do administrador da organização cliente: este configura a
+ * plataforma, aquele configura a própria empresa.
+ */
+export type AdministradorPlataforma = {
+  id: string;
+  nome: string;
+  email: string;
+  /** Fundador não pode ser removido, para não sobrar console sem dono. */
+  fundador?: boolean;
+  ativo: boolean;
+  criadoEm: string;
+  criadoPor: string;
+  ultimoAcesso?: string;
+};
+
+/** Perfil de acesso configurável, aplicado às organizações clientes. */
+export type PerfilAcesso = {
+  id: string;
+  nome: string;
+  descricao: string;
+  /** Ações liberadas — as chaves são as mesmas de `permissoes.ts`. */
+  acoes: string[];
+  /** Perfil de sistema não pode ser excluído nem renomeado. */
+  sistema?: boolean;
+  usuariosVinculados: number;
+};

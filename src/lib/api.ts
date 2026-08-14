@@ -335,3 +335,10 @@ export const ContratosOrg = {
 export const DTC = {
   list: () => (modoMock() ? mock(M.MOCK_DTC) : api.get<import("@/types").CodigoDTC[]>(`/api/dtc`)),
 };
+
+export const Plataforma = {
+  admins: () =>
+    modoMock() ? mock(M.MOCK_ADMINS) : api.get<import("@/types").AdministradorPlataforma[]>(`/api/plataforma/admins`),
+  perfis: () =>
+    modoMock() ? mock(M.MOCK_PERFIS_ACESSO) : api.get<import("@/types").PerfilAcesso[]>(`/api/plataforma/perfis`),
+};

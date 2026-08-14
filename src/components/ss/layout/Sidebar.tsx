@@ -22,6 +22,7 @@ import {
   Truck,
   Users,
   type LucideIcon,
+  ArrowLeftRight,
 } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
@@ -131,15 +132,6 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
-  {
-    label: "Administração",
-    icon: Settings,
-    items: [
-      { label: "Contratos", to: "/app/admin/contratos" },
-      { label: "Catálogo de manutenção", to: "/app/admin/catalogo" },
-      { label: "Configurações", to: "/app/admin/configuracoes" },
-    ],
-  },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 
@@ -267,6 +259,27 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         <div className="shrink-0 border-t border-white/10 px-[14px] py-3">
           <OrgSwitcher expanded={expanded} />
+
+          {/* Atalho para o console de gestão. Só o dono do software o enxerga —
+              para o cliente ele não existe. */}
+          {sessao?.perfil === "super_admin" && (
+            <NavLink
+              to="/console"
+              title="Console de gestão"
+              className={cn(
+                "mt-2 flex items-center gap-2.5 overflow-hidden rounded-lg border border-white/15 px-2 py-2 text-white/80 transition-colors hover:bg-white/10",
+                !expanded && "justify-center px-0",
+              )}
+            >
+              <ArrowLeftRight className="h-4 w-4 shrink-0" />
+              {expanded && (
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-[12.5px] font-medium">Console de gestão</span>
+                  <span className="block truncate text-[10.5px] text-white/45">contratos, perfis e plataforma</span>
+                </span>
+              )}
+            </NavLink>
+          )}
 
           <div className="my-2 border-t border-white/10" />
 

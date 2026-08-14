@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
@@ -21,6 +22,14 @@ import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
+import { Route as ConsoleIndexRouteImport } from './routes/console.index'
+import { Route as ConsoleAdministradoresRouteImport } from './routes/console.administradores'
+import { Route as ConsoleAuditoriaRouteImport } from './routes/console.auditoria'
+import { Route as ConsoleCatalogoRouteImport } from './routes/console.catalogo'
+import { Route as ConsoleConfiguracoesRouteImport } from './routes/console.configuracoes'
+import { Route as ConsoleContratosRouteImport } from './routes/console.contratos'
+import { Route as ConsoleIndicadoresRouteImport } from './routes/console.indicadores'
+import { Route as ConsolePerfisRouteImport } from './routes/console.perfis'
 import { Route as AppAdminCatalogoRouteImport } from './routes/app.admin.catalogo'
 import { Route as AppAdminConfiguracoesRouteImport } from './routes/app.admin.configuracoes'
 import { Route as AppAdminContratosRouteImport } from './routes/app.admin.contratos'
@@ -74,6 +83,11 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -123,6 +137,46 @@ const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
   getParentRoute: () => AppRoute,
+} as any)
+const ConsoleIndexRoute = ConsoleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleAdministradoresRoute = ConsoleAdministradoresRouteImport.update({
+  id: '/administradores',
+  path: '/administradores',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleAuditoriaRoute = ConsoleAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleCatalogoRoute = ConsoleCatalogoRouteImport.update({
+  id: '/catalogo',
+  path: '/catalogo',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleConfiguracoesRoute = ConsoleConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleContratosRoute = ConsoleContratosRouteImport.update({
+  id: '/contratos',
+  path: '/contratos',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleIndicadoresRoute = ConsoleIndicadoresRouteImport.update({
+  id: '/indicadores',
+  path: '/indicadores',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsolePerfisRoute = ConsolePerfisRouteImport.update({
+  id: '/perfis',
+  path: '/perfis',
+  getParentRoute: () => ConsoleRoute,
 } as any)
 const AppAdminCatalogoRoute = AppAdminCatalogoRouteImport.update({
   id: '/admin/catalogo',
@@ -343,6 +397,7 @@ const AppMotoristasPerfilNomeRoute = AppMotoristasPerfilNomeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/console': typeof ConsoleRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
@@ -352,7 +407,15 @@ export interface FileRoutesByFullPath {
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/console/administradores': typeof ConsoleAdministradoresRoute
+  '/console/auditoria': typeof ConsoleAuditoriaRoute
+  '/console/catalogo': typeof ConsoleCatalogoRoute
+  '/console/configuracoes': typeof ConsoleConfiguracoesRoute
+  '/console/contratos': typeof ConsoleContratosRoute
+  '/console/indicadores': typeof ConsoleIndicadoresRoute
+  '/console/perfis': typeof ConsolePerfisRoute
   '/app/': typeof AppIndexRoute
+  '/console/': typeof ConsoleIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contratos': typeof AppAdminContratosRoute
@@ -407,7 +470,15 @@ export interface FileRoutesByTo {
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/console/administradores': typeof ConsoleAdministradoresRoute
+  '/console/auditoria': typeof ConsoleAuditoriaRoute
+  '/console/catalogo': typeof ConsoleCatalogoRoute
+  '/console/configuracoes': typeof ConsoleConfiguracoesRoute
+  '/console/contratos': typeof ConsoleContratosRoute
+  '/console/indicadores': typeof ConsoleIndicadoresRoute
+  '/console/perfis': typeof ConsolePerfisRoute
   '/app': typeof AppIndexRoute
+  '/console': typeof ConsoleIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contratos': typeof AppAdminContratosRoute
@@ -455,6 +526,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/console': typeof ConsoleRouteWithChildren
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
@@ -464,7 +536,15 @@ export interface FileRoutesById {
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/console/administradores': typeof ConsoleAdministradoresRoute
+  '/console/auditoria': typeof ConsoleAuditoriaRoute
+  '/console/catalogo': typeof ConsoleCatalogoRoute
+  '/console/configuracoes': typeof ConsoleConfiguracoesRoute
+  '/console/contratos': typeof ConsoleContratosRoute
+  '/console/indicadores': typeof ConsoleIndicadoresRoute
+  '/console/perfis': typeof ConsolePerfisRoute
   '/app/': typeof AppIndexRoute
+  '/console/': typeof ConsoleIndexRoute
   '/app/admin/catalogo': typeof AppAdminCatalogoRoute
   '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contratos': typeof AppAdminContratosRoute
@@ -513,6 +593,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/console'
     | '/login'
     | '/app/$'
     | '/app/assistente'
@@ -522,7 +603,15 @@ export interface FileRouteTypes {
     | '/app/eventos'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/console/administradores'
+    | '/console/auditoria'
+    | '/console/catalogo'
+    | '/console/configuracoes'
+    | '/console/contratos'
+    | '/console/indicadores'
+    | '/console/perfis'
     | '/app/'
+    | '/console/'
     | '/app/admin/catalogo'
     | '/app/admin/configuracoes'
     | '/app/admin/contratos'
@@ -577,7 +666,15 @@ export interface FileRouteTypes {
     | '/app/eventos'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/console/administradores'
+    | '/console/auditoria'
+    | '/console/catalogo'
+    | '/console/configuracoes'
+    | '/console/contratos'
+    | '/console/indicadores'
+    | '/console/perfis'
     | '/app'
+    | '/console'
     | '/app/admin/catalogo'
     | '/app/admin/configuracoes'
     | '/app/admin/contratos'
@@ -624,6 +721,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/console'
     | '/login'
     | '/app/$'
     | '/app/assistente'
@@ -633,7 +731,15 @@ export interface FileRouteTypes {
     | '/app/eventos'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/console/administradores'
+    | '/console/auditoria'
+    | '/console/catalogo'
+    | '/console/configuracoes'
+    | '/console/contratos'
+    | '/console/indicadores'
+    | '/console/perfis'
     | '/app/'
+    | '/console/'
     | '/app/admin/catalogo'
     | '/app/admin/configuracoes'
     | '/app/admin/contratos'
@@ -681,6 +787,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  ConsoleRoute: typeof ConsoleRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
@@ -698,6 +805,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -769,6 +883,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/relatorios'
       preLoaderRoute: typeof AppRelatoriosRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/console/': {
+      id: '/console/'
+      path: '/'
+      fullPath: '/console/'
+      preLoaderRoute: typeof ConsoleIndexRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/administradores': {
+      id: '/console/administradores'
+      path: '/administradores'
+      fullPath: '/console/administradores'
+      preLoaderRoute: typeof ConsoleAdministradoresRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/auditoria': {
+      id: '/console/auditoria'
+      path: '/auditoria'
+      fullPath: '/console/auditoria'
+      preLoaderRoute: typeof ConsoleAuditoriaRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/catalogo': {
+      id: '/console/catalogo'
+      path: '/catalogo'
+      fullPath: '/console/catalogo'
+      preLoaderRoute: typeof ConsoleCatalogoRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/configuracoes': {
+      id: '/console/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/console/configuracoes'
+      preLoaderRoute: typeof ConsoleConfiguracoesRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/contratos': {
+      id: '/console/contratos'
+      path: '/contratos'
+      fullPath: '/console/contratos'
+      preLoaderRoute: typeof ConsoleContratosRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/indicadores': {
+      id: '/console/indicadores'
+      path: '/indicadores'
+      fullPath: '/console/indicadores'
+      preLoaderRoute: typeof ConsoleIndicadoresRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/perfis': {
+      id: '/console/perfis'
+      path: '/perfis'
+      fullPath: '/console/perfis'
+      preLoaderRoute: typeof ConsolePerfisRouteImport
+      parentRoute: typeof ConsoleRoute
     }
     '/app/admin/catalogo': {
       id: '/app/admin/catalogo'
@@ -1177,9 +1347,35 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ConsoleRouteChildren {
+  ConsoleAdministradoresRoute: typeof ConsoleAdministradoresRoute
+  ConsoleAuditoriaRoute: typeof ConsoleAuditoriaRoute
+  ConsoleCatalogoRoute: typeof ConsoleCatalogoRoute
+  ConsoleConfiguracoesRoute: typeof ConsoleConfiguracoesRoute
+  ConsoleContratosRoute: typeof ConsoleContratosRoute
+  ConsoleIndicadoresRoute: typeof ConsoleIndicadoresRoute
+  ConsolePerfisRoute: typeof ConsolePerfisRoute
+  ConsoleIndexRoute: typeof ConsoleIndexRoute
+}
+
+const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleAdministradoresRoute: ConsoleAdministradoresRoute,
+  ConsoleAuditoriaRoute: ConsoleAuditoriaRoute,
+  ConsoleCatalogoRoute: ConsoleCatalogoRoute,
+  ConsoleConfiguracoesRoute: ConsoleConfiguracoesRoute,
+  ConsoleContratosRoute: ConsoleContratosRoute,
+  ConsoleIndicadoresRoute: ConsoleIndicadoresRoute,
+  ConsolePerfisRoute: ConsolePerfisRoute,
+  ConsoleIndexRoute: ConsoleIndexRoute,
+}
+
+const ConsoleRouteWithChildren =
+  ConsoleRoute._addFileChildren(ConsoleRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  ConsoleRoute: ConsoleRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

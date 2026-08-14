@@ -5,6 +5,7 @@ import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
 import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
+import { ContratoDoCliente } from "@/components/ss/contrato/ContratoDoCliente";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -159,6 +160,8 @@ export default function Inicio() {
           <SectionLabel>Manutenção · situação da frota</SectionLabel>
           <CardsManutencao />
         </section>
+
+        <ContratoDoCliente />
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <PlanoCard />

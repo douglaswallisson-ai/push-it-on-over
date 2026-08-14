@@ -1115,3 +1115,72 @@ export type RegraAjuste = {
   fonte?: string;
   ativa: boolean;
 };
+
+/* ------------------------------------------------------------------ */
+/* Execução e previsão da manutenção preventiva                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Última execução de um item de manutenção num veículo.
+ *
+ * É a peça que faltava para o catálogo virar alerta: sem saber quando o item
+ * foi feito pela última vez, não há como calcular quando vence.
+ */
+export type ExecucaoManutencao = {
+  id: string;
+  veiculoId: string;
+  /** Item do catálogo que foi executado. */
+  parametroId: string;
+  em: string;
+  odometro: number;
+  horimetro?: number;
+  ordemServicoId?: string;
+  observacao?: string;
+};
+
+/** Urgência da preventiva, derivada do quanto falta para vencer. */
+export type UrgenciaPreventiva = "vencida" | "critica" | "proxima" | "programada" | "em_dia";
+
+export const URGENCIA_LABEL: Record<UrgenciaPreventiva, string> = {
+  vencida: "Vencida",
+  critica: "Vence em breve",
+  proxima: "Próxima",
+  programada: "Programada",
+  em_dia: "Em dia",
+};
+
+/**
+ * Preventiva calculada para um veículo.
+ *
+ * O gatilho é o que ocorrer primeiro entre quilometragem, horas e tempo — por
+ * isso `disparoPor` registra qual dos três chegou antes, e não só a data.
+ */
+export type PreventivaPrevista = {
+  veiculoId: string;
+  parametroId: string;
+  modeloId: string;
+  sistema: string;
+  item: string;
+  acao: string;
+  especificacao?: string;
+
+  /** Intervalo do catálogo, antes de qualquer ajuste. */
+  intervaloOriginalKm: number | null;
+  /** Intervalo efetivamente aplicado, após as regras de operação. */
+  intervaloAplicadoKm: number | null;
+  /** Regras que encurtaram o intervalo, para justificar o número na tela. */
+  ajustes: { nome: string; fator: number; motivo: string }[];
+
+  ultimaExecucaoEm: string | null;
+  odometroUltimaExecucao: number | null;
+
+  /** Km restantes até vencer. Negativo = já passou. */
+  kmRestante: number | null;
+  /** Dias restantes até vencer. Negativo = já passou. */
+  diasRestante: number | null;
+  disparoPor: "km" | "tempo" | "horas" | null;
+
+  urgencia: UrgenciaPreventiva;
+  /** Percentual do intervalo já consumido. */
+  consumidoPct: number;
+};

@@ -298,6 +298,19 @@ export const TOURS: Record<string, TourStep[]> = {
     { selector: 'main .rounded-xl.border.bg-card.shadow-card', title: "Abas da tela", body: "Visão geral (o quadro), consumíveis, telemetria dos equipamentos, predições da frota e histórico de ordens. Cada aba tem conteúdo próprio." },
     { selector: '[data-tour="stat"]', title: "Indicadores", body: "Placas na frota, quantas estão em dia, quantas em atraso e o custo previsto." },
     { selector: '[data-tour="kanban"]', title: "Quadro de manutenção", body: "Um card por placa, distribuído em Em dia, Preditiva, Preventiva, Corretiva e Liberado. Veículo com mais de uma pendência aparece na coluna mais grave e informa as demais no rodapé do card." },
+    {
+      selector: 'main .rounded-xl.border.bg-card.shadow-card',
+      title: "Plano preventivo — de onde vem o alerta",
+      amplo: true,
+      body: "A aba Plano preventivo calcula, veículo a veículo, o que vence e quando. Ela cruza três coisas: o parâmetro do fabricante no catálogo, o odômetro atual e a data da última execução daquele item.",
+      detalhes: [
+        "O disparo segue a regra dos fabricantes — o que ocorrer primeiro entre quilometragem, horas de motor e tempo. Por isso a tela informa por qual dos três o item está vencendo: um ônibus que roda pouco pode ter o óleo vencendo por prazo, não por quilômetro.",
+        "O intervalo do catálogo é o ponto de partida, não a palavra final. Quando a telemetria mostra operação mais severa que a prevista, ele é encurtado automaticamente e a tela mostra o motivo, com o número original riscado ao lado do aplicado.",
+        "Veículo cujo modelo não tem parâmetro utilizável aparece no aviso do topo. Ele roda e acumula quilometragem, mas nunca entra na fila — é a pendência que o administrador precisa resolver no catálogo.",
+      ],
+      exemplo:
+        "Volvo urbano: catálogo manda trocar óleo a cada 30.000 km.\nO carro está com 37% de marcha-lenta, acima do limite de 30% publicado pela Volvo.\nO sistema aplica 21.000 km e mostra: \"intervalo reduzido para 70% — marcha-lenta em 37%\".",
+    },
     { selector: '[data-tour="kanban"] button', title: "Abrir um veículo", body: "Clique num card para ver a inspeção visual, as predições e quem dirigiu aquela placa. De lá dá para agendar a manutenção ou liberar o veículo." },
   ],
 

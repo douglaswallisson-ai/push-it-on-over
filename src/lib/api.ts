@@ -298,3 +298,14 @@ export const Catalogo = {
   regras: () =>
     USE_MOCK ? mock(M.MOCK_REGRAS_AJUSTE) : api.get<import("@/types").RegraAjuste[]>(`/api/catalogo/regras`),
 };
+
+export const Preventiva = {
+  execucoes: () =>
+    USE_MOCK ? mock(M.MOCK_EXECUCOES) : api.get<import("@/types").ExecucaoManutencao[]>(`/api/preventiva/execucoes`),
+  sinais: () =>
+    USE_MOCK ? mock(M.MOCK_SINAIS_OPERACAO) : api.get<Record<string, Record<string, number>>>(`/api/preventiva/sinais`),
+  vinculos: () =>
+    USE_MOCK
+      ? mock(M.MOCK_VEICULO_MODELO)
+      : api.get<Record<string, { modeloId: string; montadoraId: string }>>(`/api/preventiva/vinculos`),
+};

@@ -1019,3 +1019,80 @@ export const modelosDaMontadora = (montadoraId: string) =>
 
 export const parametrosDoModelo = (modeloId: string) =>
   MOCK_PARAMETROS.filter((p) => p.modeloId === modeloId);
+
+/* ---- Execuções e sinais de operação, para a preventiva ---- */
+import type { ExecucaoManutencao } from "@/types";
+
+/** Vínculo veículo → modelo do catálogo. */
+export const MOCK_VEICULO_MODELO: Record<string, { modeloId: string; montadoraId: string }> = {
+  v1: { modeloId: "md-sc-k-dc13", montadoraId: "mt-scania" },
+  v2: { modeloId: "md-sc-k-dc09", montadoraId: "mt-scania" },
+  v3: { modeloId: "md-mb-of", montadoraId: "mt-mb" },
+  v4: { modeloId: "md-vo-urbano", montadoraId: "mt-volvo" },
+  v5: { modeloId: "md-vo-urbano", montadoraId: "mt-volvo" },
+  v6: { modeloId: "md-sc-k-dc07", montadoraId: "mt-scania" },
+  v7: { modeloId: "md-sc-k-dc13", montadoraId: "mt-scania" },
+  v8: { modeloId: "md-vw-volksbus", montadoraId: "mt-vw" },
+  v9: { modeloId: "md-mb-o500", montadoraId: "mt-mb" },
+  v10: { modeloId: "md-byd-d9w", montadoraId: "mt-byd" },
+};
+
+/**
+ * Sinais de operação por veículo, usados para classificar o tipo de operação e
+ * disparar as regras de ajuste. Vêm da telemetria já coletada.
+ */
+export const MOCK_SINAIS_OPERACAO: Record<string, Record<string, number>> = {
+  v1: { parado_motor_ligado: 9, velocidade_media: 34, paradas_por_dia: 210 },
+  v2: { parado_motor_ligado: 14, velocidade_media: 31, paradas_por_dia: 268 },
+  v3: { parado_motor_ligado: 34, velocidade_media: 22, paradas_por_dia: 312 },
+  v4: { parado_motor_ligado: 18, velocidade_media: 28, paradas_por_dia: 240 },
+  v5: { parado_motor_ligado: 37, velocidade_media: 19, paradas_por_dia: 330 },
+  v6: { parado_motor_ligado: 11, velocidade_media: 36, paradas_por_dia: 190 },
+  v7: { parado_motor_ligado: 8, velocidade_media: 41, paradas_por_dia: 150 },
+  v8: { parado_motor_ligado: 21, velocidade_media: 26, paradas_por_dia: 288 },
+  v9: { parado_motor_ligado: 16, velocidade_media: 33, paradas_por_dia: 224 },
+  v10: { parado_motor_ligado: 12, velocidade_media: 24, paradas_por_dia: 296 },
+};
+
+const diasAtrasIso = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
+
+/**
+ * Histórico de execução. Foi montado para produzir uma distribuição realista:
+ * alguns itens recém-feitos, outros no meio do intervalo, e alguns já vencidos.
+ */
+export const MOCK_EXECUCOES: ExecucaoManutencao[] = (() => {
+  const out: ExecucaoManutencao[] = [];
+  let n = 0;
+  const add = (veiculoId: string, parametroId: string, diasAtras: number, kmAntes: number) => {
+    const v = MOCK_VEICULOS.find((x) => x.id === veiculoId);
+    if (!v) return;
+    out.push({
+      id: `ex${++n}`,
+      veiculoId,
+      parametroId,
+      em: diasAtrasIso(diasAtras),
+      odometro: Math.max(0, v.odometro - kmAntes),
+    });
+  };
+
+  // Scania — óleo do motor na operação urbana (45.000 km).
+  add("v1", MOCK_PARAMETROS.find((p) => p.modeloId === "md-sc-k-dc13" && p.tipoOperacao === "urbano")?.id ?? "", 90, 38000);
+  add("v2", MOCK_PARAMETROS.find((p) => p.modeloId === "md-sc-k-dc09" && p.tipoOperacao === "urbano")?.id ?? "", 210, 46500);
+  add("v6", MOCK_PARAMETROS.find((p) => p.modeloId === "md-sc-k-dc07" && p.tipoOperacao === "urbano")?.id ?? "", 40, 12000);
+  add("v7", MOCK_PARAMETROS.find((p) => p.modeloId === "md-sc-k-dc13" && p.tipoOperacao === "urbano")?.id ?? "", 150, 33000);
+
+  // Volvo urbano (30.000 km) — v5 tem marcha-lenta alta e sofre ajuste.
+  const volvoOleo = MOCK_PARAMETROS.find((p) => p.modeloId === "md-vo-urbano" && p.sistema === "Motor")?.id ?? "";
+  add("v4", volvoOleo, 120, 19000);
+  add("v5", volvoOleo, 200, 24800);
+
+  // BYD — itens por prazo, não por km.
+  for (const p of MOCK_PARAMETROS.filter((x) => x.modeloId === "md-byd-d9w").slice(0, 4)) {
+    add("v10", p.id, 160, 9000);
+  }
+
+  return out;
+})();
+
+export const execucoesDoVeiculo = (veiculoId: string) =>
+  MOCK_EXECUCOES.filter((e) => e.veiculoId === veiculoId);

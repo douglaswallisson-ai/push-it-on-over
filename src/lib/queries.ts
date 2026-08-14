@@ -17,6 +17,7 @@ import {
   Ordens,
   PadroesLinha,
   Planos,
+  Preventiva,
   Pneus,
   Video,
   VideoAoVivo,
@@ -320,3 +321,12 @@ export const parametrosCatalogoQuery = () =>
 
 export const regrasAjusteQuery = () =>
   queryOptions({ queryKey: ["catalogo", "regras"], queryFn: () => Catalogo.regras(), staleTime: 30 * MINUTE });
+
+export const execucoesQuery = () =>
+  queryOptions({ queryKey: ["preventiva", "execucoes"], queryFn: () => Preventiva.execucoes(), staleTime: 5 * MINUTE });
+
+export const sinaisOperacaoQuery = () =>
+  queryOptions({ queryKey: ["preventiva", "sinais"], queryFn: () => Preventiva.sinais(), staleTime: 10 * MINUTE });
+
+export const vinculosModeloQuery = () =>
+  queryOptions({ queryKey: ["preventiva", "vinculos"], queryFn: () => Preventiva.vinculos(), staleTime: 30 * MINUTE });

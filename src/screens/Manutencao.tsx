@@ -19,6 +19,7 @@ import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { BusInspection, HOTSPOTS } from "@/components/ss/frota/BusInspection";
 import { ManutencaoKanban } from "@/components/ss/frota/ManutencaoKanban";
 import { TelemetriaEquipamentos } from "@/components/ss/frota/TelemetriaEquipamentos";
+import { PlanoPreventivo } from "@/components/ss/frota/PlanoPreventivo";
 import { HistoricoConducao } from "@/components/ss/frota/HistoricoConducao";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MANUTENCAO_COLUNAS, kanbanManutencaoQuery, manutencaoQuery, nf } from "@/lib/queries";
@@ -44,6 +45,7 @@ import type { CardManutencao, StatusManutencao } from "@/types";
 
 const TABS = [
   { id: "geral", label: "Visão geral", icon: LayoutGrid },
+  { id: "preventiva", label: "Plano preventivo", icon: CalendarClock },
   { id: "consumiveis", label: "Consumíveis", icon: Fuel },
   { id: "telemetria", label: "Telemetria", icon: Activity },
   { id: "predicoes", label: "Predições", icon: Sparkles },
@@ -152,6 +154,8 @@ export default function Manutencao() {
               onSelect={setSelecionado}
             />
           ))}
+
+        {tab === "preventiva" && <PlanoPreventivo garagem={garagem || undefined} />}
 
         {tab === "consumiveis" && <Consumiveis card={selecionado} />}
 

@@ -72,6 +72,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Grupos", to: "/app/cadastros/grupos" },
       { label: "Linhas", to: "/app/cadastros/linhas" },
       { label: "Pontos de parada", to: "/app/cadastros/pontos" },
+      { label: "Pontos e cercas", to: "/app/cadastros/pontos-interesse" },
       { label: "Unidades", to: "/app/cadastros/unidades" },
       { label: "Usuários", to: "/app/cadastros/usuarios" },
     ],

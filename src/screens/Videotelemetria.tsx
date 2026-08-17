@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
-import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
+import { videoOcorrenciasApiQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { AoVivo } from "@/components/ss/video/AoVivo";
 import { Gravacoes } from "@/components/ss/video/Gravacoes";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -64,7 +65,32 @@ const CLASSE_LABEL = {
 } as const;
 
 export default function Videotelemetria() {
-  const ocorrenciasQ = useQuery(videoOcorrenciasQuery());
+  const mockOcorrQ = useQuery(videoOcorrenciasQuery());
+  const apiOcorrQ = useQuery(videoOcorrenciasApiQuery({ limit: 300 }));
+
+  /**
+   * Conectado à API, as ocorrências vêm de fleet_events já classificadas em
+   * DMS, ADAS e equipamento. A conversão para o formato da tela acontece aqui,
+   * mantendo filtros e contadores intactos.
+   */
+  const daApi = apiOcorrQ.data as
+    | {
+        items: {
+          id: number;
+          vehicle_id?: number;
+          vehicle_prefix?: string;
+          event_type?: string;
+          category: string;
+          severity?: string;
+          timestamp?: string;
+          has_clip: boolean;
+          acknowledged?: boolean;
+        }[];
+        summary: { total: number; pending: number; dms: number; adas: number; equipment: number };
+      }
+    | undefined;
+
+  const ocorrenciasQ = usandoMock() ? mockOcorrQ : apiOcorrQ;
   const volumeQ = useQuery(videoVolumeQuery());
   const veiculosQ = useQuery(veiculosQuery(1, 200));
 
@@ -80,10 +106,25 @@ export default function Videotelemetria() {
     return m;
   }, [veiculosQ.data]);
 
-  const ocorrencias = useMemo(
-    () => (ocorrenciasQ.data ?? []).map((o) => ({ ...o, status: alteracoes[o.id] ?? o.status })),
-    [ocorrenciasQ.data, alteracoes],
-  );
+  const ocorrencias = useMemo(() => {
+    if (!usandoMock() && daApi?.items) {
+      const risco = (sev?: string): NivelRisco =>
+        sev === "critical" ? "alto" : sev === "warning" ? "medio" : "baixo";
+      return daApi.items.map((o) => ({
+        id: String(o.id),
+        tipo: (o.event_type ?? "distracao") as TipoAlarmeVideo,
+        risco: risco(o.severity),
+        veiculoId: String(o.vehicle_id ?? ""),
+        em: o.timestamp ?? new Date().toISOString(),
+        imei: "",
+        // Sem clipe não há o que revisar; o backend informa se a mídia existe.
+        clipeDisponivel: o.has_clip,
+        status: (alteracoes[String(o.id)] ??
+          (o.acknowledged ? "tratado" : "aguardando")) as StatusTratativa,
+      })) as OcorrenciaVideo[];
+    }
+    return (mockOcorrQ.data ?? []).map((o) => ({ ...o, status: alteracoes[o.id] ?? o.status }));
+  }, [daApi, mockOcorrQ.data, alteracoes]);
 
   const aguardando = ocorrencias.filter((o) => o.status === "aguardando");
   const total = ocorrencias.length;
@@ -237,7 +278,6 @@ export default function Videotelemetria() {
       <PageHeader title="Videotelemetria" subtitle="Segurança › Câmeras, ocorrências e gravações" />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="As ocorrências ainda não têm endpoint. O vínculo veículo↔equipamento existe em /video-device-associations e os serviços de DVR guardam a mídia no S3 — falta a rota que junta os dois." />
 
         {/* Três formas de olhar o mesmo veículo: agora, o que já aconteceu e
             o que ficou gravado. */}

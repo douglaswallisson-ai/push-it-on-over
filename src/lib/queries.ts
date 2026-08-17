@@ -16,7 +16,10 @@ import {
   Jornadas,
   Motoristas,
   Multas,
+  IndicadoresApi,
   Operacional,
+  PontosApi,
+  Seguranca,
   Ordens,
   PadroesLinha,
   Planos,
@@ -455,4 +458,37 @@ export const turnosApiQuery = (linhaId: string | undefined, diaSemana?: number) 
     queryFn: () => Operacional.turnos(linhaId!, diaSemana != null ? { weekday: diaSemana } : undefined),
     enabled: Boolean(linhaId) && !usandoMock(),
     staleTime: 5 * MINUTE,
+  });
+
+export const videoEquipamentosQuery = () =>
+  queryOptions({
+    queryKey: ["video", "equipamentos", "api"],
+    queryFn: () => Seguranca.equipamentos(),
+    enabled: !usandoMock(),
+    staleTime: MINUTE,
+    refetchInterval: refetchInterval(),
+  });
+
+export const videoOcorrenciasApiQuery = (params: Record<string, string | number | boolean>) =>
+  queryOptions({
+    queryKey: ["video", "ocorrencias", "api", JSON.stringify(params)],
+    queryFn: () => Seguranca.ocorrencias(params),
+    enabled: !usandoMock(),
+    staleTime: 30_000,
+  });
+
+export const indicadoresApiQuery = (inicio: string, fim: string, grupoId?: string) =>
+  queryOptions({
+    queryKey: ["indicadores", "api", inicio, fim, grupoId ?? "todos"],
+    queryFn: () => IndicadoresApi.consolidado(inicio, fim, grupoId),
+    enabled: !usandoMock(),
+    staleTime: 5 * MINUTE,
+  });
+
+export const pontosApiQuery = (dias = 30, busca?: string) =>
+  queryOptions({
+    queryKey: ["pontos", "api", dias, busca ?? ""],
+    queryFn: () => PontosApi.lista(dias, busca),
+    enabled: !usandoMock(),
+    staleTime: 10 * MINUTE,
   });

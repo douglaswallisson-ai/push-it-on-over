@@ -8,6 +8,7 @@ import {
   Download,
   Fuel,
   Gauge,
+  Info,
   Minus,
   Route,
   TrendingDown,
@@ -18,10 +19,11 @@ import {
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
-import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
+import { Card, DataTable, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
-import { indicadoresSerieQuery, nf } from "@/lib/queries";
+import { indicadoresApiQuery, indicadoresSerieQuery, nf } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { calcularIndicadores, variacao } from "@/lib/operacao";
 import { exportarCSV } from "@/lib/export";
 import { CATEGORIA_CUSTO_LABEL, type CategoriaCusto, type IndicadoresPeriodo } from "@/types";
@@ -131,7 +133,29 @@ function KpiCard({
 }
 
 export default function IndicadoresGerenciais() {
-  const { data, isPending, error, refetch } = useQuery(indicadoresSerieQuery());
+  const mockQ = useQuery(indicadoresSerieQuery());
+
+  // Janela dos últimos 30 dias, que é o recorte usual de fechamento.
+  const hoje = new Date();
+  const trintaDias = new Date(hoje.getTime() - 30 * 86_400_000);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const apiQ = useQuery(indicadoresApiQuery(iso(trintaDias), iso(hoje)));
+
+  /**
+   * O backend devolve o consolidado calculado e declara o que não conseguiu
+   * calcular. Exibir essa lista é parte do contrato: sem ela, o gestor
+   * procuraria CPK numa tela que não tem como calculá-lo.
+   */
+  const daApi = apiQ.data as
+    | {
+        current: Record<string, number>;
+        previous?: Record<string, number> | null;
+        unavailable: string[];
+        unavailable_reason: string;
+      }
+    | undefined;
+
+  const { data, isPending, error, refetch } = usandoMock() ? mockQ : { ...apiQ, data: mockQ.data };
   const serie = useMemo(() => data ?? [], [data]);
 
   const [idxAtual, setIdxAtual] = useState<number | null>(null);
@@ -280,6 +304,39 @@ export default function IndicadoresGerenciais() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
+        {!usandoMock() && daApi && (
+          <>
+            {/* O que o backend conseguiu calcular. */}
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <StatTile icon={Fuel} label="KM/L" value={String(daApi.current.kml ?? 0)} color="var(--brand-navy)" />
+              <StatTile icon={Wrench} label="MKBF" value={nf(daApi.current.mkbf ?? 0)} unit="km" color="var(--gold)" />
+              <StatTile
+                icon={Activity}
+                label="Ociosidade"
+                value={`${daApi.current.idle_pct ?? 0}%`}
+                color={(daApi.current.idle_pct ?? 0) > 20 ? "var(--coral)" : "var(--leaf)"}
+                foot="motor ligado sem rodar"
+              />
+              <StatTile
+                icon={TrendingDown}
+                label="Eventos por 100 km"
+                value={String(daApi.current.events_per_100km ?? 0)}
+                color="var(--brand-sky)"
+                foot="normalizado pela distância"
+              />
+            </div>
+
+            {daApi.unavailable.length > 0 && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                <p className="text-[12.5px] text-gold">
+                  <strong>{daApi.unavailable.join(", ").toUpperCase()} não podem ser calculados.</strong>{" "}
+                  {daApi.unavailable_reason} Os cartões abaixo continuam com dados de exemplo.
+                </p>
+              </div>
+            )}
+          </>
+        )}
         <SeloDadosExemplo motivo="CPK, IPK e MKBF são cálculo sobre a base histórica e ainda não foram desenvolvidos. Os insumos existem em con_telemetry." />
 
         {/* Os quatro indicadores de abertura do setor. */}

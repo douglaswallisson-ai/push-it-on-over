@@ -400,3 +400,27 @@ export const Operacional = {
   turnos: (linhaId: string | number, params?: Record<string, string | number>) =>
     api.get<unknown>(`/api/v1/bus-lines/${linhaId}/shifts${qs(params)}`),
 };
+
+/** Vídeo, indicadores e pontos de interesse. */
+export const Seguranca = {
+  equipamentos: (soOffline = false) =>
+    api.get<unknown>(`/api/v1/video/devices?only_offline=${soOffline}`),
+  ocorrencias: (params: Record<string, string | number | boolean>) =>
+    api.get<unknown>(
+      `/api/v1/video/occurrences${qs(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])))}`,
+    ),
+};
+
+export const IndicadoresApi = {
+  consolidado: (inicio: string, fim: string, grupoId?: string) =>
+    api.get<unknown>(
+      `/api/v1/indicators/?start_date=${inicio}&end_date=${fim}${grupoId ? `&group_id=${grupoId}` : ""}`,
+    ),
+};
+
+export const PontosApi = {
+  lista: (dias = 30, busca?: string) =>
+    api.get<unknown>(`/api/v1/pois/?days=${dias}${busca ? `&search=${encodeURIComponent(busca)}` : ""}`),
+  visitas: (poiId: string | number, dias = 7) =>
+    api.get<unknown>(`/api/v1/pois/${poiId}/visits?days=${dias}`),
+};

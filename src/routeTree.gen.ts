@@ -41,6 +41,7 @@ import { Route as AppCadastrosGaragensRouteImport } from './routes/app.cadastros
 import { Route as AppCadastrosGruposRouteImport } from './routes/app.cadastros.grupos'
 import { Route as AppCadastrosLinhasRouteImport } from './routes/app.cadastros.linhas'
 import { Route as AppCadastrosPontosRouteImport } from './routes/app.cadastros.pontos'
+import { Route as AppCadastrosPontosInteresseRouteImport } from './routes/app.cadastros.pontos-interesse'
 import { Route as AppCadastrosUnidadesRouteImport } from './routes/app.cadastros.unidades'
 import { Route as AppCadastrosUsuariosRouteImport } from './routes/app.cadastros.usuarios'
 import { Route as AppFretamentoAssentosRouteImport } from './routes/app.fretamento.assentos'
@@ -241,6 +242,12 @@ const AppCadastrosPontosRoute = AppCadastrosPontosRouteImport.update({
   path: '/cadastros/pontos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCadastrosPontosInteresseRoute =
+  AppCadastrosPontosInteresseRouteImport.update({
+    id: '/cadastros/pontos-interesse',
+    path: '/cadastros/pontos-interesse',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppCadastrosUnidadesRoute = AppCadastrosUnidadesRouteImport.update({
   id: '/cadastros/unidades',
   path: '/cadastros/unidades',
@@ -471,6 +478,7 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
+  '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -541,6 +549,7 @@ export interface FileRoutesByTo {
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
+  '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -614,6 +623,7 @@ export interface FileRoutesById {
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
+  '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
@@ -688,6 +698,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
+    | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -758,6 +769,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
+    | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -830,6 +842,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
+    | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
     | '/app/fretamento/assentos'
@@ -1101,6 +1114,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastros/pontos'
       fullPath: '/app/cadastros/pontos'
       preLoaderRoute: typeof AppCadastrosPontosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/pontos-interesse': {
+      id: '/app/cadastros/pontos-interesse'
+      path: '/cadastros/pontos-interesse'
+      fullPath: '/app/cadastros/pontos-interesse'
+      preLoaderRoute: typeof AppCadastrosPontosInteresseRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/cadastros/unidades': {
@@ -1405,6 +1425,7 @@ interface AppRouteChildren {
   AppCadastrosGruposRoute: typeof AppCadastrosGruposRoute
   AppCadastrosLinhasRoute: typeof AppCadastrosLinhasRoute
   AppCadastrosPontosRoute: typeof AppCadastrosPontosRoute
+  AppCadastrosPontosInteresseRoute: typeof AppCadastrosPontosInteresseRoute
   AppCadastrosUnidadesRoute: typeof AppCadastrosUnidadesRoute
   AppCadastrosUsuariosRoute: typeof AppCadastrosUsuariosRoute
   AppFretamentoAssentosRoute: typeof AppFretamentoAssentosRoute
@@ -1465,6 +1486,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosGruposRoute: AppCadastrosGruposRoute,
   AppCadastrosLinhasRoute: AppCadastrosLinhasRoute,
   AppCadastrosPontosRoute: AppCadastrosPontosRoute,
+  AppCadastrosPontosInteresseRoute: AppCadastrosPontosInteresseRoute,
   AppCadastrosUnidadesRoute: AppCadastrosUnidadesRoute,
   AppCadastrosUsuariosRoute: AppCadastrosUsuariosRoute,
   AppFretamentoAssentosRoute: AppFretamentoAssentosRoute,

@@ -280,7 +280,7 @@ export default function IndicadoresGerenciais() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="Os indicadores consolidados são cálculo sobre a base e ainda não foram desenvolvidos." />
+        <SeloDadosExemplo motivo="CPK, IPK e MKBF são cálculo sobre a base histórica e ainda não foram desenvolvidos. Os insumos existem em con_telemetry." />
 
         {/* Os quatro indicadores de abertura do setor. */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

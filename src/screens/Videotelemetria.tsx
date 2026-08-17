@@ -237,7 +237,7 @@ export default function Videotelemetria() {
       <PageHeader title="Videotelemetria" subtitle="Segurança › Câmeras, ocorrências e gravações" />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="As ocorrências de vídeo ainda não têm endpoint; existem serviços de DVR a integrar." />
+        <SeloDadosExemplo motivo="As ocorrências ainda não têm endpoint. O vínculo veículo↔equipamento existe em /video-device-associations e os serviços de DVR guardam a mídia no S3 — falta a rota que junta os dois." />
 
         {/* Três formas de olhar o mesmo veículo: agora, o que já aconteceu e
             o que ficou gravado. */}

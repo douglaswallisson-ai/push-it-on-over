@@ -26,6 +26,9 @@ import {
   veiculosQuery,
 } from "@/lib/queries";
 import { registrarAuditoria } from "@/lib/session";
+import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
+import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { DESPACHO_LABEL, type PosicaoNaLinha, type Sentido, type TipoDespacho } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -47,11 +50,20 @@ const desvioTone = (d: number): PillTone => (Math.abs(d) <= 3 ? "green" : Math.a
 const corDesvio = (d: number) => (Math.abs(d) <= 3 ? "var(--leaf)" : Math.abs(d) <= 8 ? "var(--gold)" : "var(--coral)");
 
 export default function PainelSinotico() {
-  const linhasQ = useQuery(linhasQuery());
+  const mockLinhasQ = useQuery(linhasQuery());
+  const apiLinhasQ = useQuery(linhasApiQuery());
+  const linhasQ = usandoMock() ? mockLinhasQ : apiLinhasQ;
   const [linhaId, setLinhaId] = useState("l1");
 
   const posicoesQ = useQuery(posicoesLinhaQuery(linhaId));
   const itinerariosQ = useQuery(itinerariosQuery(linhaId));
+  const turnosQ = useQuery(turnosApiQuery(usandoMock() ? undefined : linhaId));
+
+  /**
+   * Posições ao vivo. Ligado à API, os carros na régua vêm do WebSocket em vez
+   * do mock — a régua passa a refletir onde a frota realmente está.
+   */
+  const aoVivo = usePosicoesAoVivo({ ativo: !usandoMock() });
   const pontosQ = useQuery(pontosQuery());
   const veiculosQ = useQuery(veiculosQuery(1, 200));
 
@@ -133,7 +145,7 @@ export default function PainelSinotico() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="As posições na linha dependem de cruzar a telemetria com os turnos — o endpoint de turnos já existe e será ligado na sequência." />
+        <SeloDadosExemplo motivo="A posição de cada carro na régua depende de casar o GPS com a sequência de paradas do turno — cálculo que ainda não foi desenvolvido. Linhas, turnos e posições já vêm da API." />
 
         {posicoesQ.error ? (
           <ErrorBox error={posicoesQ.error} onRetry={() => posicoesQ.refetch()} />

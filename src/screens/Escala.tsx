@@ -3,7 +3,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Plus, Users } from "lucide-rea
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
-import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
+import { EscalaPorLinha } from "@/components/ss/operacao/EscalaPorLinha";
 import { usandoMock } from "@/lib/modo";
 import { useNavigate } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -55,7 +55,11 @@ export default function Escala() {
       />
 
       <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="A grade ainda usa exemplo; os turnos reais já estão disponíveis em /bus-lines/{id}/shifts e serão ligados na sequência." />
+        {/* Conectado à API, a escala é lida como a operação registra: por linha
+            e turno. A grade por motorista continua no modo de exemplo, porque
+            essa alocação não existe no banco. */}
+        {!usandoMock() && <EscalaPorLinha />}
+
 
         <div className="mb-6">
           <HeroBanner
@@ -79,7 +83,7 @@ export default function Escala() {
           <StatTile icon={CalendarDays} label="Cobertura" value="100" unit="%" color="var(--gold)" />
         </div>
 
-        <Card
+        {usandoMock() && <Card
           bodyClassName="p-0"
           title="Grade semanal"
           icon={CalendarDays}
@@ -161,11 +165,13 @@ export default function Escala() {
               </span>
             ))}
           </div>
-        </Card>
+        </Card>}
 
-        <p className="py-6 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
-        </p>
+        {usandoMock() && (
+          <p className="py-6 text-center text-xs text-muted-foreground">
+            Grade de exemplo. Conectado à API, a escala é exibida por linha e turno, como a operação registra.
+          </p>
+        )}
       </div>
     </>
   );

@@ -80,6 +80,7 @@ export default function Grupos() {
       campos={CAMPOS}
       novoPadrao={NOVO}
       rotulo="Grupo"
+      recurso="groups"
     />
   );
 }

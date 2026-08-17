@@ -98,6 +98,7 @@ export default function Dispositivos() {
       campos={CAMPOS}
       novoPadrao={NOVO}
       rotulo="Dispositivo"
+      recurso="devices"
       searchPlaceholder="Buscar serial ou placa…"
     />
   );

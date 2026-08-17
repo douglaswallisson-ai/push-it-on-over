@@ -81,6 +81,7 @@ export default function Unidades() {
       campos={CAMPOS}
       novoPadrao={NOVO}
       rotulo="Unidade"
+      recurso="subgroups"
     />
   );
 }

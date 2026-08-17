@@ -6,6 +6,10 @@ import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
 import { registrarAuditoria } from "@/lib/session";
+import { useCrud } from "@/hooks/use-crud";
+
+/** Recursos com endpoint disponível na API. */
+type RecursoCrud = "vehicles" | "drivers" | "devices" | "groups" | "subgroups" | "bus-lines";
 
 /**
  * Esqueleto comum das telas de cadastro: cabeçalho, faixa hero, KPIs e tabela
@@ -37,6 +41,7 @@ export function CadastroScaffold<T extends Record<string, unknown>>({
   novoPadrao,
   rotulo,
   buscarEm,
+  recurso,
 }: {
   title: string;
   subtitle: string;
@@ -59,12 +64,19 @@ export function CadastroScaffold<T extends Record<string, unknown>>({
   rotulo?: string;
   /** Campos considerados na busca. Por padrão, todos os valores de texto. */
   buscarEm?: (keyof T & string)[];
+  /**
+   * Recurso correspondente na API. Informado, o cadastro grava de verdade;
+   * omitido, continua só na memória da tela — é o caso dos cadastros que ainda
+   * não têm endpoint.
+   */
+  recurso?: RecursoCrud;
 }) {
   const [lista, setLista] = useState<T[]>(rows);
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState(false);
   const [editando, setEditando] = useState<T | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const crud = useCrud<T>(recurso ?? "vehicles");
 
   const singular = rotulo ?? title.replace(/s$/, "");
 
@@ -92,25 +104,49 @@ export function CadastroScaffold<T extends Record<string, unknown>>({
     setAberto(true);
   };
 
-  const salvar = (v: Partial<T>) => {
+  const salvar = async (v: Partial<T>) => {
     const rotuloRegistro = String((v as Record<string, unknown>).nome ?? (v as Record<string, unknown>).serial ?? "");
+
+    // A lista da tela é atualizada de imediato, antes da resposta: o formulário
+    // fecha e o registro aparece na hora. Se a gravação falhar, o hook mostra o
+    // erro e a próxima recarga traz o estado real do servidor.
     if (editando) {
       setLista((l) => l.map((r) => (r === editando ? ({ ...r, ...v } as T) : r)));
-      registrarAuditoria("edicao", `${singular} alterado: ${rotuloRegistro || "registro"}.`);
-      notificar(`${singular} atualizado.`);
     } else {
       setLista((l) => [{ ...(novoPadrao ?? {}), ...v } as T, ...l]);
-      registrarAuditoria("criacao", `${singular} criado: ${rotuloRegistro || "registro"}.`);
-      notificar(`${singular} criado.`);
     }
     setAberto(false);
+
+    if (recurso) {
+      const id = (editando as Record<string, unknown> | null)?.id;
+      if (editando && id != null) {
+        await crud.editar.mutateAsync({ id: id as string | number, dados: v });
+      } else {
+        await crud.criar.mutateAsync(v);
+      }
+      return;
+    }
+
+    // Sem recurso mapeado, o comportamento antigo: só memória da tela.
+    registrarAuditoria(
+      editando ? "edicao" : "criacao",
+      `${singular} ${editando ? "alterado" : "criado"}: ${rotuloRegistro || "registro"}.`,
+    );
+    notificar(`${singular} ${editando ? "atualizado" : "criado"}.`);
   };
 
-  const excluir = (r: T) => {
+  const excluir = async (r: T) => {
     const rotuloRegistro = String((r as Record<string, unknown>).nome ?? (r as Record<string, unknown>).serial ?? "");
-    registrarAuditoria("exclusao", `${singular} excluído: ${rotuloRegistro || "registro"}.`);
     setLista((l) => l.filter((x) => x !== r));
     setAberto(false);
+
+    const id = (r as Record<string, unknown>).id;
+    if (recurso && id != null) {
+      await crud.excluir.mutateAsync(id as string | number);
+      return;
+    }
+
+    registrarAuditoria("exclusao", `${singular} excluído: ${rotuloRegistro || "registro"}.`);
     notificar(`${singular} excluído.`);
   };
 

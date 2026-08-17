@@ -139,7 +139,14 @@ const NAV_PRIMARY: Entry[] = [
     items: [{ label: "Indicadores", to: "/app/gerencial/indicadores" }],
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
-  { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
+  {
+    label: "Relatórios",
+    icon: FileText,
+    items: [
+      { label: "Visão geral", to: "/app/relatorios" },
+      { label: "Telemetria por viagem", to: "/app/relatorios/telemetria" },
+    ],
+  },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

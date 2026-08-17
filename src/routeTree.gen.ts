@@ -71,6 +71,7 @@ import { Route as AppPessoasJornadaRouteImport } from './routes/app.pessoas.jorn
 import { Route as AppPessoasMultasRouteImport } from './routes/app.pessoas.multas'
 import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
 import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
+import { Route as AppRelatoriosTelemetriaRouteImport } from './routes/app.relatorios.telemetria'
 import { Route as AppSegurancaVideoRouteImport } from './routes/app.seguranca.video'
 import { Route as AppUrbanoPadraoRouteImport } from './routes/app.urbano.padrao'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
@@ -394,6 +395,11 @@ const AppPremiacaoMetasRoute = AppPremiacaoMetasRouteImport.update({
   path: '/premiacao/metas',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRelatoriosTelemetriaRoute = AppRelatoriosTelemetriaRouteImport.update({
+  id: '/telemetria',
+  path: '/telemetria',
+  getParentRoute: () => AppRelatoriosRoute,
+} as any)
 const AppSegurancaVideoRoute = AppSegurancaVideoRouteImport.update({
   id: '/seguranca/video',
   path: '/seguranca/video',
@@ -444,7 +450,7 @@ export interface FileRoutesByFullPath {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -492,6 +498,7 @@ export interface FileRoutesByFullPath {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -513,7 +520,7 @@ export interface FileRoutesByTo {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -561,6 +568,7 @@ export interface FileRoutesByTo {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -585,7 +593,7 @@ export interface FileRoutesById {
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/mapa': typeof AppMapaRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -633,6 +641,7 @@ export interface FileRoutesById {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
@@ -706,6 +715,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
@@ -775,6 +785,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
@@ -846,6 +857,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
@@ -1301,6 +1313,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPremiacaoMetasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/relatorios/telemetria': {
+      id: '/app/relatorios/telemetria'
+      path: '/telemetria'
+      fullPath: '/app/relatorios/telemetria'
+      preLoaderRoute: typeof AppRelatoriosTelemetriaRouteImport
+      parentRoute: typeof AppRelatoriosRoute
+    }
     '/app/seguranca/video': {
       id: '/app/seguranca/video'
       path: '/seguranca/video'
@@ -1353,6 +1372,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppRelatoriosRouteChildren {
+  AppRelatoriosTelemetriaRoute: typeof AppRelatoriosTelemetriaRoute
+}
+
+const AppRelatoriosRouteChildren: AppRelatoriosRouteChildren = {
+  AppRelatoriosTelemetriaRoute: AppRelatoriosTelemetriaRoute,
+}
+
+const AppRelatoriosRouteWithChildren = AppRelatoriosRoute._addFileChildren(
+  AppRelatoriosRouteChildren,
+)
+
 interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
   AppAssistenteRoute: typeof AppAssistenteRoute
@@ -1361,7 +1392,7 @@ interface AppRouteChildren {
   AppEstrategicoRoute: typeof AppEstrategicoRoute
   AppEventosRoute: typeof AppEventosRoute
   AppMapaRoute: typeof AppMapaRoute
-  AppRelatoriosRoute: typeof AppRelatoriosRoute
+  AppRelatoriosRoute: typeof AppRelatoriosRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppAdminCatalogoRoute: typeof AppAdminCatalogoRoute
   AppAdminConfiguracoesRoute: typeof AppAdminConfiguracoesRoute
@@ -1421,7 +1452,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppEstrategicoRoute: AppEstrategicoRoute,
   AppEventosRoute: AppEventosRoute,
   AppMapaRoute: AppMapaRoute,
-  AppRelatoriosRoute: AppRelatoriosRoute,
+  AppRelatoriosRoute: AppRelatoriosRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppAdminCatalogoRoute: AppAdminCatalogoRoute,
   AppAdminConfiguracoesRoute: AppAdminConfiguracoesRoute,

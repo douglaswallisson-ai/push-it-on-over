@@ -26,6 +26,8 @@ const BASE = import.meta.env.VITE_API_BASE ?? "";
 
 /** Headers enviados em toda chamada. O `ngrok-skip-browser-warning` evita a
  *  página HTML de aviso do túnel ngrok (que quebraria o parse do JSON). */
+import { requisicaoAutenticada } from "@/lib/auth-api";
+
 const DEFAULT_HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
   "ngrok-skip-browser-warning": "true",
@@ -42,12 +44,17 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  // Passa pelo cliente autenticado: ele injeta o Bearer, renova o token
+  // quando expira e repete a chamada uma vez. Sem isso, toda requisição
+  // voltaria 401 assim que o access token vencesse.
+  const res = await requisicaoAutenticada(`${BASE}${path}`, {
     ...init,
     headers: { ...DEFAULT_HEADERS, ...(init?.headers ?? {}) },
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => res.statusText);
+    // 401 depois da renovação significa sessão realmente encerrada — quem
+    // trata é a camada de rota, que redireciona para o login.
     throw new ApiError(res.status, detail || `HTTP ${res.status}`);
   }
   if (res.status === 204) return undefined as T;

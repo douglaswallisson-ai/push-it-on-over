@@ -240,3 +240,36 @@ export function pedirRedefinicaoSenha(email: string): { ok: boolean; erro?: stri
   acrescentar("redefinicoes", { email: email.trim(), pedidoEm: new Date().toISOString() });
   return { ok: true };
 }
+
+/**
+ * Cria a sessão a partir do usuário devolvido pela API.
+ *
+ * Diferente de `entrar()`, que valida credencial localmente, aqui a
+ * autenticação já aconteceu no servidor — esta função só espelha o resultado
+ * para a interface, que continua lendo nome, organização e perfil da sessão.
+ *
+ * O token de verdade vive em `auth-api.ts`; o que fica aqui é apresentação.
+ */
+export function entrarComPerfil(dados: {
+  nome: string;
+  email: string;
+  organizacao: string;
+  organizacaoId: string;
+  perfil: Perfil;
+}) {
+  const sessao: Sessao = {
+    nome: dados.nome,
+    email: dados.email,
+    organizacao: dados.organizacao,
+    organizacaoId: dados.organizacaoId,
+    organizacaoAtivaId: dados.organizacaoId,
+    organizacaoAtiva: dados.organizacao,
+    perfil: dados.perfil,
+    garagens: [],
+    garagemFocoId: null,
+    entrouEm: new Date().toISOString(),
+  };
+  gravar("sessao", sessao);
+  registrarAuditoria("login", `Entrada autenticada pela API: ${dados.email}.`);
+  return sessao;
+}

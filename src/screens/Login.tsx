@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
-import { entrar, pedirRedefinicaoSenha } from "@/lib/session";
+import { entrar, entrarComPerfil, pedirRedefinicaoSenha } from "@/lib/session";
+import { entrarNaApi } from "@/lib/auth-api";
+import { usandoMock } from "@/lib/modo";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { SSLogo } from "@/components/ss/brand/SSLogo";
@@ -38,17 +40,40 @@ export default function Login() {
    * Cria a sessão de verdade e só então navega. Antes era um setTimeout que
    * entrava no sistema com qualquer coisa (ou com nada) preenchida.
    */
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
     setLoading(true);
-    const r = entrar(email, senha);
-    if (!r.ok) {
-      setErro(r.erro ?? "Não foi possível entrar.");
-      setLoading(false);
+
+    // Com dados de exemplo continua a validação local, para demonstrar o
+    // sistema sem depender de rede. Ligado à API, autentica de verdade.
+    if (usandoMock()) {
+      const r = entrar(email, senha);
+      if (!r.ok) {
+        setErro(r.erro ?? "Não foi possível entrar.");
+        setLoading(false);
+        return;
+      }
+      navigate("/app");
       return;
     }
-    navigate("/app");
+
+    try {
+      const { perfil } = await entrarNaApi(email, senha);
+      // A sessão local segue existindo, mas agora espelha o usuário real
+      // devolvido pela API — nome, conta e perfil vêm de mova.users.
+      entrarComPerfil({
+        nome: perfil?.name ?? perfil?.login ?? email,
+        email: perfil?.email ?? email,
+        organizacao: perfil?.account_name ?? "SS Telemática",
+        organizacaoId: String(perfil?.account_id ?? ""),
+        perfil: perfil?.master ? "super_admin" : "gestor",
+      });
+      navigate("/app");
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Não foi possível entrar.");
+      setLoading(false);
+    }
   }
 
   function handleRecuperar(e: React.FormEvent) {

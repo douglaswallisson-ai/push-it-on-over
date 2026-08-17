@@ -293,7 +293,7 @@ export const TOURS: Record<string, TourStep[]> = {
 
 
 
-  "/app/frota/manutencao": [
+  "/app/manutencao": [
     { selector: '[data-tour="page-header"]', title: "Manutenção", body: "O estado de manutenção de toda a frota, e a inspeção detalhada de cada veículo." },
     { selector: 'main .rounded-xl.border.bg-card.shadow-card', title: "Abas da tela", body: "Visão geral (o quadro), consumíveis, telemetria dos equipamentos, predições da frota e histórico de ordens. Cada aba tem conteúdo próprio." },
     { selector: '[data-tour="stat"]', title: "Indicadores", body: "Placas na frota, quantas estão em dia, quantas em atraso e o custo previsto." },
@@ -314,7 +314,7 @@ export const TOURS: Record<string, TourStep[]> = {
     { selector: '[data-tour="kanban"] button', title: "Abrir um veículo", body: "Clique num card para ver a inspeção visual, as predições e quem dirigiu aquela placa. De lá dá para agendar a manutenção ou liberar o veículo." },
   ],
 
-  "/app/frota/regeneracao": [
+  "/app/manutencao/regeneracao": [
     { selector: '[data-tour="page-header"]', title: "Regeneração (DPF)", body: "Saúde do filtro de partículas diesel da frota." },
     { selector: '[data-tour="stat"]', title: "Indicadores", body: "Em regeneração, necessárias, interrompidas e DPF saturado." },
     { selector: '[data-tour="ciclo"]', title: "O ciclo", body: "Detecção → aquecimento → queima → conclusão. Interromper o ciclo entope o filtro e leva a derate." },

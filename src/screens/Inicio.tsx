@@ -442,7 +442,7 @@ function CardsManutencao() {
       icone: AlertTriangle,
       cor: "var(--coral)",
       nota: "passaram do intervalo do fabricante",
-      destino: "/app/frota/manutencao",
+      destino: "/app/manutencao",
     },
     {
       label: "Preventivas próximas",
@@ -450,7 +450,7 @@ function CardsManutencao() {
       icone: CalendarClock,
       cor: "var(--gold)",
       nota: "acima de 75% do intervalo",
-      destino: "/app/frota/manutencao",
+      destino: "/app/manutencao",
     },
     {
       label: "Corretivas abertas",
@@ -458,7 +458,7 @@ function CardsManutencao() {
       icone: Wrench,
       cor: "var(--coral)",
       nota: "ordens de serviço em aberto",
-      destino: "/app/frota/ordens",
+      destino: "/app/manutencao/ordens",
     },
     {
       label: "Aguardando peça",
@@ -466,7 +466,7 @@ function CardsManutencao() {
       icone: Package,
       cor: "var(--brand-sky)",
       nota: "veículo parado esperando material",
-      destino: "/app/frota/ordens",
+      destino: "/app/manutencao/ordens",
     },
     {
       label: "Sem parâmetro",

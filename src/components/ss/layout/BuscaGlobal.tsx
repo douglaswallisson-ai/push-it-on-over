@@ -30,9 +30,9 @@ const TELAS: { nome: string; caminho: string; grupo: string }[] = [
   { nome: "Gestão de viagens", caminho: "/app/operacao/viagens", grupo: "Operação" },
   { nome: "Alarmes", caminho: "/app/cadastros/alarme", grupo: "Cadastros" },
   { nome: "Videotelemetria", caminho: "/app/seguranca/video", grupo: "Segurança" },
-  { nome: "Ordens de serviço", caminho: "/app/frota/ordens", grupo: "Frota" },
-  { nome: "Pneus", caminho: "/app/frota/pneus", grupo: "Frota" },
-  { nome: "Manutenção", caminho: "/app/frota/manutencao", grupo: "Frota" },
+  { nome: "Ordens de serviço", caminho: "/app/manutencao/ordens", grupo: "Frota" },
+  { nome: "Pneus", caminho: "/app/manutencao/pneus", grupo: "Frota" },
+  { nome: "Manutenção", caminho: "/app/manutencao", grupo: "Frota" },
   { nome: "Telemetria de equipamentos", caminho: "/app/frota/telemetria", grupo: "Frota" },
   { nome: "Jornada de trabalho", caminho: "/app/pessoas/jornada", grupo: "Pessoas" },
   { nome: "Multas", caminho: "/app/pessoas/multas", grupo: "Pessoas" },
@@ -90,7 +90,7 @@ export function BuscaGlobal() {
           titulo: `${v.prefixo ?? v.placa}`,
           subtitulo: `${v.placa} · ${v.marca} ${v.modelo}`,
           grupo: "Veículos",
-          destino: `/app/frota/manutencao?placa=${v.placa}`,
+          destino: `/app/manutencao?placa=${v.placa}`,
           icone: Truck,
         });
       }

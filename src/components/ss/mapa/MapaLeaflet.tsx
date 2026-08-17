@@ -69,7 +69,7 @@ const PULSA = new Set(["evento_critico", "manutencao"]);
 
 /** Silhueta de ônibus, desenhada em SVG para herdar a cor do estado. */
 const SVG_ONIBUS = `
-<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
   <path d="M4 16V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a2 2 0 0 1-1 1.73V19a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.27A2 2 0 0 1 4 16Zm2-9v5h12V7H6Zm1.5 9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm9 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/>
 </svg>`;
 
@@ -85,14 +85,15 @@ function iconeVeiculo(rotulo: string, estado: string, selecionado: boolean) {
     className: "",
     html: `
       <div style="
-        display:flex;align-items:center;gap:5px;
-        background:#fff;border:2px solid ${cor};
-        border-radius:999px;padding:3px 8px 3px 5px;
-        font:700 11px/1.1 ui-monospace,monospace;color:#1f2d3d;
-        box-shadow:0 2px 8px rgba(0,0,0,.3);
-        ${selecionado ? "outline:3px solid rgba(46,134,193,.5);outline-offset:2px;" : ""}
+        display:flex;align-items:center;gap:7px;
+        background:#fff;border:3px solid ${cor};
+        border-radius:999px;padding:5px 12px 5px 8px;
+        font:800 15px/1.1 ui-monospace,monospace;color:#1f2d3d;
+        box-shadow:0 3px 12px rgba(0,0,0,.35);
+        ${selecionado ? "outline:4px solid rgba(46,134,193,.55);outline-offset:3px;transform:translate(-50%,-50%) scale(1.12);" : ""}
         ${pulsa ? "animation:ss-pulsar 1.1s ease-in-out infinite;" : ""}
-        white-space:nowrap;transform:translate(-50%,-50%);
+        white-space:nowrap;
+        ${selecionado ? "" : "transform:translate(-50%,-50%);"}
       ">
         <span style="color:${cor};display:flex;line-height:0">${SVG_ONIBUS}</span>
         ${rotulo}

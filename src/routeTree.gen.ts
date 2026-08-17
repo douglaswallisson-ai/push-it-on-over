@@ -58,6 +58,11 @@ import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.rege
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppFrotaTrackingRouteImport } from './routes/app.frota.tracking'
 import { Route as AppGerencialIndicadoresRouteImport } from './routes/app.gerencial.indicadores'
+import { Route as AppManutencaoIndexRouteImport } from './routes/app.manutencao.index'
+import { Route as AppManutencaoDiagnosticoRouteImport } from './routes/app.manutencao.diagnostico'
+import { Route as AppManutencaoOrdensRouteImport } from './routes/app.manutencao.ordens'
+import { Route as AppManutencaoPneusRouteImport } from './routes/app.manutencao.pneus'
+import { Route as AppManutencaoRegeneracaoRouteImport } from './routes/app.manutencao.regeneracao'
 import { Route as AppMotoristasIndexRouteImport } from './routes/app.motoristas.index'
 import { Route as AppMotoristasNovoRouteImport } from './routes/app.motoristas.novo'
 import { Route as AppOperacaoSinoticoRouteImport } from './routes/app.operacao.sinotico'
@@ -322,6 +327,33 @@ const AppGerencialIndicadoresRoute = AppGerencialIndicadoresRouteImport.update({
   path: '/gerencial/indicadores',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManutencaoIndexRoute = AppManutencaoIndexRouteImport.update({
+  id: '/manutencao/',
+  path: '/manutencao/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManutencaoDiagnosticoRoute =
+  AppManutencaoDiagnosticoRouteImport.update({
+    id: '/manutencao/diagnostico',
+    path: '/manutencao/diagnostico',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManutencaoOrdensRoute = AppManutencaoOrdensRouteImport.update({
+  id: '/manutencao/ordens',
+  path: '/manutencao/ordens',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManutencaoPneusRoute = AppManutencaoPneusRouteImport.update({
+  id: '/manutencao/pneus',
+  path: '/manutencao/pneus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManutencaoRegeneracaoRoute =
+  AppManutencaoRegeneracaoRouteImport.update({
+    id: '/manutencao/regeneracao',
+    path: '/manutencao/regeneracao',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppMotoristasIndexRoute = AppMotoristasIndexRouteImport.update({
   id: '/motoristas/',
   path: '/motoristas/',
@@ -450,6 +482,10 @@ export interface FileRoutesByFullPath {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
+  '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
+  '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
+  '/app/manutencao/regeneracao': typeof AppManutencaoRegeneracaoRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -459,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
+  '/app/manutencao/': typeof AppManutencaoIndexRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
   '/app/premiacao/': typeof AppPremiacaoIndexRoute
   '/app/veiculos/': typeof AppVeiculosIndexRoute
@@ -514,6 +551,10 @@ export interface FileRoutesByTo {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
+  '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
+  '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
+  '/app/manutencao/regeneracao': typeof AppManutencaoRegeneracaoRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -523,6 +564,7 @@ export interface FileRoutesByTo {
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
+  '/app/manutencao': typeof AppManutencaoIndexRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
   '/app/premiacao': typeof AppPremiacaoIndexRoute
   '/app/veiculos': typeof AppVeiculosIndexRoute
@@ -581,6 +623,10 @@ export interface FileRoutesById {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
+  '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
+  '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
+  '/app/manutencao/regeneracao': typeof AppManutencaoRegeneracaoRoute
   '/app/motoristas/novo': typeof AppMotoristasNovoRoute
   '/app/operacao/sinotico': typeof AppOperacaoSinoticoRoute
   '/app/operacao/viagens': typeof AppOperacaoViagensRoute
@@ -590,6 +636,7 @@ export interface FileRoutesById {
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
+  '/app/manutencao/': typeof AppManutencaoIndexRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
   '/app/premiacao/': typeof AppPremiacaoIndexRoute
   '/app/veiculos/': typeof AppVeiculosIndexRoute
@@ -649,6 +696,10 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/manutencao/diagnostico'
+    | '/app/manutencao/ordens'
+    | '/app/manutencao/pneus'
+    | '/app/manutencao/regeneracao'
     | '/app/motoristas/novo'
     | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
@@ -658,6 +709,7 @@ export interface FileRouteTypes {
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
+    | '/app/manutencao/'
     | '/app/motoristas/'
     | '/app/premiacao/'
     | '/app/veiculos/'
@@ -713,6 +765,10 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/manutencao/diagnostico'
+    | '/app/manutencao/ordens'
+    | '/app/manutencao/pneus'
+    | '/app/manutencao/regeneracao'
     | '/app/motoristas/novo'
     | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
@@ -722,6 +778,7 @@ export interface FileRouteTypes {
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
+    | '/app/manutencao'
     | '/app/motoristas'
     | '/app/premiacao'
     | '/app/veiculos'
@@ -779,6 +836,10 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/manutencao/diagnostico'
+    | '/app/manutencao/ordens'
+    | '/app/manutencao/pneus'
+    | '/app/manutencao/regeneracao'
     | '/app/motoristas/novo'
     | '/app/operacao/sinotico'
     | '/app/operacao/viagens'
@@ -788,6 +849,7 @@ export interface FileRouteTypes {
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
     | '/app/veiculos/novo'
+    | '/app/manutencao/'
     | '/app/motoristas/'
     | '/app/premiacao/'
     | '/app/veiculos/'
@@ -1148,6 +1210,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGerencialIndicadoresRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/manutencao/': {
+      id: '/app/manutencao/'
+      path: '/manutencao'
+      fullPath: '/app/manutencao/'
+      preLoaderRoute: typeof AppManutencaoIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/manutencao/diagnostico': {
+      id: '/app/manutencao/diagnostico'
+      path: '/manutencao/diagnostico'
+      fullPath: '/app/manutencao/diagnostico'
+      preLoaderRoute: typeof AppManutencaoDiagnosticoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/manutencao/ordens': {
+      id: '/app/manutencao/ordens'
+      path: '/manutencao/ordens'
+      fullPath: '/app/manutencao/ordens'
+      preLoaderRoute: typeof AppManutencaoOrdensRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/manutencao/pneus': {
+      id: '/app/manutencao/pneus'
+      path: '/manutencao/pneus'
+      fullPath: '/app/manutencao/pneus'
+      preLoaderRoute: typeof AppManutencaoPneusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/manutencao/regeneracao': {
+      id: '/app/manutencao/regeneracao'
+      path: '/manutencao/regeneracao'
+      fullPath: '/app/manutencao/regeneracao'
+      preLoaderRoute: typeof AppManutencaoRegeneracaoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/motoristas/': {
       id: '/app/motoristas/'
       path: '/motoristas'
@@ -1294,6 +1391,10 @@ interface AppRouteChildren {
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppFrotaTrackingRoute: typeof AppFrotaTrackingRoute
   AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
+  AppManutencaoDiagnosticoRoute: typeof AppManutencaoDiagnosticoRoute
+  AppManutencaoOrdensRoute: typeof AppManutencaoOrdensRoute
+  AppManutencaoPneusRoute: typeof AppManutencaoPneusRoute
+  AppManutencaoRegeneracaoRoute: typeof AppManutencaoRegeneracaoRoute
   AppMotoristasNovoRoute: typeof AppMotoristasNovoRoute
   AppOperacaoSinoticoRoute: typeof AppOperacaoSinoticoRoute
   AppOperacaoViagensRoute: typeof AppOperacaoViagensRoute
@@ -1303,6 +1404,7 @@ interface AppRouteChildren {
   AppSegurancaVideoRoute: typeof AppSegurancaVideoRoute
   AppUrbanoPadraoRoute: typeof AppUrbanoPadraoRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
+  AppManutencaoIndexRoute: typeof AppManutencaoIndexRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
   AppPremiacaoIndexRoute: typeof AppPremiacaoIndexRoute
   AppVeiculosIndexRoute: typeof AppVeiculosIndexRoute
@@ -1349,6 +1451,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppFrotaTrackingRoute: AppFrotaTrackingRoute,
   AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
+  AppManutencaoDiagnosticoRoute: AppManutencaoDiagnosticoRoute,
+  AppManutencaoOrdensRoute: AppManutencaoOrdensRoute,
+  AppManutencaoPneusRoute: AppManutencaoPneusRoute,
+  AppManutencaoRegeneracaoRoute: AppManutencaoRegeneracaoRoute,
   AppMotoristasNovoRoute: AppMotoristasNovoRoute,
   AppOperacaoSinoticoRoute: AppOperacaoSinoticoRoute,
   AppOperacaoViagensRoute: AppOperacaoViagensRoute,
@@ -1358,6 +1464,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSegurancaVideoRoute: AppSegurancaVideoRoute,
   AppUrbanoPadraoRoute: AppUrbanoPadraoRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
+  AppManutencaoIndexRoute: AppManutencaoIndexRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,
   AppPremiacaoIndexRoute: AppPremiacaoIndexRoute,
   AppVeiculosIndexRoute: AppVeiculosIndexRoute,

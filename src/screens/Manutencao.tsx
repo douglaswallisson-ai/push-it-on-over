@@ -165,7 +165,7 @@ export default function Manutencao() {
     toast.success(mensagem, { description: `${card.placa} · ${card.marca} ${card.modelo}` });
   };
 
-  // Atalho vindo de outra tela: /app/frota/manutencao?placa=EBZ3590
+  // Atalho vindo de outra tela: /app/manutencao?placa=EBZ3590
   useEffect(() => {
     if (!placaUrl || !cards.length) return;
     const alvo = cards.find((c) => c.placa.toUpperCase() === placaUrl.toUpperCase());

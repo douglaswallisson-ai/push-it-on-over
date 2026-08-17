@@ -239,7 +239,7 @@ export default function Veiculos() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/app/frota/manutencao?placa=${v.placa}`);
+              navigate(`/app/manutencao?placa=${v.placa}`);
             }}
             title={`${m.servico} — abrir manutenção desta placa`}
             className="inline-flex items-center gap-1.5 rounded-full transition-transform hover:-translate-y-0.5"
@@ -303,7 +303,7 @@ export default function Veiculos() {
                 label="Em manutenção"
                 value={nf(conta("manutencao"))}
                 color="var(--brand-sky)"
-                to="/app/frota/manutencao"
+                to="/app/manutencao"
               />
               <StatTile
                 icon={Radio}
@@ -391,7 +391,7 @@ export default function Veiculos() {
                   <DataTable
                     columns={COLS}
                     rows={visiveis}
-                    onRowClick={(v) => navigate(`/app/frota/manutencao?placa=${v.placa}`)}
+                    onRowClick={(v) => navigate(`/app/manutencao?placa=${v.placa}`)}
                   />
 
                   {totalPaginas > 1 && (

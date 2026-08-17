@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Siren,
   UsersRound,
+  Wrench,
   Sparkles,
   Truck,
   Users,
@@ -84,13 +85,8 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Videotelemetria", to: "/app/seguranca/video" },
-      { label: "Manutenção", to: "/app/frota/manutencao" },
-      { label: "Ordens de serviço", to: "/app/frota/ordens" },
-      { label: "Pneus", to: "/app/frota/pneus" },
       { label: "Percurso do dia", to: "/app/frota/tracking" },
-      { label: "Diagnóstico (DTC)", to: "/app/frota/diagnostico" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
-      { label: "Regeneração (DPF)", to: "/app/frota/regeneracao" },
     ],
   },
   {
@@ -126,6 +122,17 @@ const NAV_PRIMARY: Entry[] = [
   // Serve às duas modalidades, por isso não fica dentro de nenhuma.
   { label: "Contagem de passageiros", icon: UsersRound, to: "/app/fretamento/passageiros" },
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
+  {
+    label: "Manutenção",
+    icon: Wrench,
+    items: [
+      { label: "Manutenção", to: "/app/manutencao" },
+      { label: "Ordens de serviço", to: "/app/manutencao/ordens" },
+      { label: "Pneus", to: "/app/manutencao/pneus" },
+      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico" },
+      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao" },
+    ],
+  },
   {
     label: "Gerencial",
     icon: Gauge,

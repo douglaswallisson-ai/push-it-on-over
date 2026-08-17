@@ -110,7 +110,7 @@ export function HistoricoConducao({
             navigate(
               porVeiculo
                 ? `/app/motoristas/perfil/${encodeURIComponent(c.motorista)}`
-                : `/app/frota/manutencao?placa=${c.placa}`,
+                : `/app/manutencao?placa=${c.placa}`,
             )
           }
         />

@@ -6,6 +6,7 @@ import { Database, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { intervaloAtualizacao, usandoMock } from "@/lib/modo";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
+import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { ErrorBox, SkeletonBlock } from "@/components/ss/ui/QueryState";
@@ -59,6 +60,13 @@ export default function MapaAoVivo() {
   const veiculosCadastro = useQuery(veiculosQuery(1, 200));
   const videoQ = useQuery(videoOcorrenciasQuery());
 
+  /**
+   * Posições por WebSocket. Fica desligado com dados de exemplo; ligado à API,
+   * substitui o polling e a consulta periódica passa a ser só rede de
+   * segurança, para o caso de a conexão cair.
+   */
+  const aoVivo = usePosicoesAoVivo({ ativo: true });
+
   /** Placas com ocorrência de risco alto aguardando tratativa. */
   const criticosPorPlaca = useMemo(() => {
     const ids = new Set(
@@ -97,7 +105,11 @@ export default function MapaAoVivo() {
     () =>
       (data ?? []).map((p) => {
         const { x, y } = toCanvasXY(p.lat, p.lng);
+        // Posição do WebSocket tem precedência: é mais recente que a consulta.
         const cad = veiculosCadastro.data?.items.find((v) => v.placa === p.placa);
+        const viva = cad ? aoVivo.posicoes.get(Number(cad.id.replace(/\D/g, ""))) : undefined;
+        const lat = viva?.latitude ?? p.lat;
+        const lng = viva?.longitude ?? p.lng;
         return {
           placa: p.placa,
           veiculoId: cad?.id,
@@ -106,13 +118,13 @@ export default function MapaAoVivo() {
           vel: p.velocidade,
           local: p.endereco || "—",
           atualizado: desde(p.atualizadoEm),
-          lat: p.lat,
-          lng: p.lng,
+          lat,
+          lng,
           x,
           y,
         };
       }),
-    [data, veiculosCadastro.data, criticosPorPlaca],
+    [data, veiculosCadastro.data, criticosPorPlaca, aoVivo.posicoes],
   );
 
   const contagem = (s: Status) => veiculos.filter((v) => v.status === s).length;
@@ -150,6 +162,16 @@ export default function MapaAoVivo() {
                 <>
                   <Database className="h-3.5 w-3.5" />
                   dados de exemplo
+                </>
+              ) : aoVivo.estado === "conectado" ? (
+                <>
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf" />
+                  tempo real
+                </>
+              ) : aoVivo.estado === "reconectando" || aoVivo.estado === "conectando" ? (
+                <>
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
+                  {aoVivo.estado === "conectando" ? "conectando…" : "reconectando…"}
                 </>
               ) : intervaloAtualizacao() > 0 ? (
                 <>

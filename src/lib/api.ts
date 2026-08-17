@@ -375,3 +375,28 @@ export const Tracking = {
       ? mock(M.trackingDoVeiculo(veiculoId))
       : api.get<import("@/types").EventoTracking[]>(`/api/tracking${qs({ veiculo: veiculoId })}`),
 };
+
+/**
+ * Recursos escritos para este front: tracking, eventos e turnos.
+ *
+ * Ficam fora do bloco `Real` porque não têm equivalente em mock — quando a API
+ * não está conectada, as telas correspondentes mostram dado de exemplo próprio,
+ * e não uma versão simulada destas chamadas.
+ */
+export const Operacional = {
+  tracking: (unitId: string | number, data: string) =>
+    api.get<unknown>(`/api/v1/tracking/?unit_id=${unitId}&operation_date=${data}`),
+
+  eventos: (params: Record<string, string | number | boolean>) =>
+    // Booleano vira string porque a serialização de query não o aceita, e
+    // `false` seria descartado silenciosamente se passasse direto.
+    api.get<unknown>(
+      `/api/v1/events/${qs(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])))}`,
+    ),
+
+  tratarEvento: (id: string | number, nota?: string) =>
+    api.post<unknown>(`/api/v1/events/${id}/acknowledge`, { note: nota ?? "" }),
+
+  turnos: (linhaId: string | number, params?: Record<string, string | number>) =>
+    api.get<unknown>(`/api/v1/bus-lines/${linhaId}/shifts${qs(params)}`),
+};

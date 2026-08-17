@@ -133,7 +133,7 @@ export default function PainelSinotico() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="As posições na linha dependem de cruzar telemetria com itinerário — ainda não desenvolvido." />
+        <SeloDadosExemplo motivo="As posições na linha dependem de cruzar a telemetria com os turnos — o endpoint de turnos já existe e será ligado na sequência." />
 
         {posicoesQ.error ? (
           <ErrorBox error={posicoesQ.error} onRetry={() => posicoesQ.refetch()} />

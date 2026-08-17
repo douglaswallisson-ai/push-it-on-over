@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useQuery } from "@tanstack/react-query";
+import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
+import { usandoMock } from "@/lib/modo";
 import { useNavigate } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, StatTile } from "@/components/ss/ui/data";
@@ -51,6 +55,8 @@ export default function Escala() {
       />
 
       <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="A grade ainda usa exemplo; os turnos reais já estão disponíveis em /bus-lines/{id}/shifts e serão ligados na sequência." />
+
         <div className="mb-6">
           <HeroBanner
             orb

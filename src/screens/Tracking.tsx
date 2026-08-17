@@ -14,11 +14,11 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
-import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
-import { nf, trackingQuery, veiculosQuery } from "@/lib/queries";
+import { nf, trackingApiQuery, trackingQuery, veiculosQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { resumoTracking } from "@/lib/mock-data";
 import { EVENTO_TRACKING_LABEL, type EventoTracking, type TipoEventoTracking } from "@/types";
 import { cn } from "@/lib/utils";
@@ -66,15 +66,57 @@ export default function Tracking() {
   const [veiculoId, setVeiculoId] = useState("v1");
   const [focado, setFocado] = useState<string | null>(null);
 
-  const trackingQ = useQuery(trackingQuery(veiculoId));
+  const mockQ = useQuery(trackingQuery(veiculoId));
+  const hoje = new Date().toISOString().slice(0, 10);
+  const apiQ = useQuery(trackingApiQuery(veiculoId, hoje));
+
+  /**
+   * Ligado à API, os eventos vêm derivados no servidor a partir das posições —
+   * o front não reconstrói nada. Os nomes de campo diferem (`type` em vez de
+   * `tipo`), então a conversão acontece aqui.
+   */
+  const daApi = apiQ.data as
+    | { events: { id: number; type: string; timestamp: string; latitude: number; longitude: number; speed?: number; address?: string; duration_min?: number }[]; summary: Record<string, number | string | null> }
+    | undefined;
+
+  const trackingQ = usandoMock() ? mockQ : apiQ;
 
   const veiculo = veiculosQ.data?.items.find((v) => v.id === veiculoId);
-  const eventos = useMemo(
-    () => [...(trackingQ.data ?? [])].sort((a, b) => a.em.localeCompare(b.em)),
-    [trackingQ.data],
-  );
+  const eventos = useMemo(() => {
+    if (!usandoMock() && daApi?.events) {
+      return daApi.events.map((e) => ({
+        id: String(e.id),
+        veiculoId: veiculoId,
+        tipo: e.type as EventoTracking["tipo"],
+        em: e.timestamp,
+        lat: e.latitude,
+        lng: e.longitude,
+        endereco: e.address ?? undefined,
+        velocidade: e.speed ?? 0,
+        duracaoMin: e.duration_min ?? undefined,
+      })) as EventoTracking[];
+    }
+    return [...(mockQ.data ?? [])].sort((a, b) => a.em.localeCompare(b.em));
+  }, [daApi, mockQ.data, veiculoId]);
 
-  const resumo = useMemo(() => resumoTracking(veiculoId), [veiculoId]);
+  const resumo = useMemo(() => {
+    if (!usandoMock() && daApi?.summary) {
+      const s = daApi.summary as Record<string, number>;
+      return {
+        veiculoId,
+        data: hoje,
+        primeiraIgnicao: (daApi.summary.first_ignition as string) ?? undefined,
+        ultimaIgnicao: (daApi.summary.last_ignition as string) ?? undefined,
+        minutosLigado: s.minutes_on ?? 0,
+        minutosEmMovimento: s.minutes_moving ?? 0,
+        minutosLigadoParado: s.minutes_idle ?? 0,
+        paradas: s.stops ?? 0,
+        kmPercorrido: s.distance_km ?? 0,
+        velocidadeMaxima: s.max_speed ?? 0,
+      };
+    }
+    return resumoTracking(veiculoId);
+  }, [daApi, veiculoId, hoje]);
 
   /** Traçado do percurso: só os pontos, na ordem cronológica. */
   const percurso = useMemo(() => eventos.map((e) => [e.lat, e.lng] as [number, number]), [eventos]);
@@ -125,7 +167,6 @@ export default function Tracking() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="Os eventos de percurso ainda não têm endpoint; o histórico bruto existe em /reports/History." />
 
         {trackingQ.error ? (
           <ErrorBox error={trackingQ.error} onRetry={() => trackingQ.refetch()} />

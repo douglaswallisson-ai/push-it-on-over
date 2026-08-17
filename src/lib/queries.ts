@@ -16,6 +16,7 @@ import {
   Jornadas,
   Motoristas,
   Multas,
+  Operacional,
   Ordens,
   PadroesLinha,
   Planos,
@@ -422,4 +423,36 @@ export const cumprimentoQuery = (linhaId: string | undefined, data: string) =>
     enabled: Boolean(linhaId) && !usandoMock(),
     staleTime: 30_000,
     refetchInterval: refetchInterval(),
+  });
+
+/* ------------------------------------------------------------------ */
+/* Tracking, eventos e turnos                                          */
+/* ------------------------------------------------------------------ */
+
+export const trackingApiQuery = (unitId: string | undefined, data: string) =>
+  queryOptions({
+    queryKey: ["tracking", "api", unitId, data],
+    queryFn: () => Operacional.tracking(unitId!, data),
+    enabled: Boolean(unitId) && !usandoMock(),
+    staleTime: MINUTE,
+    // 404 aqui significa "veículo sem posição nesta data", que é resposta
+    // legítima — repetir não traria nada.
+    retry: false,
+  });
+
+export const eventosApiQuery = (filtros: Record<string, string | number | boolean>) =>
+  queryOptions({
+    queryKey: ["eventos", "api", JSON.stringify(filtros)],
+    queryFn: () => Operacional.eventos(filtros),
+    enabled: !usandoMock(),
+    staleTime: 30_000,
+    refetchInterval: refetchInterval(),
+  });
+
+export const turnosApiQuery = (linhaId: string | undefined, diaSemana?: number) =>
+  queryOptions({
+    queryKey: ["turnos", "api", linhaId, diaSemana ?? "todos"],
+    queryFn: () => Operacional.turnos(linhaId!, diaSemana != null ? { weekday: diaSemana } : undefined),
+    enabled: Boolean(linhaId) && !usandoMock(),
+    staleTime: 5 * MINUTE,
   });

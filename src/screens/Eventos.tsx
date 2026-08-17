@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  AlertTriangle,
   BedDouble,
   Info,
   Check,
@@ -25,6 +26,9 @@ import {
 } from "lucide-react";
 import { Link } from "@/lib/router-compat";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useQuery } from "@tanstack/react-query";
+import { eventosApiQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { StatTile, Pill, type PillTone } from "@/components/ss/ui/data";
@@ -95,18 +99,81 @@ export default function Eventos() {
   const [notificados, setNotificados] = useState<Record<string, boolean>>({});
   const [ocorrencias, setOcorrencias] = useState<Record<string, string>>({});
 
-  const veiculos = uniq(EVENTOS.map((e) => e.veiculo));
-  const motoristas = uniq(EVENTOS.map((e) => e.motorista));
+  /**
+   * Eventos da API quando conectada. O backend já devolve o resumo por
+   * severidade junto, então os contadores do topo não precisam de outra
+   * consulta.
+   */
+  const apiQ = useQuery(
+    eventosApiQuery({
+      only_pending: gravFiltro === "todas" ? false : false,
+      limit: 300,
+    }),
+  );
+
+  const daApi = apiQ.data as
+    | {
+        items: {
+          id: number;
+          vehicle_label?: string;
+          vehicle_prefix?: string;
+          event_type?: string;
+          severity?: string;
+          timestamp?: string;
+          description?: string;
+          acknowledged?: boolean;
+        }[];
+        summary: { total: number; critical: number; warning: number; pending: number };
+      }
+    | undefined;
+
+  /**
+   * Converte para o formato da tela.
+   *
+   * A severidade do backend é info/warning/critical; a interface usa leve,
+   * moderada e grave. Traduzir aqui evita mudar a tabela e todos os filtros.
+   */
+  const eventosApi = useMemo(() => {
+    if (usandoMock() || !daApi?.items) return null;
+    const grav: Record<string, Gravidade> = {
+      critical: "critica",
+      warning: "media",
+      info: "baixa",
+    };
+    return daApi.items.map((e) => ({
+      id: String(e.id),
+      hora: e.timestamp ? new Date(e.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—",
+      motorista: "—",
+      veiculo: e.vehicle_prefix || e.vehicle_label || "—",
+      tipo: e.event_type ?? "—",
+      icon: AlertTriangle,
+      // O backend não guarda clipe vinculado ao evento; vídeo vem de outro
+      // serviço e ainda não está cruzado aqui.
+      video: false,
+      gravidade: grav[e.severity ?? "info"] ?? "baixa",
+      visto: Boolean(e.acknowledged),
+      velocidade: 0,
+      local: e.description ?? "—",
+      dur: "—",
+      x: 0,
+      y: 0,
+    })) as Evento[];
+  }, [daApi]);
+
+  const veiculos = uniq((eventosApi ?? EVENTOS).map((e) => e.veiculo));
+  const motoristas = uniq((eventosApi ?? EVENTOS).map((e) => e.motorista));
+
+  const base = eventosApi ?? EVENTOS;
 
   const lista = useMemo(
     () =>
-      EVENTOS.filter(
+      base.filter(
         (e) =>
           (filtros.veiculo === "Todos" || e.veiculo === filtros.veiculo) &&
           (filtros.motorista === "Todos" || e.motorista === filtros.motorista) &&
           (gravFiltro === "todas" || e.gravidade === gravFiltro),
       ),
-    [filtros, gravFiltro],
+    [base, filtros, gravFiltro],
   );
 
   const naoVistos = lista.filter((e) => !vistos.has(e.id)).length;

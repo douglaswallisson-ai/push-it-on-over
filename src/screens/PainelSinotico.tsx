@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import {
@@ -132,6 +133,8 @@ export default function PainelSinotico() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="As posições na linha dependem de cruzar telemetria com itinerário — ainda não desenvolvido." />
+
         {posicoesQ.error ? (
           <ErrorBox error={posicoesQ.error} onRetry={() => posicoesQ.refetch()} />
         ) : (

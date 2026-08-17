@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { Sparkline } from "@/components/ss/ui/Sparkline";
@@ -279,6 +280,8 @@ export default function IndicadoresGerenciais() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Os indicadores consolidados são cálculo sobre a base e ainda não foram desenvolvidos." />
+
         {/* Os quatro indicadores de abertura do setor. */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard

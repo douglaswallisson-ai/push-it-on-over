@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, Download, Gavel, Scale, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { multasQuery, nf, veiculosQuery } from "@/lib/queries";
@@ -211,6 +212,8 @@ export default function Multas() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Multas ainda não têm tabela no backend." />
+
         {error ? (
           <ErrorBox error={error} onRetry={() => refetch()} />
         ) : (

@@ -8,7 +8,8 @@ import { StarRating } from "@/components/ss/ui/gauges";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { TelemetryModal } from "@/components/ss/frota/TelemetryModal";
 import { MOCK_CNH, MOCK_DESEMPENHO_VIAGENS, motoristaIdPorNome } from "@/lib/mock-data";
-import { padroesLinhaQuery } from "@/lib/queries";
+import { motoristasApiQuery, padroesLinhaQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { avaliarMotorista, avaliarSemContexto } from "@/lib/scoring";
@@ -146,11 +147,35 @@ const colunas = (PADROES_ATUAIS: PadraoLinha[]): Column<Motorista>[] => [
 export default function Motoristas() {
   const navigate = useNavigate();
   const padroesQ = useQuery(padroesLinhaQuery());
+  const apiQ = useQuery(motoristasApiQuery(1, 200));
+
+  /**
+   * Ligado à API, a lista vem de mova.driver. Os indicadores de condução
+   * continuam do exemplo — eles saem do relatório de telemetria, que é outra
+   * consulta e ainda não está cruzada aqui.
+   */
+  const daApi = !usandoMock() && apiQ.data?.items.length ? apiQ.data.items : null;
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
   const [grafico, setGrafico] = useState<string | null>(null);
+  const base = useMemo(() => {
+    if (!daApi) return DADOS;
+    // Os indicadores de condução (estrelas) vêm do relatório de telemetria e
+    // ainda não estão cruzados; ficam nulos em vez de mostrar valor inventado.
+    return daApi.map((m) => ({
+      nome: m.nome,
+      filial: m.filial,
+      km: "—",
+      consumo: "—",
+      mediaBordo: "—",
+      nota: 0,
+      iv: null, ae: null, mp: null, av: null,
+      pa: null, ev: null, fm: null, pac: null,
+    })) as typeof DADOS;
+  }, [daApi]);
+
   const lista = useMemo(
-    () => DADOS.filter((m) => filtros.motorista === "Todos" || m.nome === filtros.motorista),
-    [filtros],
+    () => base.filter((m) => filtros.motorista === "Todos" || m.nome === filtros.motorista),
+    [base, filtros],
   );
 
   const acoesCol: Column<Motorista> = {

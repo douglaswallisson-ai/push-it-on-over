@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { amostraContextoQuery, linhasQuery, padroesLinhaQuery } from "@/lib/queries";
@@ -169,6 +170,8 @@ export default function PadraoPorLinha() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="O padrão por linha é cálculo sobre a base histórica e ainda não foi desenvolvido." />
+
         {/* Explicação permanente — o conceito não é óbvio na primeira visita. */}
         <div
           data-tour="conceito"

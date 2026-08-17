@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, AlertOctagon, Bug, CircuitBoard, Info, Lightbulb, Sparkles, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { desde, dtcQuery, nf, veiculosQuery } from "@/lib/queries";
@@ -109,6 +110,8 @@ export default function DiagnosticoDTC() {
       <PageHeader title="Diagnóstico" subtitle="Frota › Códigos de falha e recomendações" />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Os códigos de falha ainda não são persistidos — o cálculo virá da telemetria." />
+
         <div data-tour="stat" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={Bug} label="Códigos ativos" value={nf(ativos.length)} color="var(--brand-navy)" />
           <StatTile icon={AlertOctagon} label="Críticos" value={nf(criticos)} color="var(--coral)" />

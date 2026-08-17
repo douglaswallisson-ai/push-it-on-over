@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { contratosOrgQuery, nf } from "@/lib/queries";
@@ -179,6 +180,8 @@ export default function ContratosOrganizacao() {
       />
 
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Contratos comerciais são módulo novo, sem correspondência no backend." />
+
         <div data-tour="stat" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={FileText} label="Contratos ativos" value={nf(ativos.length)} color="var(--leaf)" />
           <StatTile icon={Truck} label="Veículos contratados" value={nf(veiculosTotais)} color="var(--brand-navy)" />

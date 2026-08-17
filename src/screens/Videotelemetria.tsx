@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { AoVivo } from "@/components/ss/video/AoVivo";
 import { Gravacoes } from "@/components/ss/video/Gravacoes";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -236,6 +237,8 @@ export default function Videotelemetria() {
       <PageHeader title="Videotelemetria" subtitle="Segurança › Câmeras, ocorrências e gravações" />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="As ocorrências de vídeo ainda não têm endpoint; existem serviços de DVR a integrar." />
+
         {/* Três formas de olhar o mesmo veículo: agora, o que já aconteceu e
             o que ficou gravado. */}
         <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">

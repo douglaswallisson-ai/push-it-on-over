@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, DataTable, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { BusInspection, HOTSPOTS } from "@/components/ss/frota/BusInspection";
@@ -191,6 +192,8 @@ export default function Manutencao() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="O módulo de manutenção não existe no backend — catálogo, plano e ordens são funcionalidade nova." />
+
         {/* Abas e filtro de garagem. */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">

@@ -6,7 +6,9 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { CrudSheet, type Campo } from "@/components/ss/cadastro/CrudSheet";
-import { gruposLinhasQuery, itinerariosQuery, linhasQuery, nf, pontosQuery } from "@/lib/queries";
+import { gruposLinhasQuery, itinerariosQuery, linhasApiQuery, linhasQuery, nf, pontosQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { registrarAuditoria } from "@/lib/session";
 import { MODALIDADE_LABEL, type Linha, type Modalidade } from "@/types";
 
@@ -31,7 +33,9 @@ const CAMPOS: Campo<Linha>[] = [
 const NOVA: Partial<Linha> = { modalidade: "publico", ativa: true, cor: "#1B3A6B", tarifa: 5.2 };
 
 export default function Linhas() {
-  const linhasQ = useQuery(linhasQuery());
+  const mockLinhasQ = useQuery(linhasQuery());
+  const apiLinhasQ = useQuery(linhasApiQuery());
+  const linhasQ = usandoMock() ? mockLinhasQ : apiLinhasQ;
   const gruposQ = useQuery(gruposLinhasQuery());
   const itinerariosQ = useQuery(itinerariosQuery());
   const pontosQ = useQuery(pontosQuery());
@@ -169,6 +173,11 @@ export default function Linhas() {
                 foot="linha ativa não programável"
               />
             </div>
+
+            <SeloDadosExemplo
+              motivo="As linhas vêm do banco; os itinerários e paradas ainda são de exemplo — o endpoint de detalhe existe, falta ligar a expansão."
+              className="mb-1"
+            />
 
             <Card
               title="Linhas cadastradas"

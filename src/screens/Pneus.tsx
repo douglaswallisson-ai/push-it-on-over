@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CircleDot, Package, RotateCcw, TrendingDown } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { nf, pneusQuery, veiculosQuery } from "@/lib/queries";
@@ -159,6 +160,8 @@ export default function Pneus() {
       <PageHeader title="Pneus" subtitle="Manutenção › Controle de pneus" />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Controle de pneus ainda não existe no backend." />
+
         {error ? (
           <ErrorBox error={error} onRetry={() => refetch()} />
         ) : (

@@ -19,6 +19,7 @@ import {
   Ordens,
   PadroesLinha,
   Planos,
+  Real,
   Plataforma,
   Preventiva,
   Pneus,
@@ -34,7 +35,15 @@ import {
   ViagensOperacao,
 } from "@/lib/api";
 import type { StatusComunicacao, StatusManutencao } from "@/types";
-import { refetchInterval } from "@/lib/modo";
+import { refetchInterval, usandoMock } from "@/lib/modo";
+import {
+  linhaDaApi,
+  motoristaDaApiParaTela,
+  veiculoDaApiParaTela,
+  type LinhaApi,
+  type MotoristaApi,
+  type VeiculoApi,
+} from "@/lib/mapeamento-api";
 
 /**
  * Opções de query compartilhadas — um único lugar definindo chaves de cache e
@@ -359,4 +368,58 @@ export const trackingQuery = (veiculoId: string | undefined) =>
     queryFn: () => Tracking.porVeiculo(veiculoId!),
     enabled: Boolean(veiculoId),
     staleTime: MINUTE,
+  });
+
+
+/* ------------------------------------------------------------------ */
+/* Consultas ligadas à API real                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Veículos do backend, traduzidos para o formato das telas.
+ *
+ * Fica desabilitada em modo de exemplo: sem isso a tela dispararia uma
+ * requisição que não tem para onde ir.
+ */
+export const veiculosApiQuery = (page = 1, pageSize = 200) =>
+  queryOptions({
+    queryKey: ["veiculos", "api", page, pageSize],
+    queryFn: async () => {
+      const r = await Real.veiculos({ skip: (page - 1) * pageSize, limit: pageSize });
+      return { items: (r.items as VeiculoApi[]).map(veiculoDaApiParaTela), total: r.total };
+    },
+    enabled: !usandoMock(),
+    staleTime: 2 * MINUTE,
+  });
+
+export const motoristasApiQuery = (page = 1, pageSize = 200) =>
+  queryOptions({
+    queryKey: ["motoristas", "api", page, pageSize],
+    queryFn: async () => {
+      const r = await Real.motoristas({ skip: (page - 1) * pageSize, limit: pageSize });
+      return { items: (r.items as MotoristaApi[]).map(motoristaDaApiParaTela), total: r.total };
+    },
+    enabled: !usandoMock(),
+    staleTime: 2 * MINUTE,
+  });
+
+export const linhasApiQuery = () =>
+  queryOptions({
+    queryKey: ["linhas", "api"],
+    queryFn: async () => {
+      const r = await Real.linhas({ limit: 200 });
+      return (r.items as LinhaApi[]).map(linhaDaApi);
+    },
+    enabled: !usandoMock(),
+    staleTime: 10 * MINUTE,
+  });
+
+/** Programado × realizado de uma linha num dia. */
+export const cumprimentoQuery = (linhaId: string | undefined, data: string) =>
+  queryOptions({
+    queryKey: ["cumprimento", linhaId, data],
+    queryFn: () => Real.cumprimento(linhaId!, data),
+    enabled: Boolean(linhaId) && !usandoMock(),
+    staleTime: 30_000,
+    refetchInterval: refetchInterval(),
   });

@@ -312,6 +312,25 @@ export const Desempenho = {
     modoMock() ? mock(M.MOCK_DESEMPENHO_VIAGENS) : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho`),
 };
 
+/**
+ * Recursos que leem direto da API real, sem passar pelo mock.
+ *
+ * Ficam separados dos demais porque a resposta vem no formato do banco
+ * (`label`, `label2`, `status`) e é traduzida no consumo — misturar com os
+ * mocks, que já vêm no formato do front, causaria confusão de tipos.
+ */
+export const Real = {
+  veiculos: (params?: Record<string, string | number>) =>
+    api.get<{ items: unknown[]; total: number }>(`/api/v1/vehicles/${qs(params)}`),
+  motoristas: (params?: Record<string, string | number>) =>
+    api.get<{ items: unknown[]; total: number }>(`/api/v1/drivers/${qs(params)}`),
+  linhas: (params?: Record<string, string | number>) =>
+    api.get<{ items: unknown[]; total: number }>(`/api/v1/bus-lines/${qs(params)}`),
+  linha: (id: string | number) => api.get<unknown>(`/api/v1/bus-lines/${id}`),
+  cumprimento: (id: string | number, data: string) =>
+    api.get<unknown>(`/api/v1/bus-lines/${id}/compliance?operation_date=${data}`),
+};
+
 export const Catalogo = {
   montadoras: () =>
     modoMock() ? mock(M.MOCK_MONTADORAS) : api.get<import("@/types").Montadora[]>(`/api/catalogo/montadoras`),

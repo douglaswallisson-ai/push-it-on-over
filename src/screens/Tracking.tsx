@@ -14,6 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { SeloDadosExemplo } from "@/components/ss/ui/SeloDadosExemplo";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
@@ -124,6 +125,8 @@ export default function Tracking() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
+        <SeloDadosExemplo motivo="Os eventos de percurso ainda não têm endpoint; o histórico bruto existe em /reports/History." />
+
         {trackingQ.error ? (
           <ErrorBox error={trackingQ.error} onRetry={() => trackingQ.refetch()} />
         ) : (

@@ -12,6 +12,8 @@ import { escopoGaragens, filtrarPorGaragem } from "@/lib/escopo";
 import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
+import { veiculosApiQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 

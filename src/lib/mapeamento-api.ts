@@ -1,3 +1,5 @@
+import type { Linha, Motorista, Veiculo } from "@/types";
+
 /**
  * Tradução entre os nomes do front e os do banco.
  *
@@ -52,6 +54,49 @@ export type VeiculoFront = {
   motoristaId?: string;
   custoKm?: number;
 };
+
+/**
+ * Converte para o tipo `Veiculo` que as telas já usam.
+ *
+ * Devolver o mesmo formato do mock é o que permite trocar a fonte de dados sem
+ * mexer em coluna, filtro ou cálculo — a tela não precisa saber de onde veio.
+ * Campos que o backend não tem ficam com um padrão razoável, nunca inventado:
+ * `kml` e `odometro` vêm zerados até o relatório de telemetria preencher.
+ */
+export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
+  const [marca, ...resto] = (v.model ?? "").split(" ");
+  return {
+    id: String(v.id),
+    placa: v.label,
+    prefixo: v.label2 ?? undefined,
+    marca: marca || "—",
+    modelo: resto.join(" ") || v.model || "—",
+    ano: 0,
+    operacao: "—",
+    situacao: v.status === 1 ? "parado" : "sem_sinal",
+    kml: 0,
+    odometro: v.initial_odometer ?? 0,
+    grupoId: v.group_id != null ? String(v.group_id) : undefined,
+    unidadeId: v.subgroup_id != null ? String(v.subgroup_id) : undefined,
+  };
+}
+
+/** Motorista no formato das telas. */
+export function motoristaDaApiParaTela(m: MotoristaApi): Motorista {
+  return {
+    id: String(m.id),
+    nome: m.name ?? "—",
+    filial: m.subgroup_id != null ? String(m.subgroup_id) : "—",
+    matricula: m.matricula ?? undefined,
+    cnhCategoria: m.cnh_category ?? undefined,
+    cnhValidade: m.cnh_validate ?? undefined,
+    kmRodado: 0,
+    notaGeral: 0,
+    viagens: 0,
+    premiacao: 0,
+    situacao: m.status === 1 ? "ativo" : "afastado",
+  };
+}
 
 export function veiculoDaApi(v: VeiculoApi): VeiculoFront {
   return {
@@ -207,18 +252,26 @@ export type LinhaApi = {
   buss_line_client_id?: number | null;
 };
 
-export function linhaDaApi(l: LinhaApi) {
+/**
+ * Linha no formato das telas.
+ *
+ * `modalidade` e `cor` não existem em `buss_line`: a modalidade está em
+ * `bls_category_id`, cujo domínio ainda não foi mapeado, e cor é decisão de
+ * interface. Ambos recebem padrão em vez de ficarem indefinidos, para as telas
+ * não precisarem tratar ausência em toda parte.
+ */
+export function linhaDaApi(l: LinhaApi): Linha & { circular?: boolean; turnos?: number } {
   return {
     id: String(l.id),
     codigo: l.name ?? String(l.id),
     nome: l.description ?? l.name ?? "",
+    modalidade: "publico",
     grupoId: l.group_id != null ? String(l.group_id) : undefined,
+    operadora: l.buss_line_client_id != null ? `Contratante ${l.buss_line_client_id}` : undefined,
+    cor: "#1B3A6B",
     ativa: l.status === 1,
     circular: Boolean(l.circular),
-    extensaoKm: l.km ?? undefined,
-    duracao: l.duration ?? undefined,
     turnos: l.shift_count ?? 0,
-    contratanteId: l.buss_line_client_id != null ? String(l.buss_line_client_id) : undefined,
   };
 }
 

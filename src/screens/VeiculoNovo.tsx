@@ -7,6 +7,9 @@ import { Field, FormActions, FormSection, Input, Select } from "@/components/ss/
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
 import { acrescentar, registrarAuditoria } from "@/lib/session";
 import { SeletorMarcaModelo, type SelecaoVeiculo } from "@/components/ss/cadastro/SeletorMarcaModelo";
+import { useCrud } from "@/hooks/use-crud";
+import { veiculoParaApi } from "@/lib/mapeamento-api";
+import { usandoMock } from "@/lib/modo";
 import { toast } from "sonner";
 
 /**
@@ -33,6 +36,7 @@ const BULK_SAMPLE = [
 
 const empty = {
   placa: "",
+  prefixo: "",
   renavam: "",
   chassi: "",
   cor: "",
@@ -43,6 +47,13 @@ const empty = {
   grupo: "Refrigerado",
   unidade: "Matriz SP",
   dispositivo: "",
+  // Campos aceitos pela API e que faltavam no formulário. Sem eles, o veículo
+  // nascia sem limite de velocidade e sem marco inicial de odômetro — e o
+  // primeiro cálculo de km rodado saía errado.
+  velocidadeMaxima: "",
+  odometroInicial: "",
+  horimetroInicial: "",
+  observacao: "",
 };
 
 export default function VeiculoNovo() {
@@ -50,6 +61,7 @@ export default function VeiculoNovo() {
   const [mode, setMode] = useState("manual");
   const [form, setForm] = useState({ ...empty });
   const [selecao, setSelecao] = useState<Partial<SelecaoVeiculo>>({});
+  const crud = useCrud("vehicles");
   const [prefilled, setPrefilled] = useState(false);
 
   const upd =
@@ -72,13 +84,30 @@ export default function VeiculoNovo() {
       });
       return;
     }
-    acrescentar("veiculos", {
-      ...form,
-      id: `v${Date.now()}`,
-      montadoraId: selecao.montadoraId,
-      modeloId: selecao.modeloId,
-      criadoEm: new Date().toISOString(),
-    });
+    if (usandoMock()) {
+      acrescentar("veiculos", {
+        ...form,
+        id: `v${Date.now()}`,
+        montadoraId: selecao.montadoraId,
+        modeloId: selecao.modeloId,
+        criadoEm: new Date().toISOString(),
+      });
+    } else {
+      // O backend nomeia placa como `label` e prefixo como `label2`; a
+      // conversão fica no mapeamento, não espalhada aqui.
+      void crud.criar.mutateAsync(
+        veiculoParaApi({
+          placa: form.placa.toUpperCase(),
+          prefixo: form.prefixo || undefined,
+          modelo: [form.marca, form.modelo].filter(Boolean).join(" "),
+          ativo: true,
+          velocidadeMaxima: form.velocidadeMaxima ? Number(form.velocidadeMaxima) : undefined,
+          odometroInicial: form.odometroInicial ? Number(form.odometroInicial) : undefined,
+          horimetroInicial: form.horimetroInicial ? Number(form.horimetroInicial) : undefined,
+          observacao: form.observacao || undefined,
+        }) as never,
+      );
+    }
     registrarAuditoria("criacao", `Veículo cadastrado: ${form.placa.toUpperCase()}.`);
     toast.success(`Veículo ${form.placa.toUpperCase()} cadastrado.`);
     navigate("/app/veiculos");
@@ -173,6 +202,27 @@ export default function VeiculoNovo() {
                   </Field>
                   <Field label="Ano">
                     <Input placeholder="2022" inputMode="numeric" value={form.ano} onChange={upd("ano")} />
+                  </Field>
+                </FormSection>
+
+                <FormSection
+                  title="Operação"
+                  description="Prefixo, limite de velocidade e marcos iniciais — usados no cálculo de km rodado e nos alarmes."
+                >
+                  <Field label="Prefixo" hint="Como a operação chama o carro. A placa é documento.">
+                    <Input placeholder="11596" value={form.prefixo} onChange={upd("prefixo")} />
+                  </Field>
+                  <Field label="Velocidade máxima" hint="Base do alarme de excesso.">
+                    <Input placeholder="80" inputMode="numeric" value={form.velocidadeMaxima} onChange={upd("velocidadeMaxima")} />
+                  </Field>
+                  <Field label="Odômetro inicial" hint="Marco zero. Sem ele o primeiro km rodado sai errado.">
+                    <Input placeholder="0" inputMode="numeric" value={form.odometroInicial} onChange={upd("odometroInicial")} />
+                  </Field>
+                  <Field label="Horímetro inicial">
+                    <Input placeholder="0" inputMode="numeric" value={form.horimetroInicial} onChange={upd("horimetroInicial")} />
+                  </Field>
+                  <Field label="Observação" full>
+                    <Input placeholder="Anotações sobre o veículo" value={form.observacao} onChange={upd("observacao")} />
                   </Field>
                 </FormSection>
 

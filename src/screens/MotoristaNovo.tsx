@@ -6,6 +6,9 @@ import { HeroBanner } from "@/components/ss/ui/HeroBanner";
 import { Field, FormActions, FormSection, Input, Select, Toggle } from "@/components/ss/ui/form";
 import { BulkImport, ModoTabs, OcrPanel, type OcrField } from "@/components/ss/cadastro/importers";
 import { acrescentar, registrarAuditoria } from "@/lib/session";
+import { useCrud } from "@/hooks/use-crud";
+import { motoristaParaApi } from "@/lib/mapeamento-api";
+import { usandoMock } from "@/lib/modo";
 import { toast } from "sonner";
 
 /**
@@ -31,6 +34,9 @@ const BULK_SAMPLE = [
 
 const empty = {
   nome: "",
+  // A operação identifica o funcionário pela matrícula, não pelo nome — e o
+  // backend guarda o campo desde sempre. Faltava no formulário.
+  matricula: "",
   cpf: "",
   nascimento: "",
   telefone: "",
@@ -49,6 +55,7 @@ export default function MotoristaNovo() {
   const navigate = useNavigate();
   const [mode, setMode] = useState("manual");
   const [form, setForm] = useState({ ...empty });
+  const crud = useCrud("drivers");
   const [prefilled, setPrefilled] = useState(false);
   const [appAccess, setAppAccess] = useState(true);
   const [premiacao, setPremiacao] = useState(true);
@@ -68,7 +75,24 @@ export default function MotoristaNovo() {
       toast.error("Informe o nome do motorista.");
       return;
     }
-    acrescentar("motoristas", { ...form, id: `m${Date.now()}`, criadoEm: new Date().toISOString() });
+    if (usandoMock()) {
+      acrescentar("motoristas", { ...form, id: `m${Date.now()}`, criadoEm: new Date().toISOString() });
+    } else {
+      void crud.criar.mutateAsync(
+        motoristaParaApi({
+          nome: form.nome,
+          matricula: form.matricula || undefined,
+          cpf: form.cpf || undefined,
+          telefone: form.telefone || undefined,
+          email: form.email || undefined,
+          cnh: form.cnh || undefined,
+          cnhCategoria: form.categoria || undefined,
+          cnhValidade: form.validade || undefined,
+          admissao: form.admissao || undefined,
+          ativo: true,
+        }) as never,
+      );
+    }
     registrarAuditoria("criacao", `Motorista cadastrado: ${form.nome}.`);
     toast.success(`Motorista ${form.nome} cadastrado.`, {
       description: form.validade ? undefined : "CNH sem validade informada — não haverá alerta de vencimento.",
@@ -137,6 +161,9 @@ export default function MotoristaNovo() {
                 <FormSection title="Identificação" description="Dados pessoais básicos do motorista.">
                   <Field label="Nome completo" full>
                     <Input placeholder="Ex.: Marco Taborda" value={form.nome} onChange={upd("nome")} required />
+                  </Field>
+                  <Field label="Matrícula" hint="Como a operação identifica o funcionário.">
+                    <Input placeholder="0000553731" value={form.matricula} onChange={upd("matricula")} />
                   </Field>
                   <Field label="CPF">
                     <Input placeholder="000.000.000-00" inputMode="numeric" value={form.cpf} onChange={upd("cpf")} />

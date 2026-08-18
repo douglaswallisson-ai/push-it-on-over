@@ -6,13 +6,12 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { StarRating } from "@/components/ss/ui/gauges";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
-import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosQuery } from "@/lib/queries";
+import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
 import { MOCK_INDICADORES_VEICULO, faixasDoVeiculo } from "@/lib/mock-data";
 import { escopoGaragens, filtrarPorGaragem } from "@/lib/escopo";
 import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
-import { veiculosApiQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
@@ -82,7 +81,15 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function Veiculos() {
   const navigate = useNavigate();
-  const { data, isPending, error, refetch, isFetching } = useQuery(veiculosQuery(1, 50));
+  const mockQ = useQuery(veiculosQuery(1, 50));
+  const apiQ = useQuery(veiculosApiQuery(1, 200));
+
+  /**
+   * Fonte trocada num ponto só: colunas, filtros e cálculos abaixo não sabem de
+   * onde veio o dado, porque o mapeamento devolve o mesmo formato do exemplo.
+   */
+  const fonte = usandoMock() ? mockQ : apiQ;
+  const { data, isPending, error, refetch, isFetching } = fonte;
   const kanbanQ = useQuery(kanbanManutencaoQuery());
   const [busca, setBusca] = useState("");
   const [faixasDe, setFaixasDe] = useState<string | null>(null);

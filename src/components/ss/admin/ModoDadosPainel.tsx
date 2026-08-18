@@ -4,6 +4,7 @@ import { Database, Info, Radio, Server } from "lucide-react";
 import { toast } from "sonner";
 import { Card, Pill } from "@/components/ss/ui/data";
 import { baseApi, definirIntervalo, definirModo, intervaloAtualizacao, modoAtual, type ModoDados } from "@/lib/modo";
+import { temTokenValido } from "@/lib/auth-api";
 import { registrarAuditoria } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +80,49 @@ export function ModoDadosPainel() {
         </button>
       </div>
 
+      {/* Diagnóstico da conexão.
+          Sem isto, "ativei a API e nada mudou" não tem como ser investigado
+          pela interface: o usuário não sabe se falta endereço, se o login
+          falhou ou se a tela simplesmente não está ligada. */}
+      {modo === "api" && (
+        <div className="mt-4 rounded-xl border border-border p-4">
+          <h4 className="mb-2 flex items-center gap-1.5 text-[13px] font-medium text-foreground">
+            <Server className="h-3.5 w-3.5 text-muted-foreground" />
+            Diagnóstico
+          </h4>
+          <ul className="space-y-1.5 text-[12.5px]">
+            <Verificacao
+              ok={Boolean(import.meta.env.VITE_API_BASE)}
+              rotulo="Endereço da API configurado"
+              detalhe={
+                import.meta.env.VITE_API_BASE
+                  ? String(import.meta.env.VITE_API_BASE)
+                  : "defina VITE_API_BASE no .env e reinicie o servidor"
+              }
+            />
+            <Verificacao
+              ok={temTokenValido()}
+              rotulo="Sessão autenticada"
+              detalhe={temTokenValido() ? "token válido" : "faça login novamente"}
+            />
+            <Verificacao
+              ok={Boolean(import.meta.env.VITE_WS_BASE)}
+              rotulo="Tempo real (WebSocket)"
+              detalhe={
+                import.meta.env.VITE_WS_BASE
+                  ? String(import.meta.env.VITE_WS_BASE)
+                  : "opcional — sem isso o mapa usa consulta periódica"
+              }
+              opcional
+            />
+          </ul>
+          <p className="mt-2.5 text-[11.5px] text-muted-foreground">
+            Telas marcadas como <strong>beta</strong> continuam com dados de exemplo mesmo aqui — elas não têm
+            endpoint no backend, e tentar consultá-las devolveria erro.
+          </p>
+        </div>
+      )}
+
       {/* Atualização automática só faz sentido ligado à API. */}
       <div className={cn("mt-4 rounded-xl border border-border p-4", modo === "mock" && "opacity-55")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -112,5 +156,36 @@ export function ModoDadosPainel() {
         </p>
       </div>
     </Card>
+  );
+}
+
+
+/** Uma linha do diagnóstico. */
+function Verificacao({
+  ok,
+  rotulo,
+  detalhe,
+  opcional,
+}: {
+  ok: boolean;
+  rotulo: string;
+  detalhe: string;
+  opcional?: boolean;
+}) {
+  return (
+    <li className="flex items-start gap-2">
+      <span
+        className={cn(
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white",
+          ok ? "bg-leaf" : opcional ? "bg-muted-foreground" : "bg-coral",
+        )}
+      >
+        {ok ? "✓" : "!"}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-foreground">{rotulo}</span>
+        <span className="block break-all font-mono text-[11px] text-muted-foreground">{detalhe}</span>
+      </span>
+    </li>
   );
 }

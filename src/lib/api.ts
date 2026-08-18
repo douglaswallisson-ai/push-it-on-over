@@ -27,6 +27,7 @@ const BASE = import.meta.env.VITE_API_BASE ?? "";
 /** Headers enviados em toda chamada. O `ngrok-skip-browser-warning` evita a
  *  página HTML de aviso do túnel ngrok (que quebraria o parse do JSON). */
 import { requisicaoAutenticada } from "@/lib/auth-api";
+import { gravar, ler } from "@/lib/session";
 
 const DEFAULT_HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
@@ -445,4 +446,47 @@ export const Vinculos = {
     api.del(`/api/v1/device-associations/${id}`),
   desvincularCamera: (id: string | number) =>
     api.del(`/api/v1/video-device-associations/${id}`),
+};
+
+/**
+ * API de checklist, no API Gateway da AWS.
+ *
+ * Backend separado do `ss-fleet-core`, com autenticação própria: `POST /login`
+ * com usuário e senha devolvendo token, que vai no cabeçalho `token` — não em
+ * `Authorization: Bearer`.
+ *
+ * Manter as duas autenticações vivas ao mesmo tempo é dívida conhecida; a
+ * alternativa seria o `ss-fleet-core` absorver este módulo, o que é decisão de
+ * arquitetura ainda em aberto.
+ */
+const BASE_CHECKLIST = (import.meta.env.VITE_CHECKLIST_BASE as string) || "";
+
+async function requisicaoChecklist<T>(caminho: string): Promise<T> {
+  const token = ler<string | null>("token-checklist", null);
+  const res = await fetch(`${BASE_CHECKLIST}${caminho}`, {
+    headers: { "Content-Type": "application/json", ...(token ? { token } : {}) },
+  });
+  if (!res.ok) throw new ApiError(res.status, await res.text().catch(() => res.statusText));
+  return res.json() as Promise<T>;
+}
+
+export const Checklist = {
+  autenticar: async (user: string, pass: string) => {
+    const res = await fetch(`${BASE_CHECKLIST}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user, pass }),
+    });
+    if (!res.ok) throw new ApiError(res.status, "Falha ao autenticar no serviço de checklist.");
+    const dados = await res.json();
+    const token = Array.isArray(dados) ? dados[0]?.token : dados?.token;
+    if (token) gravar("token-checklist", token);
+    return token as string | undefined;
+  },
+
+  lista: () => requisicaoChecklist<unknown>(`/checklist`),
+  porId: (id: string | number) => requisicaoChecklist<unknown>(`/checklist/${id}`),
+  perguntas: () => requisicaoChecklist<unknown>(`/checklist/question`),
+  respostas: () => requisicaoChecklist<unknown>(`/checklist/answers`),
+  respostasPorChecklist: () => requisicaoChecklist<unknown>(`/checklist/answers/checklist`),
 };

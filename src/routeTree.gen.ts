@@ -51,6 +51,7 @@ import { Route as AppFretamentoPassageirosRouteImport } from './routes/app.freta
 import { Route as AppFretamentoPontoRouteImport } from './routes/app.fretamento.ponto'
 import { Route as AppFretamentoRoteirizacaoRouteImport } from './routes/app.fretamento.roteirizacao'
 import { Route as AppFrotaAnaliseRouteImport } from './routes/app.frota.analise'
+import { Route as AppFrotaChecklistRouteImport } from './routes/app.frota.checklist'
 import { Route as AppFrotaDesempenhoRouteImport } from './routes/app.frota.desempenho'
 import { Route as AppFrotaDiagnosticoRouteImport } from './routes/app.frota.diagnostico'
 import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manutencao'
@@ -300,6 +301,11 @@ const AppFrotaAnaliseRoute = AppFrotaAnaliseRouteImport.update({
   path: '/frota/analise',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFrotaChecklistRoute = AppFrotaChecklistRouteImport.update({
+  id: '/frota/checklist',
+  path: '/frota/checklist',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFrotaDesempenhoRoute = AppFrotaDesempenhoRouteImport.update({
   id: '/frota/desempenho',
   path: '/frota/desempenho',
@@ -514,6 +520,7 @@ export interface FileRoutesByFullPath {
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
+  '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -589,6 +596,7 @@ export interface FileRoutesByTo {
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
+  '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -667,6 +675,7 @@ export interface FileRoutesById {
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
+  '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -746,6 +755,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/ponto'
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
+    | '/app/frota/checklist'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -821,6 +831,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/ponto'
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
+    | '/app/frota/checklist'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -898,6 +909,7 @@ export interface FileRouteTypes {
     | '/app/fretamento/ponto'
     | '/app/fretamento/roteirizacao'
     | '/app/frota/analise'
+    | '/app/frota/checklist'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -1236,6 +1248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFrotaAnaliseRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/frota/checklist': {
+      id: '/app/frota/checklist'
+      path: '/frota/checklist'
+      fullPath: '/app/frota/checklist'
+      preLoaderRoute: typeof AppFrotaChecklistRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/frota/desempenho': {
       id: '/app/frota/desempenho'
       path: '/frota/desempenho'
@@ -1515,6 +1534,7 @@ interface AppRouteChildren {
   AppFretamentoPontoRoute: typeof AppFretamentoPontoRoute
   AppFretamentoRoteirizacaoRoute: typeof AppFretamentoRoteirizacaoRoute
   AppFrotaAnaliseRoute: typeof AppFrotaAnaliseRoute
+  AppFrotaChecklistRoute: typeof AppFrotaChecklistRoute
   AppFrotaDesempenhoRoute: typeof AppFrotaDesempenhoRoute
   AppFrotaDiagnosticoRoute: typeof AppFrotaDiagnosticoRoute
   AppFrotaManutencaoRoute: typeof AppFrotaManutencaoRoute
@@ -1579,6 +1599,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFretamentoPontoRoute: AppFretamentoPontoRoute,
   AppFretamentoRoteirizacaoRoute: AppFretamentoRoteirizacaoRoute,
   AppFrotaAnaliseRoute: AppFrotaAnaliseRoute,
+  AppFrotaChecklistRoute: AppFrotaChecklistRoute,
   AppFrotaDesempenhoRoute: AppFrotaDesempenhoRoute,
   AppFrotaDiagnosticoRoute: AppFrotaDiagnosticoRoute,
   AppFrotaManutencaoRoute: AppFrotaManutencaoRoute,

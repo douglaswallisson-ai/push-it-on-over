@@ -3,6 +3,7 @@ import {
   Alarmes,
   AlarmesOperacionais,
   Catalogo,
+  Checklist,
   Conducoes,
   ContratosOrg,
   DTC,
@@ -508,4 +509,39 @@ export const vinculosCameraQuery = () =>
     queryFn: () => Vinculos.cameras({ limit: 500 }),
     enabled: !usandoMock(),
     staleTime: 5 * MINUTE,
+  });
+
+/* ------------------------------------------------------------------ */
+/* Checklist — API Gateway, backend separado                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Só consulta quando há endereço configurado. Sem `VITE_CHECKLIST_BASE` a
+ * chamada iria para a própria origem e devolveria o HTML do front, o que
+ * geraria um erro de parse difícil de diagnosticar.
+ */
+const checklistDisponivel = () => Boolean(import.meta.env.VITE_CHECKLIST_BASE) && !usandoMock();
+
+export const checklistsQuery = () =>
+  queryOptions({
+    queryKey: ["checklist", "lista"],
+    queryFn: () => Checklist.lista(),
+    enabled: checklistDisponivel(),
+    staleTime: 10 * MINUTE,
+  });
+
+export const checklistPerguntasQuery = () =>
+  queryOptions({
+    queryKey: ["checklist", "perguntas"],
+    queryFn: () => Checklist.perguntas(),
+    enabled: checklistDisponivel(),
+    staleTime: 10 * MINUTE,
+  });
+
+export const checklistRespostasQuery = () =>
+  queryOptions({
+    queryKey: ["checklist", "respostas"],
+    queryFn: () => Checklist.respostas(),
+    enabled: checklistDisponivel(),
+    staleTime: MINUTE,
   });

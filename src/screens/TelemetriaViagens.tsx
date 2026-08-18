@@ -67,8 +67,8 @@ export default function TelemetriaViagens() {
     [inicio, fim],
   );
 
-  const q = useRelatorioCursor<TelemetriaApi>("Telemetry", filtro);
-  const estimativa = useEstimativaExport("Telemetry", filtro, pedirEstimativa);
+  const q = useRelatorioCursor<TelemetriaApi>("telemetry", filtro);
+  const estimativa = useEstimativaExport("telemetry", filtro, pedirEstimativa);
 
   const registros = q.registros;
 
@@ -273,7 +273,7 @@ export default function TelemetriaViagens() {
             </p>
             <span className="flex gap-2">
               <a
-                href={urlExportCsv("Telemetry", filtro)}
+                href={urlExportCsv("telemetry", filtro)}
                 onClick={() => {
                   toast.success("Download iniciado.");
                   setPedirEstimativa(false);

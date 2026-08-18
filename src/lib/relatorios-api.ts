@@ -61,7 +61,18 @@ export function validarJanela(inicio: string, fim: string): string | null {
   return null;
 }
 
-type Relatorio = "Telemetry" | "History" | "DriverKmFuel" | "RpmBandTime" | "Heatmap" | "WeightRange";
+/**
+ * Relatórios disponíveis. Os caminhos seguem o backend, que usa kebab-case
+ * em alguns e não em outros — mapear aqui evita espalhar a inconsistência.
+ */
+type Relatorio =
+  | "telemetry"
+  | "history"
+  | "history/detailed"
+  | "driver-km-fuel-hours"
+  | "rpm-band-time"
+  | "heatmap"
+  | "weight-range";
 
 /**
  * Consulta paginada por cursor.
@@ -184,4 +195,89 @@ export type HistoricoApi = {
   odom?: number | null;
   rpm?: number | null;
   address?: string | null;
+};
+
+/* ------------------------------------------------------------------ */
+/* Relatórios que existiam no backend e nenhuma tela consumia          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Posição com os sinais do barramento CAN.
+ *
+ * São 22 leituras por posição, e nenhuma aparecia na interface. Boa parte
+ * responde perguntas que hoje ninguém consegue responder: nível de ARLA,
+ * pressão pneumática, horímetro do motor, marcha engatada.
+ */
+export type HistoricoDetalhadoApi = {
+  unit_id: number;
+  local_time: string;
+  latitude: number;
+  longitude: number;
+  speed?: number | null;
+  ignition?: boolean | null;
+  address?: string | null;
+  can_rpm?: number | null;
+  can_speed?: number | null;
+  can_gear?: number | null;
+  can_accel_pedal_percent?: number | null;
+  can_engine_torque_percent?: number | null;
+  can_engine_oil_pressure?: number | null;
+  can_turbo_charger_pressure?: number | null;
+  can_engine_coolant_temp?: number | null;
+  can_engine_coolant_level?: number | null;
+  can_fuel_level_percent?: number | null;
+  /** Nível de ARLA. Motor entra em derate quando acaba. */
+  can_def_level_percent?: number | null;
+  can_total_used_fuel?: number | null;
+  can_total_odometer?: number | null;
+  /** Horímetro do motor: gatilho por horas da manutenção preventiva. */
+  can_engine_hourmeter?: number | null;
+  can_control_module_voltage?: number | null;
+  can_pneumatic_system1_pressure?: number | null;
+  can_pneumatic_system2_pressure?: number | null;
+  can_cruise_control_state?: boolean | null;
+  can_break_pedal_state?: boolean | null;
+  can_parking_brake_state?: boolean | null;
+  can_retarder_in_use?: boolean | null;
+  can_retarder_torque?: number | null;
+};
+
+/** Km, combustível e horas por motorista. */
+export type MotoristaKmApi = {
+  driver_id: number;
+  driver_name?: string | null;
+  total_km?: number | null;
+  total_fuel?: number | null;
+  total_hours?: number | null;
+  efficiency_kml?: number | null;
+  trips?: number | null;
+};
+
+/** Tempo em cada faixa de RPM. */
+export type FaixaRpmApi = {
+  unit_id: number;
+  unit_label?: string | null;
+  driver_id?: number | null;
+  driver_name?: string | null;
+  time_blue?: number | null;
+  time_green?: number | null;
+  time_yellow?: number | null;
+  time_red?: number | null;
+};
+
+/** Concentração de posições, para o mapa de calor. */
+export type PontoCalorApi = {
+  latitude: number;
+  longitude: number;
+  weight?: number | null;
+  count?: number | null;
+};
+
+/** Meta e peso por faixa, de `mova.weight_range`. */
+export type MetaPesoApi = {
+  range_id: number;
+  group_id?: number | null;
+  subgroup_id?: number | null;
+  weight?: number | null;
+  goal?: number | null;
 };

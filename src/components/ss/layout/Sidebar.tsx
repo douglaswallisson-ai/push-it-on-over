@@ -95,6 +95,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Videotelemetria", to: "/app/seguranca/video" },
       { label: "Percurso do dia", to: "/app/frota/tracking" },
+      { label: "Sinais do motor", to: "/app/frota/sinais" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
     ],
   },

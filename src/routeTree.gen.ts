@@ -56,6 +56,7 @@ import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manut
 import { Route as AppFrotaOrdensRouteImport } from './routes/app.frota.ordens'
 import { Route as AppFrotaPneusRouteImport } from './routes/app.frota.pneus'
 import { Route as AppFrotaRegeneracaoRouteImport } from './routes/app.frota.regeneracao'
+import { Route as AppFrotaSinaisRouteImport } from './routes/app.frota.sinais'
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppFrotaTrackingRouteImport } from './routes/app.frota.tracking'
 import { Route as AppGerencialIndicadoresRouteImport } from './routes/app.gerencial.indicadores'
@@ -320,6 +321,11 @@ const AppFrotaRegeneracaoRoute = AppFrotaRegeneracaoRouteImport.update({
   path: '/frota/regeneracao',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFrotaSinaisRoute = AppFrotaSinaisRouteImport.update({
+  id: '/frota/sinais',
+  path: '/frota/sinais',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFrotaTelemetriaRoute = AppFrotaTelemetriaRouteImport.update({
   id: '/frota/telemetria',
   path: '/frota/telemetria',
@@ -493,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/sinais': typeof AppFrotaSinaisRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
@@ -564,6 +571,7 @@ export interface FileRoutesByTo {
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/sinais': typeof AppFrotaSinaisRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
@@ -638,6 +646,7 @@ export interface FileRoutesById {
   '/app/frota/ordens': typeof AppFrotaOrdensRoute
   '/app/frota/pneus': typeof AppFrotaPneusRoute
   '/app/frota/regeneracao': typeof AppFrotaRegeneracaoRoute
+  '/app/frota/sinais': typeof AppFrotaSinaisRoute
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
@@ -713,6 +722,7 @@ export interface FileRouteTypes {
     | '/app/frota/ordens'
     | '/app/frota/pneus'
     | '/app/frota/regeneracao'
+    | '/app/frota/sinais'
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
@@ -784,6 +794,7 @@ export interface FileRouteTypes {
     | '/app/frota/ordens'
     | '/app/frota/pneus'
     | '/app/frota/regeneracao'
+    | '/app/frota/sinais'
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
@@ -857,6 +868,7 @@ export interface FileRouteTypes {
     | '/app/frota/ordens'
     | '/app/frota/pneus'
     | '/app/frota/regeneracao'
+    | '/app/frota/sinais'
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
@@ -1221,6 +1233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFrotaRegeneracaoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/frota/sinais': {
+      id: '/app/frota/sinais'
+      path: '/frota/sinais'
+      fullPath: '/app/frota/sinais'
+      preLoaderRoute: typeof AppFrotaSinaisRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/frota/telemetria': {
       id: '/app/frota/telemetria'
       path: '/frota/telemetria'
@@ -1440,6 +1459,7 @@ interface AppRouteChildren {
   AppFrotaOrdensRoute: typeof AppFrotaOrdensRoute
   AppFrotaPneusRoute: typeof AppFrotaPneusRoute
   AppFrotaRegeneracaoRoute: typeof AppFrotaRegeneracaoRoute
+  AppFrotaSinaisRoute: typeof AppFrotaSinaisRoute
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppFrotaTrackingRoute: typeof AppFrotaTrackingRoute
   AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
@@ -1501,6 +1521,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaOrdensRoute: AppFrotaOrdensRoute,
   AppFrotaPneusRoute: AppFrotaPneusRoute,
   AppFrotaRegeneracaoRoute: AppFrotaRegeneracaoRoute,
+  AppFrotaSinaisRoute: AppFrotaSinaisRoute,
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppFrotaTrackingRoute: AppFrotaTrackingRoute,
   AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,

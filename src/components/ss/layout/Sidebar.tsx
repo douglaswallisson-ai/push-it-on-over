@@ -149,21 +149,10 @@ const NAV_PRIMARY: Entry[] = [
   {
     label: "Gerencial",
     icon: Gauge,
-    items: [
-      { label: "Gestão operacional", to: "/app/gerencial/operacional" },
-      { label: "Indicadores", to: "/app/gerencial/indicadores", beta: true },
-    ],
+    items: [{ label: "Painel operacional", to: "/app/gerencial/operacional" }],
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
-  {
-    label: "Relatórios",
-    icon: FileText,
-    items: [
-      { label: "Visão geral", to: "/app/relatorios" },
-      { label: "Telemetria por viagem", to: "/app/relatorios/telemetria" },
-      { label: "Operacionais", to: "/app/relatorios/operacionais" },
-    ],
-  },
+  { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 

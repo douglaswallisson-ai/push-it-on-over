@@ -1,5 +1,7 @@
+import { useState } from "react";
 import {
   Activity,
+  ArrowLeft,
   Cable,
   ClipboardCheck,
   Flame,
@@ -23,6 +25,8 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useNavigate } from "@/lib/router-compat";
+import TelemetriaViagens from "@/screens/TelemetriaViagens";
+import RelatoriosOperacionais from "@/screens/RelatoriosOperacionais";
 import { exportarCSV } from "@/lib/export";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -39,6 +43,8 @@ type Report = { icon: LucideIcon; title: string; desc: string; color: string
    * mas ainda não tem destino — e o cartão diz isso, em vez de abrir vazio.
    */
   rota?: string;
+  /** Relatório que abre dentro desta própria tela. */
+  embutido?: "telemetria" | "operacionais";
 };
 type Categoria = { grupo: string; itens: Report[] };
 
@@ -46,20 +52,20 @@ const CATALOGO: Categoria[] = [
   {
     grupo: "Operação",
     itens: [
-      { icon: Route, title: "Telemetria por viagem", desc: "Viagem a viagem, com 113 campos: consumo, faixas, chuva, linha.", color: "var(--brand-navy)", rota: "/app/relatorios/telemetria" },
-      { icon: MapPin, title: "Histórico de posições", desc: "Todas as posições registradas, com endereço e velocidade.", color: "var(--brand-sky)", rota: "/app/relatorios/operacionais" },
+      { icon: Route, title: "Telemetria por viagem", desc: "Viagem a viagem, com 113 campos: consumo, faixas, chuva, linha.", color: "var(--brand-navy)", embutido: "telemetria" },
+      { icon: MapPin, title: "Histórico de posições", desc: "Todas as posições registradas, com endereço e velocidade.", color: "var(--brand-sky)", embutido: "operacionais" },
       { icon: Activity, title: "Sinais do motor", desc: "22 leituras do barramento CAN: ARLA, turbo, pressão, marcha.", color: "var(--brand-sky)", rota: "/app/frota/sinais" },
       { icon: ShieldAlert, title: "Eventos e alarmes", desc: "Alarmes por severidade, com fila de tratativa.", color: "var(--gold)", rota: "/app/eventos" },
       { icon: Gauge, title: "Excesso de velocidade", desc: "Por tipo de via e condição de pista — urbano, rodoviário, chuva.", color: "var(--coral)" },
       { icon: Clock, title: "Percurso do dia", desc: "Ignição, paradas e retomadas de um veículo, com traçado.", color: "var(--brand-navy)", rota: "/app/frota/tracking" },
-      { icon: Flame, title: "Mapa de calor", desc: "Onde a frota mais circula, por concentração de passagens.", color: "var(--coral)", rota: "/app/relatorios/operacionais" },
+      { icon: Flame, title: "Mapa de calor", desc: "Onde a frota mais circula, por concentração de passagens.", color: "var(--coral)", embutido: "operacionais" },
       { icon: MapPin, title: "Pontos e cercas", desc: "Passagens por ponto de interesse, com entrada e saída.", color: "var(--leaf)", rota: "/app/cadastros/pontos-interesse" },
     ],
   },
   {
     grupo: "Frota",
     itens: [
-      { icon: Fuel, title: "Consumo de combustível", desc: "Litros, km/l e desvio contra a média, por veículo.", color: "var(--gold)", rota: "/app/relatorios/operacionais" },
+      { icon: Fuel, title: "Consumo de combustível", desc: "Litros, km/l e desvio contra a média, por veículo.", color: "var(--gold)", embutido: "operacionais" },
       { icon: Truck, title: "Utilização da frota", desc: "Disponibilidade, ociosidade e horas de motor.", color: "var(--brand-navy)", rota: "/app/gerencial/operacional" },
       { icon: Wrench, title: "Manutenção preventiva", desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.", color: "var(--coral)", rota: "/app/manutencao" },
       { icon: ClipboardCheck, title: "Checklist de inspeção", desc: "Modelos, itens e respostas, com reprovações destacadas.", color: "var(--leaf)", rota: "/app/frota/checklist" },
@@ -73,12 +79,12 @@ const CATALOGO: Categoria[] = [
     grupo: "Motoristas",
     itens: [
       { icon: Star, title: "Desempenho de condução", desc: "Nota contextual por linha e faixa horária.", color: "var(--brand-sky)", rota: "/app/frota/analise" },
-      { icon: Fuel, title: "Km e combustível", desc: "Distância, litros e horas por motorista, com consumo.", color: "var(--gold)", rota: "/app/relatorios/operacionais" },
-      { icon: Gauge, title: "Faixas de RPM", desc: "Distribuição do tempo entre azul, verde, amarela e vermelha.", color: "var(--leaf)", rota: "/app/relatorios/operacionais" },
+      { icon: Fuel, title: "Km e combustível", desc: "Distância, litros e horas por motorista, com consumo.", color: "var(--gold)", embutido: "operacionais" },
+      { icon: Gauge, title: "Faixas de RPM", desc: "Distribuição do tempo entre azul, verde, amarela e vermelha.", color: "var(--leaf)", embutido: "operacionais" },
       { icon: Users, title: "Premiação", desc: "Apuração de bônus por meta e peso configurados.", color: "var(--leaf)", rota: "/app/premiacao" },
       { icon: Clock, title: "Espelho de ponto", desc: "Jornada, intervalos e horas extras — Lei 13.103.", color: "var(--brand-navy)", rota: "/app/pessoas/jornada" },
       { icon: ShieldAlert, title: "Multas por motorista", desc: "Infrações, pontos e prazo de indicação do condutor.", color: "var(--coral)", rota: "/app/pessoas/multas" },
-      { icon: Target, title: "Metas e pesos", desc: "Critérios de avaliação por grupo e subgrupo.", color: "var(--brand-sky)", rota: "/app/relatorios/operacionais" },
+      { icon: Target, title: "Metas e pesos", desc: "Critérios de avaliação por grupo e subgrupo.", color: "var(--brand-sky)", embutido: "operacionais" },
     ],
   },
   {
@@ -182,8 +188,20 @@ const COLS: Column<Recente>[] = [
   },
 ];
 
+/**
+ * Relatórios que abrem dentro desta tela.
+ *
+ * Cada um destes tem visualizador próprio; os demais itens do catálogo levam
+ * para a tela onde o assunto vive, ou avisam que ainda não têm destino.
+ *
+ * Abrir aqui em vez de navegar mantém o usuário na central: ele compara dois
+ * relatórios sem perder o caminho de volta.
+ */
+type Embutido = "telemetria" | "operacionais";
+
 export default function Relatorios() {
   const navigate = useNavigate();
+  const [embutido, setEmbutido] = useState<Embutido | null>(null);
 
   return (
     <>
@@ -213,7 +231,13 @@ export default function Relatorios() {
               {cat.itens.map((r) => (
                 <button
                   key={r.title}
-                  onClick={() => (r.rota ? navigate(r.rota) : gerarRelatorio(r.title, cat.grupo))}
+                  onClick={() =>
+                    r.embutido
+                      ? setEmbutido(r.embutido)
+                      : r.rota
+                        ? navigate(r.rota)
+                        : gerarRelatorio(r.title, cat.grupo)
+                  }
                   title={r.rota ? "Abrir relatório" : "Ainda sem tela — exporta um marcador"}
                   className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2]"
                 >

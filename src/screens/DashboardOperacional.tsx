@@ -5,6 +5,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   Bus,
   CalendarClock,
   CloudRain,
@@ -51,6 +52,40 @@ import { cn } from "@/lib/utils";
  * Um painel que começa por totais do mês responde a pergunta errada: quem abre
  * o sistema de manhã quer saber o que está pegando fogo, não quanto rodou.
  */
+
+/**
+ * Indicadores exibidos na tabela consolidada.
+ *
+ * `maiorEhMelhor` define o sentido da cor: consumo subindo é bom, evento
+ * subindo é ruim. Sem declarar isso por indicador, a variação seria pintada
+ * pelo sinal do número e diria o contrário do que significa.
+ */
+const LINHAS_INDICADOR: {
+  campo: string;
+  rotulo: string;
+  unidade?: string;
+  maiorEhMelhor?: boolean;
+  nota?: string;
+}[] = [
+  { campo: "trips", rotulo: "Viagens realizadas", maiorEhMelhor: true },
+  { campo: "distance_km", rotulo: "Quilometragem rodada", unidade: "km", maiorEhMelhor: true },
+  { campo: "fuel_liters", rotulo: "Combustível consumido", unidade: "L" },
+  { campo: "kml", rotulo: "Consumo médio", unidade: "km/l", maiorEhMelhor: true },
+  { campo: "mkbf", rotulo: "MKBF", unidade: "km", maiorEhMelhor: true, nota: "quilômetros médios entre falhas críticas" },
+  { campo: "failures", rotulo: "Falhas críticas" },
+  { campo: "total_hours", rotulo: "Horas de operação", unidade: "h" },
+  { campo: "moving_hours", rotulo: "Horas em movimento", unidade: "h", maiorEhMelhor: true },
+  { campo: "idle_hours", rotulo: "Horas ocioso", unidade: "h", nota: "motor ligado com veículo parado" },
+  { campo: "idle_pct", rotulo: "Ociosidade", unidade: "%" },
+  { campo: "green_band_pct", rotulo: "Faixa econômica", unidade: "%", maiorEhMelhor: true },
+  { campo: "hard_brakes", rotulo: "Freadas bruscas" },
+  { campo: "hard_accelerations", rotulo: "Acelerações bruscas" },
+  { campo: "speed_violations", rotulo: "Excessos de velocidade" },
+  { campo: "events_per_100km", rotulo: "Eventos por 100 km", nota: "normalizado pela distância" },
+  { campo: "active_vehicles", rotulo: "Veículos ativos", maiorEhMelhor: true },
+  { campo: "active_drivers", rotulo: "Motoristas ativos", maiorEhMelhor: true },
+  { campo: "rain_pct", rotulo: "Tempo sob chuva", unidade: "%", nota: "distorce comparação de consumo" },
+];
 
 const hhmm = (min: number) => `${Math.floor(min / 60)}h${String(Math.round(min % 60)).padStart(2, "0")}`;
 
@@ -346,6 +381,71 @@ export default function DashboardOperacional() {
                   cor="var(--gold)"
                 />
               </div>
+
+              {/* Tabela completa de indicadores, com comparação período a
+                  período. Vinha de uma tela separada; separar consolidado de
+                  detalhe obrigava o gestor a abrir duas telas para a mesma
+                  pergunta. */}
+              <Card title="Indicadores do setor" icon={BarChart3} bodyClassName="p-4" className="mt-4">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px] border-collapse text-[13px]">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="py-2 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                          Indicador
+                        </th>
+                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                          Período
+                        </th>
+                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                          Anterior
+                        </th>
+                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                          Variação
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {LINHAS_INDICADOR.map((li) => {
+                        const atual = ind.current[li.campo];
+                        const anterior = ind.previous?.[li.campo];
+                        const v = variacao(li.campo);
+                        const bom = v == null ? null : li.maiorEhMelhor ? v > 0 : v < 0;
+                        return (
+                          <tr key={li.campo} className="border-b border-border last:border-0">
+                            <td className="py-2.5">
+                              <span className="text-[13px] text-foreground">{li.rotulo}</span>
+                              {li.nota && (
+                                <span className="block text-[11px] text-muted-foreground">{li.nota}</span>
+                              )}
+                            </td>
+                            <td className="py-2.5 text-right font-mono text-[13px] font-semibold text-foreground">
+                              {atual != null ? nf(Math.round(atual * 100) / 100) : "—"}
+                              {li.unidade && <span className="ml-1 text-[11px] text-muted-foreground">{li.unidade}</span>}
+                            </td>
+                            <td className="py-2.5 text-right font-mono text-[12.5px] text-muted-foreground">
+                              {anterior != null ? nf(Math.round(anterior * 100) / 100) : "—"}
+                            </td>
+                            <td className="py-2.5 text-right">
+                              {v == null ? (
+                                <span className="text-[12px] text-muted-foreground">—</span>
+                              ) : (
+                                <span
+                                  className="inline-flex items-center gap-0.5 font-mono text-[12.5px] font-semibold"
+                                  style={{ color: bom ? "var(--leaf)" : "var(--coral)" }}
+                                >
+                                  {v > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                  {Math.abs(v)}%
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
 
               {/* O que o backend não consegue calcular, e por quê. */}
               {ind.unavailable && ind.unavailable.length > 0 && (

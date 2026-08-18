@@ -29,6 +29,7 @@ import {
   Pneus,
   Tracking,
   Video,
+  Vinculos,
   VideoAoVivo,
   Itinerarios,
   Linhas,
@@ -491,4 +492,20 @@ export const pontosApiQuery = (dias = 30, busca?: string) =>
     queryFn: () => PontosApi.lista(dias, busca),
     enabled: !usandoMock(),
     staleTime: 10 * MINUTE,
+  });
+
+export const vinculosRastreadorQuery = () =>
+  queryOptions({
+    queryKey: ["vinculos", "rastreadores"],
+    queryFn: () => Vinculos.rastreadores({ limit: 500 }),
+    enabled: !usandoMock(),
+    staleTime: 5 * MINUTE,
+  });
+
+export const vinculosCameraQuery = () =>
+  queryOptions({
+    queryKey: ["vinculos", "cameras"],
+    queryFn: () => Vinculos.cameras({ limit: 500 }),
+    enabled: !usandoMock(),
+    staleTime: 5 * MINUTE,
   });

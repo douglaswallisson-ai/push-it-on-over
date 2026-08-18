@@ -76,6 +76,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Cerca", to: "/app/cadastros/cerca" },
       { label: "Combustível", to: "/app/cadastros/combustivel" },
       { label: "Dispositivos", to: "/app/cadastros/dispositivos" },
+      { label: "Equipamentos por veículo", to: "/app/cadastros/equipamentos" },
       { label: "Garagens", to: "/app/cadastros/garagens" },
       { label: "Grupos", to: "/app/cadastros/grupos" },
       { label: "Linhas", to: "/app/cadastros/linhas" },
@@ -155,6 +156,7 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Visão geral", to: "/app/relatorios" },
       { label: "Telemetria por viagem", to: "/app/relatorios/telemetria" },
+      { label: "Operacionais", to: "/app/relatorios/operacionais" },
     ],
   },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },

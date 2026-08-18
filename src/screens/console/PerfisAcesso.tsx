@@ -7,6 +7,8 @@ import { Card, Pill, StatTile } from "@/components/ss/ui/data";
 import { SkeletonRows } from "@/components/ss/ui/QueryState";
 import { nf, perfisAcessoQuery } from "@/lib/queries";
 import { registrarAuditoria } from "@/lib/session";
+import { recarregarPermissoes } from "@/lib/auth-api";
+import { usandoMock } from "@/lib/modo";
 import type { PerfilAcesso } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +57,11 @@ export default function PerfisAcesso() {
     const novas = tem ? perfil.acoes.filter((a) => a !== chave) : [...perfil.acoes, chave];
     setLocais(perfis.map((p) => (p.id === perfil.id ? { ...p, acoes: novas } : p)));
     registrarAuditoria("plataforma", `Perfil ${perfil.nome}: ação ${chave} ${tem ? "removida" : "adicionada"}.`);
+
+    // Recarrega o próprio escopo: sem isso, a mudança só valeria no próximo
+    // login. Quem ganhou permissão ficaria esperando, e quem perdeu continuaria
+    // com ela até sair do sistema.
+    if (!usandoMock()) void recarregarPermissoes().catch(() => undefined);
   };
 
   const criar = () => {

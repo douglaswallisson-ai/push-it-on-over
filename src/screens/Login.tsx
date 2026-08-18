@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { entrar, entrarComPerfil, pedirRedefinicaoSenha } from "@/lib/session";
-import { entrarNaApi } from "@/lib/auth-api";
+import { entrarNaApi, entrarPorTicket } from "@/lib/auth-api";
 import { usandoMock } from "@/lib/modo";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
@@ -33,6 +33,35 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+
+  /**
+   * Entrada vinda do sistema atual.
+   *
+   * Se a URL trouxer um ticket, valida e entra direto — o usuário nem vê esta
+   * tela. É o que permite migrar de forma gradual, sem obrigar todo mundo a
+   * aprender um login novo de uma vez.
+   */
+  useEffect(() => {
+    const ticket = new URLSearchParams(window.location.search).get("ticket");
+    if (!ticket || usandoMock()) return;
+
+    setLoading(true);
+    entrarPorTicket(ticket)
+      .then((perfil) => {
+        entrarComPerfil({
+          nome: perfil?.name ?? perfil?.login ?? "Usuário",
+          email: perfil?.email ?? "",
+          organizacao: perfil?.account_name ?? "SS Telemática",
+          organizacaoId: String(perfil?.account_id ?? ""),
+          perfil: perfil?.master ? "super_admin" : "gestor",
+        });
+        navigate("/app");
+      })
+      .catch((e) => {
+        setErro(e instanceof Error ? e.message : "Não foi possível entrar pelo link.");
+        setLoading(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [modo, setModo] = useState<"login" | "recuperar">("login");
   const [enviado, setEnviado] = useState(false);
 

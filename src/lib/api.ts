@@ -424,3 +424,25 @@ export const PontosApi = {
   visitas: (poiId: string | number, dias = 7) =>
     api.get<unknown>(`/api/v1/pois/${poiId}/visits?days=${dias}`),
 };
+
+/**
+ * Vínculos de equipamento e autenticação integrada.
+ *
+ * Os vínculos definem qual rastreador e qual câmera estão em cada veículo — é o
+ * cadastro que sustenta todo o resto: sem ele, posição e vídeo não têm a quem
+ * pertencer.
+ */
+export const Vinculos = {
+  rastreadores: (params?: Record<string, string | number>) =>
+    api.get<unknown>(`/api/v1/device-associations/${qs(params)}`),
+  cameras: (params?: Record<string, string | number>) =>
+    api.get<unknown>(`/api/v1/video-device-associations/${qs(params)}`),
+  vincularRastreador: (dados: Record<string, unknown>) =>
+    api.post<unknown>(`/api/v1/device-associations/`, dados),
+  vincularCamera: (dados: Record<string, unknown>) =>
+    api.post<unknown>(`/api/v1/video-device-associations/`, dados),
+  desvincularRastreador: (id: string | number) =>
+    api.del(`/api/v1/device-associations/${id}`),
+  desvincularCamera: (id: string | number) =>
+    api.del(`/api/v1/video-device-associations/${id}`),
+};

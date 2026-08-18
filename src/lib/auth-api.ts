@@ -172,3 +172,59 @@ export const temTokenValido = () => {
   const t = lerTokens();
   return Boolean(t && Date.now() < t.expira_em);
 };
+
+
+/* ------------------------------------------------------------------ */
+/* Entrada vinda do sistema atual                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Troca um ticket do sistema antigo por sessão neste.
+ *
+ * O `/auth/sso-handoff` existe para permitir migração gradual: o usuário está
+ * logado no Dashboard Start, clica num link para o sistema novo e entra sem
+ * digitar senha de novo. O ticket é assinado com segredo compartilhado, vale
+ * cerca de 60 segundos e é de uso único.
+ *
+ * A validade curta é proposital — um ticket vazado só serve por um minuto — e o
+ * uso único impede que seja reaproveitado se aparecer no histórico do
+ * navegador.
+ */
+export async function entrarPorTicket(ticket: string) {
+  const resp = await fetch(`${V1}/auth/sso-handoff`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket }),
+  });
+
+  if (!resp.ok) {
+    throw new ErroAutenticacao(
+      resp.status === 401
+        ? "O link de acesso expirou. Volte ao sistema anterior e tente de novo."
+        : "Não foi possível validar o acesso.",
+      resp.status,
+    );
+  }
+
+  const tokens = await resp.json();
+  gravarTokens(tokens);
+  return buscarPerfil();
+}
+
+/**
+ * Recarrega as permissões sem exigir novo login.
+ *
+ * Quando um administrador concede ou revoga acesso, a mudança só valeria no
+ * próximo login — o que na prática significa no dia seguinte. Isso é ruim nos
+ * dois sentidos: quem ganhou permissão fica esperando, e quem perdeu continua
+ * com ela.
+ */
+export async function recarregarPermissoes() {
+  const resp = await requisicaoAutenticada(`${V1}/auth/refresh-permissions`, { method: "POST" });
+  if (!resp.ok) throw new ErroAutenticacao("Não foi possível atualizar as permissões.", resp.status);
+
+  const dados = await resp.json();
+  // A resposta pode trazer novos tokens quando o escopo muda.
+  if (dados.access_token) gravarTokens(dados);
+  return dados;
+}

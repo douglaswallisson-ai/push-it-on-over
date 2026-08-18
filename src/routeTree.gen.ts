@@ -37,6 +37,7 @@ import { Route as AppCadastrosAlarmeRouteImport } from './routes/app.cadastros.a
 import { Route as AppCadastrosCercaRouteImport } from './routes/app.cadastros.cerca'
 import { Route as AppCadastrosCombustivelRouteImport } from './routes/app.cadastros.combustivel'
 import { Route as AppCadastrosDispositivosRouteImport } from './routes/app.cadastros.dispositivos'
+import { Route as AppCadastrosEquipamentosRouteImport } from './routes/app.cadastros.equipamentos'
 import { Route as AppCadastrosGaragensRouteImport } from './routes/app.cadastros.garagens'
 import { Route as AppCadastrosGruposRouteImport } from './routes/app.cadastros.grupos'
 import { Route as AppCadastrosLinhasRouteImport } from './routes/app.cadastros.linhas'
@@ -73,6 +74,7 @@ import { Route as AppPessoasJornadaRouteImport } from './routes/app.pessoas.jorn
 import { Route as AppPessoasMultasRouteImport } from './routes/app.pessoas.multas'
 import { Route as AppPremiacaoIndexRouteImport } from './routes/app.premiacao.index'
 import { Route as AppPremiacaoMetasRouteImport } from './routes/app.premiacao.metas'
+import { Route as AppRelatoriosOperacionaisRouteImport } from './routes/app.relatorios.operacionais'
 import { Route as AppRelatoriosTelemetriaRouteImport } from './routes/app.relatorios.telemetria'
 import { Route as AppSegurancaVideoRouteImport } from './routes/app.seguranca.video'
 import { Route as AppUrbanoPadraoRouteImport } from './routes/app.urbano.padrao'
@@ -221,6 +223,12 @@ const AppCadastrosDispositivosRoute =
   AppCadastrosDispositivosRouteImport.update({
     id: '/cadastros/dispositivos',
     path: '/cadastros/dispositivos',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppCadastrosEquipamentosRoute =
+  AppCadastrosEquipamentosRouteImport.update({
+    id: '/cadastros/equipamentos',
+    path: '/cadastros/equipamentos',
     getParentRoute: () => AppRoute,
   } as any)
 const AppCadastrosGaragensRoute = AppCadastrosGaragensRouteImport.update({
@@ -408,6 +416,12 @@ const AppPremiacaoMetasRoute = AppPremiacaoMetasRouteImport.update({
   path: '/premiacao/metas',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRelatoriosOperacionaisRoute =
+  AppRelatoriosOperacionaisRouteImport.update({
+    id: '/operacionais',
+    path: '/operacionais',
+    getParentRoute: () => AppRelatoriosRoute,
+  } as any)
 const AppRelatoriosTelemetriaRoute = AppRelatoriosTelemetriaRouteImport.update({
   id: '/telemetria',
   path: '/telemetria',
@@ -480,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
@@ -513,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/operacionais': typeof AppRelatoriosOperacionaisRoute
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
@@ -552,6 +568,7 @@ export interface FileRoutesByTo {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
@@ -585,6 +602,7 @@ export interface FileRoutesByTo {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/operacionais': typeof AppRelatoriosOperacionaisRoute
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
@@ -627,6 +645,7 @@ export interface FileRoutesById {
   '/app/cadastros/cerca': typeof AppCadastrosCercaRoute
   '/app/cadastros/combustivel': typeof AppCadastrosCombustivelRoute
   '/app/cadastros/dispositivos': typeof AppCadastrosDispositivosRoute
+  '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
@@ -660,6 +679,7 @@ export interface FileRoutesById {
   '/app/pessoas/jornada': typeof AppPessoasJornadaRoute
   '/app/pessoas/multas': typeof AppPessoasMultasRoute
   '/app/premiacao/metas': typeof AppPremiacaoMetasRoute
+  '/app/relatorios/operacionais': typeof AppRelatoriosOperacionaisRoute
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
@@ -703,6 +723,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
@@ -736,6 +757,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/operacionais'
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
@@ -775,6 +797,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
@@ -808,6 +831,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/operacionais'
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
@@ -849,6 +873,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/cerca'
     | '/app/cadastros/combustivel'
     | '/app/cadastros/dispositivos'
+    | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
     | '/app/cadastros/linhas'
@@ -882,6 +907,7 @@ export interface FileRouteTypes {
     | '/app/pessoas/jornada'
     | '/app/pessoas/multas'
     | '/app/premiacao/metas'
+    | '/app/relatorios/operacionais'
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
@@ -1098,6 +1124,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastros/dispositivos'
       fullPath: '/app/cadastros/dispositivos'
       preLoaderRoute: typeof AppCadastrosDispositivosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/equipamentos': {
+      id: '/app/cadastros/equipamentos'
+      path: '/cadastros/equipamentos'
+      fullPath: '/app/cadastros/equipamentos'
+      preLoaderRoute: typeof AppCadastrosEquipamentosRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/cadastros/garagens': {
@@ -1352,6 +1385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPremiacaoMetasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/relatorios/operacionais': {
+      id: '/app/relatorios/operacionais'
+      path: '/operacionais'
+      fullPath: '/app/relatorios/operacionais'
+      preLoaderRoute: typeof AppRelatoriosOperacionaisRouteImport
+      parentRoute: typeof AppRelatoriosRoute
+    }
     '/app/relatorios/telemetria': {
       id: '/app/relatorios/telemetria'
       path: '/telemetria'
@@ -1412,10 +1452,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRelatoriosRouteChildren {
+  AppRelatoriosOperacionaisRoute: typeof AppRelatoriosOperacionaisRoute
   AppRelatoriosTelemetriaRoute: typeof AppRelatoriosTelemetriaRoute
 }
 
 const AppRelatoriosRouteChildren: AppRelatoriosRouteChildren = {
+  AppRelatoriosOperacionaisRoute: AppRelatoriosOperacionaisRoute,
   AppRelatoriosTelemetriaRoute: AppRelatoriosTelemetriaRoute,
 }
 
@@ -1440,6 +1482,7 @@ interface AppRouteChildren {
   AppCadastrosCercaRoute: typeof AppCadastrosCercaRoute
   AppCadastrosCombustivelRoute: typeof AppCadastrosCombustivelRoute
   AppCadastrosDispositivosRoute: typeof AppCadastrosDispositivosRoute
+  AppCadastrosEquipamentosRoute: typeof AppCadastrosEquipamentosRoute
   AppCadastrosGaragensRoute: typeof AppCadastrosGaragensRoute
   AppCadastrosGruposRoute: typeof AppCadastrosGruposRoute
   AppCadastrosLinhasRoute: typeof AppCadastrosLinhasRoute
@@ -1502,6 +1545,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosCercaRoute: AppCadastrosCercaRoute,
   AppCadastrosCombustivelRoute: AppCadastrosCombustivelRoute,
   AppCadastrosDispositivosRoute: AppCadastrosDispositivosRoute,
+  AppCadastrosEquipamentosRoute: AppCadastrosEquipamentosRoute,
   AppCadastrosGaragensRoute: AppCadastrosGaragensRoute,
   AppCadastrosGruposRoute: AppCadastrosGruposRoute,
   AppCadastrosLinhasRoute: AppCadastrosLinhasRoute,

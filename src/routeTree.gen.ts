@@ -78,6 +78,7 @@ import { Route as AppRelatoriosOperacionaisRouteImport } from './routes/app.rela
 import { Route as AppRelatoriosTelemetriaRouteImport } from './routes/app.relatorios.telemetria'
 import { Route as AppSegurancaVideoRouteImport } from './routes/app.seguranca.video'
 import { Route as AppUrbanoPadraoRouteImport } from './routes/app.urbano.padrao'
+import { Route as AppUrbanoPassageirosRouteImport } from './routes/app.urbano.passageiros'
 import { Route as AppVeiculosIndexRouteImport } from './routes/app.veiculos.index'
 import { Route as AppVeiculosNovoRouteImport } from './routes/app.veiculos.novo'
 import { Route as AppFretamentoViagensIndexRouteImport } from './routes/app.fretamento.viagens.index'
@@ -437,6 +438,11 @@ const AppUrbanoPadraoRoute = AppUrbanoPadraoRouteImport.update({
   path: '/urbano/padrao',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUrbanoPassageirosRoute = AppUrbanoPassageirosRouteImport.update({
+  id: '/urbano/passageiros',
+  path: '/urbano/passageiros',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVeiculosIndexRoute = AppVeiculosIndexRouteImport.update({
   id: '/veiculos/',
   path: '/veiculos/',
@@ -532,6 +538,7 @@ export interface FileRoutesByFullPath {
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
+  '/app/urbano/passageiros': typeof AppUrbanoPassageirosRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/manutencao/': typeof AppManutencaoIndexRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -606,6 +613,7 @@ export interface FileRoutesByTo {
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
+  '/app/urbano/passageiros': typeof AppUrbanoPassageirosRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/manutencao': typeof AppManutencaoIndexRoute
   '/app/motoristas': typeof AppMotoristasIndexRoute
@@ -683,6 +691,7 @@ export interface FileRoutesById {
   '/app/relatorios/telemetria': typeof AppRelatoriosTelemetriaRoute
   '/app/seguranca/video': typeof AppSegurancaVideoRoute
   '/app/urbano/padrao': typeof AppUrbanoPadraoRoute
+  '/app/urbano/passageiros': typeof AppUrbanoPassageirosRoute
   '/app/veiculos/novo': typeof AppVeiculosNovoRoute
   '/app/manutencao/': typeof AppManutencaoIndexRoute
   '/app/motoristas/': typeof AppMotoristasIndexRoute
@@ -761,6 +770,7 @@ export interface FileRouteTypes {
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
+    | '/app/urbano/passageiros'
     | '/app/veiculos/novo'
     | '/app/manutencao/'
     | '/app/motoristas/'
@@ -835,6 +845,7 @@ export interface FileRouteTypes {
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
+    | '/app/urbano/passageiros'
     | '/app/veiculos/novo'
     | '/app/manutencao'
     | '/app/motoristas'
@@ -911,6 +922,7 @@ export interface FileRouteTypes {
     | '/app/relatorios/telemetria'
     | '/app/seguranca/video'
     | '/app/urbano/padrao'
+    | '/app/urbano/passageiros'
     | '/app/veiculos/novo'
     | '/app/manutencao/'
     | '/app/motoristas/'
@@ -1413,6 +1425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUrbanoPadraoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/urbano/passageiros': {
+      id: '/app/urbano/passageiros'
+      path: '/urbano/passageiros'
+      fullPath: '/app/urbano/passageiros'
+      preLoaderRoute: typeof AppUrbanoPassageirosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/veiculos/': {
       id: '/app/veiculos/'
       path: '/veiculos'
@@ -1518,6 +1537,7 @@ interface AppRouteChildren {
   AppPremiacaoMetasRoute: typeof AppPremiacaoMetasRoute
   AppSegurancaVideoRoute: typeof AppSegurancaVideoRoute
   AppUrbanoPadraoRoute: typeof AppUrbanoPadraoRoute
+  AppUrbanoPassageirosRoute: typeof AppUrbanoPassageirosRoute
   AppVeiculosNovoRoute: typeof AppVeiculosNovoRoute
   AppManutencaoIndexRoute: typeof AppManutencaoIndexRoute
   AppMotoristasIndexRoute: typeof AppMotoristasIndexRoute
@@ -1581,6 +1601,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPremiacaoMetasRoute: AppPremiacaoMetasRoute,
   AppSegurancaVideoRoute: AppSegurancaVideoRoute,
   AppUrbanoPadraoRoute: AppUrbanoPadraoRoute,
+  AppUrbanoPassageirosRoute: AppUrbanoPassageirosRoute,
   AppVeiculosNovoRoute: AppVeiculosNovoRoute,
   AppManutencaoIndexRoute: AppManutencaoIndexRoute,
   AppMotoristasIndexRoute: AppMotoristasIndexRoute,

@@ -88,6 +88,17 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
   {
+    label: "Pessoas",
+    icon: Users,
+    items: [
+      { label: "Motoristas", to: "/app/motoristas" },
+      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
+      { label: "Controle de escala", to: "/app/fretamento/escala" },
+      { label: "Ponto", to: "/app/fretamento/ponto" },
+      { label: "Multas", to: "/app/pessoas/multas", beta: true },
+    ],
+  },
+  {
     label: "Frota",
     icon: Truck,
     items: [
@@ -101,23 +112,13 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   {
-    label: "Pessoas",
-    icon: Users,
-    items: [
-      { label: "Motoristas", to: "/app/motoristas" },
-      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
-      { label: "Controle de escala", to: "/app/fretamento/escala" },
-      { label: "Ponto", to: "/app/fretamento/ponto" },
-      { label: "Multas", to: "/app/pessoas/multas", beta: true },
-    ],
-  },
-  {
     label: "Transporte urbano",
     icon: Route,
     items: [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
       { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
+      { label: "Contagem de passageiros", to: "/app/urbano/passageiros" },
     ],
   },
   {
@@ -128,10 +129,10 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
+      { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
     ],
   },
   // Serve às duas modalidades, por isso não fica dentro de nenhuma.
-  { label: "Contagem de passageiros", icon: UsersRound, to: "/app/fretamento/passageiros" },
   { label: "Eventos", icon: Siren, to: "/app/eventos" },
   {
     label: "Manutenção",

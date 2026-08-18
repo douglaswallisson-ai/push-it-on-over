@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, Route, TrendingUp, UserCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useLocation } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { nf } from "@/lib/queries";
@@ -73,11 +74,19 @@ const COLS: Column<Viagem>[] = [
 
 export default function ContagemPassageiros() {
   /**
+   * A tela é a mesma para os dois módulos, mas o filtro inicial acompanha de
+   * onde o usuário veio: entrando por Transporte urbano ele espera ver linha,
+   * não fretamento. Sem isso teria de trocar o filtro toda vez.
+   */
+  const { pathname } = useLocation();
+  const modalidadeInicial = pathname.includes("/urbano/") ? "urbano" : "todas";
+
+  /**
    * A tela serve às duas modalidades. Sem separar, embarque de linha urbana
    * (centenas por viagem) soma com embarque de fretamento (dezenas) no mesmo
    * número, e a média perde sentido.
    */
-  const [modalidade, setModalidade] = useState<"todas" | "urbano" | "fretamento">("todas");
+  const [modalidade, setModalidade] = useState<"todas" | "urbano" | "fretamento">(modalidadeInicial);
   const linhas = modalidade === "todas" ? DADOS : DADOS.filter((d) => d.modalidade === modalidade);
   const totalEmbarques = linhas.reduce((a, d) => a + d.embarques, 0);
 

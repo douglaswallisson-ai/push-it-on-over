@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { organizacoesQuery } from "@/lib/queries";
+import { usandoMock } from "@/lib/modo";
 import { Building2, Check, ChevronsUpDown, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { lerSessao, trocarOrganizacao } from "@/lib/session";
@@ -36,6 +38,27 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
   const { sessao, carregando } = useSessao();
   const superAdmin = ehSuperAdmin(sessao?.perfil);
 
+  /**
+   * Ligado à API, a lista vem de `mova.group` — que é a empresa cliente. O
+   * exemplo continua servindo quando não há conexão, para o seletor nunca
+   * aparecer vazio.
+   */
+  const orgsQ = useQuery(organizacoesQuery());
+  const orgs = useMemo<Org[]>(
+    () => (!usandoMock() && orgsQ.data?.length ? orgsQ.data : ORGS),
+    [orgsQ.data],
+  );
+
+
+  // Quando a lista real chega, a organização ativa precisa passar a apontar
+  // para ela — senão o rótulo mostra um cliente de exemplo enquanto os dados
+  // já são de outro.
+  useEffect(() => {
+    if (usandoMock() || !orgsQ.data?.length) return;
+    const daSessao = orgsQ.data.find((o) => o.id === sessao?.organizacaoAtivaId);
+    setAtiva(daSessao ?? orgsQ.data[0]);
+  }, [orgsQ.data, sessao?.organizacaoAtivaId]);
+
   useEffect(() => {
     const s = lerSessao();
     if (s) {
@@ -71,7 +94,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
     );
   }
 
-  const filtradas = ORGS.filter((o) => o.name.toLowerCase().includes(busca.trim().toLowerCase()));
+  const filtradas = orgs.filter((o) => o.name.toLowerCase().includes(busca.trim().toLowerCase()));
 
   const selecionar = (org: Org) => {
     if (!trocarOrganizacao(org.id, org.name)) return;

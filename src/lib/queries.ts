@@ -22,6 +22,7 @@ import {
   PontosApi,
   Seguranca,
   Ordens,
+  Organizacoes,
   PadroesLinha,
   Planos,
   Real,
@@ -544,4 +545,28 @@ export const checklistRespostasQuery = () =>
     queryFn: () => Checklist.respostas(),
     enabled: checklistDisponivel(),
     staleTime: MINUTE,
+  });
+
+/**
+ * Empresas clientes, vindas de `mova.group`.
+ *
+ * Só o super admin enxerga mais de uma; para os demais, o backend já devolve
+ * apenas o grupo a que têm acesso — o filtro de escopo acontece no servidor,
+ * não aqui.
+ */
+export const organizacoesQuery = () =>
+  queryOptions({
+    queryKey: ["organizacoes", "api"],
+    queryFn: async () => {
+      const r = await Organizacoes.lista();
+      return (r.items ?? [])
+        .filter((g) => g.status !== 0)
+        .map((g) => ({
+          id: String(g.id),
+          name: g.name ?? g.description ?? `Grupo ${g.id}`,
+          plan: undefined as string | undefined,
+        }));
+    },
+    enabled: !usandoMock(),
+    staleTime: 10 * MINUTE,
   });

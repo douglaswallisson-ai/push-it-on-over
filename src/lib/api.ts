@@ -482,3 +482,17 @@ export const Checklist = {
   respostas: () => requisicaoChecklist<unknown>(`/checklist/answers`),
   respostasPorChecklist: () => requisicaoChecklist<unknown>(`/checklist/answers/checklist`),
 };
+
+/**
+ * Grupos — as empresas clientes.
+ *
+ * No schema `mova`, `group` é a empresa e `subgroup` a unidade dentro dela. O
+ * front chama a primeira de organização e a segunda de garagem; a tradução fica
+ * aqui, não espalhada pelas telas.
+ */
+export const Organizacoes = {
+  lista: () =>
+    api.get<{ items: { id: number; name?: string; description?: string; status?: number }[]; total: number }>(
+      `/api/v1/groups/?limit=200`,
+    ),
+};

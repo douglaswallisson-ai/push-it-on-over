@@ -59,6 +59,11 @@ export function ModoDadosPainel() {
             Tudo vem da base local. Nenhuma requisição sai do navegador — serve para demonstração e para trabalhar com
             a API fora do ar.
           </p>
+          {!import.meta.env.VITE_API_BASE && (
+            <p className="mt-1.5 text-[11.5px] font-medium text-gold">
+              Em uso por padrão: sem VITE_API_BASE configurado, não há para onde consultar.
+            </p>
+          )}
         </button>
 
         <button
@@ -77,6 +82,11 @@ export function ModoDadosPainel() {
             Consulta o servidor em <span className="font-mono">{baseApi()}</span>. Erro de rede passa a aparecer nas
             telas, com opção de tentar de novo.
           </p>
+          {import.meta.env.VITE_API_BASE && (
+            <p className="mt-1.5 text-[11.5px] font-medium text-leaf">
+              Padrão do sistema — abre assim automaticamente.
+            </p>
+          )}
         </button>
       </div>
 

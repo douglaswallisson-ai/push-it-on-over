@@ -17,8 +17,17 @@ export type ModoDados = "mock" | "api";
 
 const CHAVE = "modo-dados";
 
+/**
+ * Modo em uso.
+ *
+ * O padrão é a API real: o sistema existe para operar dados de verdade, e
+ * abrir em exemplo faz o usuário achar que está vendo a frota dele quando não
+ * está. Sem endereço configurado, cai para exemplo — aí não há para onde
+ * consultar, e uma tela de erro seria pior que uma demonstração.
+ */
 export function modoAtual(): ModoDados {
-  return ler<ModoDados>(CHAVE, USE_MOCK ? "mock" : "api");
+  const padrao: ModoDados = import.meta.env.VITE_API_BASE ? "api" : "mock";
+  return ler<ModoDados>(CHAVE, padrao);
 }
 
 export const usandoMock = () => modoAtual() === "mock";

@@ -51,7 +51,10 @@ export function SeloDadosExemplo({
     >
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
       <p className="text-[12.5px] leading-relaxed text-gold">
-        <strong>Esta tela ainda usa dados de exemplo.</strong> {motivo}
+        <strong>Esta tela ainda usa dados de exemplo.</strong> {motivo}{" "}
+        <span className="opacity-80">
+          O restante do sistema já está lendo da API — só este módulo continua com exemplo.
+        </span>
       </p>
     </div>
   );

@@ -111,13 +111,16 @@ export const USE_MOCK = true;
  * durante a sessão, para validar a integração sem republicar.
  */
 function modoMock(): boolean {
-  if (typeof window === "undefined") return USE_MOCK;
+  // Sem endereço de API não há para onde consultar, e o exemplo é a única
+  // resposta possível.
+  const padrao = !import.meta.env.VITE_API_BASE;
+  if (typeof window === "undefined") return padrao;
   try {
     const bruto = window.sessionStorage.getItem("ss:modo-dados");
-    if (!bruto) return USE_MOCK;
+    if (!bruto) return padrao;
     return JSON.parse(bruto) === "mock";
   } catch {
-    return USE_MOCK;
+    return padrao;
   }
 }
 

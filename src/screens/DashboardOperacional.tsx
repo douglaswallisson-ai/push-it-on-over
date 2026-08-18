@@ -265,10 +265,24 @@ export default function DashboardOperacional() {
             </Card>
           ) : !ind ? (
             <Card title="Indicadores do período" icon={Activity} bodyClassName="p-4" className="mt-3">
-              <p className="text-[12.5px] text-muted-foreground">
-                Os indicadores consolidados vêm da API. Alterne para modo real em Console de gestão ›
-                Configurações para vê-los.
-              </p>
+              {/* A mensagem depende do motivo. Dizer "alterne para modo real"
+                  para quem já está em modo real manda procurar solução onde
+                  não há problema. */}
+              {usandoMock() ? (
+                <p className="text-[12.5px] text-muted-foreground">
+                  Os indicadores consolidados vêm da API. Alterne para modo real em Console de gestão ›
+                  Configurações para vê-los.
+                </p>
+              ) : (
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <p className="text-[12.5px] leading-relaxed text-gold">
+                    <strong>Endpoint ainda não publicado.</strong> O cálculo de indicadores consolidados
+                    (<span className="font-mono">/api/v1/indicators</span>) existe no código mas não foi implantado no
+                    servidor. Os cartões acima já usam dados reais; esta seção aparece assim que o endpoint subir.
+                  </p>
+                </div>
+              )}
             </Card>
           ) : (
             <>

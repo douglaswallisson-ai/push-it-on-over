@@ -146,7 +146,7 @@ export default function PontosInteresse() {
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
             <p className="text-[12.5px] text-muted-foreground">
               Esta tela lê direto da API — não tem versão de exemplo. Alterne para <strong>API real</strong> em
-              Administração › Configurações.
+              Console de gestão › Configurações.
             </p>
           </div>
         ) : (

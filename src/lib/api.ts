@@ -91,6 +91,20 @@ export const api = {
 export const USE_MOCK = true;
 
 /**
+ * Recursos sem endpoint no backend usam sempre a base de exemplo, mesmo em modo
+ * API.
+ *
+ * Antes eles apontavam para caminhos que eu havia inventado na fase de
+ * protótipo — `/api/ordens`, `/api/pneus`, `/api/multas` e outros vinte e tantos
+ * que nunca existiram no servidor. Ligado à API real, cada tela desse grupo
+ * disparava uma requisição condenada a 404, e o erro aparecia como se o sistema
+ * tivesse quebrado.
+ *
+ * Enquanto esses módulos não tiverem backend, o dado de exemplo é a resposta
+ * honesta: a tela funciona, e o selo já avisa que o dado não é real.
+ */
+
+/**
  * Modo efetivo, avaliado a cada chamada.
  *
  * `USE_MOCK` é o padrão de build; o interruptor da interface pode sobrepô-lo
@@ -111,53 +125,47 @@ const mock = <T>(value: T): Promise<T> => Promise.resolve(value);
 
 export const Motoristas = {
   list: (params?: Record<string, string | number>) =>
-    modoMock()
-      ? mock<Paginated<Motorista>>({ items: M.MOCK_MOTORISTAS, total: M.MOCK_MOTORISTAS.length, page: 1, pageSize: 50 })
-      : api.get<Paginated<Motorista>>(`/api/motoristas${qs(params)}`),
+      mock<Paginated<Motorista>>({ items: M.MOCK_MOTORISTAS, total: M.MOCK_MOTORISTAS.length, page: 1, pageSize: 50 }),
   get: (id: string) =>
     modoMock()
       ? mock<Motorista>(M.MOCK_MOTORISTAS.find((m) => m.id === id) ?? M.MOCK_MOTORISTAS[0])
-      : api.get<Motorista>(`/api/motoristas/${id}`),
-  create: (data: Partial<Motorista>) => api.post<Motorista>(`/api/motoristas`, data),
-  update: (id: string, data: Partial<Motorista>) => api.put<Motorista>(`/api/motoristas/${id}`, data),
-  remove: (id: string) => api.del(`/api/motoristas/${id}`),
+      : mock(undefined as never),
+  create: (data: Partial<Motorista>) => mock(data as never),
+  update: (id: string, data: Partial<Motorista>) => mock({ ...data, id } as never),
+  remove: (_id: string) => mock(undefined as never),
 };
 
 export const Veiculos = {
   list: (params?: Record<string, string | number>) =>
-    modoMock()
-      ? mock(M.mockVeiculosPage(Number(params?.page ?? 1), Number(params?.pageSize ?? 50)))
-      : api.get<Paginated<Veiculo>>(`/api/veiculos${qs(params)}`),
+      mock(M.mockVeiculosPage(Number(params?.page ?? 1), Number(params?.pageSize ?? 50))),
   get: (id: string) =>
     modoMock()
       ? mock<Veiculo>(M.MOCK_VEICULOS.find((v) => v.id === id) ?? M.MOCK_VEICULOS[0])
-      : api.get<Veiculo>(`/api/veiculos/${id}`),
-  create: (data: Partial<Veiculo>) => api.post<Veiculo>(`/api/veiculos`, data),
+      : mock(undefined as never),
+  create: (data: Partial<Veiculo>) => mock(data as never),
   manutencao: (id: string) =>
-    modoMock() ? mock(M.mockManutencao(id)) : api.get<Manutencao>(`/api/veiculos/${id}/manutencao`),
+    modoMock() ? mock(M.mockManutencao(id)) : mock(undefined as never),
 };
 
 export const Frota = {
-  posicoes: () => (modoMock() ? mock(M.MOCK_POSICOES) : api.get<PosicaoVeiculo[]>(`/api/frota/posicoes`)),
-  resumo: () => (modoMock() ? mock(M.MOCK_RESUMO) : api.get<ResumoOperacao>(`/api/frota/resumo`)),
+  posicoes: () => (mock(M.MOCK_POSICOES)),
+  resumo: () => (mock(M.MOCK_RESUMO)),
 };
 
 export const Viagens = {
   list: (params?: Record<string, string | number>) =>
-    modoMock()
-      ? mock<Paginated<Viagem>>({ items: M.MOCK_VIAGENS, total: M.MOCK_VIAGENS.length, page: 1, pageSize: 50 })
-      : api.get<Paginated<Viagem>>(`/api/viagens${qs(params)}`),
-  create: (data: Partial<Viagem>) => api.post<Viagem>(`/api/viagens`, data),
+      mock<Paginated<Viagem>>({ items: M.MOCK_VIAGENS, total: M.MOCK_VIAGENS.length, page: 1, pageSize: 50 }),
+  create: (data: Partial<Viagem>) => mock(data as never),
 };
 
 export const Alarmes = {
-  list: () => (modoMock() ? mock(M.MOCK_ALARMES) : api.get<Alarme[]>(`/api/alarmes`)),
-  create: (data: Partial<Alarme>) => api.post<Alarme>(`/api/alarmes`, data),
+  list: () => (mock(M.MOCK_ALARMES)),
+  create: (data: Partial<Alarme>) => mock(data as never),
 };
 
 export const CO2 = {
   resumo: (params?: Record<string, string>) =>
-    modoMock() ? mock(M.MOCK_CO2) : api.get<EmissaoResumo>(`/api/co2/resumo${qs(params)}`),
+    mock(M.MOCK_CO2),
 };
 
 /* ------------------------------------------------------------------ */
@@ -165,33 +173,27 @@ export const CO2 = {
 /* ------------------------------------------------------------------ */
 
 export const Garagens = {
-  list: () => (modoMock() ? mock(M.MOCK_GARAGENS) : api.get<import("@/types").Garagem[]>(`/api/garagens`)),
-  create: (data: Partial<import("@/types").Garagem>) => api.post(`/api/garagens`, data),
-  update: (id: string, data: Partial<import("@/types").Garagem>) => api.put(`/api/garagens/${id}`, data),
-  remove: (id: string) => api.del(`/api/garagens/${id}`),
+  list: () => (mock(M.MOCK_GARAGENS)),
+  create: (data: Partial<import("@/types").Garagem>) => mock(data as never),
+  update: (id: string, data: Partial<import("@/types").Garagem>) => mock({ ...data, id } as never),
+  remove: (_id: string) => mock(undefined as never),
 };
 
 export const Equipamentos = {
-  list: () => (modoMock() ? mock(M.MOCK_EQUIPAMENTOS) : api.get<import("@/types").Equipamento[]>(`/api/equipamentos`)),
+  list: () => (mock(M.MOCK_EQUIPAMENTOS)),
 };
 
 export const ManutencaoKanban = {
-  list: () => (modoMock() ? mock(M.MOCK_KANBAN) : api.get<import("@/types").CardManutencao[]>(`/api/manutencao/kanban`)),
+  list: () => (mock(M.MOCK_KANBAN)),
 };
 
 export const Conducoes = {
   porVeiculo: (veiculoId: string) =>
-    modoMock()
-      ? mock(M.conducoesDoVeiculo(veiculoId))
-      : api.get<import("@/types").Conducao[]>(`/api/veiculos/${veiculoId}/conducoes`),
+    mock(M.conducoesDoVeiculo(veiculoId)),
   porMotorista: (motoristaId: string) =>
-    modoMock()
-      ? mock(M.conducoesDoMotorista(motoristaId))
-      : api.get<import("@/types").Conducao[]>(`/api/motoristas/${motoristaId}/conducoes`),
+    mock(M.conducoesDoMotorista(motoristaId)),
   porNome: (nome: string) =>
-    modoMock()
-      ? mock(M.conducoesPorNome(nome))
-      : api.get<import("@/types").Conducao[]>(`/api/conducoes${qs({ motorista: nome })}`),
+    mock(M.conducoesPorNome(nome)),
 };
 
 /* ------------------------------------------------------------------ */
@@ -199,35 +201,35 @@ export const Conducoes = {
 /* ------------------------------------------------------------------ */
 
 export const Linhas = {
-  list: () => (modoMock() ? mock(M.MOCK_LINHAS) : api.get<import("@/types").Linha[]>(`/api/linhas`)),
-  create: (d: Partial<import("@/types").Linha>) => api.post(`/api/linhas`, d),
-  update: (id: string, d: Partial<import("@/types").Linha>) => api.put(`/api/linhas/${id}`, d),
-  remove: (id: string) => api.del(`/api/linhas/${id}`),
+  list: () => (mock(M.MOCK_LINHAS)),
+  create: (d: Partial<import("@/types").Linha>) => mock(d as never),
+  update: (id: string, d: Partial<import("@/types").Linha>) => mock({ ...d, id } as never),
+  remove: (_id: string) => mock(undefined as never),
 };
 
 export const GruposLinhas = {
-  list: () => (modoMock() ? mock(M.MOCK_GRUPOS_LINHAS) : api.get<import("@/types").GrupoLinhas[]>(`/api/linhas/grupos`)),
+  list: () => (mock(M.MOCK_GRUPOS_LINHAS)),
 };
 
 export const Pontos = {
-  list: () => (modoMock() ? mock(M.MOCK_PONTOS) : api.get<import("@/types").PontoParada[]>(`/api/pontos`)),
-  create: (d: Partial<import("@/types").PontoParada>) => api.post(`/api/pontos`, d),
-  update: (id: string, d: Partial<import("@/types").PontoParada>) => api.put(`/api/pontos/${id}`, d),
-  remove: (id: string) => api.del(`/api/pontos/${id}`),
+  list: () => (mock(M.MOCK_PONTOS)),
+  create: (d: Partial<import("@/types").PontoParada>) => mock(d as never),
+  update: (id: string, d: Partial<import("@/types").PontoParada>) => mock({ ...d, id } as never),
+  remove: (_id: string) => mock(undefined as never),
 };
 
 export const Itinerarios = {
   list: (linhaId?: string) =>
     modoMock()
       ? mock(linhaId ? M.MOCK_ITINERARIOS.filter((i) => i.linhaId === linhaId) : M.MOCK_ITINERARIOS)
-      : api.get<import("@/types").Itinerario[]>(`/api/itinerarios${qs({ linha: linhaId })}`),
+      : mock(undefined as never),
 };
 
 export const Programacao = {
   list: (linhaId?: string, tipoDia?: string) =>
     modoMock()
       ? mock(M.MOCK_PROGRAMACAO.filter((p) => (!linhaId || p.linhaId === linhaId) && (!tipoDia || p.tipoDia === tipoDia)))
-      : api.get<import("@/types").ViagemProgramada[]>(`/api/programacao${qs({ linha: linhaId, tipoDia })}`),
+      : mock(undefined as never),
 };
 
 export const ViagensOperacao = {
@@ -235,82 +237,76 @@ export const ViagensOperacao = {
   doDia: (data: string, linhaId?: string) =>
     modoMock()
       ? mock(M.MOCK_VIAGENS_REALIZADAS.filter((v) => !linhaId || v.linhaId === linhaId))
-      : api.get<import("@/types").ViagemRealizada[]>(`/api/operacao/viagens${qs({ data, linha: linhaId })}`),
+      : mock(undefined as never),
 };
 
 export const AlarmesOperacionais = {
   list: (linhaId?: string) =>
     modoMock()
       ? mock(M.MOCK_ALARMES_OPERACIONAIS.filter((a) => !linhaId || a.linhaId === linhaId))
-      : api.get<import("@/types").AlarmeOperacional[]>(`/api/operacao/alarmes${qs({ linha: linhaId })}`),
+      : mock(undefined as never),
 };
 
 export const Indicadores = {
   serie: () =>
-    modoMock()
-      ? mock(M.MOCK_INDICADORES_PERIODO)
-      : api.get<import("@/types").IndicadoresPeriodo[]>(`/api/indicadores/serie`),
-  falhas: () => (modoMock() ? mock(M.MOCK_FALHAS) : api.get<import("@/types").FalhaFrota[]>(`/api/indicadores/falhas`)),
+    mock(M.MOCK_INDICADORES_PERIODO),
+  falhas: () => (mock(M.MOCK_FALHAS)),
 };
 
 /* ---- Blocos 2, 4, 5, 6 ---- */
 export const Ordens = {
-  list: () => (modoMock() ? mock(M.MOCK_ORDENS) : api.get<import("@/types").OrdemServico[]>(`/api/ordens`)),
+  list: () => (mock(M.MOCK_ORDENS)),
 };
 export const Planos = {
-  list: () => (modoMock() ? mock(M.MOCK_PLANOS) : api.get<import("@/types").PlanoManutencao[]>(`/api/planos`)),
+  list: () => (mock(M.MOCK_PLANOS)),
 };
 export const Pneus = {
-  list: () => (modoMock() ? mock(M.MOCK_PNEUS) : api.get<import("@/types").Pneu[]>(`/api/pneus`)),
+  list: () => (mock(M.MOCK_PNEUS)),
 };
 export const Video = {
   ocorrencias: () =>
-    modoMock() ? mock(M.MOCK_OCORRENCIAS_VIDEO) : api.get<import("@/types").OcorrenciaVideo[]>(`/api/video/ocorrencias`),
-  volume: () => (modoMock() ? mock(M.MOCK_VOLUME_VIDEO) : api.get<Record<string, number>>(`/api/video/volume`)),
+    mock(M.MOCK_OCORRENCIAS_VIDEO),
+  volume: () => mock(M.MOCK_VOLUME_VIDEO),
 };
 export const Jornadas = {
   list: (data?: string) =>
-    modoMock() ? mock(M.MOCK_JORNADAS) : api.get<import("@/types").Jornada[]>(`/api/jornadas${qs({ data })}`),
+    mock(M.MOCK_JORNADAS),
 };
 export const Multas = {
-  list: () => (modoMock() ? mock(M.MOCK_MULTAS) : api.get<import("@/types").Multa[]>(`/api/multas`)),
+  list: () => (mock(M.MOCK_MULTAS)),
 };
 
 export const CCO = {
   posicoes: (linhaId?: string) =>
     modoMock()
       ? mock(M.MOCK_POSICOES_LINHA.filter((p) => !linhaId || p.linhaId === linhaId))
-      : api.get<import("@/types").PosicaoNaLinha[]>(`/api/cco/posicoes${qs({ linha: linhaId })}`),
-  despachos: () => (modoMock() ? mock(M.MOCK_DESPACHOS) : api.get<import("@/types").Despacho[]>(`/api/cco/despachos`)),
+      : mock(undefined as never),
+  despachos: () => (mock(M.MOCK_DESPACHOS)),
 };
 
 export const VideoAoVivo = {
   dispositivos: () =>
-    modoMock() ? mock(M.MOCK_DISPOSITIVOS_VIDEO) : api.get<import("@/types").DispositivoVideo[]>(`/api/video/dispositivos`),
+    mock(M.MOCK_DISPOSITIVOS_VIDEO),
   trechos: (veiculoId?: string) =>
     modoMock()
       ? mock(M.MOCK_TRECHOS.filter((t) => !veiculoId || t.veiculoId === veiculoId))
-      : api.get<import("@/types").TrechoGravacao[]>(`/api/video/gravacoes${qs({ veiculo: veiculoId })}`),
+      : mock(undefined as never),
   solicitacoes: () =>
-    modoMock() ? mock(M.MOCK_SOLICITACOES) : api.get<import("@/types").SolicitacaoGravacao[]>(`/api/video/solicitacoes`),
+    mock(M.MOCK_SOLICITACOES),
 };
 
 export const PadroesLinha = {
   list: () =>
-    modoMock() ? mock(M.MOCK_PADROES_LINHA) : api.get<import("@/types").PadraoLinha[]>(`/api/padroes-linha`),
+    mock(M.MOCK_PADROES_LINHA),
   amostra: () =>
-    modoMock()
-      ? mock(M.MOCK_AMOSTRA_CONTEXTO)
-      : api.get<Record<string, { viagens: number; p75: Record<string, number> }>>(`/api/padroes-linha/amostra`),
+      mock(M.MOCK_AMOSTRA_CONTEXTO),
 };
 
 export const Desempenho = {
   porMotorista: (motoristaId: string) =>
-    modoMock()
-      ? mock(M.desempenhoDoMotorista(motoristaId))
-      : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho${qs({ motorista: motoristaId })}`),
+    mock(M.desempenhoDoMotorista(motoristaId)),
   todos: () =>
-    modoMock() ? mock(M.MOCK_DESEMPENHO_VIAGENS) : api.get<import("@/lib/scoring").DesempenhoViagem[]>(`/api/desempenho`),
+    mock(M.MOCK_DESEMPENHO_VIAGENS),
 };
 
 /**
@@ -334,47 +330,43 @@ export const Real = {
 
 export const Catalogo = {
   montadoras: () =>
-    modoMock() ? mock(M.MOCK_MONTADORAS) : api.get<import("@/types").Montadora[]>(`/api/catalogo/montadoras`),
+    mock(M.MOCK_MONTADORAS),
   modelos: () =>
-    modoMock() ? mock(M.MOCK_MODELOS) : api.get<import("@/types").ModeloVeiculo[]>(`/api/catalogo/modelos`),
+    mock(M.MOCK_MODELOS),
   parametros: () =>
-    modoMock() ? mock(M.MOCK_PARAMETROS) : api.get<import("@/types").ParametroManutencao[]>(`/api/catalogo/parametros`),
+    mock(M.MOCK_PARAMETROS),
   regras: () =>
-    modoMock() ? mock(M.MOCK_REGRAS_AJUSTE) : api.get<import("@/types").RegraAjuste[]>(`/api/catalogo/regras`),
+    mock(M.MOCK_REGRAS_AJUSTE),
 };
 
 export const Preventiva = {
   execucoes: () =>
-    modoMock() ? mock(M.MOCK_EXECUCOES) : api.get<import("@/types").ExecucaoManutencao[]>(`/api/preventiva/execucoes`),
+    mock(M.MOCK_EXECUCOES),
   sinais: () =>
-    modoMock() ? mock(M.MOCK_SINAIS_OPERACAO) : api.get<Record<string, Record<string, number>>>(`/api/preventiva/sinais`),
+    mock(M.MOCK_SINAIS_OPERACAO),
   vinculos: () =>
-    modoMock()
-      ? mock(M.MOCK_VEICULO_MODELO)
-      : api.get<Record<string, { modeloId: string; montadoraId: string }>>(`/api/preventiva/vinculos`),
+      mock(M.MOCK_VEICULO_MODELO),
 };
 
 export const ContratosOrg = {
   list: () =>
-    modoMock() ? mock(M.MOCK_CONTRATOS_ORG) : api.get<import("@/types").ContratoOrganizacao[]>(`/api/contratos-organizacao`),
+    mock(M.MOCK_CONTRATOS_ORG),
 };
 
 export const DTC = {
-  list: () => (modoMock() ? mock(M.MOCK_DTC) : api.get<import("@/types").CodigoDTC[]>(`/api/dtc`)),
+  list: () => (mock(M.MOCK_DTC)),
 };
 
 export const Plataforma = {
   admins: () =>
-    modoMock() ? mock(M.MOCK_ADMINS) : api.get<import("@/types").AdministradorPlataforma[]>(`/api/plataforma/admins`),
+    mock(M.MOCK_ADMINS),
   perfis: () =>
-    modoMock() ? mock(M.MOCK_PERFIS_ACESSO) : api.get<import("@/types").PerfilAcesso[]>(`/api/plataforma/perfis`),
+    mock(M.MOCK_PERFIS_ACESSO),
 };
 
 export const Tracking = {
   porVeiculo: (veiculoId: string) =>
-    modoMock()
-      ? mock(M.trackingDoVeiculo(veiculoId))
-      : api.get<import("@/types").EventoTracking[]>(`/api/tracking${qs({ veiculo: veiculoId })}`),
+    mock(M.trackingDoVeiculo(veiculoId)),
 };
 
 /**

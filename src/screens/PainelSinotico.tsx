@@ -29,6 +29,7 @@ import { registrarAuditoria } from "@/lib/session";
 import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
+import { projetarNaLinha, type PontoItinerario } from "@/lib/projecao-linha";
 import { DESPACHO_LABEL, type PosicaoNaLinha, type Sentido, type TipoDespacho } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -77,7 +78,72 @@ export default function PainelSinotico() {
   }, [veiculosQ.data]);
 
   const pontoPorId = useMemo(() => new Map((pontosQ.data ?? []).map((p) => [p.id, p])), [pontosQ.data]);
-  const posicoes = useMemo(() => posicoesQ.data ?? [], [posicoesQ.data]);
+  /**
+   * Posições na linha.
+   *
+   * Ligado à API, cada carro é projetado geometricamente sobre o itinerário a
+   * partir do GPS — antes o progresso na régua vinha pronto do exemplo, o que
+   * fazia a tela parecer funcionar sem calcular nada.
+   */
+  const posicoes = useMemo(() => {
+    if (usandoMock() || !aoVivo.posicoes.size) return posicoesQ.data ?? [];
+
+    const it = (itinerariosQ.data ?? []).find((x) => x.linhaId === linhaId);
+    const pontos = pontosQ.data ?? [];
+    if (!it) return posicoesQ.data ?? [];
+
+    const itinerario: PontoItinerario[] = it.paradas
+      .map((pa, i) => {
+        const ponto = pontos.find((x) => x.id === pa.pontoId);
+        if (!ponto) return null;
+        return {
+          id: ponto.id,
+          nome: ponto.nome,
+          lat: ponto.lat,
+          lng: ponto.lng,
+          ordem: pa.ordem ?? i,
+          // O itinerário guarda minutos acumulados desde a partida, não hora
+          // do relógio. Convertê-lo em horário exige a hora de saída da
+          // viagem, que ainda não vem do endpoint — sem ela, a régua posiciona
+          // corretamente mas não classifica adiantado ou atrasado.
+          horarioMin: undefined,
+        };
+      })
+      .filter(Boolean) as PontoItinerario[];
+
+    if (itinerario.length < 2) return posicoesQ.data ?? [];
+
+    const out: PosicaoNaLinha[] = [];
+    for (const [, gps] of aoVivo.posicoes) {
+      const proj = projetarNaLinha(
+        {
+          veiculoId: String(gps.unit_id),
+          lat: gps.latitude,
+          lng: gps.longitude,
+          em: gps.local_time ?? new Date().toISOString(),
+          velocidade: gps.speed,
+        },
+        itinerario,
+      );
+      // Confiança baixa significa que o carro não está no itinerário — na
+      // garagem, desviado, ou o traçado está desatualizado. Colocá-lo na régua
+      // mostraria como se estivesse operando.
+      if (!proj || proj.confianca === "baixa") continue;
+
+      out.push({
+        veiculoId: proj.veiculoId,
+        linhaId,
+        itinerarioId: it.id,
+        sentido: it.sentido,
+        tabela: 0,
+        ultimoPontoId: proj.pontoAnterior.id,
+        progresso: proj.progressoTrecho,
+        desvioMin: proj.desvioMin ?? 0,
+      } as PosicaoNaLinha);
+    }
+
+    return out.length ? out : (posicoesQ.data ?? []);
+  }, [posicoesQ.data, aoVivo.posicoes, itinerariosQ.data, pontosQ.data, linhaId]);
   const linha = (linhasQ.data ?? []).find((l) => l.id === linhaId);
 
   const itinerarios = itinerariosQ.data ?? [];
@@ -101,6 +167,25 @@ export default function PainelSinotico() {
     toast.success(DESPACHO_LABEL[tipo], { description: `Carro ${prefixo.get(p.veiculoId)} · ${motivo}` });
     setSelecionado(null);
   };
+
+  /**
+   * Comboio: dois carros grudados na linha.
+   *
+   * É o problema que o painel existe para revelar, e contar só atraso
+   * individual não mostra — os dois podem estar no horário e ainda assim mal
+   * distribuídos, com um deles rodando vazio atrás do outro.
+   */
+  const comboios = useMemo(() => {
+    const ordenadas = [...posicoes].sort((a, b) => posicaoRelativa(a) - posicaoRelativa(b));
+    const pares: string[] = [];
+    for (let i = 1; i < ordenadas.length; i++) {
+      const distancia = posicaoRelativa(ordenadas[i]) - posicaoRelativa(ordenadas[i - 1]);
+      // Menos de 3% da linha entre um carro e outro. Em linha de 40 minutos,
+      // são pouco mais de um minuto de intervalo.
+      if (distancia < 0.03) pares.push(ordenadas[i].veiculoId);
+    }
+    return pares;
+  }, [posicoes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const adiantados = posicoes.filter((p) => p.desvioMin < -3).length;
   const atrasados = posicoes.filter((p) => p.desvioMin > 3).length;
@@ -145,7 +230,7 @@ export default function PainelSinotico() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="A posição de cada carro na régua depende de casar o GPS com a sequência de paradas do turno — cálculo que ainda não foi desenvolvido. Linhas, turnos e posições já vêm da API." />
+        <SeloDadosExemplo motivo="A posição de cada carro na régua já é calculada a partir do GPS real. O desvio de horário ainda usa exemplo: o itinerário guarda minutos desde a partida, e converter em atraso exige a hora de saída da viagem, que o endpoint ainda não devolve." />
 
         {posicoesQ.error ? (
           <ErrorBox error={posicoesQ.error} onRetry={() => posicoesQ.refetch()} />
@@ -155,6 +240,13 @@ export default function PainelSinotico() {
               <StatTile icon={Bus} label="Carros na linha" value={nf(posicoes.length)} color="var(--brand-navy)" />
               <StatTile icon={ArrowLeftRight} label="Adiantados" value={nf(adiantados)} color="var(--gold)" />
               <StatTile icon={ArrowLeftRight} label="Atrasados" value={nf(atrasados)} color="var(--coral)" />
+              <StatTile
+                icon={Users}
+                label="Em comboio"
+                value={nf(comboios.length)}
+                color={comboios.length ? "var(--coral)" : "var(--leaf)"}
+                foot="carros grudados na linha"
+              />
               <StatTile
                 icon={PauseCircle}
                 label="Parados"

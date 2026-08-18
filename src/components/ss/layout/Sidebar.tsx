@@ -149,7 +149,10 @@ const NAV_PRIMARY: Entry[] = [
   {
     label: "Gerencial",
     icon: Gauge,
-    items: [{ label: "Indicadores", to: "/app/gerencial/indicadores" }],
+    items: [
+      { label: "Gestão operacional", to: "/app/gerencial/operacional" },
+      { label: "Indicadores", to: "/app/gerencial/indicadores", beta: true },
+    ],
   },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   {

@@ -62,6 +62,7 @@ import { Route as AppFrotaSinaisRouteImport } from './routes/app.frota.sinais'
 import { Route as AppFrotaTelemetriaRouteImport } from './routes/app.frota.telemetria'
 import { Route as AppFrotaTrackingRouteImport } from './routes/app.frota.tracking'
 import { Route as AppGerencialIndicadoresRouteImport } from './routes/app.gerencial.indicadores'
+import { Route as AppGerencialOperacionalRouteImport } from './routes/app.gerencial.operacional'
 import { Route as AppManutencaoIndexRouteImport } from './routes/app.manutencao.index'
 import { Route as AppManutencaoDiagnosticoRouteImport } from './routes/app.manutencao.diagnostico'
 import { Route as AppManutencaoOrdensRouteImport } from './routes/app.manutencao.ordens'
@@ -356,6 +357,11 @@ const AppGerencialIndicadoresRoute = AppGerencialIndicadoresRouteImport.update({
   path: '/gerencial/indicadores',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGerencialOperacionalRoute = AppGerencialOperacionalRouteImport.update({
+  id: '/gerencial/operacional',
+  path: '/gerencial/operacional',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManutencaoIndexRoute = AppManutencaoIndexRouteImport.update({
   id: '/manutencao/',
   path: '/manutencao/',
@@ -531,6 +537,7 @@ export interface FileRoutesByFullPath {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/gerencial/operacional': typeof AppGerencialOperacionalRoute
   '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
   '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
   '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
@@ -607,6 +614,7 @@ export interface FileRoutesByTo {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/gerencial/operacional': typeof AppGerencialOperacionalRoute
   '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
   '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
   '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
@@ -686,6 +694,7 @@ export interface FileRoutesById {
   '/app/frota/telemetria': typeof AppFrotaTelemetriaRoute
   '/app/frota/tracking': typeof AppFrotaTrackingRoute
   '/app/gerencial/indicadores': typeof AppGerencialIndicadoresRoute
+  '/app/gerencial/operacional': typeof AppGerencialOperacionalRoute
   '/app/manutencao/diagnostico': typeof AppManutencaoDiagnosticoRoute
   '/app/manutencao/ordens': typeof AppManutencaoOrdensRoute
   '/app/manutencao/pneus': typeof AppManutencaoPneusRoute
@@ -766,6 +775,7 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/gerencial/operacional'
     | '/app/manutencao/diagnostico'
     | '/app/manutencao/ordens'
     | '/app/manutencao/pneus'
@@ -842,6 +852,7 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/gerencial/operacional'
     | '/app/manutencao/diagnostico'
     | '/app/manutencao/ordens'
     | '/app/manutencao/pneus'
@@ -920,6 +931,7 @@ export interface FileRouteTypes {
     | '/app/frota/telemetria'
     | '/app/frota/tracking'
     | '/app/gerencial/indicadores'
+    | '/app/gerencial/operacional'
     | '/app/manutencao/diagnostico'
     | '/app/manutencao/ordens'
     | '/app/manutencao/pneus'
@@ -1325,6 +1337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGerencialIndicadoresRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/gerencial/operacional': {
+      id: '/app/gerencial/operacional'
+      path: '/gerencial/operacional'
+      fullPath: '/app/gerencial/operacional'
+      preLoaderRoute: typeof AppGerencialOperacionalRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/manutencao/': {
       id: '/app/manutencao/'
       path: '/manutencao'
@@ -1545,6 +1564,7 @@ interface AppRouteChildren {
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppFrotaTrackingRoute: typeof AppFrotaTrackingRoute
   AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
+  AppGerencialOperacionalRoute: typeof AppGerencialOperacionalRoute
   AppManutencaoDiagnosticoRoute: typeof AppManutencaoDiagnosticoRoute
   AppManutencaoOrdensRoute: typeof AppManutencaoOrdensRoute
   AppManutencaoPneusRoute: typeof AppManutencaoPneusRoute
@@ -1610,6 +1630,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppFrotaTrackingRoute: AppFrotaTrackingRoute,
   AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
+  AppGerencialOperacionalRoute: AppGerencialOperacionalRoute,
   AppManutencaoDiagnosticoRoute: AppManutencaoDiagnosticoRoute,
   AppManutencaoOrdensRoute: AppManutencaoOrdensRoute,
   AppManutencaoPneusRoute: AppManutencaoPneusRoute,

@@ -26,6 +26,17 @@ const STATS = [
   { k: "24/7", v: "monitoramento com IA" },
 ];
 
+/**
+ * Perfil da interface a partir do usuário devolvido pela API.
+ *
+ * `master` vem como 1 ou 0, não como booleano — comparar com `true` daria falso
+ * para o administrador e o seletor de cliente nunca apareceria.
+ */
+function perfilDoUsuario(u: { master?: number | boolean | null } | null | undefined) {
+  const ehMaster = u?.master === 1 || u?.master === true;
+  return ehMaster ? ("super_admin" as const) : ("gestor" as const);
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +64,7 @@ export default function Login() {
           email: perfil?.email ?? "",
           organizacao: perfil?.account_name ?? "SS Telemática",
           organizacaoId: String(perfil?.account_id ?? ""),
-          perfil: perfil?.master ? "super_admin" : "gestor",
+          perfil: perfilDoUsuario(perfil),
         });
         navigate("/app");
       })
@@ -94,9 +105,12 @@ export default function Login() {
       entrarComPerfil({
         nome: perfil?.name ?? perfil?.login ?? email,
         email: perfil?.email ?? email,
-        organizacao: perfil?.account_name ?? "SS Telemática",
-        organizacaoId: String(perfil?.account_id ?? ""),
-        perfil: perfil?.master ? "super_admin" : "gestor",
+        organizacao: perfil?.account_name ?? perfil?.name ?? "SS Telemática",
+        // O grupo a que o usuário pertence define qual cliente a interface
+        // mostra. Sem ele, a organização ativa fica indefinida e as telas
+        // caem no exemplo.
+        organizacaoId: String(perfil?.group_id ?? perfil?.account_id ?? ""),
+        perfil: perfilDoUsuario(perfil),
       });
       navigate("/app");
     } catch (err) {

@@ -101,11 +101,40 @@ export default function Manutencao() {
       ? noEscopo.filter((c) => (c.garagem ? idPorNome.get(c.garagem) : undefined) === garagem)
       : noEscopo;
 
+    /**
+     * Todo veículo cadastrado precisa aparecer no quadro.
+     *
+     * Antes o quadro só listava o que existia na base fixa de cartões: veículo
+     * cadastrado depois nunca aparecia, mesmo com preventiva vencida — ficava
+     * invisível justamente para quem precisava agir.
+     *
+     * Agora a lista de cartões é a frota inteira; quem não tem cartão pronto
+     * ganha um derivado do próprio veículo.
+     */
+    const comCartao = new Set(filtrados.map((c) => c.veiculoId));
+    const semCartao: CardManutencao[] = porVeiculo
+      .filter((p) => !comCartao.has(p.veiculo.id))
+      .map((p) => ({
+        veiculoId: p.veiculo.id,
+        placa: p.veiculo.placa,
+        marca: p.veiculo.marca,
+        modelo: p.veiculo.modelo,
+        status: "em_dia" as StatusManutencao,
+        servico: p.semCatalogo ? "Modelo sem parâmetro cadastrado" : "Nenhuma pendência",
+        prazoDias: null,
+        // Sem histórico de falha, a saúde parte de 100 e só cai com pendência
+        // real. Inventar um número intermediário daria falsa impressão.
+        indiceSaude: p.semCatalogo ? 0 : 100,
+        custoEstimado: null,
+        pendencias: 0,
+        garagem: undefined,
+      }));
+
     // A preventiva calculada tem precedência sobre o status estático: ela vem
     // do parâmetro do fabricante cruzado com o odômetro real. Ajuste manual do
     // operador continua vencendo os dois — quem está na oficina sabe mais que
     // o cálculo.
-    return filtrados.map((c) => {
+    return [...filtrados, ...semCartao].map((c) => {
       if (ajustes[c.veiculoId]) return c;
 
       const calc = porVeiculo.find((p) => p.veiculo.id === c.veiculoId);

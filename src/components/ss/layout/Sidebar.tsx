@@ -47,7 +47,15 @@ import { pode } from "@/lib/permissoes";
 const RAIL = 68;
 const PANEL = 256;
 
-type SubItem = { label: string; to: string };
+type SubItem = { label: string; to: string
+  /**
+   * Marca a tela como beta no menu.
+   *
+   * São as que ainda usam dados de exemplo por não terem origem no backend.
+   * Sinalizar aqui evita o usuário navegar até lá esperando dado real.
+   */
+  beta?: boolean;
+};
 type Leaf = { label: string; icon: LucideIcon; to: string; badge?: string };
 type Group = { label: string; icon: LucideIcon; items: SubItem[] };
 type Entry = Leaf | Group;
@@ -98,7 +106,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
       { label: "Controle de escala", to: "/app/fretamento/escala" },
       { label: "Ponto", to: "/app/fretamento/ponto" },
-      { label: "Multas", to: "/app/pessoas/multas" },
+      { label: "Multas", to: "/app/pessoas/multas", beta: true },
     ],
   },
   {
@@ -107,7 +115,7 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
-      { label: "Padrão por linha", to: "/app/urbano/padrao" },
+      { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
     ],
   },
   {
@@ -127,11 +135,11 @@ const NAV_PRIMARY: Entry[] = [
     label: "Manutenção",
     icon: Wrench,
     items: [
-      { label: "Manutenção", to: "/app/manutencao" },
-      { label: "Ordens de serviço", to: "/app/manutencao/ordens" },
-      { label: "Pneus", to: "/app/manutencao/pneus" },
-      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico" },
-      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao" },
+      { label: "Manutenção", to: "/app/manutencao", beta: true },
+      { label: "Ordens de serviço", to: "/app/manutencao/ordens", beta: true },
+      { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
+      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
+      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
     ],
   },
   {
@@ -156,7 +164,7 @@ const NAV_SECONDARY: Entry[] = [
     label: "Premiação",
     icon: Award,
     items: [
-      { label: "Acompanhamento", to: "/app/premiacao" },
+      { label: "Acompanhamento", to: "/app/premiacao", beta: true },
       { label: "Metas e pesos", to: "/app/premiacao/metas" },
     ],
   },
@@ -449,7 +457,17 @@ function GroupRow({
                 )
               }
             >
-              {item.label}
+              <span className="flex items-center gap-1.5">
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {item.beta && (
+                  <span
+                    title="Ainda usa dados de exemplo — sem origem no backend"
+                    className="shrink-0 rounded bg-gold/25 px-1 py-px font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gold"
+                  >
+                    beta
+                  </span>
+                )}
+              </span>
             </NavLink>
           ))}
         </div>

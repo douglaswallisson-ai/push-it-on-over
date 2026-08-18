@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import type { ResumoOperacao } from "@/types";
@@ -269,6 +270,8 @@ function KpiCard({
 
 /** Plano contratado com anel de performance. */
 function PlanoCard() {
+  const saude = useSaudeFrota();
+
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
       <div className="mb-5 flex items-center justify-between">
@@ -284,13 +287,10 @@ function PlanoCard() {
       </div>
 
       <div className="flex flex-1 flex-col gap-6 sm:flex-row sm:items-center">
-        <Donut value={91} />
+        <Donut value={saude.indice} />
         <div className="flex-1">
-          <p className="text-sm font-semibold">Performance acima da média</p>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            A frota opera 4% acima da média do último mês. Os módulos de roteirização e monitoramento
-            de condução são os que mais puxam o índice para cima.
-          </p>
+          <p className="text-sm font-semibold">{saude.titulo}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{saude.descricao}</p>
           <Link
             to="/app/gerencial/indicadores"
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-blue"
@@ -332,6 +332,57 @@ function PendenciasCard() {
 }
 
 /** Eventos críticos — o bloco de maior urgência da tela. */
+/**
+ * Saúde da frota, calculada.
+ *
+ * O número era fixo em 91 e nunca mudava — o que é pior que não mostrar, porque
+ * dá a impressão de que o sistema está medindo algo. Agora sai da preventiva:
+ * cada veículo começa em 100 e perde pontos por pendência, ponderado pelo peso
+ * de cada situação.
+ */
+function useSaudeFrota() {
+  const { porVeiculo } = usePreventivaFrota();
+
+  return useMemo(() => {
+    if (!porVeiculo.length) {
+      return { indice: 0, titulo: "Sem dados de frota", descricao: "Nenhum veículo cadastrado ainda." };
+    }
+
+    // Peso por situação. Vencida pesa mais que próxima porque já passou do
+    // limite do fabricante — é risco presente, não futuro.
+    const notas = porVeiculo.map((v) => {
+      if (v.semCatalogo) return 100; // sem parâmetro não é culpa do veículo
+      const vencidas = v.preventivas.filter((p) => p.urgencia === "vencida").length;
+      const criticas = v.preventivas.filter((p) => p.urgencia === "critica").length;
+      const proximas = v.preventivas.filter((p) => p.urgencia === "proxima").length;
+      return Math.max(0, 100 - vencidas * 25 - criticas * 12 - proximas * 5);
+    });
+
+    const indice = Math.round(notas.reduce((a, n) => a + n, 0) / notas.length);
+    const vencidasTotal = porVeiculo.reduce(
+      (a, v) => a + v.preventivas.filter((p) => p.urgencia === "vencida").length,
+      0,
+    );
+    const semCatalogo = porVeiculo.filter((v) => v.semCatalogo).length;
+
+    const titulo =
+      indice >= 90 ? "Frota em boas condições"
+      : indice >= 75 ? "Frota com pendências pontuais"
+      : indice >= 50 ? "Frota exige atenção"
+      : "Frota em situação crítica";
+
+    const partes: string[] = [];
+    if (vencidasTotal) partes.push(`${vencidasTotal} manutenção${vencidasTotal > 1 ? "ões" : ""} vencida${vencidasTotal > 1 ? "s" : ""}`);
+    if (semCatalogo) partes.push(`${semCatalogo} veículo${semCatalogo > 1 ? "s" : ""} sem parâmetro cadastrado`);
+
+    const descricao = partes.length
+      ? `Índice calculado sobre ${porVeiculo.length} veículos. ${partes.join(" e ")} — os cartões de manutenção abaixo detalham.`
+      : `Índice calculado sobre ${porVeiculo.length} veículos, sem manutenção vencida no momento.`;
+
+    return { indice, titulo, descricao };
+  }, [porVeiculo]);
+}
+
 function CriticalCard() {
   const navigate = useNavigate();
   return (

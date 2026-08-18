@@ -59,6 +59,20 @@ import {
 
 const MINUTE = 60_000;
 
+/**
+ * Política de repetição.
+ *
+ * O padrão do React Query repete três vezes. Para 401, 403 e 404 isso é
+ * desperdício e polui o console: permissão negada não melhora na segunda
+ * tentativa, e recurso inexistente continua inexistente. Foi o que encheu a
+ * tela de sete chamadas idênticas com 403.
+ */
+export function naoRepetirSeProibido(tentativas: number, erro: unknown) {
+  const status = (erro as { status?: number })?.status;
+  if (status === 401 || status === 403 || status === 404) return false;
+  return tentativas < 2;
+}
+
 export const resumoQuery = () =>
   queryOptions({
     queryKey: ["frota", "resumo"],
@@ -392,10 +406,15 @@ export const veiculosApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
     queryKey: ["veiculos", "api", page, pageSize],
     queryFn: async () => {
-      const r = await Real.veiculos({ skip: (page - 1) * pageSize, limit: pageSize });
-      return { items: (r.items as VeiculoApi[]).map(veiculoDaApiParaTela), total: r.total };
+      const r = await Real.veiculos({ limit: pageSize });
+      const lista = (r.data ?? []) as VeiculoApi[];
+      // `total_returned` conta o que veio nesta página, não o total geral: a
+      // paginação por cursor não sabe o total sem varrer tudo, que é
+      // justamente o custo que ela evita.
+      return { items: lista.map(veiculoDaApiParaTela), total: r.total_returned ?? lista.length };
     },
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 2 * MINUTE,
   });
 
@@ -403,10 +422,12 @@ export const motoristasApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
     queryKey: ["motoristas", "api", page, pageSize],
     queryFn: async () => {
-      const r = await Real.motoristas({ skip: (page - 1) * pageSize, limit: pageSize });
-      return { items: (r.items as MotoristaApi[]).map(motoristaDaApiParaTela), total: r.total };
+      const r = await Real.motoristas({ limit: pageSize });
+      const lista = (r.data ?? []) as MotoristaApi[];
+      return { items: lista.map(motoristaDaApiParaTela), total: r.total_returned ?? lista.length };
     },
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 2 * MINUTE,
   });
 
@@ -418,6 +439,7 @@ export const linhasApiQuery = () =>
       return (r.items as LinhaApi[]).map(linhaDaApi);
     },
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 10 * MINUTE,
   });
 
@@ -451,6 +473,7 @@ export const eventosApiQuery = (filtros: Record<string, string | number | boolea
     queryKey: ["eventos", "api", JSON.stringify(filtros)],
     queryFn: () => Operacional.eventos(filtros),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 30_000,
     refetchInterval: refetchInterval(),
   });
@@ -468,6 +491,7 @@ export const videoEquipamentosQuery = () =>
     queryKey: ["video", "equipamentos", "api"],
     queryFn: () => Seguranca.equipamentos(),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: MINUTE,
     refetchInterval: refetchInterval(),
   });
@@ -477,6 +501,7 @@ export const videoOcorrenciasApiQuery = (params: Record<string, string | number 
     queryKey: ["video", "ocorrencias", "api", JSON.stringify(params)],
     queryFn: () => Seguranca.ocorrencias(params),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 30_000,
   });
 
@@ -485,6 +510,7 @@ export const indicadoresApiQuery = (inicio: string, fim: string, grupoId?: strin
     queryKey: ["indicadores", "api", inicio, fim, grupoId ?? "todos"],
     queryFn: () => IndicadoresApi.consolidado(inicio, fim, grupoId),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,
   });
 
@@ -493,6 +519,7 @@ export const pontosApiQuery = (dias = 30, busca?: string) =>
     queryKey: ["pontos", "api", dias, busca ?? ""],
     queryFn: () => PontosApi.lista(dias, busca),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 10 * MINUTE,
   });
 
@@ -501,6 +528,7 @@ export const vinculosRastreadorQuery = () =>
     queryKey: ["vinculos", "rastreadores"],
     queryFn: () => Vinculos.rastreadores({ limit: 500 }),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,
   });
 
@@ -509,6 +537,7 @@ export const vinculosCameraQuery = () =>
     queryKey: ["vinculos", "cameras"],
     queryFn: () => Vinculos.cameras({ limit: 500 }),
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,
   });
 
@@ -559,7 +588,7 @@ export const organizacoesQuery = () =>
     queryKey: ["organizacoes", "api"],
     queryFn: async () => {
       const r = await Organizacoes.lista();
-      return (r.items ?? [])
+      return (r.data ?? [])
         .filter((g) => g.status !== 0)
         .map((g) => ({
           id: String(g.id),
@@ -568,5 +597,6 @@ export const organizacoesQuery = () =>
         }));
     },
     enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
     staleTime: 10 * MINUTE,
   });

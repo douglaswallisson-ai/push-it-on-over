@@ -319,11 +319,25 @@ export const Desempenho = {
  * (`label`, `label2`, `status`) e é traduzida no consumo — misturar com os
  * mocks, que já vêm no formato do front, causaria confusão de tipos.
  */
+/**
+ * Envelope de paginação por cursor.
+ *
+ * É o formato que veículos, motoristas e grupos usam — o mesmo dos relatórios.
+ * Eu havia escrito `items` e `total`, que não existem na resposta: as listas
+ * chegavam com 200 e vinham vazias, porque o campo lido nunca existiu.
+ */
+export type RespostaCursorApi<T> = {
+  data: T[];
+  next_cursor: string | null;
+  has_more: boolean;
+  total_returned: number;
+};
+
 export const Real = {
   veiculos: (params?: Record<string, string | number>) =>
-    api.get<{ items: unknown[]; total: number }>(`/api/v1/vehicles/${qs(params)}`),
+    api.get<RespostaCursorApi<unknown>>(`/api/v1/vehicles/${qs(params)}`),
   motoristas: (params?: Record<string, string | number>) =>
-    api.get<{ items: unknown[]; total: number }>(`/api/v1/drivers/${qs(params)}`),
+    api.get<RespostaCursorApi<unknown>>(`/api/v1/drivers/${qs(params)}`),
   linhas: (params?: Record<string, string | number>) =>
     api.get<{ items: unknown[]; total: number }>(`/api/v1/bus-lines/${qs(params)}`),
   linha: (id: string | number) => api.get<unknown>(`/api/v1/bus-lines/${id}`),
@@ -495,7 +509,7 @@ export const Checklist = {
  */
 export const Organizacoes = {
   lista: () =>
-    api.get<{ items: { id: number; name?: string; description?: string; status?: number }[]; total: number }>(
+    api.get<RespostaCursorApi<{ id: number; name?: string; description?: string; status?: number }>>(
       `/api/v1/groups/?limit=200`,
     ),
 };

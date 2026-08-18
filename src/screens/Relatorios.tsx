@@ -66,7 +66,7 @@ const CATALOGO: Categoria[] = [
     grupo: "Frota",
     itens: [
       { icon: Fuel, title: "Consumo de combustível", desc: "Litros, km/l e desvio contra a média, por veículo.", color: "var(--gold)", embutido: "operacionais" },
-      { icon: Truck, title: "Utilização da frota", desc: "Disponibilidade, ociosidade e horas de motor.", color: "var(--brand-navy)", rota: "/app/gerencial/operacional" },
+      { icon: Truck, title: "Utilização da frota", desc: "Disponibilidade, ociosidade e horas de motor.", color: "var(--brand-navy)", rota: "/app/gerencial" },
       { icon: Wrench, title: "Manutenção preventiva", desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.", color: "var(--coral)", rota: "/app/manutencao" },
       { icon: ClipboardCheck, title: "Checklist de inspeção", desc: "Modelos, itens e respostas, com reprovações destacadas.", color: "var(--leaf)", rota: "/app/frota/checklist" },
       { icon: Cable, title: "Equipamentos por veículo", desc: "Rastreador e câmera instalados, e quem está sem.", color: "var(--brand-sky)", rota: "/app/cadastros/equipamentos" },
@@ -107,7 +107,7 @@ const CATALOGO: Categoria[] = [
   {
     grupo: "Gestão",
     itens: [
-      { icon: BarChart3, title: "Painel operacional", desc: "Consolidado do período com comparação contra o anterior.", color: "var(--brand-navy)", rota: "/app/gerencial/operacional" },
+      { icon: BarChart3, title: "Painel operacional", desc: "Consolidado do período com comparação contra o anterior.", color: "var(--brand-navy)", rota: "/app/gerencial" },
       { icon: ShieldAlert, title: "Auditoria", desc: "Quem alterou o quê e quando, por organização.", color: "var(--muted-foreground)", rota: "/app/auditoria" },
       { icon: BarChart3, title: "Contratos", desc: "Vigência, veículos por modalidade e aditivos.", color: "var(--gold)", rota: "/console/contratos" },
     ],

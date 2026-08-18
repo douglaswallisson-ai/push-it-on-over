@@ -8,6 +8,6 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
  */
 export const Route = createFileRoute("/app/gerencial/indicadores")({
   beforeLoad: () => {
-    throw redirect({ to: "/app/gerencial/operacional", replace: true });
+    throw redirect({ to: "/app/gerencial", replace: true });
   },
 });

@@ -20,6 +20,7 @@ import { Route as AppAuditoriaRouteImport } from './routes/app.auditoria'
 import { Route as AppCo2RouteImport } from './routes/app.co2'
 import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
+import { Route as AppGerencialRouteImport } from './routes/app.gerencial'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as ConsoleIndexRouteImport } from './routes/console.index'
@@ -140,6 +141,11 @@ const AppEstrategicoRoute = AppEstrategicoRouteImport.update({
 const AppEventosRoute = AppEventosRouteImport.update({
   id: '/eventos',
   path: '/eventos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGerencialRoute = AppGerencialRouteImport.update({
+  id: '/gerencial',
+  path: '/gerencial',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMapaRoute = AppMapaRouteImport.update({
@@ -353,14 +359,14 @@ const AppFrotaTrackingRoute = AppFrotaTrackingRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppGerencialIndicadoresRoute = AppGerencialIndicadoresRouteImport.update({
-  id: '/gerencial/indicadores',
-  path: '/gerencial/indicadores',
-  getParentRoute: () => AppRoute,
+  id: '/indicadores',
+  path: '/indicadores',
+  getParentRoute: () => AppGerencialRoute,
 } as any)
 const AppGerencialOperacionalRoute = AppGerencialOperacionalRouteImport.update({
-  id: '/gerencial/operacional',
-  path: '/gerencial/operacional',
-  getParentRoute: () => AppRoute,
+  id: '/operacional',
+  path: '/operacional',
+  getParentRoute: () => AppGerencialRoute,
 } as any)
 const AppManutencaoIndexRoute = AppManutencaoIndexRouteImport.update({
   id: '/manutencao/',
@@ -494,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
+  '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
@@ -571,6 +578,7 @@ export interface FileRoutesByTo {
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
+  '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
@@ -651,6 +659,7 @@ export interface FileRoutesById {
   '/app/co2': typeof AppCo2Route
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
+  '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/console/administradores': typeof ConsoleAdministradoresRoute
@@ -732,6 +741,7 @@ export interface FileRouteTypes {
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
+    | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
     | '/console/administradores'
@@ -809,6 +819,7 @@ export interface FileRouteTypes {
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
+    | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
     | '/console/administradores'
@@ -888,6 +899,7 @@ export interface FileRouteTypes {
     | '/app/co2'
     | '/app/estrategico'
     | '/app/eventos'
+    | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
     | '/console/administradores'
@@ -1041,6 +1053,13 @@ declare module '@tanstack/react-router' {
       path: '/eventos'
       fullPath: '/app/eventos'
       preLoaderRoute: typeof AppEventosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/gerencial': {
+      id: '/app/gerencial'
+      path: '/gerencial'
+      fullPath: '/app/gerencial'
+      preLoaderRoute: typeof AppGerencialRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/mapa': {
@@ -1332,17 +1351,17 @@ declare module '@tanstack/react-router' {
     }
     '/app/gerencial/indicadores': {
       id: '/app/gerencial/indicadores'
-      path: '/gerencial/indicadores'
+      path: '/indicadores'
       fullPath: '/app/gerencial/indicadores'
       preLoaderRoute: typeof AppGerencialIndicadoresRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppGerencialRoute
     }
     '/app/gerencial/operacional': {
       id: '/app/gerencial/operacional'
-      path: '/gerencial/operacional'
+      path: '/operacional'
       fullPath: '/app/gerencial/operacional'
       preLoaderRoute: typeof AppGerencialOperacionalRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppGerencialRoute
     }
     '/app/manutencao/': {
       id: '/app/manutencao/'
@@ -1508,6 +1527,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppGerencialRouteChildren {
+  AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
+  AppGerencialOperacionalRoute: typeof AppGerencialOperacionalRoute
+}
+
+const AppGerencialRouteChildren: AppGerencialRouteChildren = {
+  AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
+  AppGerencialOperacionalRoute: AppGerencialOperacionalRoute,
+}
+
+const AppGerencialRouteWithChildren = AppGerencialRoute._addFileChildren(
+  AppGerencialRouteChildren,
+)
+
 interface AppRelatoriosRouteChildren {
   AppRelatoriosOperacionaisRoute: typeof AppRelatoriosOperacionaisRoute
   AppRelatoriosTelemetriaRoute: typeof AppRelatoriosTelemetriaRoute
@@ -1529,6 +1562,7 @@ interface AppRouteChildren {
   AppCo2Route: typeof AppCo2Route
   AppEstrategicoRoute: typeof AppEstrategicoRoute
   AppEventosRoute: typeof AppEventosRoute
+  AppGerencialRoute: typeof AppGerencialRouteWithChildren
   AppMapaRoute: typeof AppMapaRoute
   AppRelatoriosRoute: typeof AppRelatoriosRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
@@ -1563,8 +1597,6 @@ interface AppRouteChildren {
   AppFrotaSinaisRoute: typeof AppFrotaSinaisRoute
   AppFrotaTelemetriaRoute: typeof AppFrotaTelemetriaRoute
   AppFrotaTrackingRoute: typeof AppFrotaTrackingRoute
-  AppGerencialIndicadoresRoute: typeof AppGerencialIndicadoresRoute
-  AppGerencialOperacionalRoute: typeof AppGerencialOperacionalRoute
   AppManutencaoDiagnosticoRoute: typeof AppManutencaoDiagnosticoRoute
   AppManutencaoOrdensRoute: typeof AppManutencaoOrdensRoute
   AppManutencaoPneusRoute: typeof AppManutencaoPneusRoute
@@ -1595,6 +1627,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCo2Route: AppCo2Route,
   AppEstrategicoRoute: AppEstrategicoRoute,
   AppEventosRoute: AppEventosRoute,
+  AppGerencialRoute: AppGerencialRouteWithChildren,
   AppMapaRoute: AppMapaRoute,
   AppRelatoriosRoute: AppRelatoriosRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
@@ -1629,8 +1662,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaSinaisRoute: AppFrotaSinaisRoute,
   AppFrotaTelemetriaRoute: AppFrotaTelemetriaRoute,
   AppFrotaTrackingRoute: AppFrotaTrackingRoute,
-  AppGerencialIndicadoresRoute: AppGerencialIndicadoresRoute,
-  AppGerencialOperacionalRoute: AppGerencialOperacionalRoute,
   AppManutencaoDiagnosticoRoute: AppManutencaoDiagnosticoRoute,
   AppManutencaoOrdensRoute: AppManutencaoOrdensRoute,
   AppManutencaoPneusRoute: AppManutencaoPneusRoute,

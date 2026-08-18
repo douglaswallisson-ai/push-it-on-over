@@ -146,11 +146,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
     ],
   },
-  {
-    label: "Gerencial",
-    icon: Gauge,
-    items: [{ label: "Painel operacional", to: "/app/gerencial/operacional" }],
-  },
+  { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
   { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },

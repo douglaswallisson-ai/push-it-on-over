@@ -1,6 +1,15 @@
 import { useMemo } from "react";
 import { AlertTriangle, Clock, Wrench } from "lucide-react";
 import { MANUTENCAO_COLUNAS, nf } from "@/lib/queries";
+import { SilhuetaVeiculo, TIPO_VEICULO_LABEL, tipoDoVeiculo } from "./SilhuetaVeiculo";
+
+/**
+ * Cartões exibidos por coluna.
+ *
+ * Coluna com sessenta veículos vira rolagem infinita que ninguém percorre; o
+ * contador informa o total e a tabela serve para a lista completa.
+ */
+const LIMITE_COLUNA = 12;
 import { cn } from "@/lib/utils";
 import type { CardManutencao, StatusManutencao } from "@/types";
 
@@ -28,10 +37,16 @@ export function ManutencaoKanban({
   cards,
   onSelect,
   selecionado,
+  modoTV = false,
 }: {
   cards: CardManutencao[];
   onSelect: (card: CardManutencao) => void;
   selecionado?: string | null;
+  /**
+   * Leitura à distância, para o telão da oficina. Aumenta tipografia e
+   * espaçamento, e some com o que só serve ao clique.
+   */
+  modoTV?: boolean;
 }) {
   const porColuna = useMemo(() => {
     const mapa = new Map<StatusManutencao, CardManutencao[]>();
@@ -51,7 +66,10 @@ export function ManutencaoKanban({
         return (
           <section
             key={col.id}
-            className="w-[268px] shrink-0 snap-start rounded-2xl border border-border bg-secondary/40"
+            className={cn(
+              "shrink-0 snap-start rounded-2xl border border-border bg-secondary/40",
+              modoTV ? "w-[320px]" : "w-[268px]",
+            )}
             aria-label={`${col.label} — ${lista.length} veículos`}
           >
             <header className="flex items-center justify-between gap-2 border-b border-border px-3.5 py-3">
@@ -59,8 +77,23 @@ export function ManutencaoKanban({
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: col.cor }} />
                 <h3 className="text-[13px] font-semibold text-foreground">{col.label}</h3>
               </span>
-              <span className="rounded-full bg-card px-2 py-0.5 font-mono text-[11px] font-bold text-muted-foreground">
-                {lista.length}
+              {/* Visíveis sobre o total da coluna. Sem o segundo número, uma
+                  coluna cortada parece completa. */}
+              <span
+                className={cn(
+                  "rounded-full bg-card px-2 py-0.5 font-mono font-bold text-muted-foreground",
+                  modoTV ? "text-[15px]" : "text-[11px]",
+                )}
+                title={`${Math.min(lista.length, LIMITE_COLUNA)} de ${lista.length} exibidos`}
+              >
+                {lista.length > LIMITE_COLUNA ? (
+                  <>
+                    {LIMITE_COLUNA}
+                    <span className="opacity-50">/{lista.length}</span>
+                  </>
+                ) : (
+                  lista.length
+                )}
               </span>
             </header>
 
@@ -70,15 +103,24 @@ export function ManutencaoKanban({
                   Nenhum veículo nesta coluna.
                 </p>
               ) : (
-                lista.map((card) => (
-                  <CardVeiculo
-                    key={card.veiculoId}
-                    card={card}
-                    cor={col.cor}
-                    ativo={selecionado === card.veiculoId}
-                    onClick={() => onSelect(card)}
-                  />
-                ))
+                <>
+                  {lista.slice(0, LIMITE_COLUNA).map((card) => (
+                    <CardVeiculo
+                      key={card.veiculoId}
+                      card={card}
+                      cor={col.cor}
+                      ativo={selecionado === card.veiculoId}
+                      onClick={() => onSelect(card)}
+                      modoTV={modoTV}
+                    />
+                  ))}
+                  {lista.length > LIMITE_COLUNA && (
+                    <p className="px-1 py-2 text-center text-[11.5px] text-muted-foreground">
+                      +{lista.length - LIMITE_COLUNA} veículo{lista.length - LIMITE_COLUNA > 1 ? "s" : ""} nesta
+                      coluna — use a tabela para ver todos.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </section>
@@ -93,12 +135,15 @@ function CardVeiculo({
   cor,
   ativo,
   onClick,
+  modoTV,
 }: {
   card: CardManutencao;
   cor: string;
   ativo: boolean;
   onClick: () => void;
+  modoTV?: boolean;
 }) {
+  const tipo = tipoDoVeiculo(card.marca, card.modelo);
   const prazo = PRAZO_TEXTO(card.prazoDias);
   const atrasado = card.prazoDias !== null && card.prazoDias < 0;
 
@@ -120,11 +165,23 @@ function CardVeiculo({
 
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="font-mono text-[14px] font-bold leading-tight text-foreground">{card.placa}</p>
-            <p className="truncate text-[11.5px] text-muted-foreground">
-              {card.marca} {card.modelo}
-            </p>
+          <div className="flex min-w-0 items-start gap-2.5">
+            {/* A forma identifica o veículo antes de o olho chegar no texto —
+                numa coluna com vinte cartões, é a diferença entre varrer e
+                ler. */}
+            <SilhuetaVeiculo
+              tipo={tipo}
+              className={cn("mt-0.5 shrink-0", modoTV ? "h-8 w-10" : "h-6 w-8")}
+              titulo={`${TIPO_VEICULO_LABEL[tipo]} — ${card.marca} ${card.modelo}`}
+            />
+            <div className="min-w-0">
+              <p className={cn("font-mono font-bold leading-tight text-foreground", modoTV ? "text-[19px]" : "text-[14px]")}>
+                {card.placa}
+              </p>
+              <p className={cn("truncate text-muted-foreground", modoTV ? "text-[13px]" : "text-[11.5px]")}>
+                {card.marca} {card.modelo}
+              </p>
+            </div>
           </div>
           <span
             className="shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold"

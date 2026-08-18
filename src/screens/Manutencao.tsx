@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router-compat";
 import {
+  Monitor,
   Activity,
   ArrowLeft,
   CalendarClock,
@@ -89,6 +90,31 @@ export default function Manutencao() {
   // para o kanban e a lista discordarem sobre a mesma placa.
   const { porVeiculo } = usePreventivaFrota(garagem || undefined);
   const [agendadas, setAgendadas] = useState<Record<string, boolean>>({});
+
+  /**
+   * Modo TV: o quadro vive num telão de oficina, onde ninguém interage. Sem
+   * ele, o gestor precisa lembrar de atualizar a página — e um quadro
+   * congelado é pior que nenhum, porque parece atual.
+   */
+  const [modoTV, setModoTV] = useState(false);
+  const [atualizadoEm, setAtualizadoEm] = useState(() => new Date());
+
+  useEffect(() => {
+    if (!modoTV) return;
+    const t = setInterval(() => {
+      kanbanQ.refetch();
+      setAtualizadoEm(new Date());
+    }, 60_000);
+    return () => clearInterval(t);
+  }, [modoTV]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sair com Esc, porque no modo TV a barra lateral some.
+  useEffect(() => {
+    if (!modoTV) return;
+    const sair = (e: KeyboardEvent) => e.key === "Escape" && setModoTV(false);
+    window.addEventListener("keydown", sair);
+    return () => window.removeEventListener("keydown", sair);
+  }, [modoTV]);
 
   const cards = useMemo(() => {
     const comAjuste = (kanbanQ.data ?? []).map((c) =>
@@ -204,6 +230,52 @@ export default function Manutencao() {
 
   return (
     <>
+      {/* Modo TV: ocupa a tela inteira, sem menu nem interação. */}
+      {modoTV && (
+        <div className="fixed inset-0 z-[200] flex flex-col bg-canvas">
+          <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-8 py-4">
+            <div>
+              <h1 className="font-display text-[26px] font-bold leading-none text-foreground">
+                Torre de controle · Manutenção
+              </h1>
+              <p className="mt-1.5 text-[13px] text-muted-foreground">
+                {cards.length} veículos · atualizado às{" "}
+                {atualizadoEm.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · recarrega a cada
+                minuto
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Resumo grande, legível do fundo da oficina. */}
+              <div className="flex gap-5">
+                {MANUTENCAO_COLUNAS.map((col) => {
+                  const n = cards.filter((c) => c.status === col.id).length;
+                  return (
+                    <div key={col.id} className="text-right">
+                      <div className="font-display text-[30px] font-bold leading-none" style={{ color: col.cor }}>
+                        {n}
+                      </div>
+                      <div className="mt-1 text-[11.5px] text-muted-foreground">{col.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setModoTV(false)}
+                className="rounded-full border border-border px-4 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary"
+              >
+                Sair (Esc)
+              </button>
+            </div>
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-auto px-8 py-6">
+            <ManutencaoKanban cards={cards} onSelect={() => {}} modoTV />
+          </div>
+        </div>
+      )}
+
       <PageHeader
         title="Manutenção"
         subtitle={selecionado ? `Frota › Manutenção › ${selecionado.placa}` : "Frota › Manutenção"}
@@ -216,7 +288,16 @@ export default function Manutencao() {
               <ArrowLeft className="h-3.5 w-3.5" />
               Voltar ao quadro
             </button>
-          ) : undefined
+          ) : (
+            <button
+              onClick={() => setModoTV(true)}
+              title="Leitura à distância, com atualização automática"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary"
+            >
+              <Monitor className="h-3.5 w-3.5" />
+              Modo TV
+            </button>
+          )
         }
       />
 

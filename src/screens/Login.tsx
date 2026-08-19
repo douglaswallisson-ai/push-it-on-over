@@ -105,7 +105,11 @@ export default function Login() {
       entrarComPerfil({
         nome: perfil?.name ?? perfil?.login ?? email,
         email: perfil?.email ?? email,
-        organizacao: perfil?.account_name ?? perfil?.name ?? "SS Telemática",
+        // Nunca cair no nome do usuário: `perfil.name` é a pessoa, não a
+        // empresa, e o rótulo da organização passava a mostrar "Douglas
+        // Morais" onde deveria estar o cliente. Sem nome de conta, é melhor um
+        // rótulo neutro que a interface substitui ao carregar as unidades.
+        organizacao: perfil?.account_name ?? "SS Telemática",
         // O grupo a que o usuário pertence define qual cliente a interface
         // mostra. Sem ele, a organização ativa fica indefinida e as telas
         // caem no exemplo.

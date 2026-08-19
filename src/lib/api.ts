@@ -517,18 +517,22 @@ export const Checklist = {
  * resolve o caso de dois subgrupos chamados só "MATRIZ", que sem ela ficariam
  * indistinguíveis na lista.
  */
+export type UnidadeApi = {
+  id: number;
+  name: string;
+  group_id: number;
+  company?: string | null;
+  cnpj?: string | null;
+  client_cod?: string | null;
+  color?: string | null;
+  suspended?: boolean | null;
+};
+
 export const Unidades = {
-  lista: () =>
-    api.get<
-      RespostaCursorApi<{
-        id: number;
-        name: string;
-        group_id: number;
-        company?: string | null;
-        cnpj?: string | null;
-        client_cod?: string | null;
-        color?: string | null;
-        suspended?: boolean | null;
-      }>
-    >(`/api/v1/subgroups/?limit=500`),
+  /**
+   * Devolve uma lista direta, sem envelope de paginação — diferente de
+   * veículos e motoristas, que usam cursor. Eu lia `r.data` aqui e recebia
+   * `undefined`, então a lista chegava sempre vazia.
+   */
+  lista: () => api.get<UnidadeApi[]>(`/api/v1/subgroups/?limit=500`),
 };

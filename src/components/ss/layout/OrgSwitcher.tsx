@@ -46,26 +46,20 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
   const orgsQ = useQuery(unidadesQuery());
 
   /**
-   * Unidades operacionais, agrupadas pela empresa dona.
+   * Unidades operacionais disponíveis.
    *
-   * O rótulo junta empresa e unidade porque o nome sozinho não identifica: há
-   * mais de um subgrupo chamado só "MATRIZ", de empresas diferentes. Quando a
-   * unidade já traz o nome da empresa no próprio nome — "FERTRAN - MUTUCA" —
-   * repetir seria redundante.
+   * O nome vai como está no cadastro. Ele já identifica a unidade por completo
+   * — "FERTRAN - MUTUCA", "MV03 - APERAM" — e tentar separar empresa de
+   * unidade não funciona, porque a convenção varia: num caso a empresa é o
+   * prefixo, no outro é o sufixo.
    */
   const orgs = useMemo<Org[]>(() => {
     if (usandoMock() || !orgsQ.data?.length) return ORGS;
-
-    return orgsQ.data.map((u) => {
-      const empresa = u.empresa;
-      const jaTemEmpresa =
-        empresa && u.name.toUpperCase().startsWith(empresa.toUpperCase().slice(0, 6));
-      return {
-        id: u.id,
-        name: jaTemEmpresa || !empresa ? u.name : `${empresa} — ${u.name}`,
-        plan: u.codigo ?? undefined,
-      };
-    });
+    return orgsQ.data.map((u) => ({
+      id: u.id,
+      name: u.name,
+      plan: u.empresa ?? u.codigo ?? undefined,
+    }));
   }, [orgsQ.data]);
 
 

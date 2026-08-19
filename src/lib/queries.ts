@@ -591,17 +591,26 @@ export const unidadesQuery = () =>
     queryKey: ["unidades", "api"],
     queryFn: async () => {
       const r = await Unidades.lista();
-      return (r.data ?? [])
+      return (Array.isArray(r) ? r : [])
         .filter((u) => !u.suspended)
         .map((u) => ({
           id: String(u.id),
-          name: u.name,
-          // A empresa dona da unidade. Sem ela, dois subgrupos chamados
-          // "MATRIZ" ficariam indistinguíveis na lista.
+          name: (u.name ?? "").trim() || `Unidade ${u.id}`,
+          // O nome já identifica a unidade por inteiro e é exibido como está.
+          //
+          // Cheguei a extrair a empresa do prefixo, mas a convenção do cadastro
+          // não é uniforme: em "FERTRAN - MUTUCA" o prefixo é a empresa; em
+          // "MV03 - APERAM" a empresa é o sufixo, e MV03 é código de projeto.
+          // Agrupar pelo prefixo juntaria Aperam, DGranel, Orica e MRS sob
+          // "MV03", que não significa nada para quem opera.
+          //
+          // `company` seria a fonte correta, mas está preenchido em menos de 1%
+          // dos registros.
           empresa: u.company?.trim() || null,
           codigo: u.client_cod?.trim() || null,
           grupoId: String(u.group_id),
-        }));
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
     },
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,

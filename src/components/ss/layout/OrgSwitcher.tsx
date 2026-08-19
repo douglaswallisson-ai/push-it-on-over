@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { organizacoesQuery } from "@/lib/queries";
+import { unidadesQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { Building2, Check, ChevronsUpDown, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -43,11 +43,30 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
    * exemplo continua servindo quando não há conexão, para o seletor nunca
    * aparecer vazio.
    */
-  const orgsQ = useQuery(organizacoesQuery());
-  const orgs = useMemo<Org[]>(
-    () => (!usandoMock() && orgsQ.data?.length ? orgsQ.data : ORGS),
-    [orgsQ.data],
-  );
+  const orgsQ = useQuery(unidadesQuery());
+
+  /**
+   * Unidades operacionais, agrupadas pela empresa dona.
+   *
+   * O rótulo junta empresa e unidade porque o nome sozinho não identifica: há
+   * mais de um subgrupo chamado só "MATRIZ", de empresas diferentes. Quando a
+   * unidade já traz o nome da empresa no próprio nome — "FERTRAN - MUTUCA" —
+   * repetir seria redundante.
+   */
+  const orgs = useMemo<Org[]>(() => {
+    if (usandoMock() || !orgsQ.data?.length) return ORGS;
+
+    return orgsQ.data.map((u) => {
+      const empresa = u.empresa;
+      const jaTemEmpresa =
+        empresa && u.name.toUpperCase().startsWith(empresa.toUpperCase().slice(0, 6));
+      return {
+        id: u.id,
+        name: jaTemEmpresa || !empresa ? u.name : `${empresa} — ${u.name}`,
+        plan: u.codigo ?? undefined,
+      };
+    });
+  }, [orgsQ.data]);
 
 
   // Quando a lista real chega, a organização ativa precisa passar a apontar
@@ -123,7 +142,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
           <>
             <div className="min-w-0 flex-1 text-left leading-tight">
               <div className="truncate text-[12.5px] font-semibold text-white">{ativa.name}</div>
-              <div className="truncate text-[10.5px] text-white/45">Trocar organização</div>
+              <div className="truncate text-[10.5px] text-white/45">Trocar unidade</div>
             </div>
             <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
           </>
@@ -143,7 +162,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
               autoFocus
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar organização…"
+              placeholder="Buscar unidade ou empresa…"
               className="h-9 w-full bg-transparent pl-9 pr-3 text-[12.5px] text-white outline-none placeholder:text-white/30"
             />
           </div>

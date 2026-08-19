@@ -22,7 +22,7 @@ import {
   PontosApi,
   Seguranca,
   Ordens,
-  Organizacoes,
+  Unidades,
   PadroesLinha,
   Planos,
   Real,
@@ -577,23 +577,30 @@ export const checklistRespostasQuery = () =>
   });
 
 /**
- * Empresas clientes, vindas de `mova.group`.
+ * Unidades operacionais que o usuário pode selecionar.
  *
- * Só o super admin enxerga mais de uma; para os demais, o backend já devolve
- * apenas o grupo a que têm acesso — o filtro de escopo acontece no servidor,
- * não aqui.
+ * Vêm de `mova.subgroup`, que é o nível onde a operação acontece — filial,
+ * garagem ou contrato. O backend já aplica o escopo, então a lista chega
+ * filtrada pelo que o usuário tem direito.
+ *
+ * Subgrupo suspenso fica de fora: ele existe no cadastro mas não opera, e
+ * oferecer para seleção levaria a uma tela sempre vazia.
  */
-export const organizacoesQuery = () =>
+export const unidadesQuery = () =>
   queryOptions({
-    queryKey: ["organizacoes", "api"],
+    queryKey: ["unidades", "api"],
     queryFn: async () => {
-      const r = await Organizacoes.lista();
+      const r = await Unidades.lista();
       return (r.data ?? [])
-        .filter((g) => g.status !== 0)
-        .map((g) => ({
-          id: String(g.id),
-          name: g.name ?? g.description ?? `Grupo ${g.id}`,
-          plan: undefined as string | undefined,
+        .filter((u) => !u.suspended)
+        .map((u) => ({
+          id: String(u.id),
+          name: u.name,
+          // A empresa dona da unidade. Sem ela, dois subgrupos chamados
+          // "MATRIZ" ficariam indistinguíveis na lista.
+          empresa: u.company?.trim() || null,
+          codigo: u.client_cod?.trim() || null,
+          grupoId: String(u.group_id),
         }));
     },
     enabled: !usandoMock(),

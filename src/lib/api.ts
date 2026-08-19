@@ -501,15 +501,34 @@ export const Checklist = {
 };
 
 /**
- * Grupos — as empresas clientes.
+ * Unidades operacionais — o que o usuário seleciona para trabalhar.
  *
- * No schema `mova`, `group` é a empresa e `subgroup` a unidade dentro dela. O
- * front chama a primeira de organização e a segunda de garagem; a tradução fica
- * aqui, não espalhada pelas telas.
+ * A hierarquia real do schema `mova` é:
+ *
+ *     group     conta no sistema (uma por operadora do software)
+ *     subgroup  unidade operacional: filial, garagem ou contrato
+ *     company   empresa dona da unidade, campo do próprio subgrupo
+ *
+ * Eu havia mapeado `group` como empresa cliente, o que estava errado nos dois
+ * sentidos: um grupo abriga dezenas de empresas diferentes, e uma mesma empresa
+ * pode ter vários subgrupos — Fertran aparece em Mutuca e em Leiber Luiz.
+ *
+ * Quem seleciona é o subgrupo. `company` serve para agrupar visualmente, e
+ * resolve o caso de dois subgrupos chamados só "MATRIZ", que sem ela ficariam
+ * indistinguíveis na lista.
  */
-export const Organizacoes = {
+export const Unidades = {
   lista: () =>
-    api.get<RespostaCursorApi<{ id: number; name?: string; description?: string; status?: number }>>(
-      `/api/v1/groups/?limit=200`,
-    ),
+    api.get<
+      RespostaCursorApi<{
+        id: number;
+        name: string;
+        group_id: number;
+        company?: string | null;
+        cnpj?: string | null;
+        client_cod?: string | null;
+        color?: string | null;
+        suspended?: boolean | null;
+      }>
+    >(`/api/v1/subgroups/?limit=500`),
 };

@@ -20,15 +20,23 @@ import { cn } from "@/lib/utils";
  * rastreador?". A busca resolve o segundo caso.
  */
 
+/**
+ * Vínculo veículo ↔ equipamento.
+ *
+ * Os nomes seguem o backend: o veículo é `tracked_unit_id`, não `unit_id`, e o
+ * serial do equipamento **não vem** nesta listagem — só em
+ * `/device-associations/{id}`, que traz `device_identifier`. Buscar o detalhe
+ * de cada vínculo daria centenas de requisições para montar uma tela, então o
+ * identificador fica de fora e o que se mostra é o vínculo em si.
+ */
 type Vinculo = {
   id: number;
-  unit_id: number;
+  tracked_unit_id: number;
   device_id?: number | null;
   association_date?: string | null;
   release_date?: string | null;
   status?: number | null;
-  device_serial?: string | null;
-  device_imei?: string | null;
+  device_primary?: boolean | null;
 };
 
 const dataBR = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString("pt-BR") : "—");
@@ -41,8 +49,11 @@ export default function Equipamentos() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "sem_rastreador" | "sem_camera" | "completo">("todos");
 
-  const rastreadores = ((rastQ.data as { items?: Vinculo[] } | undefined)?.items ?? []) as Vinculo[];
-  const cameras = ((camQ.data as { items?: Vinculo[] } | undefined)?.items ?? []) as Vinculo[];
+  // Os endpoints de vínculo devolvem lista direta, sem envelope de paginação —
+  // ao contrário de veículos e motoristas, que usam cursor com `data`. Ler
+  // `.items` aqui trazia sempre vazio, sem erro nenhum aparecer.
+  const rastreadores = (Array.isArray(rastQ.data) ? rastQ.data : []) as Vinculo[];
+  const cameras = (Array.isArray(camQ.data) ? camQ.data : []) as Vinculo[];
 
   /**
    * Só vínculos ativos entram na conta. Um veículo pode ter histórico de
@@ -52,8 +63,8 @@ export default function Equipamentos() {
   const ativos = (lista: Vinculo[]) => lista.filter((v) => !v.release_date && v.status !== 0);
 
   const linhas = useMemo(() => {
-    const rast = new Map(ativos(rastreadores).map((v) => [v.unit_id, v]));
-    const cam = new Map(ativos(cameras).map((v) => [v.unit_id, v]));
+    const rast = new Map(ativos(rastreadores).map((v) => [v.tracked_unit_id, v]));
+    const cam = new Map(ativos(cameras).map((v) => [v.tracked_unit_id, v]));
     const t = busca.trim().toLowerCase();
 
     return (veiculosQ.data?.items ?? [])
@@ -77,9 +88,8 @@ export default function Equipamentos() {
         return (
           l.prefixo.toLowerCase().includes(t) ||
           l.placa.toLowerCase().includes(t) ||
-          (l.rastreador?.device_serial ?? "").toLowerCase().includes(t) ||
-          (l.rastreador?.device_imei ?? "").includes(t) ||
-          (l.camera?.device_serial ?? "").toLowerCase().includes(t)
+          String(l.rastreador?.device_id ?? "").includes(t) ||
+          String(l.camera?.device_id ?? "").includes(t)
         );
       });
   }, [veiculosQ.data, rastreadores, cameras, busca, filtro]);
@@ -107,12 +117,10 @@ export default function Equipamentos() {
             <Radio className="h-3.5 w-3.5 shrink-0 text-leaf" />
             <div className="min-w-0">
               <div className="truncate font-mono text-[12px] text-foreground">
-                {l.rastreador.device_serial ?? `#${l.rastreador.device_id}`}
+                equipamento #{l.rastreador.device_id}
               </div>
-              {l.rastreador.device_imei && (
-                <div className="truncate font-mono text-[10.5px] text-muted-foreground">
-                  IMEI {l.rastreador.device_imei}
-                </div>
+              {l.rastreador.device_primary && (
+                <div className="text-[10.5px] text-muted-foreground">principal</div>
               )}
             </div>
           </div>
@@ -131,7 +139,7 @@ export default function Equipamentos() {
           <div className="flex items-center gap-2">
             <Camera className="h-3.5 w-3.5 shrink-0 text-brand-sky" />
             <span className="truncate font-mono text-[12px] text-foreground">
-              {l.camera.device_serial ?? `#${l.camera.device_id}`}
+              equipamento #{l.camera.device_id}
             </span>
           </div>
         ) : (
@@ -191,7 +199,7 @@ export default function Equipamentos() {
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Prefixo, placa, serial ou IMEI…"
+              placeholder="Prefixo, placa ou número do equipamento…"
               className="h-9 w-64 rounded-lg border border-border bg-white pl-8 pr-3 text-[13px] outline-none focus:border-accent"
             />
           </div>

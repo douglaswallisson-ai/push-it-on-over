@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Frota } from "@/lib/api";
+import { useResumoFrota } from "@/hooks/use-resumo-frota";
 import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
@@ -67,7 +67,11 @@ function buildKpis(r: ResumoOperacao): Kpi[] {
     { icon: Gauge, label: "Disponibilidade", value: nf(r.disponibilidade, 1), unit: "%", color: "#6A4FA0" },
     { icon: Fuel, label: "Consumo médio", value: nf(r.consumoMedio, 2), unit: "km/l", color: "var(--brand-green)", to: "/app/estrategico" },
     { icon: Gauge, label: "Custo por km", value: `R$ ${nf(r.custoPorKm, 2)}`, color: "var(--gold)" },
-  ];
+  ].filter(
+    // Custo por km só aparece quando há valor: depende de custo operacional,
+    // que ainda não é exposto pela API. Mostrar zero pareceria frota de graça.
+    (k) => k.label !== "Custo por km" || r.custoPorKm > 0,
+  );
 }
 
 const CRIT = [
@@ -77,13 +81,11 @@ const CRIT = [
 ];
 
 export default function Inicio() {
-  const {
-    data: resumo,
-    isPending,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery({ queryKey: ["frota", "resumo"], queryFn: () => Frota.resumo() });
+  // Composto a partir de veículos, posições, eventos e indicadores — não há
+  // endpoint que devolva o resumo pronto.
+  const { resumo, carregando: isPending, erro: error, recarregar } = useResumoFrota();
+  const refetch = recarregar;
+  const isFetching = false;
 
   const kpis = resumo ? buildKpis(resumo) : [];
 

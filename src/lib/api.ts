@@ -130,11 +130,10 @@ export const Motoristas = {
   list: (params?: Record<string, string | number>) =>
       mock<Paginated<Motorista>>({ items: M.MOCK_MOTORISTAS, total: M.MOCK_MOTORISTAS.length, page: 1, pageSize: 50 }),
   get: (id: string) =>
-    modoMock()
-      ? mock<Motorista>(M.MOCK_MOTORISTAS.find((m) => m.id === id) ?? M.MOCK_MOTORISTAS[0])
-      : mock(undefined as never),
+    mock<Motorista>(M.MOCK_MOTORISTAS.find((m) => m.id === id) ?? M.MOCK_MOTORISTAS[0]),
   create: (data: Partial<Motorista>) => mock(data as never),
   update: (id: string, data: Partial<Motorista>) => mock({ ...data, id } as never),
+  // Exclusão não devolve corpo — undefined aqui é o resultado correto.
   remove: (_id: string) => mock(undefined as never),
 };
 
@@ -142,12 +141,10 @@ export const Veiculos = {
   list: (params?: Record<string, string | number>) =>
       mock(M.mockVeiculosPage(Number(params?.page ?? 1), Number(params?.pageSize ?? 50))),
   get: (id: string) =>
-    modoMock()
-      ? mock<Veiculo>(M.MOCK_VEICULOS.find((v) => v.id === id) ?? M.MOCK_VEICULOS[0])
-      : mock(undefined as never),
+    mock<Veiculo>(M.MOCK_VEICULOS.find((v) => v.id === id) ?? M.MOCK_VEICULOS[0]),
   create: (data: Partial<Veiculo>) => mock(data as never),
   manutencao: (id: string) =>
-    modoMock() ? mock(M.mockManutencao(id)) : mock(undefined as never),
+    mock(M.mockManutencao(id)),
 };
 
 export const Frota = {
@@ -223,31 +220,23 @@ export const Pontos = {
 
 export const Itinerarios = {
   list: (linhaId?: string) =>
-    modoMock()
-      ? mock(linhaId ? M.MOCK_ITINERARIOS.filter((i) => i.linhaId === linhaId) : M.MOCK_ITINERARIOS)
-      : mock(undefined as never),
+      mock(linhaId ? M.MOCK_ITINERARIOS.filter((i) => i.linhaId === linhaId) : M.MOCK_ITINERARIOS),
 };
 
 export const Programacao = {
   list: (linhaId?: string, tipoDia?: string) =>
-    modoMock()
-      ? mock(M.MOCK_PROGRAMACAO.filter((p) => (!linhaId || p.linhaId === linhaId) && (!tipoDia || p.tipoDia === tipoDia)))
-      : mock(undefined as never),
+      mock(M.MOCK_PROGRAMACAO.filter((p) => (!linhaId || p.linhaId === linhaId) && (!tipoDia || p.tipoDia === tipoDia))),
 };
 
 export const ViagensOperacao = {
   /** Realizado do dia de operação, já confrontado com a programação. */
   doDia: (data: string, linhaId?: string) =>
-    modoMock()
-      ? mock(M.MOCK_VIAGENS_REALIZADAS.filter((v) => !linhaId || v.linhaId === linhaId))
-      : mock(undefined as never),
+      mock(M.MOCK_VIAGENS_REALIZADAS.filter((v) => !linhaId || v.linhaId === linhaId)),
 };
 
 export const AlarmesOperacionais = {
   list: (linhaId?: string) =>
-    modoMock()
-      ? mock(M.MOCK_ALARMES_OPERACIONAIS.filter((a) => !linhaId || a.linhaId === linhaId))
-      : mock(undefined as never),
+      mock(M.MOCK_ALARMES_OPERACIONAIS.filter((a) => !linhaId || a.linhaId === linhaId)),
 };
 
 export const Indicadores = {
@@ -281,9 +270,7 @@ export const Multas = {
 
 export const CCO = {
   posicoes: (linhaId?: string) =>
-    modoMock()
-      ? mock(M.MOCK_POSICOES_LINHA.filter((p) => !linhaId || p.linhaId === linhaId))
-      : mock(undefined as never),
+      mock(M.MOCK_POSICOES_LINHA.filter((p) => !linhaId || p.linhaId === linhaId)),
   despachos: () => (mock(M.MOCK_DESPACHOS)),
 };
 
@@ -291,9 +278,7 @@ export const VideoAoVivo = {
   dispositivos: () =>
     mock(M.MOCK_DISPOSITIVOS_VIDEO),
   trechos: (veiculoId?: string) =>
-    modoMock()
-      ? mock(M.MOCK_TRECHOS.filter((t) => !veiculoId || t.veiculoId === veiculoId))
-      : mock(undefined as never),
+      mock(M.MOCK_TRECHOS.filter((t) => !veiculoId || t.veiculoId === veiculoId)),
   solicitacoes: () =>
     mock(M.MOCK_SOLICITACOES),
 };

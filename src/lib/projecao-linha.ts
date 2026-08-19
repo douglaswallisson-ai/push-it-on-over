@@ -22,9 +22,16 @@ export type PontoItinerario = {
   lat: number;
   lng: number;
   ordem: number;
-  /** Horário programado de passagem, em minutos desde a meia-noite. */
+  /**
+   * Horário programado de passagem, em minutos desde a meia-noite.
+   *
+   * Vem de `buss_line_shift_stops.schedule_time`. Tem precedência sobre o
+   * tempo relativo quando ambos existem.
+   */
   horarioMin?: number;
-  /** Ponto de controle: onde a viagem abre ou fecha. */
+  /** Minutos desde a partida até esta parada, para linha por intervalo. */
+  minutosAcumulados?: number;
+  /** Ponto de controle: onde a viagem abre ou fecha, e onde se fiscaliza. */
   pontoControle?: boolean;
 };
 
@@ -139,6 +146,14 @@ const DESVIO_MEDIO_M = 120;
 export function projetarNaLinha(
   posicao: PosicaoGps,
   itinerario: PontoItinerario[],
+  /**
+   * Hora de saída da viagem, em minutos desde a meia-noite.
+   *
+   * Só é necessária quando o itinerário guarda tempo relativo à partida em vez
+   * de hora do relógio. Com horário absoluto nas paradas, o desvio é calculado
+   * sem ela.
+   */
+  saidaMin?: number,
 ): ProjecaoNaLinha | null {
   if (itinerario.length < 2) return null;
 
@@ -180,7 +195,7 @@ export function projetarNaLinha(
     progressoLinha: total ? percorrido / total : 0,
     desvioMetros: Math.round(melhor.distancia),
     confianca,
-    desvioMin: calcularDesvioHorario(posicao.em, anterior, proximo, melhor.fracao),
+    desvioMin: calcularDesvioHorario(posicao.em, anterior, proximo, melhor.fracao, saidaMin),
   };
 }
 
@@ -198,18 +213,50 @@ function calcularDesvioHorario(
   anterior: PontoItinerario,
   proximo: PontoItinerario | null,
   fracao: number,
+  saidaMin?: number,
 ): number | null {
-  if (anterior.horarioMin == null) return null;
+  /**
+   * Horário esperado numa parada.
+   *
+   * Duas fontes, nesta ordem de precedência:
+   *
+   * 1. `horarioMin` — hora do relógio, vinda de `schedule_time`. É o caso da
+   *    tabela horária fixa, e dispensa saber quando a viagem começou.
+   * 2. `minutosAcumulados` + hora de saída — tempo relativo à partida. É o
+   *    caso da linha por intervalo, em que cada carro tem um horário próprio.
+   *
+   * Sem nenhuma das duas, não há como classificar adiantado ou atrasado, e a
+   * função devolve nulo em vez de um número sem base.
+   */
+  const esperadoEm = (p: PontoItinerario | null): number | null => {
+    if (!p) return null;
+    if (p.horarioMin != null) return p.horarioMin;
+    if (saidaMin != null && p.minutosAcumulados != null) return saidaMin + p.minutosAcumulados;
+    return null;
+  };
+
+  const base = esperadoEm(anterior);
+  if (base == null) return null;
 
   const agora = new Date(em);
   const minutosAgora = agora.getHours() * 60 + agora.getMinutes() + agora.getSeconds() / 60;
 
-  const esperado =
-    proximo?.horarioMin != null
-      ? anterior.horarioMin + fracao * (proximo.horarioMin - anterior.horarioMin)
-      : anterior.horarioMin;
+  // Interpola entre as duas paradas conforme o progresso no trecho: na metade
+  // do caminho, o carro deveria estar na metade do tempo. É aproximação — o
+  // trecho não é percorrido em velocidade constante — mas erra por menos de um
+  // minuto na maioria dos casos.
+  const seguinte = esperadoEm(proximo);
+  const esperado = seguinte != null ? base + fracao * (seguinte - base) : base;
 
-  return Math.round(minutosAgora - esperado);
+  const desvio = minutosAgora - esperado;
+
+  // Viagem que cruza a meia-noite: o horário programado é 23h50 e o relógio
+  // marca 00h10, o que daria 1.420 minutos de adiantamento em vez de 20 de
+  // atraso. A correção de um dia resolve os dois sentidos.
+  if (desvio > 720) return Math.round(desvio - 1440);
+  if (desvio < -720) return Math.round(desvio + 1440);
+
+  return Math.round(desvio);
 }
 
 /**

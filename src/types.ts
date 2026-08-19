@@ -293,10 +293,32 @@ export type PontoParada = {
 export type ParadaItinerario = {
   pontoId: string;
   ordem: number;
-  /** Minutos desde o início do itinerário até esta parada. */
+  /**
+   * Minutos desde o início do itinerário até esta parada.
+   *
+   * É o tempo relativo — serve para montar a grade quando não há horário
+   * absoluto, e para calcular o esperado a partir da hora de saída da viagem.
+   */
   minutosAcumulados: number;
+  /**
+   * Horário programado de passagem, em minutos desde a meia-noite.
+   *
+   * É o que `buss_line_shift_stops.schedule_time` guarda: hora do relógio, não
+   * tempo decorrido. Convive com `minutosAcumulados` porque as duas formas
+   * existem na operação — tabela horária fixa usa hora do relógio, e linha por
+   * intervalo usa tempo relativo à partida.
+   *
+   * Quando presente, tem precedência: comparar contra hora absoluta dispensa
+   * saber quando a viagem começou.
+   */
+  horarioProgramadoMin?: number;
   /** Km desde o início do itinerário. */
   kmAcumulado: number;
+  /**
+   * Ponto de controle. É onde a viagem abre ou fecha, e onde o cumprimento de
+   * horário é fiscalizado — nas demais paradas, a passagem é informativa.
+   */
+  pontoControle?: boolean;
 };
 
 /** Traçado de um sentido da linha. */

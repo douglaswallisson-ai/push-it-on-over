@@ -26,7 +26,7 @@ import {
   veiculosQuery,
 } from "@/lib/queries";
 import { registrarAuditoria } from "@/lib/session";
-import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
+import { linhasApiQuery, turnosApiQuery, viagensOperacaoQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { projetarNaLinha, type PontoItinerario } from "@/lib/projecao-linha";
@@ -59,6 +59,13 @@ export default function PainelSinotico() {
   const posicoesQ = useQuery(posicoesLinhaQuery(linhaId));
   const itinerariosQ = useQuery(itinerariosQuery(linhaId));
   const turnosQ = useQuery(turnosApiQuery(usandoMock() ? undefined : linhaId));
+
+  /**
+   * Viagens do dia. Servem para saber a hora de saída de cada carro, que é o
+   * que permite calcular atraso em linha operada por intervalo — onde o
+   * itinerário guarda tempo relativo à partida, não hora do relógio.
+   */
+  const viagensRealizadasQ = useQuery(viagensOperacaoQuery(new Date().toISOString().slice(0, 10), linhaId));
 
   /**
    * Posições ao vivo. Ligado à API, os carros na régua vêm do WebSocket em vez
@@ -102,11 +109,11 @@ export default function PainelSinotico() {
           lat: ponto.lat,
           lng: ponto.lng,
           ordem: pa.ordem ?? i,
-          // O itinerário guarda minutos acumulados desde a partida, não hora
-          // do relógio. Convertê-lo em horário exige a hora de saída da
-          // viagem, que ainda não vem do endpoint — sem ela, a régua posiciona
-          // corretamente mas não classifica adiantado ou atrasado.
-          horarioMin: undefined,
+          // As duas formas convivem: horário do relógio quando a linha tem
+          // tabela fixa, tempo desde a partida quando opera por intervalo.
+          horarioMin: pa.horarioProgramadoMin,
+          minutosAcumulados: pa.minutosAcumulados,
+          pontoControle: pa.pontoControle,
         };
       })
       .filter(Boolean) as PontoItinerario[];
@@ -115,6 +122,21 @@ export default function PainelSinotico() {
 
     const out: PosicaoNaLinha[] = [];
     for (const [, gps] of aoVivo.posicoes) {
+      /**
+       * Hora de saída da viagem em curso.
+       *
+       * Necessária só quando o itinerário guarda tempo relativo. Vem da
+       * programação do dia; sem ela, linhas por intervalo posicionam na régua
+       * mas não classificam atraso.
+       */
+      const viagem = (viagensRealizadasQ.data ?? []).find(
+        (v) => String(v.veiculoRealizadoId ?? v.veiculoProgramadoId) === String(gps.unit_id),
+      );
+      const partida = viagem?.partidaRealizada ?? viagem?.partidaProgramada;
+      const saidaMin = partida
+        ? new Date(partida).getHours() * 60 + new Date(partida).getMinutes()
+        : undefined;
+
       const proj = projetarNaLinha(
         {
           veiculoId: String(gps.unit_id),
@@ -124,6 +146,7 @@ export default function PainelSinotico() {
           velocidade: gps.speed,
         },
         itinerario,
+        saidaMin,
       );
       // Confiança baixa significa que o carro não está no itinerário — na
       // garagem, desviado, ou o traçado está desatualizado. Colocá-lo na régua
@@ -143,7 +166,7 @@ export default function PainelSinotico() {
     }
 
     return out.length ? out : (posicoesQ.data ?? []);
-  }, [posicoesQ.data, aoVivo.posicoes, itinerariosQ.data, pontosQ.data, linhaId]);
+  }, [posicoesQ.data, aoVivo.posicoes, itinerariosQ.data, pontosQ.data, viagensRealizadasQ.data, linhaId]);
   const linha = (linhasQ.data ?? []).find((l) => l.id === linhaId);
 
   const itinerarios = itinerariosQ.data ?? [];
@@ -230,7 +253,7 @@ export default function PainelSinotico() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
-        <SeloDadosExemplo motivo="A posição de cada carro na régua já é calculada a partir do GPS real. O desvio de horário ainda usa exemplo: o itinerário guarda minutos desde a partida, e converter em atraso exige a hora de saída da viagem, que o endpoint ainda não devolve." />
+        <SeloDadosExemplo motivo="Posição na régua, desvio de horário e detecção de comboio já são calculados. Faltam apenas os dados: linhas, turnos e paradas dependem dos endpoints correspondentes estarem publicados." />
 
         {posicoesQ.error ? (
           <ErrorBox error={posicoesQ.error} onRetry={() => posicoesQ.refetch()} />

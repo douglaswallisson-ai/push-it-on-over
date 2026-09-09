@@ -1032,13 +1032,50 @@ export const ORIGEM_PADRAO_LABEL: Record<OrigemPadrao, string> = {
  * sistema disser "troque em 45.000 km", o cliente seguir e o motor quebrar com
  * garantia negada, a pergunta vai ser de onde saiu o número.
  */
-export type StatusDado = "oficial" | "divulgado" | "norma" | "nao_localizado";
+/**
+ * Confiança do dado de manutenção.
+ *
+ * Os quatro níveis existem porque um intervalo errado gera alerta errado, e o
+ * gestor precisa saber o quanto confiar antes de mandar um carro para a
+ * oficina. A diferença entre "manual do fabricante" e "blog de concessionária"
+ * é a diferença entre programar e conferir.
+ */
+export type StatusDado = "oficial" | "divulgado" | "concessionaria" | "norma" | "nao_localizado";
 
 export const STATUS_DADO_LABEL: Record<StatusDado, string> = {
-  oficial: "Oficial — tabela do fabricante",
-  divulgado: "Divulgado pelo fabricante",
+  oficial: "Manual do fabricante",
+  divulgado: "Release ou imprensa especializada",
+  concessionaria: "Concessionária ou portal técnico",
   norma: "Norma técnica ou legislação",
-  nao_localizado: "Não localizado — confirmar",
+  nao_localizado: "Não localizado — confirmar antes de usar",
+};
+
+/** Cor semântica por confiança, para a tela graduar o alerta. */
+export const STATUS_DADO_TOM: Record<StatusDado, "green" | "sky" | "gold" | "coral" | "neutral"> = {
+  oficial: "green",
+  divulgado: "sky",
+  concessionaria: "gold",
+  norma: "sky",
+  nao_localizado: "coral",
+};
+
+/**
+ * Camada do plano de manutenção.
+ *
+ * Ônibus encarroçado tem **dois planos e dois fornecedores**: o chassi segue o
+ * manual da montadora, a carroceria segue o da encarroçadora. O manual
+ * Marcopolo é explícito — a garantia da carroceria "não abrange o chassi, cuja
+ * garantia é dada pelo fabricante do mesmo".
+ *
+ * Os ritmos são incompatíveis num plano só: limpeza de filtro de
+ * ar-condicionado é semanal; troca de óleo do motor é a cada 30 mil km.
+ */
+export type CamadaManutencao = "chassi" | "carroceria" | "implemento";
+
+export const CAMADA_LABEL: Record<CamadaManutencao, string> = {
+  chassi: "Chassi",
+  carroceria: "Carroceria",
+  implemento: "Implemento",
 };
 
 /**
@@ -1113,6 +1150,13 @@ export type ParametroManutencao = {
   capacidade?: string;
   obsUsoSevero?: string;
   statusDado: StatusDado;
+  /**
+   * Camada a que o item pertence. Um veículo encarroçado acumula os planos das
+   * duas — o cadastro é de um modelo só, então a separação vive aqui.
+   */
+  camada?: CamadaManutencao;
+  /** Encarroçadora, quando a camada é carroceria. */
+  encarrocadora?: string;
   fonte?: string;
   ativo: boolean;
 };

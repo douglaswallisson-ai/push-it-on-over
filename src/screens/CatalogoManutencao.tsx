@@ -31,8 +31,11 @@ import {
 import { registrarAuditoria } from "@/lib/session";
 import {
   STATUS_DADO_LABEL,
+  STATUS_DADO_TOM,
   TIPO_OPERACAO_LABEL,
   type ModeloVeiculo,
+  CAMADA_LABEL,
+  type CamadaManutencao,
   type ParametroManutencao,
   type StatusDado,
   type TipoOperacao,
@@ -56,12 +59,8 @@ import { cn } from "@/lib/utils";
  *    por modelo sem tipo de operação erraria por um fator de seis.
  */
 
-const STATUS_TONE: Record<StatusDado, PillTone> = {
-  oficial: "green",
-  divulgado: "sky",
-  norma: "sky",
-  nao_localizado: "gold",
-};
+// Reaproveita o tom definido no tipo, para a tela não divergir do domínio.
+const STATUS_TONE = STATUS_DADO_TOM;
 
 const CAMPOS_PARAM: Campo<ParametroManutencao>[] = [
   { nome: "sistema", label: "Sistema", tipo: "select", obrigatorio: true, opcoes: ["Motor", "Alimentação", "Admissão", "Transmissão", "Eixo", "Freios", "Arrefecimento", "Ar comprimido", "Pós-tratamento", "Direção", "Pneus", "Carroceria", "Tração", "Segurança", "Geral"] },
@@ -85,6 +84,16 @@ export default function CatalogoManutencao() {
   const [expandida, setExpandida] = useState<string | null>("mt-scania");
   const [modeloAberto, setModeloAberto] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
+
+  /**
+   * Filtro por camada.
+   *
+   * Ônibus encarroçado acumula dois planos, com fornecedores diferentes: o
+   * chassi segue a montadora, a carroceria segue a encarroçadora. Misturar os
+   * dois numa lista só esconde que o filtro do ar-condicionado é semanal
+   * enquanto o óleo do motor é a cada 30 mil km.
+   */
+  const [camada, setCamada] = useState<CamadaManutencao | "todas">("todas");
   const [soPendentes, setSoPendentes] = useState(false);
   const [locais, setLocais] = useState<ParametroManutencao[] | null>(null);
   const [editando, setEditando] = useState<ParametroManutencao | null>(null);
@@ -93,6 +102,10 @@ export default function CatalogoManutencao() {
   const montadoras = montadorasQ.data ?? [];
   const modelos = modelosQ.data ?? [];
   const parametros = useMemo(() => locais ?? parametrosQ.data ?? [], [locais, parametrosQ.data]);
+  // Camada filtra antes de qualquer outra coisa: chassi e carroceria são
+  // planos independentes, e ver os dois juntos raramente é o que se quer.
+  const porCamada = (p: ParametroManutencao) =>
+    camada === "todas" || (p.camada ?? "chassi") === camada;
 
   const paramsDo = (modeloId: string) => parametros.filter((p) => p.modeloId === modeloId);
 
@@ -144,7 +157,25 @@ export default function CatalogoManutencao() {
         title="Catálogo de manutenção"
         subtitle="Administração › Parâmetros do fabricante"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Camada primeiro: define qual plano se está olhando. */}
+            <div className="flex gap-1.5">
+              {(["todas", "chassi", "carroceria"] as const).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCamada(c)}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors",
+                    camada === c
+                      ? "bg-brand-navy text-white"
+                      : "border border-border bg-white text-muted-foreground hover:bg-secondary",
+                  )}
+                >
+                  {c === "todas" ? "Todas" : CAMADA_LABEL[c]}
+                </button>
+              ))}
+            </div>
+
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input

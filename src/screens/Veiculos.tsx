@@ -13,6 +13,7 @@ import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { usandoMock } from "@/lib/modo";
+import { notaDePercentual, useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 
@@ -88,6 +89,15 @@ export default function Veiculos() {
    * Fonte trocada num ponto só: colunas, filtros e cálculos abaixo não sabem de
    * onde veio o dado, porque o mapeamento devolve o mesmo formato do exemplo.
    */
+  /**
+   * Indicadores da telemetria do período, cruzados com o cadastro.
+   *
+   * O `/vehicles` entrega só a ficha; consumo, odômetro atual e condução vêm
+   * de con_telemetry. O cruzamento acontece aqui para as colunas deixarem de
+   * mostrar traço.
+   */
+  const indicadores = useIndicadoresPorVeiculo(30);
+
   const fonte = usandoMock() ? mockQ : apiQ;
   const { data, isPending, error, refetch, isFetching } = fonte;
   const kanbanQ = useQuery(kanbanManutencaoQuery());
@@ -105,7 +115,24 @@ export default function Veiculos() {
   // O escopo de garagem é aplicado antes de qualquer contagem: os KPIs precisam
   // refletir o que a pessoa pode ver, não a frota inteira.
   const itens = useMemo(() => {
-    const noEscopo = filtrarPorGaragem(data?.items ?? [], sessao, (v) => v.garagemId);
+    // Cadastro enriquecido com o que a telemetria mediu no período.
+    const comIndicadores = (data?.items ?? []).map((v) => {
+      const ind = indicadores.porVeiculo.get(v.id);
+      if (!ind) return v;
+      return {
+        ...v,
+        kml: ind.kml ?? v.kml,
+        odometro: ind.odometro ?? v.odometro,
+        // Estrelas na mesma escala da tela de motoristas. Faixa verde e
+        // aproveitamento de embalo são "quanto maior melhor"; motor ligado
+        // parado é o contrário, e por isso inverte.
+        ae: notaDePercentual(ind.faixaVerdePct),
+        mp: notaDePercentual(ind.motorLigadoParadoPct, false),
+        _ind: ind,
+      };
+    });
+
+    const noEscopo = filtrarPorGaragem(comIndicadores, sessao, (v) => v.garagemId);
     return garagem ? noEscopo.filter((v) => v.garagemId === garagem) : noEscopo;
   }, [data, sessao, garagem]);
   const total = itens.length;
@@ -131,7 +158,7 @@ export default function Veiculos() {
           `${v.marca} ${v.modelo}`.toLowerCase().includes(termo)
         );
       }) as Linha[];
-  }, [itens, kanbanQ.data, busca, marca, modelo, operacao, situacao]);
+  }, [itens, kanbanQ.data, busca, marca, modelo, operacao, situacao, indicadores.porVeiculo]);
 
   // Opções derivadas do que existe na frota — lista fixa envelheceria.
   const marcas = useMemo(() => [...new Set(itens.map((v) => v.marca))].sort(), [itens]);
@@ -303,16 +330,39 @@ export default function Veiculos() {
             é aplicado pelo servidor e a lista vazia significa outra coisa —
             filtro sem resultado, ou acesso sem veículos. Culpar a garagem ali
             mandaria o usuário pedir um acesso que ele já tem. */}
-        {/* Explica as colunas vazias antes que pareçam falha do sistema. */}
-        {!usandoMock() && comKml.length === 0 && linhas.length > 0 && (
-          <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">O cadastro veio; os indicadores ainda não.</strong> Placa, prefixo e
-              modelo vêm de <span className="font-mono">/vehicles</span>. Consumo, odômetro atual e faixas de condução
-              vêm da telemetria por viagem, que é outra consulta — as colunas mostram traço em vez de zero porque
-              zero seria medição, e o que há é ausência.
+        {/* Declara a base do cálculo: sem saber quantas viagens entraram, o
+            gestor não tem como julgar se o número é representativo. */}
+        {!usandoMock() && (
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+            <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
+              {indicadores.carregando ? (
+                <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
+              ) : comKml.length > 0 ? (
+                <span>
+                  Consumo e condução calculados sobre{" "}
+                  <strong className="text-foreground">{nf(indicadores.viagensAnalisadas)} viagens</strong> dos últimos
+                  30 dias. O consumo é ponderado pela distância — média simples faria um trecho de 2 km pesar tanto
+                  quanto um de 200.
+                </span>
+              ) : (
+                <span>
+                  <strong className="text-foreground">Nenhuma viagem no período.</strong> Placa, prefixo e modelo vêm
+                  do cadastro; consumo e condução dependem de telemetria, e a frota não registrou viagens nos últimos
+                  30 dias.
+                </span>
+              )}
             </p>
+
+            {indicadores.parcial && (
+              <button
+                onClick={() => indicadores.carregarMais()}
+                disabled={indicadores.carregandoMais}
+                className="shrink-0 rounded-full border border-border bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-brand-navy hover:bg-secondary disabled:opacity-60"
+              >
+                {indicadores.carregandoMais ? "Carregando…" : "Carregar mais viagens"}
+              </button>
+            )}
           </div>
         )}
 

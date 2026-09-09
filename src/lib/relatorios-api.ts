@@ -178,6 +178,13 @@ export type TelemetriaApi = {
   // Chuva: o backend distingue, e nenhuma tela usava.
   time_raining?: number | null;
   time_dry?: number | null;
+  // Eventos de condução, contados por viagem.
+  count_hard_brake?: number | null;
+  count_hard_acel?: number | null;
+  count_harsh_turn?: number | null;
+  count_speed_violation_l2?: number | null;
+  count_speed_violation_l3?: number | null;
+  count_stop_engine_on?: number | null;
   // Linha, quando o equipamento envia.
   line_number?: number | null;
   trip_direction?: number | null;

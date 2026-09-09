@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router-compat";
-import { ChevronLeft, ChevronRight, Gauge, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gauge, Info, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench, X } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { StarRating } from "@/components/ss/ui/gauges";
@@ -153,7 +153,15 @@ export default function Veiculos() {
   const filtrosAtivos = [marca, modelo, operacao, situacao, busca].filter(Boolean).length;
 
   const conta = (s: string) => itens.filter((v) => v.situacao === s).length;
-  const kmlMedio = itens.length ? itens.reduce((a, v) => a + (v.kml ?? 0), 0) / itens.length : 0;
+  /**
+   * Média apenas dos veículos com medição.
+   *
+   * Incluir quem não tem dado como zero puxaria a média para baixo e faria a
+   * frota parecer pior do que é — com 200 veículos sem telemetria cruzada, a
+   * média daria quase zero.
+   */
+  const comKml = linhas.filter((v) => v.kml != null);
+  const kmlMedio = comKml.length ? comKml.reduce((a, v) => a + (v.kml ?? 0), 0) / comKml.length : null;
 
   const COLS: Column<Linha>[] = [
     {
@@ -195,7 +203,7 @@ export default function Veiculos() {
       align: "right",
       render: (v) => (
         <span className="whitespace-nowrap font-mono">
-          {nf(v.kml, 2)} <span className="text-muted-foreground">km/l</span>
+          {v.kml != null ? (<>{nf(v.kml, 2)} <span className="text-muted-foreground">km/l</span></>) : (<span className="text-muted-foreground">—</span>)}
         </span>
       ),
     },
@@ -203,7 +211,7 @@ export default function Veiculos() {
       key: "odometro",
       header: "Odômetro",
       align: "right",
-      render: (v) => <span className="whitespace-nowrap font-mono">{nf(v.odometro)} km</span>,
+      render: (v) => <span className="whitespace-nowrap font-mono">{v.odometro != null ? nf(v.odometro) : "—"} km</span>,
     },
     stars("iv"),
     stars("ae"),
@@ -295,6 +303,19 @@ export default function Veiculos() {
             é aplicado pelo servidor e a lista vazia significa outra coisa —
             filtro sem resultado, ou acesso sem veículos. Culpar a garagem ali
             mandaria o usuário pedir um acesso que ele já tem. */}
+        {/* Explica as colunas vazias antes que pareçam falha do sistema. */}
+        {!usandoMock() && comKml.length === 0 && linhas.length > 0 && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
+            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">O cadastro veio; os indicadores ainda não.</strong> Placa, prefixo e
+              modelo vêm de <span className="font-mono">/vehicles</span>. Consumo, odômetro atual e faixas de condução
+              vêm da telemetria por viagem, que é outra consulta — as colunas mostram traço em vez de zero porque
+              zero seria medição, e o que há é ausência.
+            </p>
+          </div>
+        )}
+
         {usandoMock() && escopoGaragens(sessao)?.length === 0 && (
           <div className="rounded-xl border border-gold-line bg-gold-tint/50 px-4 py-3 text-[13px] text-gold">
             <strong>Nenhuma garagem atribuída ao seu usuário.</strong> Por isso não há veículos nesta lista. Peça ao
@@ -323,7 +344,14 @@ export default function Veiculos() {
                 color="var(--coral)"
                 to="/app/frota/telemetria"
               />
-              <StatTile icon={Navigation} label="KML médio" value={nf(kmlMedio, 2)} unit="km/l" color="var(--brand-navy)" />
+              <StatTile
+                icon={Navigation}
+                label="KML médio"
+                value={kmlMedio != null ? nf(kmlMedio, 2) : "—"}
+                unit={kmlMedio != null ? "km/l" : undefined}
+                color="var(--brand-navy)"
+                foot={comKml.length < linhas.length ? `${comKml.length} de ${linhas.length} com medição` : undefined}
+              />
             </div>
 
             <Card

@@ -163,17 +163,19 @@ export function calcularPreventivas(
 
     // Sem histórico, assume-se o odômetro atual como marco zero e o item entra
     // como programado — não como vencido, que seria alarme falso em massa.
-    const odoBase = exec?.odometro ?? veiculo.odometro;
+    // Sem odômetro, o gatilho por quilometragem não é calculável. Assumir zero
+    // marcaria tudo como vencido; assumir o intervalo marcaria tudo em dia.
+    const odoBase = exec?.odometro ?? veiculo.odometro ?? null;
     const dataBase = exec?.em ?? null;
 
-    const kmRodados = veiculo.odometro - odoBase;
-    const kmRestante = aplicado !== null ? aplicado - kmRodados : null;
+    const kmRodados = veiculo.odometro != null && odoBase != null ? veiculo.odometro - odoBase : null;
+    const kmRestante = aplicado !== null && kmRodados !== null ? aplicado - kmRodados : null;
 
     const diasDecorridos = dataBase ? dias(dataBase) : 0;
     const diasIntervalo = p.intervaloMeses ? p.intervaloMeses * 30 : null;
     const diasRestante = diasIntervalo !== null && dataBase ? diasIntervalo - diasDecorridos : null;
 
-    const pctKm = aplicado ? (kmRodados / aplicado) * 100 : 0;
+    const pctKm = aplicado && kmRodados !== null ? (kmRodados / aplicado) * 100 : 0;
     const pctTempo = diasIntervalo && dataBase ? (diasDecorridos / diasIntervalo) * 100 : 0;
     const consumidoPct = Math.round(Math.max(pctKm, pctTempo));
 

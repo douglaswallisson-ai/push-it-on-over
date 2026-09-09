@@ -74,8 +74,11 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
     ano: 0,
     operacao: "—",
     situacao: v.status === 1 ? "parado" : "sem_sinal",
-    kml: 0,
-    odometro: v.initial_odometer ?? 0,
+    // Zero seria mentira: o veículo não roda a 0 km/l, o dado é que não veio.
+    // O cadastro entrega só a ficha; consumo e odômetro atual vêm de
+    // con_telemetry, que é outra consulta. Nulo faz a tela mostrar traço.
+    kml: null,
+    odometro: v.initial_odometer ?? null,
     grupoId: v.group_id != null ? String(v.group_id) : undefined,
     unidadeId: v.subgroup_id != null ? String(v.subgroup_id) : undefined,
   };

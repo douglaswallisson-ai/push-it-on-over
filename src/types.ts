@@ -45,8 +45,14 @@ export type Veiculo = {
   ano: number;
   operacao: string;
   situacao: "em_rota" | "parado" | "manutencao" | "sem_sinal";
-  kml: number;
-  odometro: number;
+  /**
+   * Consumo médio. Nulo quando não há medição — o cadastro sozinho não traz
+   * consumo, ele vem do relatório de telemetria. Zero seria mentira: veículo
+   * nenhum roda a 0 km/l.
+   */
+  kml: number | null;
+  /** Odômetro atual. Nulo quando o dado não veio, não zero. */
+  odometro: number | null;
   grupoId?: string;
   unidadeId?: string;
   /** Garagem onde o veículo está lotado — menor escopo de permissão. */

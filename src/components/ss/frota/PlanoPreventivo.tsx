@@ -139,7 +139,7 @@ export function PlanoPreventivo({
                         {modelo?.propulsao === "eletrico" && <Zap className="h-3.5 w-3.5 text-gold" />}
                       </span>
                       <span className="block truncate text-[11.5px] text-muted-foreground">
-                        {modelo?.nome ?? "sem modelo"} · {nf(veiculo.odometro)} km
+                        {modelo?.nome ?? "sem modelo"} · {veiculo.odometro != null ? nf(veiculo.odometro) : "—"} km
                       </span>
                     </span>
 

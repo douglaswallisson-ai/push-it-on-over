@@ -1071,7 +1071,7 @@ export const MOCK_EXECUCOES: ExecucaoManutencao[] = (() => {
       veiculoId,
       parametroId,
       em: diasAtrasIso(diasAtras),
-      odometro: Math.max(0, v.odometro - kmAntes),
+      odometro: Math.max(0, (v.odometro ?? 0) - kmAntes),
     });
   };
 

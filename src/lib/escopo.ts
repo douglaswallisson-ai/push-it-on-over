@@ -17,6 +17,7 @@
 
 import type { Perfil } from "@/lib/permissoes";
 import type { Sessao } from "@/lib/session";
+import { usandoMock } from "@/lib/modo";
 
 /** Perfis que enxergam todas as garagens da organização, sem lista explícita. */
 const IRRESTRITOS: Perfil[] = ["super_admin", "admin_empresa"];
@@ -30,6 +31,20 @@ export const vePorTodasGaragens = (perfil?: Perfil) => Boolean(perfil && IRRESTR
 export function escopoGaragens(sessao: Sessao | null): string[] | null {
   if (!sessao) return [];
   if (vePorTodasGaragens(sessao.perfil)) return null;
+
+  /**
+   * Ligado à API, o escopo já vem aplicado pelo servidor.
+   *
+   * O backend filtra por `user_group_access` antes de responder — o que chega
+   * ao front é, por definição, o que o usuário pode ver. Filtrar de novo aqui
+   * é redundante, e destrutivo quando a sessão não tem garagens: escondia toda
+   * a frota que a API tinha acabado de entregar.
+   *
+   * A lista local continua valendo em modo de exemplo, onde não há servidor
+   * para aplicar escopo nenhum.
+   */
+  if (!usandoMock()) return null;
+
   return sessao.garagens ?? [];
 }
 

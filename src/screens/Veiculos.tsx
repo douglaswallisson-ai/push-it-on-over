@@ -291,9 +291,11 @@ export default function Veiculos() {
       />
 
       <div className="mx-auto max-w-[1600px] space-y-6 px-6 py-6 md:px-8">
-        {/* Sem garagem atribuída a lista fica vazia; dizer o porquê evita que
-            pareça erro do sistema. */}
-        {escopoGaragens(sessao)?.length === 0 && (
+        {/* O aviso só faz sentido em modo de exemplo: ligado à API, o escopo
+            é aplicado pelo servidor e a lista vazia significa outra coisa —
+            filtro sem resultado, ou acesso sem veículos. Culpar a garagem ali
+            mandaria o usuário pedir um acesso que ele já tem. */}
+        {usandoMock() && escopoGaragens(sessao)?.length === 0 && (
           <div className="rounded-xl border border-gold-line bg-gold-tint/50 px-4 py-3 text-[13px] text-gold">
             <strong>Nenhuma garagem atribuída ao seu usuário.</strong> Por isso não há veículos nesta lista. Peça ao
             administrador da sua organização para vincular ao menos uma garagem ao seu acesso.

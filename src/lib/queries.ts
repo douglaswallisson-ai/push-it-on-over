@@ -22,6 +22,7 @@ import {
   PontosApi,
   Seguranca,
   Ordens,
+  Empresas,
   Unidades,
   PadroesLinha,
   Planos,
@@ -577,6 +578,31 @@ export const checklistRespostasQuery = () =>
   });
 
 /**
+ * Empresas clientes que o usuário pode selecionar.
+ *
+ * O backend já aplica o escopo — a lista chega filtrada pelo que o usuário tem
+ * direito de ver.
+ */
+export const empresasQuery = () =>
+  queryOptions({
+    queryKey: ["empresas", "api"],
+    queryFn: async () => {
+      const r = await Empresas.lista();
+      return (r.data ?? [])
+        .map((g) => ({
+          id: String(g.id),
+          // O nome comercial costuma ser mais reconhecível que a razão social.
+          name: (g.name ?? "").trim() || g.corporate_name?.trim() || `Grupo ${g.id}`,
+          codigo: g.client_cod?.trim() || null,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+    },
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 10 * MINUTE,
+  });
+
+/**
  * Unidades operacionais que o usuário pode selecionar.
  *
  * Vêm de `mova.subgroup`, que é o nível onde a operação acontece — filial,
@@ -586,13 +612,14 @@ export const checklistRespostasQuery = () =>
  * Subgrupo suspenso fica de fora: ele existe no cadastro mas não opera, e
  * oferecer para seleção levaria a uma tela sempre vazia.
  */
-export const unidadesQuery = () =>
+export const unidadesQuery = (grupoId?: string) =>
   queryOptions({
-    queryKey: ["unidades", "api"],
+    queryKey: ["unidades", "api", grupoId ?? "todas"],
     queryFn: async () => {
-      const r = await Unidades.lista();
+      const r = await Unidades.lista(grupoId);
       return (Array.isArray(r) ? r : [])
         .filter((u) => !u.suspended)
+        .filter((u) => !grupoId || String(u.group_id) === grupoId)
         .map((u) => ({
           id: String(u.id),
           name: (u.name ?? "").trim() || `Unidade ${u.id}`,

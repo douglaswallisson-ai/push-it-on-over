@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { unidadesQuery } from "@/lib/queries";
+import { empresasQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { Building2, Check, ChevronsUpDown, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -43,7 +43,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
    * exemplo continua servindo quando não há conexão, para o seletor nunca
    * aparecer vazio.
    */
-  const orgsQ = useQuery(unidadesQuery());
+  const orgsQ = useQuery(empresasQuery());
 
   /**
    * Unidades operacionais disponíveis.
@@ -55,11 +55,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
    */
   const orgs = useMemo<Org[]>(() => {
     if (usandoMock() || !orgsQ.data?.length) return ORGS;
-    return orgsQ.data.map((u) => ({
-      id: u.id,
-      name: u.name,
-      plan: u.empresa ?? u.codigo ?? undefined,
-    }));
+    return orgsQ.data.map((g) => ({ id: g.id, name: g.name, plan: g.codigo ?? undefined }));
   }, [orgsQ.data]);
 
 

@@ -486,6 +486,34 @@ export const Checklist = {
 };
 
 /**
+ * Empresas clientes — `mova.group`.
+ *
+ * A hierarquia real, confirmada nos dados:
+ *
+ *     account   a operadora do software (SS Telemática)
+ *     group     a EMPRESA CLIENTE — Transcon, Saritur, Aperam, Gardênia
+ *     subgroup  as unidades dentro dela: filial, garagem, contrato
+ *
+ * O seletor lista grupos. Listar subgrupos, como eu fazia antes, misturava
+ * contratos de uma mesma empresa — "Viação Triunfo - Prefeitura Sarzedo",
+ * "- Saúde JM", "- Vans" — e mostrava vários itens chamados só "Geral", que
+ * sem a empresa ao lado são indistinguíveis.
+ */
+export const Empresas = {
+  lista: () =>
+    api.get<
+      RespostaCursorApi<{
+        id: number;
+        name: string;
+        account_id?: number | null;
+        cnpj?: string | null;
+        corporate_name?: string | null;
+        client_cod?: string | null;
+      }>
+    >(`/api/v1/groups/?limit=500`),
+};
+
+/**
  * Unidades operacionais — o que o usuário seleciona para trabalhar.
  *
  * A hierarquia real do schema `mova` é:
@@ -519,5 +547,6 @@ export const Unidades = {
    * veículos e motoristas, que usam cursor. Eu lia `r.data` aqui e recebia
    * `undefined`, então a lista chegava sempre vazia.
    */
-  lista: () => api.get<UnidadeApi[]>(`/api/v1/subgroups/?limit=500`),
+  lista: (grupoId?: string) =>
+    api.get<UnidadeApi[]>(`/api/v1/subgroups/${qs({ limit: 500, ...(grupoId ? { group_id: grupoId } : {}) })}`),
 };

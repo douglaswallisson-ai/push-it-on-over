@@ -57,3 +57,32 @@ export function refetchInterval(): number | false {
   const s = intervaloAtualizacao();
   return s > 0 ? s * 1000 : false;
 }
+
+/**
+ * Base de exemplo a usar, conforme o modo.
+ *
+ * Devolve os dados de exemplo em modo de demonstração e uma lista vazia em
+ * modo API — nunca os dois misturados.
+ *
+ * Existe porque o padrão contrário já apareceu em cinco telas: cair no exemplo
+ * quando a API não devolve nada. Ligado ao banco real, isso mostra veículos,
+ * motoristas e clientes que não existem, sem nada na tela avisando. O usuário
+ * confere um número, vê que não bate com a operação, e perde a confiança no
+ * sistema inteiro.
+ *
+ * Lista vazia é honesta. Lista inventada não é.
+ */
+export function exemploOuVazio<T>(dados: T[]): T[] {
+  return usandoMock() ? dados : [];
+}
+
+/**
+ * Módulo sem endpoint no backend.
+ *
+ * Alguns módulos — manutenção, contratos, multas — não têm origem nenhuma. Para
+ * eles o exemplo é a única fonte possível, em qualquer modo, e o selo na tela
+ * declara isso. Marcar explicitamente evita que a regra acima os esvazie.
+ */
+export function exemploSempre<T>(dados: T[]): T[] {
+  return dados;
+}

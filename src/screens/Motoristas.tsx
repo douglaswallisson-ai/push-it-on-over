@@ -158,7 +158,14 @@ export default function Motoristas() {
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
   const [grafico, setGrafico] = useState<string | null>(null);
   const base = useMemo(() => {
-    if (!daApi) return DADOS;
+    /**
+     * Sem reserva em modo API.
+     *
+     * Cair na base de exemplo com o sistema ligado ao banco real mostra
+     * motoristas que não existem, e nada na tela avisa. Lista vazia é honesta;
+     * lista inventada não.
+     */
+    if (!daApi) return usandoMock() ? DADOS : [];
     // Os indicadores de condução (estrelas) vêm do relatório de telemetria e
     // ainda não estão cruzados; ficam nulos em vez de mostrar valor inventado.
     return daApi.map((m) => ({

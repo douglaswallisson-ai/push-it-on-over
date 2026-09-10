@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, Route, TrendingUp, UserCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { usandoMock } from "@/lib/modo";
 import { useLocation } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -87,7 +88,10 @@ export default function ContagemPassageiros() {
    * número, e a média perde sentido.
    */
   const [modalidade, setModalidade] = useState<"todas" | "urbano" | "fretamento">(modalidadeInicial);
-  const linhas = modalidade === "todas" ? DADOS : DADOS.filter((d) => d.modalidade === modalidade);
+  // Módulo sem endpoint: o exemplo é a única fonte, e o selo já declara isso.
+  // Em modo API a lista fica vazia, para não misturar dado inventado com real.
+  const fonte = usandoMock() ? DADOS : [];
+  const linhas = modalidade === "todas" ? fonte : fonte.filter((d) => d.modalidade === modalidade);
   const totalEmbarques = linhas.reduce((a, d) => a + d.embarques, 0);
 
   return (

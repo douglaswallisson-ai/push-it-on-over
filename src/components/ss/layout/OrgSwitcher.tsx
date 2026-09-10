@@ -53,9 +53,17 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
    * unidade não funciona, porque a convenção varia: num caso a empresa é o
    * prefixo, no outro é o sufixo.
    */
+  /**
+   * Empresas disponíveis.
+   *
+   * Em modo API a lista vem do servidor e **não há reserva**: se ela vier
+   * vazia, o seletor mostra vazio. Cair na base de exemplo enquanto o sistema
+   * está ligado ao banco real inventa clientes que não existem, e o usuário
+   * não tem como saber que está olhando ficção.
+   */
   const orgs = useMemo<Org[]>(() => {
-    if (usandoMock() || !orgsQ.data?.length) return ORGS;
-    return orgsQ.data.map((g) => ({ id: g.id, name: g.name, plan: g.codigo ?? undefined }));
+    if (usandoMock()) return ORGS;
+    return (orgsQ.data ?? []).map((g) => ({ id: g.id, name: g.name, plan: g.codigo ?? undefined }));
   }, [orgsQ.data]);
 
 
@@ -170,7 +178,13 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
 
           <div className="rolagem-escura max-h-64 overflow-y-auto py-1">
             {filtradas.length === 0 ? (
-              <p className="px-3 py-4 text-center text-[12px] text-white/40">Nenhuma organização.</p>
+              <p className="px-3 py-5 text-center text-[12px] leading-relaxed text-white/45">
+                {orgsQ.isPending
+                  ? "Carregando empresas…"
+                  : busca
+                    ? "Nenhuma empresa com esse nome."
+                    : "Nenhuma empresa disponível para o seu acesso."}
+              </p>
             ) : (
               filtradas.map((org) => (
                 <button

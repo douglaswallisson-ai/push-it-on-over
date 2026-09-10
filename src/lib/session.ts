@@ -162,7 +162,18 @@ export function sair(): void {
 export function trocarOrganizacao(id: string, nome: string): boolean {
   const s = lerSessao();
   if (!s) return false;
-  if (s.perfil !== "super_admin" && id !== s.organizacaoId) return false;
+
+  /**
+   * A troca não depende do perfil.
+   *
+   * A regra anterior só deixava super admin apontar para outra base, o que
+   * ignorava o caso comum: um gestor com acesso a doze unidades precisa
+   * navegar entre elas.
+   *
+   * Quem garante o direito é o servidor — ele filtra por `user_group_access`
+   * antes de responder, e apontar para uma unidade sem acesso devolve lista
+   * vazia, não dado alheio. Bloquear aqui só impedia o uso legítimo.
+   */
   gravar<Sessao>(CHAVE_SESSAO, { ...s, organizacaoAtivaId: id, organizacaoAtiva: nome });
   registrarAuditoria("troca_organizacao", `Passou a visualizar a base de ${nome}.`, nome);
   return true;

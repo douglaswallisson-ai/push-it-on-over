@@ -93,9 +93,20 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  // Quem não é super admin não escolhe base — nem vê o controle.
+  /**
+   * Quem escolhe unidade.
+   *
+   * A regra era "só super admin", e estava errada: o que define a escolha é
+   * **ter mais de uma unidade acessível**, não o perfil. Um gestor com acesso
+   * a doze garagens precisa trocar entre elas tanto quanto um administrador —
+   * e o backend já garante que ninguém receba unidade a que não tem direito.
+   *
+   * Com uma unidade só, o controle vira rótulo: não há o que escolher.
+   */
+  const podeEscolher = superAdmin || orgs.length > 1;
+
   if (carregando) return null;
-  if (!superAdmin) {
+  if (!podeEscolher) {
     if (!expanded) return null;
     return (
       <div className="flex h-10 items-center gap-2.5 overflow-hidden rounded-lg px-2.5">

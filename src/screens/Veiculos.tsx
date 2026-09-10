@@ -336,7 +336,19 @@ export default function Veiculos() {
           <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
             <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-              {indicadores.carregando ? (
+              {indicadores.erro ? (
+                /* O erro precisa aparecer: sem ele, "não funciona" vira adivinhação.
+                   403 é permissão, 404 é endpoint ausente, 422 é parâmetro
+                   rejeitado — três causas com soluções diferentes. */
+                <span className="text-coral">
+                  <strong>Não foi possível ler a telemetria.</strong>{" "}
+                  {(indicadores.erro as { status?: number; message?: string })?.status === 403
+                    ? "Permissão negada em /reports — falta reports.read."
+                    : (indicadores.erro as { status?: number })?.status === 404
+                      ? "Endpoint não publicado no servidor."
+                      : (indicadores.erro as { message?: string })?.message ?? "Erro desconhecido."}
+                </span>
+              ) : indicadores.carregando ? (
                 <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
               ) : comKml.length > 0 ? (
                 <span>

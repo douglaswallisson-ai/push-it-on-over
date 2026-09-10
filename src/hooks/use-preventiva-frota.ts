@@ -6,6 +6,7 @@ import {
   parametrosCatalogoQuery,
   regrasAjusteQuery,
   sinaisOperacaoQuery,
+  veiculosApiQuery,
   veiculosQuery,
   vinculosModeloQuery,
   dtcQuery,
@@ -13,6 +14,8 @@ import {
 import { recomendarPorDTC } from "@/lib/dtc";
 import { calcularPreventivas, classificarOperacao } from "@/lib/preventiva";
 import type { ModeloVeiculo, PreventivaPrevista, TipoOperacao, Veiculo } from "@/types";
+import { usandoMock } from "@/lib/modo";
+import { useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 
 /**
  * Cálculo da preventiva de toda a frota.
@@ -34,7 +37,18 @@ export type PreventivaVeiculo = {
 };
 
 export function usePreventivaFrota(garagem?: string) {
-  const veiculosQ = useQuery(veiculosQuery(1, 200));
+  /**
+   * Frota, da API quando disponível.
+   *
+   * A preventiva depende de odômetro real: com o mock, o cálculo roda sobre
+   * uma frota que não existe. E o odômetro do cadastro é o **inicial** — o
+   * atual vem da telemetria, e é o que define se o intervalo venceu.
+   */
+  const mockVeicQ = useQuery(veiculosQuery(1, 200));
+  const apiVeicQ = useQuery(veiculosApiQuery(1, 500));
+  const veiculosQ = usandoMock() ? mockVeicQ : apiVeicQ;
+
+  const indicadores = useIndicadoresPorVeiculo(30);
   const modelosQ = useQuery(modelosQuery());
   const parametrosQ = useQuery(parametrosCatalogoQuery());
   const execucoesQ = useQuery(execucoesQuery());
@@ -44,7 +58,17 @@ export function usePreventivaFrota(garagem?: string) {
   const dtcQ = useQuery(dtcQuery());
 
   const porVeiculo = useMemo<PreventivaVeiculo[]>(() => {
-    const veiculos = veiculosQ.data?.items ?? [];
+    /**
+     * Frota com o odômetro atual, não o de cadastro.
+     *
+     * `tracked_unit.initial_odometer` é o valor de quando o equipamento foi
+     * instalado — usá-lo faria a preventiva calcular sobre uma quilometragem
+     * de meses atrás, e nada venceria nunca. O atual vem da última viagem.
+     */
+    const veiculos = (veiculosQ.data?.items ?? []).map((v) => {
+      const ind = indicadores.porVeiculo.get(v.id);
+      return ind?.odometro != null ? { ...v, odometro: ind.odometro } : v;
+    });
     const modelos = modelosQ.data ?? [];
     const parametros = parametrosQ.data ?? [];
     const execucoes = execucoesQ.data ?? [];
@@ -90,6 +114,7 @@ export function usePreventivaFrota(garagem?: string) {
       .sort((a, b) => (b.preventivas[0]?.consumidoPct ?? 0) - (a.preventivas[0]?.consumidoPct ?? 0));
   }, [
     veiculosQ.data,
+    indicadores.porVeiculo,
     modelosQ.data,
     parametrosQ.data,
     execucoesQ.data,

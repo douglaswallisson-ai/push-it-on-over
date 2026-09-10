@@ -342,8 +342,17 @@ export default function Veiculos() {
                 <span>
                   Consumo e condução calculados sobre{" "}
                   <strong className="text-foreground">{nf(indicadores.viagensAnalisadas)} viagens</strong> dos últimos
-                  30 dias. O consumo é ponderado pela distância — média simples faria um trecho de 2 km pesar tanto
-                  quanto um de 200.
+                  30 dias, ponderado pela distância.
+                  {indicadores.viagensDescartadas > 0 && (
+                    <>
+                      {" "}
+                      <strong className="text-gold">
+                        {nf(indicadores.viagensDescartadas)} descartadas
+                      </strong>{" "}
+                      por leitura impossível — distância negativa por estouro de odômetro, ou velocidade acima de
+                      300 km/h. Mantê-las somaria milhões de quilômetros que não existiram.
+                    </>
+                  )}
                 </span>
               ) : (
                 <span>

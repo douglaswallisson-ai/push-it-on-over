@@ -2,6 +2,52 @@ import { useMemo } from "react";
 import { useRelatorioCursor, type TelemetriaApi } from "@/lib/relatorios-api";
 import { usandoMock } from "@/lib/modo";
 
+/* ------------------------------------------------------------------ */
+/* Unidades e travas de invariante físico                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A origem não usa as unidades que a tela mostra.
+ *
+ * `con_telemetry` guarda distância em **metros**, tempo em **segundos** e
+ * combustível em **mililitros**. Somar direto e chamar de quilômetro multiplica
+ * o número por mil.
+ */
+const METROS_POR_KM = 1000;
+const ML_POR_LITRO = 1000;
+
+/**
+ * Descarta viagem fisicamente impossível.
+ *
+ * Não é filtro de bom senso: são três defeitos conhecidos do dado bruto, e sem
+ * eles o total da frota fica ordens de grandeza errado.
+ *
+ * 1. **Distância negativa.** Overflow de odômetro de 32 bits — o contador
+ *    estoura em 4.294.967.295 e volta a zero, produzindo diferença negativa.
+ *    Atinge cerca de 0,5% das viagens, e sem a trava o quilômetro da frota
+ *    fica negativo na casa do milhão.
+ *
+ * 2. **Velocidade implícita acima de 300 km/h.** Salto do mesmo defeito: há
+ *    registro de ~405.000 km em uma hora. É esta trava que separa dezenas de
+ *    milhões de quilômetros brutos dos poucos milhares reais.
+ *
+ * 3. **Consumo acima de 5 litros por quilômetro.** Acontece quando o contador
+ *    cumulativo do equipamento é copiado no lugar do consumo da viagem. Afeta
+ *    só o par usado no km/l, não o total de distância.
+ */
+const VELOCIDADE_MAX_KMH = 300;
+const LITROS_POR_KM_MAX = 5;
+
+function viagemPlausivel(metros: number, segundos: number, mililitros: number) {
+  if (metros < 0) return false;
+
+  const km = metros / METROS_POR_KM;
+  const horas = segundos / 3600;
+  if (horas > 0 && km / horas > VELOCIDADE_MAX_KMH) return false;
+
+  return { km, litros: mililitros / ML_POR_LITRO <= km * LITROS_POR_KM_MAX ? mililitros / ML_POR_LITRO : 0 };
+}
+
 /**
  * Indicadores de operação por veículo, a partir da telemetria do período.
  *
@@ -36,6 +82,8 @@ export type IndicadoresVeiculo = {
   excessos: number;
   /** Instante da última viagem registrada. */
   ultimaViagem: string | null;
+  /** Viagens descartadas por invariante físico. */
+  descartadas: number;
 };
 
 /** Últimos 30 dias, que é o recorte usual de fechamento. */
@@ -80,6 +128,8 @@ export function useIndicadoresPorVeiculo(dias = 30) {
         excessos: number;
         odometro: number | null;
         ultima: string | null;
+        /** Viagens descartadas por invariante físico, para a tela declarar. */
+        descartadas: number;
       }
     >();
 
@@ -99,12 +149,42 @@ export function useIndicadoresPorVeiculo(dias = 30) {
         excessos: 0,
         odometro: null,
         ultima: null,
+        descartadas: 0,
       };
 
-      a.km += t.distance_traveled ?? 0;
-      a.litros += t.fuel_used ?? 0;
+      // Converte e valida antes de somar: viagem impossível não entra na conta.
+      const ok = viagemPlausivel(
+        t.distance_traveled ?? 0,
+        t.total_time ?? 0,
+        t.fuel_used ?? 0,
+      );
+      if (!ok) {
+        a.descartadas += 1;
+        acc.set(id, a);
+        continue;
+      }
+
+      a.km += ok.km;
+      a.litros += ok.litros;
       a.viagens += 1;
-      a.segMovimento += t.time_moving ?? 0;
+      /**
+       * Denominador das faixas: a soma das próprias faixas, não `time_moving`.
+       *
+       * O relatório oficial usa
+       * `verde + extra_eco + amarela + vermelha + inércia + banguela + tolerância`.
+       * A tolerância não aparece como coluna em lugar nenhum, mas entra na
+       * conta — e sem ela os percentuais saem de 10 a 17% inflados.
+       */
+      const faixas =
+        (t.time_green ?? 0) +
+        (t.time_extra_eco ?? 0) +
+        (t.time_yellow ?? 0) +
+        (t.time_red ?? 0) +
+        (t.time_inercia ?? 0) +
+        (t.time_banguela ?? 0) +
+        (t.time_tolerancia ?? 0);
+      a.segMovimento += faixas;
+
       // Verde e extra econômica somam: as duas são condução na faixa desejada,
       // e separá-las na lista da frota seria detalhe demais.
       a.segVerde += (t.time_green ?? 0) + (t.time_extra_eco ?? 0);
@@ -119,7 +199,7 @@ export function useIndicadoresPorVeiculo(dias = 30) {
       // pode ter deixado um valor alto de outro aparelho no histórico.
       if (!a.ultima || (t.start_time ?? "") > a.ultima) {
         a.ultima = t.start_time ?? a.ultima;
-        a.odometro = t.end_odometer ?? a.odometro;
+        a.odometro = t.end_odometer != null ? Math.round(t.end_odometer / METROS_POR_KM) : a.odometro;
       }
 
       acc.set(id, a);
@@ -143,6 +223,7 @@ export function useIndicadoresPorVeiculo(dias = 30) {
         contagemAceleracoes: a.aceleracoes,
         excessos: a.excessos,
         ultimaViagem: a.ultima,
+        descartadas: a.descartadas,
       });
     }
 
@@ -155,6 +236,8 @@ export function useIndicadoresPorVeiculo(dias = 30) {
     erro: q.error,
     /** Quantas viagens entraram na conta, para a tela declarar a base. */
     viagensAnalisadas: q.registros.length,
+    /** Descartadas por invariante físico, somadas de todos os veículos. */
+    viagensDescartadas: [...porVeiculo.values()].reduce((a, v) => a + v.descartadas, 0),
     /** true quando há mais viagens no período do que as carregadas. */
     parcial: q.hasNextPage,
     carregarMais: q.fetchNextPage,

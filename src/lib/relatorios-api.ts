@@ -175,6 +175,10 @@ export type TelemetriaApi = {
   time_red?: number | null;
   time_stop_engine_on?: number | null;
   time_inercia?: number | null;
+  /** Movimento sem tração. O relatório rotula como "marcha lenta", nome enganoso. */
+  time_banguela?: number | null;
+  /** Entra no denominador das faixas, apesar de não aparecer no relatório. */
+  time_tolerancia?: number | null;
   // Chuva: o backend distingue, e nenhuma tela usava.
   time_raining?: number | null;
   time_dry?: number | null;

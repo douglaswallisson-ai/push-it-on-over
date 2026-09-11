@@ -28,6 +28,7 @@ const BASE = import.meta.env.VITE_API_BASE ?? "";
  *  página HTML de aviso do túnel ngrok (que quebraria o parse do JSON). */
 import { requisicaoAutenticada } from "@/lib/auth-api";
 import { gravar, ler } from "@/lib/session";
+import { filtroGrupo } from "@/lib/escopo-ativo";
 
 const DEFAULT_HEADERS: Record<string, string> = {
   "Content-Type": "application/json",
@@ -319,10 +320,12 @@ export type RespostaCursorApi<T> = {
 };
 
 export const Real = {
+  // O grupo ativo entra em toda consulta de cadastro: sem ele, trocar de
+  // empresa no seletor não muda o que a tela mostra.
   veiculos: (params?: Record<string, string | number>) =>
-    api.get<RespostaCursorApi<unknown>>(`/api/v1/vehicles/${qs(params)}`),
+    api.get<RespostaCursorApi<unknown>>(`/api/v1/vehicles/${qs({ ...filtroGrupo(), ...params })}`),
   motoristas: (params?: Record<string, string | number>) =>
-    api.get<RespostaCursorApi<unknown>>(`/api/v1/drivers/${qs(params)}`),
+    api.get<RespostaCursorApi<unknown>>(`/api/v1/drivers/${qs({ ...filtroGrupo(), ...params })}`),
   linhas: (params?: Record<string, string | number>) =>
     api.get<{ items: unknown[]; total: number }>(`/api/v1/bus-lines/${qs(params)}`),
   linha: (id: string | number) => api.get<unknown>(`/api/v1/bus-lines/${id}`),
@@ -551,5 +554,7 @@ export const Unidades = {
    * `undefined`, então a lista chegava sempre vazia.
    */
   lista: (grupoId?: string) =>
-    api.get<UnidadeApi[]>(`/api/v1/subgroups/${qs({ limit: 500, ...(grupoId ? { group_id: grupoId } : {}) })}`),
+    api.get<UnidadeApi[]>(
+      `/api/v1/subgroups/${qs({ limit: 500, ...filtroGrupo(), ...(grupoId ? { group_id: grupoId } : {}) })}`,
+    ),
 };

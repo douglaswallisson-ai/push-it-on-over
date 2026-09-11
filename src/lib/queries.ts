@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { chaveComGrupo } from "@/lib/escopo-ativo";
 import {
   Alarmes,
   AlarmesOperacionais,
@@ -451,7 +452,7 @@ export const trackingQuery = (veiculoId: string | undefined) =>
  */
 export const veiculosApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
-    queryKey: ["veiculos", "api", page, pageSize],
+    queryKey: chaveComGrupo("veiculos", "api", page, pageSize),
     queryFn: async () => {
       const todos = await buscarTudoPorCursor(Real.veiculos);
       return { items: (todos as VeiculoApi[]).map(veiculoDaApiParaTela), total: todos.length };
@@ -463,7 +464,7 @@ export const veiculosApiQuery = (page = 1, pageSize = 200) =>
 
 export const motoristasApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
-    queryKey: ["motoristas", "api", page, pageSize],
+    queryKey: chaveComGrupo("motoristas", "api", page, pageSize),
     queryFn: async () => {
       const todos = await buscarTudoPorCursor(Real.motoristas);
       return { items: (todos as MotoristaApi[]).map(motoristaDaApiParaTela), total: todos.length };
@@ -475,7 +476,7 @@ export const motoristasApiQuery = (page = 1, pageSize = 200) =>
 
 export const linhasApiQuery = () =>
   queryOptions({
-    queryKey: ["linhas", "api"],
+    queryKey: chaveComGrupo("linhas", "api"),
     queryFn: async () => {
       const r = await Real.linhas({ limit: 200 });
       return (r.items as LinhaApi[]).map(linhaDaApi);
@@ -567,7 +568,7 @@ export const pontosApiQuery = (dias = 30, busca?: string) =>
 
 export const vinculosRastreadorQuery = () =>
   queryOptions({
-    queryKey: ["vinculos", "rastreadores"],
+    queryKey: chaveComGrupo("vinculos", "rastreadores"),
     queryFn: () => Vinculos.rastreadores({ limit: 500 }),
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
@@ -576,7 +577,7 @@ export const vinculosRastreadorQuery = () =>
 
 export const vinculosCameraQuery = () =>
   queryOptions({
-    queryKey: ["vinculos", "cameras"],
+    queryKey: chaveComGrupo("vinculos", "cameras"),
     queryFn: () => Vinculos.cameras({ limit: 500 }),
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
@@ -655,7 +656,7 @@ export const empresasQuery = () =>
  */
 export const unidadesQuery = (grupoId?: string) =>
   queryOptions({
-    queryKey: ["unidades", "api", grupoId ?? "todas"],
+    queryKey: chaveComGrupo("unidades", "api", grupoId ?? "todas"),
     queryFn: async () => {
       const r = await Unidades.lista(grupoId);
       return (Array.isArray(r) ? r : [])

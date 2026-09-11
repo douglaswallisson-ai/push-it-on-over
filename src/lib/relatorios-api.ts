@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { usandoMock } from "@/lib/modo";
+import { filtroGrupoRelatorio, grupoAtivo } from "@/lib/escopo-ativo";
 
 /**
  * Relatórios do `ss-fleet-core`.
@@ -37,6 +38,9 @@ const paramsDe = (f: FiltroRelatorio, cursor?: string) => {
     start_date: f.inicio,
     end_date: f.fim,
     limit: String(f.limite ?? 1000),
+    // Os relatórios aceitam vários grupos; mandar `group_id` no singular
+    // seria ignorado em silêncio.
+    ...filtroGrupoRelatorio(),
   });
   if (f.veiculos?.length) p.set("vehicle_ids", f.veiculos.join(","));
   if (cursor) p.set("cursor", cursor);
@@ -85,7 +89,7 @@ export function useRelatorioCursor<T>(relatorio: Relatorio, filtro: FiltroRelato
   const erroJanela = validarJanela(filtro.inicio, filtro.fim);
 
   const q = useInfiniteQuery({
-    queryKey: ["relatorio", relatorio, filtro.inicio, filtro.fim, filtro.veiculos?.join(",") ?? ""],
+    queryKey: ["relatorio", relatorio, filtro.inicio, filtro.fim, filtro.veiculos?.join(",") ?? "", grupoAtivo() ?? "todos"],
     enabled: habilitado && !erroJanela && !usandoMock(),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>

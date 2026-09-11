@@ -588,7 +588,7 @@ export const empresasQuery = () =>
     queryKey: ["empresas", "api"],
     queryFn: async () => {
       const r = await Empresas.lista();
-      return (r.data ?? [])
+      return (Array.isArray(r) ? r : [])
         .map((g) => ({
           id: String(g.id),
           // O nome comercial costuma ser mais reconhecível que a razão social.

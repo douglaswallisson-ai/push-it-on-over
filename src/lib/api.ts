@@ -499,18 +499,21 @@ export const Checklist = {
  * "- Saúde JM", "- Vans" — e mostrava vários itens chamados só "Geral", que
  * sem a empresa ao lado são indistinguíveis.
  */
+export type EmpresaApi = {
+  id: number;
+  name: string;
+  account_id?: number | null;
+  cnpj?: string | null;
+  corporate_name?: string | null;
+  client_cod?: string | null;
+};
+
 export const Empresas = {
-  lista: () =>
-    api.get<
-      RespostaCursorApi<{
-        id: number;
-        name: string;
-        account_id?: number | null;
-        cnpj?: string | null;
-        corporate_name?: string | null;
-        client_cod?: string | null;
-      }>
-    >(`/api/v1/groups/?limit=500`),
+  /**
+   * Lista direta, sem envelope de paginação — como subgrupos e dispositivos.
+   * Só veículos, motoristas e relatórios usam cursor com `data`.
+   */
+  lista: () => api.get<EmpresaApi[]>(`/api/v1/groups/?limit=500`),
 };
 
 /**

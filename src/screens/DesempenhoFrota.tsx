@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BarChart3, Clock, Droplet, Gauge, Layers, Leaf, TrendingDown, Trophy, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -6,6 +6,8 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { MOCK_FAIXAS_FROTA } from "@/lib/mock-data";
+import { usandoMock } from "@/lib/modo";
+import { useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +61,29 @@ const RANKING = [
 ];
 
 export default function DesempenhoFrota() {
+  /**
+   * Distribuição de faixas a partir da telemetria do período.
+   *
+   * Sem medição a lista vai vazia, e o componente mostra o estado
+   * correspondente — melhor que exibir a curva de uma frota inventada ao lado
+   * de indicadores reais.
+   */
+  const indicadoresFrota = useIndicadoresPorVeiculo(30);
+  const distribuicaoReal = useMemo<Record<string, number>>(() => {
+    const vals = [...indicadoresFrota.porVeiculo.values()];
+    if (!vals.length) return {} as Record<string, number>;
+
+    const media = (sel: (v: (typeof vals)[number]) => number | null) => {
+      const uteis = vals.map(sel).filter((n): n is number => n != null);
+      return uteis.length ? Math.round(uteis.reduce((a, n) => a + n, 0) / uteis.length) : 0;
+    };
+
+    return {
+      verde: media((v) => v.faixaVerdePct),
+      motor_ligado_parado: media((v) => v.motorLigadoParadoPct),
+    };
+  }, [indicadoresFrota.porVeiculo]);
+
   const [modo, setModo] = useState<"placas" | "nota">("placas");
 
   return (
@@ -109,7 +134,7 @@ export default function DesempenhoFrota() {
 
         {/* Faixas de condução — média da frota. */}
         <FaixasConducao
-          distribuicao={MOCK_FAIXAS_FROTA}
+          distribuicao={usandoMock() ? MOCK_FAIXAS_FROTA : distribuicaoReal}
           titulo="Faixas de condução — média da frota"
           subtitulo="Como o tempo da frota se distribui entre as 14 faixas. Comparável com a leitura por veículo e por motorista."
         />

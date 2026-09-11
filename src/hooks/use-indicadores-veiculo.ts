@@ -262,6 +262,18 @@ export function useIndicadoresPorVeiculo(
 
   return {
     porVeiculo,
+    /**
+     * Diagnóstico da consulta, para a tela dizer o que houve.
+     *
+     * "Nenhuma viagem" e "a consulta nem saiu" parecem iguais na tela e têm
+     * causas opostas — sem distinguir, a investigação vira tentativa e erro.
+     */
+    diagnostico: {
+      consultou: Boolean(veiculoIds?.length) && !usandoMock(),
+      veiculosConsultados: veiculoIds?.length ?? 0,
+      periodo: `${filtro.inicio} a ${filtro.fim}`,
+      status: (q.error as { status?: number } | null)?.status ?? null,
+    },
     carregando: q.isPending,
     erro: q.error,
     /** Quantas viagens entraram na conta, para a tela declarar a base. */

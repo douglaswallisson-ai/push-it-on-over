@@ -8,6 +8,8 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { multasQuery, nf, veiculosQuery } from "@/lib/queries";
 import { MOCK_MOTORISTAS } from "@/lib/mock-data";
+import { usandoMock } from "@/lib/modo";
+import { motoristasApiQuery } from "@/lib/queries";
 import { registrarAuditoria } from "@/lib/session";
 import { exportarCSV } from "@/lib/export";
 import type { Multa } from "@/types";
@@ -61,7 +63,18 @@ export default function Multas() {
     return m;
   }, [veiculosQ.data]);
 
-  const nomeMotorista = useMemo(() => new Map(MOCK_MOTORISTAS.map((m) => [m.id, m.nome])), []);
+  /**
+   * Nomes de motorista, da base real quando disponível.
+   *
+   * A multa guarda o id; o nome vem do cadastro. Usar a lista de exemplo
+   * mostraria um condutor que não existe ao lado de uma infração real — e é
+   * justamente o nome que vai na indicação ao órgão de trânsito.
+   */
+  const motoristasQ = useQuery(motoristasApiQuery(1, 500));
+  const nomeMotorista = useMemo(() => {
+    const base = usandoMock() ? MOCK_MOTORISTAS : (motoristasQ.data?.items ?? []);
+    return new Map(base.map((m) => [m.id, m.nome]));
+  }, [motoristasQ.data]);
 
   const multas = useMemo(
     () =>
@@ -81,7 +94,7 @@ export default function Multas() {
 
   const indicar = (m: Multa) => {
     // Sem condutor conhecido, indica o motorista da jornada correspondente.
-    const alvo = m.motoristaId ?? MOCK_MOTORISTAS[0]?.id;
+    const alvo = m.motoristaId ?? [...nomeMotorista.keys()][0];
     if (!alvo) return;
     setIndicadas((i) => ({ ...i, [m.id]: alvo }));
     registrarAuditoria("indicacao_condutor", `Condutor indicado no AIT ${m.ait}: ${nomeMotorista.get(alvo)}.`);

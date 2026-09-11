@@ -25,9 +25,19 @@ const CHAVE = "modo-dados";
  * está. Sem endereço configurado, cai para exemplo — aí não há para onde
  * consultar, e uma tela de erro seria pior que uma demonstração.
  */
+/**
+ * Modo em uso.
+ *
+ * Com endereço de API configurado, o sistema opera **sempre** em modo real —
+ * não há alternância. A base de exemplo existia para desenvolver sem servidor,
+ * e conviver com o dado real provou ser pior que não ter nenhum: número
+ * inventado se mistura ao verdadeiro, e nada na tela distingue os dois.
+ *
+ * Sem `VITE_API_BASE` não há para onde consultar, e o exemplo volta a ser a
+ * única fonte possível.
+ */
 export function modoAtual(): ModoDados {
-  const padrao: ModoDados = import.meta.env.VITE_API_BASE ? "api" : "mock";
-  return ler<ModoDados>(CHAVE, padrao);
+  return import.meta.env.VITE_API_BASE ? "api" : "mock";
 }
 
 export const usandoMock = () => modoAtual() === "mock";

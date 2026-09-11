@@ -374,9 +374,10 @@ export default function Veiculos() {
                 </span>
               ) : (
                 <span>
-                  <strong className="text-foreground">Nenhuma viagem no período.</strong> Placa, prefixo e modelo vêm
-                  do cadastro; consumo e condução dependem de telemetria, e a frota não registrou viagens nos últimos
-                  30 dias.
+                  <strong className="text-foreground">Nenhuma viagem retornada.</strong>{" "}
+                  {!indicadores.diagnostico.consultou
+                    ? "A consulta de telemetria não chegou a ser feita — nenhum veículo carregado."
+                    : `Consultadas ${nf(indicadores.diagnostico.veiculosConsultados)} placas no período de ${indicadores.diagnostico.periodo}, sem viagens na resposta.`}
                 </span>
               )}
             </p>

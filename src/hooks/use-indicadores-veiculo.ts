@@ -7,16 +7,23 @@ import { usandoMock } from "@/lib/modo";
 /* ------------------------------------------------------------------ */
 
 /**
- * A API já converte as unidades; a tabela não.
+ * O endpoint de cursor devolve o valor bruto da tabela — em metros e
+ * mililitros.
  *
- * `mova.con_telemetry` guarda distância em metros e combustível em mililitros,
- * mas `TelemetryResponse` devolve **quilômetro e litro** — a conversão acontece
- * no servidor. Tempo continua em segundos nos dois.
+ * O schema anota `# km` e `# liters` em `TelemetryResponse`, mas a consulta
+ * seleciona `ct.distance_traveled` e `ct.fuel_used` direto, sem dividir. O
+ * comentário descreve uma intenção que a consulta não cumpre.
  *
- * Converter de novo aqui transformava 50 km em 0,05 km, e todo o consumo da
- * frota virava nulo. A documentação do worker descreve a tabela, não a resposta
- * da API, e eu apliquei uma na outra.
+ * Confirmado no dado real: 8.895 em 2.570 segundos dá 12,7 km/h se for metro,
+ * e 12.458 km/h se for quilômetro. E `end_odometer` de 183.159.270 é odômetro
+ * de 183 mil km em metros — em quilômetro seriam 183 milhões.
+ *
+ * Outros endpoints **convertem**: o relatório de jornada divide por mil na
+ * própria consulta. A regra não é uniforme na API, e por isso a conversão fica
+ * declarada aqui, por endpoint.
  */
+const METROS_POR_KM = 1000;
+const ML_POR_LITRO = 1000;
 
 /**
  * Descarta viagem fisicamente impossível.
@@ -40,11 +47,14 @@ import { usandoMock } from "@/lib/modo";
 const VELOCIDADE_MAX_KMH = 300;
 const LITROS_POR_KM_MAX = 5;
 
-function viagemPlausivel(km: number, segundos: number, litros: number) {
-  if (km < 0) return false;
+function viagemPlausivel(metros: number, segundos: number, mililitros: number) {
+  if (metros < 0) return false;
 
+  const km = metros / METROS_POR_KM;
   const horas = segundos / 3600;
   if (horas > 0 && km / horas > VELOCIDADE_MAX_KMH) return false;
+
+  const litros = mililitros / ML_POR_LITRO;
 
   // O consumo é zerado, não a viagem inteira: a distância continua válida
   // mesmo quando o contador de combustível veio corrompido.
@@ -232,7 +242,7 @@ export function useIndicadoresPorVeiculo(
       // pode ter deixado um valor alto de outro aparelho no histórico.
       if (!a.ultima || (t.start_time ?? "") > a.ultima) {
         a.ultima = t.start_time ?? a.ultima;
-        a.odometro = t.end_odometer ?? a.odometro;
+        a.odometro = t.end_odometer != null ? Math.round(t.end_odometer / METROS_POR_KM) : a.odometro;
       }
 
       acc.set(id, a);

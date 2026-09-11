@@ -356,11 +356,17 @@ export default function Veiculos() {
                 </span>
               ) : indicadores.carregando ? (
                 <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
-              ) : comKml.length > 0 ? (
+              ) : indicadores.viagensAnalisadas > 0 ? (
                 <span>
-                  Consumo e condução calculados sobre{" "}
                   <strong className="text-foreground">{nf(indicadores.viagensAnalisadas)} viagens</strong> dos últimos
-                  30 dias, ponderado pela distância.
+                  30 dias, com consumo ponderado pela distância.{" "}
+                  {comKml.length < linhas.length && (
+                    <>
+                      Só <strong className="text-foreground">{comKml.length} de {linhas.length}</strong> veículos têm
+                      km/l: cerca de metade das viagens chega sem leitura de combustível, e sem ela não há como
+                      calcular consumo — a distância dessas viagens continua valendo.{" "}
+                    </>
+                  )}
                   {indicadores.viagensDescartadas > 0 && (
                     <>
                       {" "}

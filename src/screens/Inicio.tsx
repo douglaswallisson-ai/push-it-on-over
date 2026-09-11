@@ -65,12 +65,26 @@ function buildKpis(r: ResumoOperacao): Kpi[] {
     { icon: Truck, label: "Veículos ativos", value: nf(r.veiculosAtivos), color: "var(--leaf)", to: "/app/veiculos" },
     { icon: Zap, label: "Alertas abertos", value: nf(r.alertasAbertos), color: "var(--brand-sky)", to: "/app/alertas" },
     { icon: Gauge, label: "Disponibilidade", value: nf(r.disponibilidade, 1), unit: "%", color: "#6A4FA0" },
-    { icon: Fuel, label: "Consumo médio", value: nf(r.consumoMedio, 2), unit: "km/l", color: "var(--brand-green)", to: "/app/estrategico" },
-    { icon: Gauge, label: "Custo por km", value: `R$ ${nf(r.custoPorKm, 2)}`, color: "var(--gold)" },
+    {
+      icon: Fuel,
+      label: "Consumo médio",
+      // Traço quando não há medição. Zero seria lido como consumo aferido, e
+      // frota nenhuma roda a 0 km/l.
+      value: r.consumoMedio != null ? nf(r.consumoMedio, 2) : "—",
+      unit: r.consumoMedio != null ? "km/l" : undefined,
+      color: "var(--brand-green)",
+      to: "/app/estrategico",
+    },
+    {
+      icon: Gauge,
+      label: "Custo por km",
+      value: r.custoPorKm != null ? `R$ ${nf(r.custoPorKm, 2)}` : "—",
+      color: "var(--gold)",
+    },
   ].filter(
     // Custo por km só aparece quando há valor: depende de custo operacional,
     // que ainda não é exposto pela API. Mostrar zero pareceria frota de graça.
-    (k) => k.label !== "Custo por km" || r.custoPorKm > 0,
+    (k) => k.label !== "Custo por km" || (r.custoPorKm ?? 0) > 0,
   );
 }
 

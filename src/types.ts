@@ -130,8 +130,13 @@ export type EmissaoResumo = {
 export type ResumoOperacao = {
   veiculosAtivos: number;
   alertasAbertos: number;
-  custoPorKm: number;
-  consumoMedio: number;
+  /** Custo por km. Nulo enquanto não houver custo operacional exposto. */
+  custoPorKm: number | null;
+  /**
+   * Consumo médio da frota. Nulo sem medição — zero diria que a frota roda a
+   * 0 km/l, o que é impossível e parece medição.
+   */
+  consumoMedio: number | null;
   disponibilidade: number;
 };
 

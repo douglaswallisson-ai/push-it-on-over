@@ -7,14 +7,16 @@ import { usandoMock } from "@/lib/modo";
 /* ------------------------------------------------------------------ */
 
 /**
- * A origem não usa as unidades que a tela mostra.
+ * A API já converte as unidades; a tabela não.
  *
- * `con_telemetry` guarda distância em **metros**, tempo em **segundos** e
- * combustível em **mililitros**. Somar direto e chamar de quilômetro multiplica
- * o número por mil.
+ * `mova.con_telemetry` guarda distância em metros e combustível em mililitros,
+ * mas `TelemetryResponse` devolve **quilômetro e litro** — a conversão acontece
+ * no servidor. Tempo continua em segundos nos dois.
+ *
+ * Converter de novo aqui transformava 50 km em 0,05 km, e todo o consumo da
+ * frota virava nulo. A documentação do worker descreve a tabela, não a resposta
+ * da API, e eu apliquei uma na outra.
  */
-const METROS_POR_KM = 1000;
-const ML_POR_LITRO = 1000;
 
 /**
  * Descarta viagem fisicamente impossível.
@@ -38,14 +40,15 @@ const ML_POR_LITRO = 1000;
 const VELOCIDADE_MAX_KMH = 300;
 const LITROS_POR_KM_MAX = 5;
 
-function viagemPlausivel(metros: number, segundos: number, mililitros: number) {
-  if (metros < 0) return false;
+function viagemPlausivel(km: number, segundos: number, litros: number) {
+  if (km < 0) return false;
 
-  const km = metros / METROS_POR_KM;
   const horas = segundos / 3600;
   if (horas > 0 && km / horas > VELOCIDADE_MAX_KMH) return false;
 
-  return { km, litros: mililitros / ML_POR_LITRO <= km * LITROS_POR_KM_MAX ? mililitros / ML_POR_LITRO : 0 };
+  // O consumo é zerado, não a viagem inteira: a distância continua válida
+  // mesmo quando o contador de combustível veio corrompido.
+  return { km, litros: litros <= km * LITROS_POR_KM_MAX ? litros : 0 };
 }
 
 /**
@@ -229,7 +232,7 @@ export function useIndicadoresPorVeiculo(
       // pode ter deixado um valor alto de outro aparelho no histórico.
       if (!a.ultima || (t.start_time ?? "") > a.ultima) {
         a.ultima = t.start_time ?? a.ultima;
-        a.odometro = t.end_odometer != null ? Math.round(t.end_odometer / METROS_POR_KM) : a.odometro;
+        a.odometro = t.end_odometer ?? a.odometro;
       }
 
       acc.set(id, a);

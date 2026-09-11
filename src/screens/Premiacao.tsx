@@ -1,4 +1,5 @@
 import { Award, CalendarDays, FileText, Printer, Star, Target, TrendingUp, Trophy, Truck } from "lucide-react";
+import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { exportarCSV, imprimir } from "@/lib/export";
 import { toast } from "sonner";
@@ -146,7 +147,7 @@ export default function Premiacao() {
 
             <Card title="Pódio do ciclo" icon={Trophy}>
               <div className="grid grid-cols-3 gap-3">
-                {DADOS.slice(0, 3).map((m, i) => (
+                {exemploOuVazio(DADOS).slice(0, 3).map((m, i) => (
                   <div
                     key={m.nome}
                     className={`rounded-xl border p-4 text-center ${i === 0 ? "border-gold-line bg-gold-tint/50" : "border-border bg-secondary/40"}`}

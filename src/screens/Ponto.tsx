@@ -1,4 +1,5 @@
 import { Clock, Coffee, Download, LogIn, LogOut } from "lucide-react";
+import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { exportarCSV } from "@/lib/export";
 import { toast } from "sonner";
@@ -68,7 +69,7 @@ export default function Ponto() {
           <button
             onClick={() => {
               const n = exportarCSV(
-                DADOS,
+                exemploOuVazio(DADOS),
                 [
                   { cabecalho: "Motorista", valor: (r) => r.nome },
                   { cabecalho: "Entrada", valor: (r) => r.entrada },

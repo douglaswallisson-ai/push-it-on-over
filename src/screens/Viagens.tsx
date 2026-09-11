@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { exemploOuVazio } from "@/lib/modo";
 import { useNavigate } from "@/lib/router-compat";
 import { Ban, Bus, CalendarDays, CheckCircle2, Clock, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -53,7 +54,7 @@ export default function Viagens() {
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
   const lista = useMemo(
     () =>
-      DADOS.filter(
+      exemploOuVazio(DADOS).filter(
         (v) =>
           (filtros.veiculo === "Todos" || v.veiculo === filtros.veiculo) &&
           (filtros.motorista === "Todos" || v.motorista === filtros.motorista),

@@ -35,6 +35,7 @@ import { filtrarPorGaragem } from "@/lib/escopo";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { useSessao } from "@/hooks/use-sessao";
 import { MOCK_GARAGENS } from "@/lib/mock-data";
+import { exemploOuVazio } from "@/lib/modo";
 import type { CardManutencao, StatusManutencao } from "@/types";
 
 /**
@@ -121,7 +122,10 @@ export default function Manutencao() {
       ajustes[c.veiculoId] ? { ...c, status: ajustes[c.veiculoId] } : c,
     );
     // O kanban traz o nome da garagem; o escopo trabalha com id.
-    const idPorNome = new Map(MOCK_GARAGENS.map((g) => [g.nome, g.id]));
+    // Garagens do exemplo servem só ao modo sem API: em modo real o escopo é
+    // aplicado pelo servidor, e traduzir nome para id de uma lista fixa
+    // associaria o veículo a uma garagem que não é a dele.
+    const idPorNome = new Map(exemploOuVazio(MOCK_GARAGENS).map((g) => [g.nome, g.id]));
     const noEscopo = filtrarPorGaragem(comAjuste, sessao, (c) => (c.garagem ? idPorNome.get(c.garagem) : undefined));
     const filtrados = garagem
       ? noEscopo.filter((c) => (c.garagem ? idPorNome.get(c.garagem) : undefined) === garagem)

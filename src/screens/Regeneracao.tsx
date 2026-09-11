@@ -1,4 +1,5 @@
 import { AlertTriangle, Ban, Flame, Info, RefreshCw, Thermometer } from "lucide-react";
+import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -173,7 +174,7 @@ export default function Regeneracao() {
         </div>
 
         <Card title="Estado do DPF por veículo" icon={Thermometer} action={<Pill tone="coral">2 críticos</Pill>} bodyClassName="p-4">
-          <DataTable columns={COLS} rows={DADOS} />
+          <DataTable columns={COLS} rows={exemploOuVazio(DADOS)} />
         </Card>
 
         <p className="pb-4 text-center text-xs text-muted-foreground">

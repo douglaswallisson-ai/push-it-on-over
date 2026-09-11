@@ -61,6 +61,42 @@ import {
 const MINUTE = 60_000;
 
 /**
+ * Percorre um endpoint paginado por cursor até acabar.
+ *
+ * Cada página vem com `next_cursor`; a última vem com `has_more` falso. Sem
+ * seguir o cursor, o front mostra a primeira página como se fosse o conjunto
+ * inteiro — erro silencioso, porque nada na tela indica que há mais.
+ *
+ * O teto de páginas protege contra uma resposta anômala que devolva cursor
+ * indefinidamente. Mil por página cobre a frota inteira em três requisições.
+ */
+async function buscarTudoPorCursor<T>(
+  consulta: (params: Record<string, string | number>) => Promise<{
+    data: T[];
+    next_cursor: string | null;
+    has_more: boolean;
+  }>,
+  porPagina = 1000,
+  maxPaginas = 20,
+): Promise<T[]> {
+  const acumulado: T[] = [];
+  let cursor: string | null = null;
+
+  for (let i = 0; i < maxPaginas; i++) {
+    const params: Record<string, string | number> = { limit: porPagina };
+    if (cursor) params.cursor = cursor;
+
+    const r = await consulta(params);
+    acumulado.push(...(r.data ?? []));
+
+    if (!r.has_more || !r.next_cursor) break;
+    cursor = r.next_cursor;
+  }
+
+  return acumulado;
+}
+
+/**
  * Política de repetição.
  *
  * O padrão do React Query repete três vezes. Para 401, 403 e 404 isso é
@@ -403,16 +439,22 @@ export const trackingQuery = (veiculoId: string | undefined) =>
  * Fica desabilitada em modo de exemplo: sem isso a tela dispararia uma
  * requisição que não tem para onde ir.
  */
+/**
+ * Frota completa, seguindo o cursor até o fim.
+ *
+ * O endpoint pagina por cursor e devolve no máximo 5.000 por página. Parar na
+ * primeira mostrava um recorte arbitrário do meu código como se fosse o
+ * tamanho da frota — com 2.708 veículos e um limite de 500, o painel dizia
+ * "500 veículos ativos" e ninguém tinha como saber que faltavam 2.208.
+ *
+ * O teto de páginas existe para uma resposta anômala não virar laço infinito.
+ */
 export const veiculosApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
     queryKey: ["veiculos", "api", page, pageSize],
     queryFn: async () => {
-      const r = await Real.veiculos({ limit: pageSize });
-      const lista = (r.data ?? []) as VeiculoApi[];
-      // `total_returned` conta o que veio nesta página, não o total geral: a
-      // paginação por cursor não sabe o total sem varrer tudo, que é
-      // justamente o custo que ela evita.
-      return { items: lista.map(veiculoDaApiParaTela), total: r.total_returned ?? lista.length };
+      const todos = await buscarTudoPorCursor(Real.veiculos);
+      return { items: (todos as VeiculoApi[]).map(veiculoDaApiParaTela), total: todos.length };
     },
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
@@ -423,9 +465,8 @@ export const motoristasApiQuery = (page = 1, pageSize = 200) =>
   queryOptions({
     queryKey: ["motoristas", "api", page, pageSize],
     queryFn: async () => {
-      const r = await Real.motoristas({ limit: pageSize });
-      const lista = (r.data ?? []) as MotoristaApi[];
-      return { items: lista.map(motoristaDaApiParaTela), total: r.total_returned ?? lista.length };
+      const todos = await buscarTudoPorCursor(Real.motoristas);
+      return { items: (todos as MotoristaApi[]).map(motoristaDaApiParaTela), total: todos.length };
     },
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,

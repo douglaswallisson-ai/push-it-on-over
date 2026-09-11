@@ -97,10 +97,18 @@ function janelaPadrao(dias: number) {
 export function useIndicadoresPorVeiculo(dias = 30) {
   const filtro = useMemo(() => {
     const j = janelaPadrao(dias);
-    // Limite alto porque a agregação precisa de todas as viagens do período —
-    // uma amostra parcial daria consumo de alguns veículos e não de outros,
-    // sem o usuário saber quais.
-    return { inicio: j.inicio, fim: j.fim, limite: 1000 };
+    /**
+     * Página cheia, e a tela segue o cursor conforme precisa.
+     *
+     * A frota gera mais de um milhão de viagens em 30 dias. Carregar tudo de
+     * uma vez travaria o navegador, e parar na primeira página daria consumo
+     * de alguns veículos e não de outros — sem o usuário saber quais ficaram
+     * de fora.
+     *
+     * O caminho é carregar por partes e declarar o que já entrou na conta, que
+     * é o que o aviso na tela faz.
+     */
+    return { inicio: j.inicio, fim: j.fim, limite: 5000 };
   }, [dias]);
 
   const q = useRelatorioCursor<TelemetriaApi>("telemetry", filtro, !usandoMock());

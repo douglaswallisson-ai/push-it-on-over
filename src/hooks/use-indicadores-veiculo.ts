@@ -94,7 +94,18 @@ function janelaPadrao(dias: number) {
   return { inicio: iso(inicio), fim: iso(fim) };
 }
 
-export function useIndicadoresPorVeiculo(dias = 30) {
+export function useIndicadoresPorVeiculo(
+  dias = 30,
+  /**
+   * Veículos a consultar.
+   *
+   * O endpoint de telemetria filtra por veículo, não por empresa — então o
+   * recorte da empresa ativa entra por aqui, com os ids que a tela já carregou.
+   * Sem a lista, a consulta traria a frota inteira e o gestor veria número de
+   * outro cliente.
+   */
+  veiculoIds?: string[],
+) {
   const filtro = useMemo(() => {
     const j = janelaPadrao(dias);
     /**
@@ -108,10 +119,21 @@ export function useIndicadoresPorVeiculo(dias = 30) {
      * O caminho é carregar por partes e declarar o que já entrou na conta, que
      * é o que o aviso na tela faz.
      */
-    return { inicio: j.inicio, fim: j.fim, limite: 5000 };
-  }, [dias]);
+    return {
+      inicio: j.inicio,
+      fim: j.fim,
+      limite: 5000,
+      // Lote limitado: a URL tem teto de tamanho, e mil ids passariam disso.
+      veiculos: veiculoIds?.length ? veiculoIds.slice(0, 300) : undefined,
+    };
+  }, [dias, veiculoIds?.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const q = useRelatorioCursor<TelemetriaApi>("telemetry", filtro, !usandoMock());
+  // Só consulta quando há veículos: sem eles, a chamada traria a base inteira.
+  const q = useRelatorioCursor<TelemetriaApi>(
+    "telemetry",
+    filtro,
+    !usandoMock() && Boolean(veiculoIds?.length),
+  );
 
   /** Mapa de `unit_id` para os indicadores agregados. */
   const porVeiculo = useMemo(() => {

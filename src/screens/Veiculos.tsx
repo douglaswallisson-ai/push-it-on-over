@@ -96,7 +96,13 @@ export default function Veiculos() {
    * de con_telemetry. O cruzamento acontece aqui para as colunas deixarem de
    * mostrar traço.
    */
-  const indicadores = useIndicadoresPorVeiculo(30);
+  // Ids da frota carregada, para a telemetria consultar só esses veículos.
+  const idsDaFrota = useMemo(
+    () => (usandoMock() ? [] : (apiQ.data?.items ?? []).map((v) => v.id)),
+    [apiQ.data],
+  );
+
+  const indicadores = useIndicadoresPorVeiculo(30, idsDaFrota);
 
   const fonte = usandoMock() ? mockQ : apiQ;
   const { data, isPending, error, refetch, isFetching } = fonte;

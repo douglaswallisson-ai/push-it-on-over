@@ -48,7 +48,12 @@ export function usePreventivaFrota(garagem?: string) {
   const apiVeicQ = useQuery(veiculosApiQuery(1, 500));
   const veiculosQ = usandoMock() ? mockVeicQ : apiVeicQ;
 
-  const indicadores = useIndicadoresPorVeiculo(30);
+  const idsDaFrota = useMemo(
+    () => (usandoMock() ? [] : (apiVeicQ.data?.items ?? []).map((v) => v.id)),
+    [apiVeicQ.data],
+  );
+
+  const indicadores = useIndicadoresPorVeiculo(30, idsDaFrota);
   const modelosQ = useQuery(modelosQuery());
   const parametrosQ = useQuery(parametrosCatalogoQuery());
   const execucoesQ = useQuery(execucoesQuery());

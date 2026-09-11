@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { usandoMock } from "@/lib/modo";
-import { filtroGrupoRelatorio, grupoAtivo } from "@/lib/escopo-ativo";
+import { grupoAtivo } from "@/lib/escopo-ativo";
 
 /**
  * Relatórios do `ss-fleet-core`.
@@ -38,10 +38,16 @@ const paramsDe = (f: FiltroRelatorio, cursor?: string) => {
     start_date: f.inicio,
     end_date: f.fim,
     limit: String(f.limite ?? 1000),
-    // Os relatórios aceitam vários grupos; mandar `group_id` no singular
-    // seria ignorado em silêncio.
-    ...filtroGrupoRelatorio(),
   });
+  /**
+   * O recorte por empresa é feito por veículo, não por grupo.
+   *
+   * Os endpoints de cursor aceitam `vehicle_ids` e nada mais — `group_ids` só
+   * existe no relatório de jornada, e mandá-lo aqui faz o FastAPI rejeitar a
+   * requisição inteira com 422.
+   *
+   * Quem seleciona os veículos é a tela, que já tem a frota da empresa ativa.
+   */
   if (f.veiculos?.length) p.set("vehicle_ids", f.veiculos.join(","));
   if (cursor) p.set("cursor", cursor);
   return p.toString();

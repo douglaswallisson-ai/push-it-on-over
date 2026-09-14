@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useRelatorioCursor, type TelemetriaApi } from "@/lib/relatorios-api";
 import { usandoMock } from "@/lib/modo";
+import type { IndicadoresConducao } from "@/types";
 
 /* ------------------------------------------------------------------ */
 /* Unidades e travas de invariante físico                              */
@@ -97,6 +98,12 @@ export type IndicadoresVeiculo = {
   ultimaViagem: string | null;
   /** Viagens descartadas por invariante físico. */
   descartadas: number;
+  /* Somas em segundos, para compor os indicadores de condução. */
+  segEmbalo: number;
+  segAcimaVerde: number;
+  segPiloto: number;
+  segRetarder: number;
+  segFaixas: number;
 };
 
 /** Últimos 30 dias, que é o recorte usual de fechamento. */
@@ -166,6 +173,11 @@ export function useIndicadoresPorVeiculo(
         segTotal: number;
         segOcioso: number;
         segChuva: number;
+        segEmbalo: number;
+        segAcimaVerde: number;
+        segPiloto: number;
+        segRetarder: number;
+        segFaixas: number;
         freadas: number;
         aceleracoes: number;
         excessos: number;
@@ -187,6 +199,11 @@ export function useIndicadoresPorVeiculo(
         segTotal: 0,
         segOcioso: 0,
         segChuva: 0,
+        segEmbalo: 0,
+        segAcimaVerde: 0,
+        segPiloto: 0,
+        segRetarder: 0,
+        segFaixas: 0,
         freadas: 0,
         aceleracoes: 0,
         excessos: 0,
@@ -227,6 +244,13 @@ export function useIndicadoresPorVeiculo(
         (t.time_banguela ?? 0) +
         (t.time_tolerancia ?? 0);
       a.segMovimento += faixas;
+      a.segFaixas += faixas;
+
+      // Andar sem consumir: inércia, eco-roll e retarder.
+      a.segEmbalo += (t.time_inercia ?? 0) + (t.time_eco_roll ?? 0) + (t.time_retarder ?? 0);
+      a.segAcimaVerde += (t.time_yellow ?? 0) + (t.time_red ?? 0);
+      a.segPiloto += t.time_autopilot ?? 0;
+      a.segRetarder += t.time_retarder ?? 0;
 
       // Verde e extra econômica somam: as duas são condução na faixa desejada,
       // e separá-las na lista da frota seria detalhe demais.
@@ -267,6 +291,11 @@ export function useIndicadoresPorVeiculo(
         excessos: a.excessos,
         ultimaViagem: a.ultima,
         descartadas: a.descartadas,
+        segEmbalo: a.segEmbalo,
+        segAcimaVerde: a.segAcimaVerde,
+        segPiloto: a.segPiloto,
+        segRetarder: a.segRetarder,
+        segFaixas: a.segFaixas,
       });
     }
 
@@ -297,6 +326,42 @@ export function useIndicadoresPorVeiculo(
     parcial: q.hasNextPage,
     carregarMais: q.fetchNextPage,
     carregandoMais: q.isFetchingNextPage,
+  };
+}
+
+/**
+ * Os oito indicadores de condução, na escala de estrelas da interface.
+ *
+ * Cada um sai de uma relação entre campos da telemetria. Onde o numerador
+ * existe mas o denominador é zero, o resultado é nulo — a tela mostra "não
+ * avaliado", que é diferente de nota zero.
+ *
+ * `mp` e `av` invertem a escala: quanto menos motor ligado parado e menos
+ * aceleração acima da faixa verde, melhor. Sem inverter, o pior veículo
+ * apareceria com cinco estrelas.
+ */
+export function indicadoresDeConducao(v: IndicadoresVeiculo): IndicadoresConducao {
+  const pct = (parte: number, total: number) => (total > 0 ? (parte / total) * 100 : null);
+
+  return {
+    // Tempo na faixa verde sobre o tempo em faixa.
+    iv: notaDePercentual(v.faixaVerdePct),
+    // Inércia, eco-roll e retarder: andar sem consumir.
+    ae: notaDePercentual(pct(v.segEmbalo, v.segFaixas)),
+    mp: notaDePercentual(v.motorLigadoParadoPct, false),
+    // Amarela e vermelha somadas.
+    av: notaDePercentual(pct(v.segAcimaVerde, v.segFaixas), false),
+    pa: notaDePercentual(pct(v.segPiloto, v.segFaixas)),
+    // Violações por 100 km, convertidas em nota: 0 violação vira 5 estrelas,
+    // 10 ou mais viram zero.
+    ev:
+      v.distanciaKm > 0
+        ? Math.max(0, Math.round((5 - (v.excessos / v.distanciaKm) * 100 * 0.5) * 10) / 10)
+        : null,
+    // Retarder e freio motor.
+    fm: notaDePercentual(pct(v.segRetarder, v.segFaixas)),
+    // Sem campo equivalente na telemetria por viagem.
+    pac: null,
   };
 }
 

@@ -13,7 +13,7 @@ import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { usandoMock } from "@/lib/modo";
-import { notaDePercentual, useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
+import { indicadoresDeConducao, useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 
@@ -129,11 +129,10 @@ export default function Veiculos() {
         ...v,
         kml: ind.kml ?? v.kml,
         odometro: ind.odometro ?? v.odometro,
-        // Estrelas na mesma escala da tela de motoristas. Faixa verde e
-        // aproveitamento de embalo são "quanto maior melhor"; motor ligado
-        // parado é o contrário, e por isso inverte.
-        ae: notaDePercentual(ind.faixaVerdePct),
-        mp: notaDePercentual(ind.motorLigadoParadoPct, false),
+        // Os oito indicadores de condução, compostos da telemetria. Antes eu
+        // preenchia dois e as outras seis colunas ficavam "não avaliado"
+        // mesmo com a viagem tendo os dados.
+        ...indicadoresDeConducao(ind),
         _ind: ind,
       };
     });

@@ -185,6 +185,10 @@ export type TelemetriaApi = {
   time_red?: number | null;
   time_stop_engine_on?: number | null;
   time_inercia?: number | null;
+  time_eco_roll?: number | null;
+  time_retarder?: number | null;
+  time_autopilot?: number | null;
+  time_low_speed?: number | null;
   /** Movimento sem tração. O relatório rotula como "marcha lenta", nome enganoso. */
   time_banguela?: number | null;
   /** Entra no denominador das faixas, apesar de não aparecer no relatório. */

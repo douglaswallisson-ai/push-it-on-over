@@ -147,8 +147,16 @@ export default function Veiculos() {
     const termo = busca.trim().toLowerCase();
     return itens
       .map((v) => ({
+        // Os indicadores já vêm calculados da telemetria em `itens`. O espalhamento
+        // do exemplo ficava DEPOIS deles e sobrescrevia tudo: onde o veículo
+        // existia na base fixa, com nota inventada; onde não existia, o objeto
+        // vazio não apagava, mas os reais nunca chegavam a ser vistos porque as
+        // chaves do exemplo tinham precedência.
+        //
+        // Em modo real o exemplo não entra. Sem API, ele continua sendo a única
+        // fonte possível.
+        ...(usandoMock() ? (MOCK_INDICADORES_VEICULO[v.id] ?? {}) : {}),
         ...v,
-        ...(MOCK_INDICADORES_VEICULO[v.id] ?? {}),
         manutencao: porVeiculo.get(v.id),
       }))
       .filter((v) => {

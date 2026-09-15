@@ -78,7 +78,17 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
     // O cadastro entrega só a ficha; consumo e odômetro atual vêm de
     // con_telemetry, que é outra consulta. Nulo faz a tela mostrar traço.
     kml: null,
-    odometro: v.initial_odometer ?? null,
+    /**
+     * `initial_odometer` está em **metros**, como o resto da telemetria.
+     *
+     * Sem converter, a tela mostrava 710.176.000 km para um ônibus — o valor
+     * é 710.176 km. Um número absurdo desses passa despercebido porque a
+     * coluna já é grande; ninguém confere ordem de grandeza de odômetro.
+     *
+     * É o odômetro de quando o equipamento foi instalado, não o atual. Quando
+     * a telemetria traz leitura mais recente, ela tem precedência.
+     */
+    odometro: v.initial_odometer ? Math.round(v.initial_odometer / 1000) : null,
     grupoId: v.group_id != null ? String(v.group_id) : undefined,
     unidadeId: v.subgroup_id != null ? String(v.subgroup_id) : undefined,
   };

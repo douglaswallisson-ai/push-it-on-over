@@ -300,8 +300,24 @@ export function useIndicadoresPorVeiculo(
       });
     }
 
+    /**
+     * Diagnóstico impresso uma vez por carga.
+     *
+     * Rastrear do dado até a tela por tentativa custou várias rodadas. Com o
+     * primeiro registro no console dá para comparar o que o servidor devolveu
+     * com o que o código espera, campo a campo, sem adivinhar.
+     */
+    if (q.registros.length && mapa.size === 0) {
+      // eslint-disable-next-line no-console
+      console.warn("[indicadores] viagens recebidas mas nenhum veículo agregado", {
+        recebidas: q.registros.length,
+        primeiro: q.registros[0],
+        idsEsperados: veiculoIds?.slice(0, 3),
+      });
+    }
+
     return mapa;
-  }, [q.registros]);
+  }, [q.registros]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     porVeiculo,

@@ -168,7 +168,6 @@ export function useIndicadoresPorVeiculo(
         km: number;
         litros: number;
         viagens: number;
-        segMovimento: number;
         segVerde: number;
         segTotal: number;
         segOcioso: number;
@@ -194,7 +193,6 @@ export function useIndicadoresPorVeiculo(
         km: 0,
         litros: 0,
         viagens: 0,
-        segMovimento: 0,
         segVerde: 0,
         segTotal: 0,
         segOcioso: 0,
@@ -228,22 +226,25 @@ export function useIndicadoresPorVeiculo(
       a.litros += ok.litros;
       a.viagens += 1;
       /**
-       * Denominador das faixas: a soma das próprias faixas, não `time_moving`.
+       * Denominador das faixas: `time_moving`.
        *
-       * O relatório oficial usa
-       * `verde + extra_eco + amarela + vermelha + inércia + banguela + tolerância`.
-       * A tolerância não aparece como coluna em lugar nenhum, mas entra na
-       * conta — e sem ela os percentuais saem de 10 a 17% inflados.
+       * Todas as faixas são somadas nele — verde, extra econômica, amarela,
+       * vermelha, inércia, eco-roll, banguela, tolerância e baixa velocidade.
+       * Verificado no banco: em cinco viagens de amostra, `time_moving` e a
+       * soma manual das dez faixas batem com diferença de até 3 segundos, que
+       * é arredondamento do próprio rastreador.
+       *
+       * Eu havia trocado por uma soma manual de sete faixas, o que deixava
+       * eco-roll, baixa velocidade e azul de fora e inflava todos os
+       * percentuais.
+       *
+       * Quem calcula as faixas é o **rastreador**, não o servidor: os limites
+       * de RPM são configurados por comando remoto (CMD 86 a 111) e gravados
+       * em `device_config`. O pacote chega com o tempo por faixa já somado.
+       * Se uma faixa parece errada, a causa está na configuração daquele
+       * equipamento, não no cálculo.
        */
-      const faixas =
-        (t.time_green ?? 0) +
-        (t.time_extra_eco ?? 0) +
-        (t.time_yellow ?? 0) +
-        (t.time_red ?? 0) +
-        (t.time_inercia ?? 0) +
-        (t.time_banguela ?? 0) +
-        (t.time_tolerancia ?? 0);
-      a.segMovimento += faixas;
+      const faixas = t.time_moving ?? 0;
       a.segFaixas += faixas;
 
       // Andar sem consumir: inércia, eco-roll e retarder.
@@ -283,7 +284,7 @@ export function useIndicadoresPorVeiculo(
         distanciaKm: Math.round(a.km * 10) / 10,
         litros: Math.round(a.litros * 10) / 10,
         viagens: a.viagens,
-        faixaVerdePct: pct(a.segVerde, a.segMovimento),
+        faixaVerdePct: pct(a.segVerde, a.segFaixas),
         motorLigadoParadoPct: pct(a.segOcioso, a.segTotal),
         chuvaPct: pct(a.segChuva, a.segTotal),
         contagemFreadas: a.freadas,

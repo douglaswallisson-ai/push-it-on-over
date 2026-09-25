@@ -110,13 +110,37 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
   const podeEscolher = superAdmin || orgs.length > 1;
 
   if (carregando) return null;
+
+  /**
+   * Com uma empresa só, o controle vira rótulo — mas continua clicável.
+   *
+   * Antes ele simplesmente travava, e um controle que não responde não informa
+   * nada: "não abre" pode ser permissão negada, lista vazia, erro de rede ou
+   * decisão de produto, e o usuário não tem como distinguir. Agora ele abre e
+   * diz qual é o caso.
+   */
   if (!podeEscolher) {
     if (!expanded) return null;
+
+    const motivo = orgsQ.error
+      ? (orgsQ.error as { status?: number })?.status === 403
+        ? "Sem permissão para listar empresas (reports: groups.read)."
+        : `Falha ao carregar empresas: ${(orgsQ.error as Error)?.message ?? "erro desconhecido"}`
+      : orgs.length === 0
+        ? "Nenhuma empresa retornada pelo servidor para o seu acesso."
+        : "Você tem acesso a uma empresa apenas — não há outra para selecionar.";
+
     return (
-      <div className="flex h-10 items-center gap-2.5 overflow-hidden rounded-lg px-2.5">
-        <Building2 className="h-[17px] w-[17px] shrink-0 text-white/60" />
+      <div
+        title={motivo}
+        className="flex h-10 items-center gap-2.5 overflow-hidden rounded-lg px-2.5"
+      >
+        <Building2
+          className={cn("h-[17px] w-[17px] shrink-0", orgsQ.error ? "text-coral" : "text-white/60")}
+        />
         <div className="min-w-0 flex-1 leading-tight">
           <div className="truncate text-[12.5px] font-semibold text-white">{sessao?.organizacao}</div>
+          <div className="truncate text-[10.5px] text-white/45">{motivo}</div>
         </div>
       </div>
     );

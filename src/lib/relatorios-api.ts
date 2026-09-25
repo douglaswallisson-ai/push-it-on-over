@@ -16,7 +16,17 @@ import { grupoAtivo } from "@/lib/escopo-ativo";
  */
 
 /** Janela máxima aceita pelos endpoints de cursor. */
-export const MAX_DIAS_CURSOR = 93;
+/**
+ * Janela máxima dos endpoints de cursor.
+ *
+ * Foram 93 dias até a DS-1497 aumentar para 365, depois de um dashboard não
+ * retornar nada em período de 106 dias. Manter 93 aqui bloqueava no front
+ * consultas que o servidor aceita — o usuário via um erro que não existia.
+ *
+ * A exportação em CSV continua limitada a 31 dias, que é outro limite.
+ */
+export const MAX_DIAS_CURSOR = 365;
+export const MAX_DIAS_EXPORT = 31;
 
 export type RespostaCursor<T> = {
   data: T[];
@@ -185,6 +195,11 @@ export type TelemetriaApi = {
   time_red?: number | null;
   time_stop_engine_on?: number | null;
   time_inercia?: number | null;
+  /** Parado com motor ligado. Era a faixa que ficava fora do denominador. */
+  time_stop_engine_on_productive?: number | null;
+  /** BATENDO TRANSMISSÃO — o nome do campo não diz isso. */
+  time_blue?: number | null;
+  time_stop_accel?: number | null;
   time_eco_roll?: number | null;
   time_retarder?: number | null;
   time_autopilot?: number | null;

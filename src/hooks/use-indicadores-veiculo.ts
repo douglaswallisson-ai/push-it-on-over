@@ -104,6 +104,13 @@ export type IndicadoresVeiculo = {
   segPiloto: number;
   segRetarder: number;
   segFaixas: number;
+  /** Tempo nas cinco faixas ideais, em segundos. */
+  segIdeal: number;
+  /**
+   * Percentual de tempo ideal sobre o tempo classificado — o indicador que o
+   * painel do fleet-insights chama de "ideal".
+   */
+  idealPct: number | null;
 };
 
 /** Últimos 30 dias, que é o recorte usual de fechamento. */
@@ -177,6 +184,7 @@ export function useIndicadoresPorVeiculo(
         segPiloto: number;
         segRetarder: number;
         segFaixas: number;
+        segIdeal: number;
         freadas: number;
         aceleracoes: number;
         excessos: number;
@@ -202,6 +210,7 @@ export function useIndicadoresPorVeiculo(
         segPiloto: 0,
         segRetarder: 0,
         segFaixas: 0,
+        segIdeal: 0,
         freadas: 0,
         aceleracoes: 0,
         excessos: 0,
@@ -226,26 +235,59 @@ export function useIndicadoresPorVeiculo(
       a.litros += ok.litros;
       a.viagens += 1;
       /**
-       * Denominador das faixas: `time_moving`.
+       * Denominador: a soma das **13 faixas**, como no `ss-worker-fleet-insights`.
        *
-       * Todas as faixas são somadas nele — verde, extra econômica, amarela,
-       * vermelha, inércia, eco-roll, banguela, tolerância e baixa velocidade.
-       * Verificado no banco: em cinco viagens de amostra, `time_moving` e a
-       * soma manual das dez faixas batem com diferença de até 3 segundos, que
-       * é arredondamento do próprio rastreador.
+       * Não é `time_moving`. Três das treze acontecem com o veículo parado —
+       * marcha lenta, parado acelerando e parado ligado produtivo — e portanto
+       * ficam fora do tempo em movimento.
        *
-       * Eu havia trocado por uma soma manual de sete faixas, o que deixava
-       * eco-roll, baixa velocidade e azul de fora e inflava todos os
-       * percentuais.
+       * A diferença não é marginal. Marcha lenta sozinha representava 25% do
+       * tempo da frota no piloto, e incluí-la levou o indicador de condução
+       * ideal de 45,47% para 55,32% em julho de 2026. O irregular não piorou:
+       * passou a ser medido.
+       *
+       * As treze, na classificação oficial:
+       *
+       *   Ideal (5)      verde, inércia, extra econômica, eco-roll,
+       *                  baixa velocidade
+       *   Irregular (8)  marcha lenta, parado ligado produtivo,
+       *                  batendo transmissão, amarela, vermelha,
+       *                  parado acelerando, banguela, tolerância
+       *
+       * Elas não somam 100% do tempo total — sobrou 1,09% em julho. "Ideal
+       * mais irregular igual a cem" é consequência de escolher esta soma como
+       * denominador, não propriedade do dado.
        *
        * Quem calcula as faixas é o **rastreador**, não o servidor: os limites
-       * de RPM são configurados por comando remoto (CMD 86 a 111) e gravados
-       * em `device_config`. O pacote chega com o tempo por faixa já somado.
-       * Se uma faixa parece errada, a causa está na configuração daquele
-       * equipamento, não no cálculo.
+       * de RPM vão por comando remoto e ficam em `device_config`. Faixa que
+       * parece errada tem causa na configuração daquele equipamento.
        */
-      const faixas = t.time_moving ?? 0;
+      const faixas =
+        // Ideal
+        (t.time_green ?? 0) +
+        (t.time_inercia ?? 0) +
+        (t.time_extra_eco ?? 0) +
+        (t.time_eco_roll ?? 0) +
+        (t.time_low_speed ?? 0) +
+        // Irregular
+        (t.time_stop_engine_on ?? 0) +
+        (t.time_stop_engine_on_productive ?? 0) +
+        (t.time_blue ?? 0) +
+        (t.time_yellow ?? 0) +
+        (t.time_red ?? 0) +
+        (t.time_stop_accel ?? 0) +
+        (t.time_banguela ?? 0) +
+        (t.time_tolerancia ?? 0);
+
       a.segFaixas += faixas;
+
+      // Ideal e irregular, para os indicadores agregados baterem com o painel.
+      a.segIdeal +=
+        (t.time_green ?? 0) +
+        (t.time_inercia ?? 0) +
+        (t.time_extra_eco ?? 0) +
+        (t.time_eco_roll ?? 0) +
+        (t.time_low_speed ?? 0);
 
       // Andar sem consumir: inércia, eco-roll e retarder.
       a.segEmbalo += (t.time_inercia ?? 0) + (t.time_eco_roll ?? 0) + (t.time_retarder ?? 0);
@@ -297,6 +339,8 @@ export function useIndicadoresPorVeiculo(
         segPiloto: a.segPiloto,
         segRetarder: a.segRetarder,
         segFaixas: a.segFaixas,
+        segIdeal: a.segIdeal,
+        idealPct: pct(a.segIdeal, a.segFaixas),
       });
     }
 

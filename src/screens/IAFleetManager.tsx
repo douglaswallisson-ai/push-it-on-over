@@ -13,7 +13,13 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Info, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { aiContasQuery, aiPainelQuery } from "@/lib/queries";
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { usandoMock } from "@/lib/modo";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -164,20 +170,168 @@ const METAS = [
 ];
 
 export default function IAFleetManager() {
+  /**
+   * Painel real, de `fleet_mvp` e `fleet_ai`.
+   *
+   * Quem calcula é o worker `ss-worker-fleet-insights`, em lote — a tela
+   * nunca dispara a IA. O insight vem do que o motor já gravou e aprovou;
+   * sem geração aprovada para o dia, ele vem vazio e os indicadores
+   * continuam, porque número não depende de a IA ter rodado.
+   */
+  const contasQ = useQuery(aiContasQuery());
+  const contas = contasQ.data ?? [];
+
+  const grupoSessao = grupoAtivo();
+  const [conta, setConta] = useState<string | undefined>(undefined);
+
+  // A conta ativa acompanha o seletor da barra lateral, a menos que o usuário
+  // escolha outra aqui — o painel existe por conta, e abrir numa diferente da
+  // que ele acabou de selecionar seria desorientador.
+  const contaAtiva =
+    conta ?? (contas.some((c) => String(c.group_id) === grupoSessao) ? grupoSessao : undefined) ??
+    (contas.length ? String(contas[0].group_id) : undefined);
+
+  /** Mês corrente, que é o recorte do painel. */
+  const janela = useMemo(() => {
+    const hoje = new Date();
+    const primeiro = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    return { inicio: iso(primeiro), fim: iso(hoje) };
+  }, []);
+
+  const painelQ = useQuery(aiPainelQuery(contaAtiva, janela.inicio, janela.fim, true));
+  const painel = painelQ.data;
+
+  // 404 aqui significa "o worker ainda não processou esta conta no período",
+  // que é estado normal — não falha.
+  const semCarga = (painelQ.error as { status?: number } | null)?.status === 404;
+
   return (
     <>
       <PageHeader
         title="IA Fleet Manager"
         subtitle="Selma · da telemetria à ação"
         actions={
-          <span className="inline-flex items-center gap-2 rounded-full bg-navy-tint px-3.5 py-2 font-mono text-[11px] font-semibold text-brand-blue">
-            <Zap className="h-3.5 w-3.5" />
-            Jan/2025 – Fev/2026 · 14 meses
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {contas.length > 1 && (
+              <select
+                value={contaAtiva ?? ""}
+                onChange={(e) => setConta(e.target.value)}
+                className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+              >
+                {contas.map((c) => (
+                  <option key={c.group_id} value={String(c.group_id)}>
+                    {c.nome ?? `Conta ${c.group_id}`}
+                  </option>
+                ))}
+              </select>
+            )}
+            <span className="inline-flex items-center gap-2 rounded-full bg-navy-tint px-3.5 py-2 font-mono text-[11px] font-semibold text-brand-blue">
+              <Zap className="h-3.5 w-3.5" />
+              {painel
+                ? `${painel.periodo.dias} dias carregados`
+                : `${janela.inicio.slice(5)} a ${janela.fim.slice(5)}`}
+            </span>
+          </div>
         }
       />
 
       <div className="mx-auto max-w-[1360px] space-y-8 px-6 py-6 md:px-8">
+        {/* Estado da carga, antes de qualquer número. */}
+        {!usandoMock() && (painelQ.isPending || semCarga || Boolean(painelQ.error)) && (
+          <div
+            className={cn(
+              "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-[12.5px]",
+              semCarga || painelQ.error ? "border-gold-line bg-gold-tint/40 text-gold" : "border-border bg-card text-muted-foreground",
+            )}
+          >
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <p className="leading-relaxed">
+              {painelQ.isPending ? (
+                "Carregando o painel…"
+              ) : semCarga ? (
+                <>
+                  <strong>Sem dado carregado para esta conta no período.</strong> O painel é alimentado pelo worker
+                  de insights, que roda em lote — não há como gerá-lo sob demanda a partir daqui.
+                </>
+              ) : (painelQ.error as { status?: number })?.status === 403 ? (
+                <>
+                  <strong>Sem acesso ao módulo.</strong> É preciso a permissão{" "}
+                  <span className="font-mono">ai_fleet.read</span>, ou ser usuário interno da SS.
+                </>
+              ) : (
+                <>Falha ao carregar: {(painelQ.error as Error)?.message}</>
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Qualidade do dado vem antes dos números, de propósito: um painel
+            que mostra 3,4 km/l sem dizer que 42% das horas estão sem condutor
+            identificado induz conclusão errada sobre quem dirige bem. */}
+        {painel?.data_quality && (
+          <div className="grid gap-3 sm:grid-cols-3">
+            <QualidadeItem
+              rotulo="Horas sem condutor identificado"
+              valor={painel.data_quality.pct_horas_nao_identificadas}
+              sufixo="%"
+              alerta={(painel.data_quality.pct_horas_nao_identificadas ?? 0) > 30}
+            />
+            <QualidadeItem
+              rotulo="Cobertura de combustível"
+              valor={painel.data_quality.cobertura_combustivel_pct}
+              sufixo="%"
+              alerta={(painel.data_quality.cobertura_combustivel_pct ?? 100) < 60}
+            />
+            <QualidadeItem
+              rotulo="Dias sem dado no período"
+              valor={painel.data_quality.dias_sem_dado}
+              alerta={(painel.data_quality.dias_sem_dado ?? 0) > 0}
+            />
+          </div>
+        )}
+
+        {/* Insight da IA, quando há geração aprovada para o último dia. */}
+        {painel?.insight?.texto && (
+          <Card title="Leitura do período" icon={Sparkles} bodyClassName="p-5">
+            <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-ink-soft">
+              {painel.insight.texto}
+            </p>
+          </Card>
+        )}
+
+        {/* Ações, na ordem que o motor definiu. */}
+        {painel && painel.acoes_ordenadas.length > 0 && (
+          <Card
+            title="O que fazer agora"
+            icon={Zap}
+            action={<Pill tone="sky">{painel.acoes_ordenadas.length} ações</Pill>}
+            bodyClassName="p-4"
+          >
+            <ul className="space-y-2">
+              {painel.acoes_ordenadas.map((a) => (
+                <li
+                  key={a.chave}
+                  className="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3"
+                >
+                  <Pill tone={a.severidade === "critica" ? "coral" : a.severidade === "alta" ? "gold" : "neutral"}>
+                    {a.severidade ?? "—"}
+                  </Pill>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13px] font-semibold text-foreground">{a.rotulo ?? a.chave}</span>
+                    {a.texto && <span className="mt-0.5 block text-[12px] text-muted-foreground">{a.texto}</span>}
+                  </span>
+                  {a.desvio_relativo != null && (
+                    <span className="shrink-0 font-mono text-[12.5px] font-semibold text-coral">
+                      {Math.round(a.desvio_relativo)}%
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
         {/* Selma. */}
         <HeroBanner
           orb
@@ -454,6 +608,34 @@ function UnidCard({ label, value, change, tone }: { label: string; value: string
       <div className="mt-1 flex items-baseline gap-2">
         <span className={cn("font-display text-[22px] font-bold tabular-nums", tone === "gold" ? "text-gold" : "text-coral")}>{value}</span>
         <span className={cn("font-mono text-[12px] font-semibold", tone === "gold" ? "text-gold" : "text-coral")}>{change}</span>
+      </div>
+    </div>
+  );
+}
+
+
+/** Um item de qualidade do dado, com alerta quando o valor compromete a leitura. */
+function QualidadeItem({
+  rotulo,
+  valor,
+  sufixo,
+  alerta,
+}: {
+  rotulo: string;
+  valor?: number | null;
+  sufixo?: string;
+  alerta?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-xl border px-4 py-3",
+        alerta ? "border-gold-line bg-gold-tint/30" : "border-border bg-card",
+      )}
+    >
+      <div className="text-[11.5px] text-muted-foreground">{rotulo}</div>
+      <div className={cn("mt-1 font-mono text-[18px] font-bold", alerta ? "text-gold" : "text-foreground")}>
+        {valor != null ? `${Math.round(valor * 10) / 10}${sufixo ?? ""}` : "—"}
       </div>
     </div>
   );

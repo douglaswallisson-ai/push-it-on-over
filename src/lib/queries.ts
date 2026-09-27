@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { AiFleet } from "@/lib/ai-fleet-api";
 import { chaveComGrupo } from "@/lib/escopo-ativo";
 import {
   Alarmes,
@@ -684,4 +685,38 @@ export const unidadesQuery = (grupoId?: string) =>
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
     staleTime: 10 * MINUTE,
+  });
+
+/* ------------------------------------------------------------------ */
+/* AI Fleet Manager — fleet_mvp e fleet_ai                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Contas com painel disponível.
+ *
+ * A tela só mostra o seletor quando volta mais de uma — com uma conta só, um
+ * combo de um item é ruído.
+ */
+export const aiContasQuery = () =>
+  queryOptions({
+    queryKey: ["ai-fleet", "contas"],
+    queryFn: () => AiFleet.contas(),
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 10 * MINUTE,
+  });
+
+/**
+ * Painel do período.
+ *
+ * O 404 aqui significa "sem dado carregado para esta conta no período", não
+ * erro — o worker ainda não processou. Por isso não é repetido.
+ */
+export const aiPainelQuery = (groupId?: string, inicio?: string, fim?: string, comparar = true) =>
+  queryOptions({
+    queryKey: ["ai-fleet", "painel", groupId ?? "", inicio ?? "", fim ?? "", comparar],
+    queryFn: () => AiFleet.painel({ groupId: groupId!, inicio: inicio!, fim: fim!, comparar }),
+    enabled: !usandoMock() && Boolean(groupId && inicio && fim),
+    retry: naoRepetirSeProibido,
+    staleTime: 5 * MINUTE,
   });

@@ -13,7 +13,8 @@ import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { FiltroGaragem } from "@/components/ss/ui/FiltroGaragem";
 import { usandoMock } from "@/lib/modo";
-import { indicadoresDeConducao, useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
+import { notaDePercentual } from "@/hooks/use-indicadores-veiculo";
+import { useIndicadoresBi } from "@/hooks/use-indicadores-bi";
 import { cn } from "@/lib/utils";
 import type { CardManutencao, IndicadoresConducao, Veiculo } from "@/types";
 
@@ -102,7 +103,14 @@ export default function Veiculos() {
     [apiQ.data],
   );
 
-  const indicadores = useIndicadoresPorVeiculo(30, idsDaFrota);
+  /**
+   * Indicadores nas fontes do BI.
+   *
+   * O cliente confere o número contra o BI, então é o BI que define a
+   * verdade. As duas fontes divergem em 14,8% de quilometragem — somar
+   * `con_telemetry` aqui faria a tela mostrar menos do que o painel.
+   */
+  const indicadores = useIndicadoresBi(30, idsDaFrota);
 
   const fonte = usandoMock() ? mockQ : apiQ;
   const { data, isPending, error, refetch, isFetching } = fonte;
@@ -128,11 +136,24 @@ export default function Veiculos() {
       return {
         ...v,
         kml: ind.kml ?? v.kml,
-        odometro: ind.odometro ?? v.odometro,
+        // O endpoint consolidado não traz odômetro; ele continua vindo do
+        // cadastro.
+        odometro: v.odometro,
         // Os oito indicadores de condução, compostos da telemetria. Antes eu
         // preenchia dois e as outras seis colunas ficavam "não avaliado"
         // mesmo com a viagem tendo os dados.
-        ...indicadoresDeConducao(ind),
+        // Estrelas a partir das faixas do BI — onze colunas, com o parado
+        // ligado incluindo o produtivo.
+        ...(() => {
+          const f = indicadores.faixasPorVeiculo.get(v.id);
+          if (!f) return {};
+          return {
+            iv: notaDePercentual(f.verdePct),
+            ae: notaDePercentual(f.inerciaPct),
+            mp: notaDePercentual(f.paradoLigadoPct, false),
+            av: notaDePercentual((f.amarelaPct ?? 0) + (f.vermelhaPct ?? 0), false),
+          };
+        })(),
         _ind: ind,
       };
     });
@@ -363,10 +384,17 @@ export default function Veiculos() {
                 </span>
               ) : indicadores.carregando ? (
                 <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
-              ) : indicadores.viagensAnalisadas > 0 ? (
+              ) : indicadores.linhasKm > 0 ? (
                 <span>
-                  <strong className="text-foreground">{nf(indicadores.viagensAnalisadas)} viagens</strong> dos últimos
-                  30 dias, com consumo ponderado pela distância.{" "}
+                  <strong className="text-foreground">{nf(indicadores.linhasKm)} registros</strong> consolidados por
+                  dia, dos últimos 30 dias — mesma fonte do BI, para o número bater com o painel.
+                  {indicadores.temEstimado && (
+                    <>
+                      {" "}
+                      <strong className="text-gold">Parte é estimada:</strong> quando o combustível do dia vem
+                      zerado, o servidor substitui distância e consumo pelos valores calculados.
+                    </>
+                  )}{" "}
                   {comKml.length < linhas.length && (
                     <>
                       Só <strong className="text-foreground">{comKml.length} de {linhas.length}</strong> veículos têm
@@ -374,11 +402,11 @@ export default function Veiculos() {
                       calcular consumo — a distância dessas viagens continua valendo.{" "}
                     </>
                   )}
-                  {indicadores.viagensDescartadas > 0 && (
+                  {0 > 0 && (
                     <>
                       {" "}
                       <strong className="text-gold">
-                        {nf(indicadores.viagensDescartadas)} descartadas
+                        {nf(0)} descartadas
                       </strong>{" "}
                       por leitura impossível — distância negativa por estouro de odômetro, ou velocidade acima de
                       300 km/h. Mantê-las somaria milhões de quilômetros que não existiram.
@@ -388,9 +416,9 @@ export default function Veiculos() {
               ) : (
                 <span>
                   <strong className="text-foreground">Nenhuma viagem retornada.</strong>{" "}
-                  {!indicadores.diagnostico.consultou
+                  {!Boolean(idsDaFrota.length)
                     ? "A consulta de telemetria não chegou a ser feita — nenhum veículo carregado."
-                    : `Consultadas ${nf(indicadores.diagnostico.veiculosConsultados)} placas no período de ${indicadores.diagnostico.periodo}, sem viagens na resposta.`}
+                    : `Consultadas ${nf(idsDaFrota.length)} placas no período de ${"últimos 30 dias"}, sem viagens na resposta.`}
                 </span>
               )}
             </p>

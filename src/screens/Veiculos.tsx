@@ -35,21 +35,51 @@ type Linha = Veiculo &
   } & Record<string, unknown>;
 
 const HEADERS: Record<string, string> = {
-  iv: "Início faixa verde",
-  ae: "Aproveit. de embalo",
-  mp: "Motor ligado parado",
-  av: "Acel. acima do verde",
-  pa: "Piloto automático",
-  ev: "Excesso de velocidade",
+  iv: "Faixa verde",
+  ae: "Inércia",
+  mp: "Parado ligado",
+  av: "Faixa amarela",
+  pa: "Eficiência operacional",
+  ev: "Faixa vermelha",
   fm: "Freio motor",
   pac: "Pressão do acelerador",
 };
 
-const stars = (key: keyof IndicadoresConducao): Column<Linha> => ({
-  key: key as string,
-  header: HEADERS[key as string],
-  align: "center",
-  render: (v) => <StarRating value={(v[key] as number | null) ?? null} />,
+/**
+ * Coluna de faixa, em percentual.
+ *
+ * Era estrela de 0 a 5. A conversão descartava informação: "quatro estrelas"
+ * não diz se o veículo passou 62% ou 78% do tempo em faixa verde, e é o
+ * percentual que o gestor compara com a meta e com o BI.
+ *
+ * `sentido` define a cor, não o valor: em faixa verde, mais é melhor; em
+ * motor ligado parado, menos. Sem isso, o pior veículo apareceria em verde.
+ */
+const faixa = (
+  key: string,
+  sentido: "maior_melhor" | "menor_melhor" = "maior_melhor",
+): Column<Linha> => ({
+  key,
+  header: HEADERS[key] ?? key,
+  align: "right",
+  render: (v) => {
+    const pct = (v as Record<string, unknown>)[key] as number | null | undefined;
+    if (pct == null) {
+      return <span className="text-[11px] text-muted-foreground">—</span>;
+    }
+    const bom = sentido === "maior_melhor" ? pct >= 50 : pct <= 20;
+    return (
+      <span
+        className={cn(
+          "font-mono text-[12.5px] font-semibold",
+          bom ? "text-leaf" : pct > 0 ? "text-gold" : "text-muted-foreground",
+        )}
+      >
+        {nf(pct, 1)}
+        <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">%</span>
+      </span>
+    );
+  },
 });
 
 const STATUS_TONE: Record<string, PillTone> = {
@@ -144,14 +174,17 @@ export default function Veiculos() {
         // mesmo com a viagem tendo os dados.
         // Estrelas a partir das faixas do BI — onze colunas, com o parado
         // ligado incluindo o produtivo.
+        // Percentuais diretos das faixas do BI, sem converter em nota.
         ...(() => {
           const f = indicadores.faixasPorVeiculo.get(v.id);
           if (!f) return {};
           return {
-            iv: notaDePercentual(f.verdePct),
-            ae: notaDePercentual(f.inerciaPct),
-            mp: notaDePercentual(f.paradoLigadoPct, false),
-            av: notaDePercentual((f.amarelaPct ?? 0) + (f.vermelhaPct ?? 0), false),
+            iv: f.verdePct,
+            ae: f.inerciaPct,
+            mp: f.paradoLigadoPct,
+            av: f.amarelaPct,
+            ev: f.vermelhaPct,
+            pa: f.eficienciaOperacionalPct,
           };
         })(),
         _ind: ind,
@@ -274,14 +307,15 @@ export default function Veiculos() {
       align: "right",
       render: (v) => <span className="whitespace-nowrap font-mono">{v.odometro != null ? nf(v.odometro) : "—"} km</span>,
     },
-    stars("iv"),
-    stars("ae"),
-    stars("mp"),
-    stars("av"),
-    stars("pa"),
-    stars("ev"),
-    stars("fm"),
-    stars("pac"),
+    faixa("iv"),
+    faixa("ae"),
+    faixa("mp", "menor_melhor"),
+    faixa("av", "menor_melhor"),
+    faixa("pa"),
+    faixa("ev", "menor_melhor"),
+    // Freio motor e pressão do acelerador saíram: não há campo equivalente
+    // nas faixas que o BI usa, e coluna sempre vazia ocupa espaço sem
+    // informar.
     {
       key: "faixas",
       header: "Faixas",

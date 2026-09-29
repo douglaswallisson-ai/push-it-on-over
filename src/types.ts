@@ -42,7 +42,8 @@ export type Veiculo = {
   prefixo?: string;
   marca: string;
   modelo: string;
-  ano: number;
+  /** Ano de fabricação. Nulo quando não informado no cadastro. */
+  ano: number | null;
   operacao: string;
   situacao: "em_rota" | "parado" | "manutencao" | "sem_sinal";
   /**
@@ -53,6 +54,20 @@ export type Veiculo = {
   kml: number | null;
   /** Odômetro atual. Nulo quando o dado não veio, não zero. */
   odometro: number | null;
+  /**
+   * Como a leitura do odômetro foi tratada.
+   *
+   * Um terço dos veículos tem valor corrigido por alguma regra do servidor —
+   * `regressive_replaced` quando o contador estoura e anda para trás,
+   * `outlier_replaced` em salto implausível. A correção torna o número
+   * utilizável; esconder que houve correção é que seria errado.
+   */
+  odometroQualidade?: string | null;
+  /** Quando o odômetro foi lido. Sem isso não se sabe se é de hoje. */
+  odometroLidoEm?: string | null;
+  horimetro?: number | null;
+  /** Consumo informado pelo próprio veículo, pelo barramento. */
+  kmlDoVeiculo?: number | null;
   grupoId?: string;
   unidadeId?: string;
   /** Garagem onde o veículo está lotado — menor escopo de permissão. */

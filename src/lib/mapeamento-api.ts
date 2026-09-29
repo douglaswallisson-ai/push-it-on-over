@@ -18,6 +18,16 @@ import type { Linha, Motorista, Veiculo } from "@/types";
 
 /** Como o veículo chega da API. */
 export type VeiculoApi = {
+  vehicle_year?: number | null;
+  /** Última leitura do equipamento, de `dev_status`. */
+  estado_atual?: {
+    odom?: number | null;
+    odom_total?: number | null;
+    odom_quality_flag?: string | null;
+    hourmeter_total?: number | null;
+    can_avg_fuel_economy_kmpl?: number | null;
+    local_time?: string | null;
+  } | null;
   id: number;
   label: string;
   label2?: string | null;
@@ -71,7 +81,9 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
     prefixo: v.label2 ?? undefined,
     marca: marca || "—",
     modelo: resto.join(" ") || v.model || "—",
-    ano: 0,
+    // Existe no cadastro e passou a ser exposto. Zero seria lido como ano
+    // zero; nulo diz que não foi informado.
+    ano: v.vehicle_year ?? null,
     operacao: "—",
     situacao: v.status === 1 ? "parado" : "sem_sinal",
     // Zero seria mentira: o veículo não roda a 0 km/l, o dado é que não veio.
@@ -88,7 +100,28 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
      * É o odômetro de quando o equipamento foi instalado, não o atual. Quando
      * a telemetria traz leitura mais recente, ela tem precedência.
      */
-    odometro: v.initial_odometer ? Math.round(v.initial_odometer / 1000) : null,
+    /**
+   * Odômetro atual, da última leitura do equipamento.
+   *
+   * `initial_odometer` é o valor de quando o equipamento foi instalado —
+   * preenchido em poucos veículos e parado no tempo. O que avança está em
+   * `dev_status`, exposto agora como `estado_atual`.
+   *
+   * Leitura marcada como corrigida ainda vale: a correção foi feita
+   * justamente para o número ser utilizável. O que não vale é apresentá-la
+   * sem dizer, e por isso a marca acompanha o valor.
+   */
+  odometro:
+    v.estado_atual?.odom != null
+      ? Math.round(v.estado_atual.odom / 1000)
+      : v.initial_odometer
+        ? Math.round(v.initial_odometer / 1000)
+        : null,
+  odometroQualidade: v.estado_atual?.odom_quality_flag ?? null,
+  odometroLidoEm: v.estado_atual?.local_time ?? null,
+  horimetro: v.estado_atual?.hourmeter_total ?? null,
+  /** Consumo que o próprio veículo informa — contraprova do calculado. */
+  kmlDoVeiculo: v.estado_atual?.can_avg_fuel_economy_kmpl ?? null,
     grupoId: v.group_id != null ? String(v.group_id) : undefined,
     unidadeId: v.subgroup_id != null ? String(v.subgroup_id) : undefined,
   };

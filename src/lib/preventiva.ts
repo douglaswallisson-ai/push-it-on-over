@@ -108,7 +108,7 @@ function urgenciaDe(consumidoPct: number, kmRestante: number | null, diasRestant
  * alerta. Melhor não avisar do que avisar com número inventado.
  */
 export function calcularPreventivas(
-  veiculo: Veiculo & { modeloId?: string; montadoraId?: string; horimetro?: number },
+  veiculo: Veiculo & { modeloId?: string; montadoraId?: string; horimetro?: number | null },
   modelo: ModeloVeiculo | undefined,
   parametros: ParametroManutencao[],
   execucoes: ExecucaoManutencao[],

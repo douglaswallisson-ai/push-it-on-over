@@ -11,16 +11,20 @@
  */
 import type {
   Alarme,
+  CardManutencao,
   EmissaoResumo,
   Manutencao,
   Motorista,
+  OrdemServico,
   Paginated,
+  Pneu,
   PosicaoVeiculo,
   ResumoOperacao,
   Veiculo,
   Viagem,
 } from "@/types";
 import * as M from "@/lib/mock-data";
+import { exemploOuVazio, usandoMock } from "@/lib/modo";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -145,11 +149,49 @@ export const Veiculos = {
     mock<Veiculo>(M.MOCK_VEICULOS.find((v) => v.id === id) ?? M.MOCK_VEICULOS[0]),
   create: (data: Partial<Veiculo>) => mock(data as never),
   manutencao: (id: string) =>
-    mock(M.mockManutencao(id)),
+    mock(usandoMock() ? M.mockManutencao(id) : (undefined as never)),
 };
 
 export const Frota = {
-  posicoes: () => (mock(M.MOCK_POSICOES)),
+  /**
+   * Posições atuais, de `dev_status`.
+   *
+   * Uma linha por veículo, sempre a leitura mais recente — diferente do
+   * histórico, que traz o rastro. A janela de 24 h vem por padrão do
+   * servidor: sem ela, veículo que parou de transmitir há meses apareceria
+   * no mapa como se estivesse em campo.
+   */
+  posicoes: async (): Promise<PosicaoVeiculo[]> => {
+    if (modoMock()) return M.MOCK_POSICOES;
+
+    const r = await api.get<{
+      items: {
+        unit_id: number;
+        placa?: string | null;
+        prefixo?: string | null;
+        latitude: number;
+        longitude: number;
+        speed?: number | null;
+        ignition?: boolean | null;
+        address?: string | null;
+        local_time?: string | null;
+        sem_sinal?: boolean;
+      }[];
+    }>(`/api/v1/positions/`);
+
+    return (r.items ?? []).map<PosicaoVeiculo>((p) => ({
+      veiculoId: String(p.unit_id),
+      // Prefixo quando existe: é como a operação chama o carro. A placa fica
+      // de reserva, e o id quando nem ela veio.
+      placa: p.prefixo ?? p.placa ?? String(p.unit_id),
+      lat: p.latitude,
+      lng: p.longitude,
+      endereco: p.address ?? "",
+      velocidade: p.speed ?? 0,
+      ignicao: Boolean(p.ignition),
+      atualizadoEm: p.local_time ?? new Date().toISOString(),
+    }));
+  },
   resumo: () => (mock(M.MOCK_RESUMO)),
 };
 
@@ -185,7 +227,17 @@ export const Equipamentos = {
 };
 
 export const ManutencaoKanban = {
-  list: () => (mock(M.MOCK_KANBAN)),
+  /**
+   * Quadro de manutenção.
+   *
+   * Sem tabela no backend: a ordem de serviço de frota não existe em `mova`.
+   * O que existe é `device_maintenance`, que registra manutenção do
+   * **rastreador** — se o GPS, o GSM e o CAN do equipamento funcionam.
+   *
+   * Em modo real a lista vai vazia, e a tela monta os cartões a partir da
+   * frota e da preventiva calculada. O exemplo só aparece sem API.
+   */
+  list: () => mock<CardManutencao[]>(exemploOuVazio(M.MOCK_KANBAN)),
 };
 
 export const Conducoes = {
@@ -248,13 +300,15 @@ export const Indicadores = {
 
 /* ---- Blocos 2, 4, 5, 6 ---- */
 export const Ordens = {
-  list: () => (mock(M.MOCK_ORDENS)),
+  /** Ordem de serviço de frota — sem tabela no backend. */
+  list: () => mock<OrdemServico[]>(exemploOuVazio(M.MOCK_ORDENS)),
 };
 export const Planos = {
   list: () => (mock(M.MOCK_PLANOS)),
 };
 export const Pneus = {
-  list: () => (mock(M.MOCK_PNEUS)),
+  /** Controle de pneu — sem tabela no backend. */
+  list: () => mock<Pneu[]>(exemploOuVazio(M.MOCK_PNEUS)),
 };
 export const Video = {
   ocorrencias: () =>
@@ -359,7 +413,14 @@ export const ContratosOrg = {
 };
 
 export const DTC = {
-  list: () => (mock(M.MOCK_DTC)),
+  /**
+   * Códigos de falha.
+   *
+   * Sem tabela no backend. O dado bruto existe no barramento — os sinais CAN
+   * chegam por posição — mas a decodificação para SPN e FMI não é feita em
+   * lugar nenhum hoje.
+   */
+  list: () => mock<(typeof M.MOCK_DTC)>(exemploOuVazio(M.MOCK_DTC)),
 };
 
 export const Plataforma = {

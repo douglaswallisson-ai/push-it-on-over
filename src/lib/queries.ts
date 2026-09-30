@@ -25,6 +25,7 @@ import {
   Seguranca,
   Ordens,
   Empresas,
+  SaudeFrota,
   Unidades,
   PadroesLinha,
   Planos,
@@ -719,4 +720,21 @@ export const aiPainelQuery = (groupId?: string, inicio?: string, fim?: string, c
     enabled: !usandoMock() && Boolean(groupId && inicio && fim),
     retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,
+  });
+
+/**
+ * Saúde da frota — cascata de decisão do servidor.
+ *
+ * Mede qualidade de sinal e comportamento de condução, não manutenção. O
+ * cálculo vive no backend porque cruza duas tabelas consolidadas e tem
+ * catorze condições com denominadores diferentes: replicar no cliente criaria
+ * duas verdades para o mesmo cartão.
+ */
+export const saudeFrotaQuery = () =>
+  queryOptions({
+    queryKey: chaveComGrupo("saude-frota"),
+    queryFn: () => SaudeFrota.atual(),
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 10 * MINUTE,
   });

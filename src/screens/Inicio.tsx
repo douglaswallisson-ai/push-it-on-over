@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
-import { eventosApiQuery } from "@/lib/queries";
+import type { SaudeFrotaApi } from "@/lib/api";
+import { eventosApiQuery, saudeFrotaQuery } from "@/lib/queries";
 import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
@@ -376,6 +377,38 @@ function PendenciasCard() {
  * de cada situação.
  */
 function useSaudeFrota() {
+  /**
+   * Saúde da frota, calculada pelo servidor.
+   *
+   * Eu havia inventado um índice ponderado sobre manutenção preventiva. A
+   * regra de produção mede outra coisa: qualidade de sinal e comportamento de
+   * condução, numa cascata de catorze condições — e o resultado não tem
+   * relação com o que eu calculava.
+   */
+  const q = useQuery(saudeFrotaQuery());
+
+  const daApi = q.data as SaudeFrotaApi | undefined;
+  if (daApi) {
+    const motivos = Object.entries(daApi.por_motivo).slice(0, 2);
+    return {
+      indice: daApi.percentual_saudavel,
+      titulo:
+        daApi.percentual_saudavel == null
+          ? "Sem unidades avaliáveis"
+          : daApi.percentual_saudavel >= 90
+            ? "Frota em boas condições"
+            : daApi.percentual_saudavel >= 75
+              ? "Frota com pontos de atenção"
+              : "Frota exige verificação",
+      descricao: daApi.percentual_saudavel == null
+        ? `Nenhuma unidade operou o suficiente em ${daApi.referencia ?? "—"} para ser avaliada. A regra exige mais de uma hora e mais de um quilômetro.`
+        : `${daApi.unidades_saudaveis} de ${daApi.total_unidades} unidades sem apontamento em ${daApi.referencia}.` +
+          (motivos.length
+            ? ` Principais causas: ${motivos.map(([m, n]) => `${m.toLowerCase()} (${n})`).join(", ")}.`
+            : ""),
+    };
+  }
+
   const { porVeiculo } = usePreventivaFrota();
 
   return useMemo(() => {

@@ -619,3 +619,23 @@ export const Unidades = {
       `/api/v1/subgroups/${qs({ limit: 500, ...filtroGrupo(), ...(grupoId ? { group_id: grupoId } : {}) })}`,
     ),
 };
+
+export type SaudeFrotaApi = {
+  referencia: string | null;
+  total_unidades: number;
+  unidades_saudaveis: number;
+  unidades_nao_saudaveis: number;
+  percentual_saudavel: number | null;
+  por_motivo: Record<string, number>;
+  nao_saudaveis: {
+    unit_id: number;
+    label?: string | null;
+    categoria: number;
+    motivo: string;
+    valor?: number | null;
+  }[];
+};
+
+export const SaudeFrota = {
+  atual: () => api.get<SaudeFrotaApi>(`/api/v1/fleet-health/${qs(filtroGrupo())}`),
+};

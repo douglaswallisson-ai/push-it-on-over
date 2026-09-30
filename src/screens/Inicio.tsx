@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
+import { eventosApiQuery } from "@/lib/queries";
 import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
@@ -88,11 +89,21 @@ function buildKpis(r: ResumoOperacao): Kpi[] {
   );
 }
 
-const CRIT = [
-  { icon: Gauge, label: "Excesso de velocidade", count: 3, pct: 50 },
-  { icon: MapPin, label: "Cerca violada", count: 2, pct: 33 },
-  { icon: ShieldAlert, label: "Pânico", count: 1, pct: 17 },
-];
+/**
+ * Ícone por tipo de evento.
+ *
+ * A lista de eventos vem da API; o mapa aqui só decide o desenho. Tipo sem
+ * entrada usa o genérico — melhor que esconder um evento por não ter ícone.
+ */
+const ICONE_EVENTO: Record<string, typeof Gauge> = {
+  speeding: Gauge,
+  excesso_velocidade: Gauge,
+  fence: MapPin,
+  cerca: MapPin,
+  geofence: MapPin,
+  panic: ShieldAlert,
+  panico: ShieldAlert,
+};
 
 export default function Inicio() {
   // Composto a partir de veículos, posições, eventos e indicadores — não há
@@ -303,7 +314,15 @@ function PlanoCard() {
       </div>
 
       <div className="flex flex-1 flex-col gap-6 sm:flex-row sm:items-center">
-        <Donut value={saude.indice} />
+        {/* Sem índice, o anel some: um anel vazio seria lido como zero, e
+            zero significa frota crítica — o oposto de "não avaliado". */}
+        {saude.indice != null ? (
+          <Donut value={saude.indice} />
+        ) : (
+          <div className="flex h-[120px] w-[120px] shrink-0 items-center justify-center rounded-full border-4 border-dashed border-border text-[12px] text-muted-foreground">
+            sem índice
+          </div>
+        )}
         <div className="flex-1">
           <p className="text-sm font-semibold">{saude.titulo}</p>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{saude.descricao}</p>
@@ -361,25 +380,48 @@ function useSaudeFrota() {
 
   return useMemo(() => {
     if (!porVeiculo.length) {
-      return { indice: 0, titulo: "Sem dados de frota", descricao: "Nenhum veículo cadastrado ainda." };
+      return { indice: null, titulo: "Sem dados de frota", descricao: "Nenhum veículo cadastrado ainda." };
     }
 
-    // Peso por situação. Vencida pesa mais que próxima porque já passou do
-    // limite do fabricante — é risco presente, não futuro.
-    const notas = porVeiculo.map((v) => {
-      if (v.semCatalogo) return 100; // sem parâmetro não é culpa do veículo
+    /**
+     * Só veículos com plano entram no índice.
+     *
+     * Antes, veículo sem catálogo contava 100 — "não é culpa dele". Mas o
+     * efeito era pior que a intenção: com a frota inteira sem parâmetro
+     * cadastrado, o índice dava 100% e dizia que estava tudo bem quando na
+     * verdade nada estava sendo medido.
+     *
+     * Não avaliado é diferente de aprovado.
+     *
+     * Peso por situação: vencida pesa mais que próxima porque já passou do
+     * limite do fabricante — é risco presente, não futuro.
+     */
+    const avaliaveis = porVeiculo.filter((v) => !v.semCatalogo);
+    const notas = avaliaveis.map((v) => {
       const vencidas = v.preventivas.filter((p) => p.urgencia === "vencida").length;
       const criticas = v.preventivas.filter((p) => p.urgencia === "critica").length;
       const proximas = v.preventivas.filter((p) => p.urgencia === "proxima").length;
       return Math.max(0, 100 - vencidas * 25 - criticas * 12 - proximas * 5);
     });
 
-    const indice = Math.round(notas.reduce((a, n) => a + n, 0) / notas.length);
+    // Sem nenhum veículo avaliável não há índice — e zero seria lido como
+    // frota em situação crítica, que é o oposto do que se sabe.
+    const indice = notas.length
+      ? Math.round(notas.reduce((a, n) => a + n, 0) / notas.length)
+      : null;
     const vencidasTotal = porVeiculo.reduce(
       (a, v) => a + v.preventivas.filter((p) => p.urgencia === "vencida").length,
       0,
     );
     const semCatalogo = porVeiculo.filter((v) => v.semCatalogo).length;
+
+    if (indice == null) {
+      return {
+        indice: null,
+        titulo: "Frota sem plano de manutenção",
+        descricao: `Nenhum dos ${porVeiculo.length} veículos tem parâmetro de fabricante cadastrado, então não há o que avaliar. Cadastre o catálogo em Administração › Catálogo de manutenção.`,
+      };
+    }
 
     const titulo =
       indice >= 90 ? "Frota em boas condições"
@@ -392,14 +434,49 @@ function useSaudeFrota() {
     if (semCatalogo) partes.push(`${semCatalogo} veículo${semCatalogo > 1 ? "s" : ""} sem parâmetro cadastrado`);
 
     const descricao = partes.length
-      ? `Índice calculado sobre ${porVeiculo.length} veículos. ${partes.join(" e ")} — os cartões de manutenção abaixo detalham.`
-      : `Índice calculado sobre ${porVeiculo.length} veículos, sem manutenção vencida no momento.`;
+      ? `Índice sobre ${notas.length} de ${porVeiculo.length} veículos com plano. ${partes.join(" e ")} — os cartões de manutenção abaixo detalham.`
+      : `Índice sobre ${notas.length} de ${porVeiculo.length} veículos com plano, sem manutenção vencida no momento.`;
 
     return { indice, titulo, descricao };
   }, [porVeiculo]);
 }
 
 function CriticalCard() {
+  /**
+   * Eventos críticos de hoje, agrupados por tipo.
+   *
+   * O cartão mostrava "6" escrito no código, com três tipos fixos — e o
+   * resumo acima já lia os eventos reais da API. As duas contagens
+   * discordavam na mesma tela, o que corrói a confiança em tudo que está
+   * ao redor.
+   */
+  const criticosQ = useQuery(eventosApiQuery({ severity: "critical", limit: 200 }));
+
+  const { totalCriticos, porTipo } = useMemo(() => {
+    const itens = ((criticosQ.data as { items?: { event_type?: string }[] } | undefined)?.items ?? []);
+    const total = itens.length;
+
+    const contagem = new Map<string, number>();
+    for (const e of itens) {
+      const t = (e.event_type ?? "outro").toLowerCase();
+      contagem.set(t, (contagem.get(t) ?? 0) + 1);
+    }
+
+    const lista = [...contagem.entries()]
+      .sort((a, b) => b[1] - a[1])
+      // Três é o que cabe na faixa sem apertar; o total acima já dá o número
+      // completo.
+      .slice(0, 3)
+      .map(([tipo, count]) => ({
+        label: tipo.replace(/_/g, " "),
+        count,
+        pct: total ? Math.round((count / total) * 100) : 0,
+        icon: ICONE_EVENTO[tipo] ?? AlertTriangle,
+      }));
+
+    return { totalCriticos: total, porTipo: lista };
+  }, [criticosQ.data]);
+
   const navigate = useNavigate();
   return (
     <section className="overflow-hidden rounded-2xl border border-coral-line bg-card shadow-card">
@@ -413,12 +490,19 @@ function CriticalCard() {
             <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-coral">
               Eventos críticos hoje
             </p>
-            <p className="font-display text-5xl font-bold leading-none tabular-nums">6</p>
+            <p className="font-display text-5xl font-bold leading-none tabular-nums">
+              {criticosQ.isPending ? "—" : nf(totalCriticos)}
+            </p>
           </div>
         </div>
 
         <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3">
-          {CRIT.map((c) => (
+          {porTipo.length === 0 && !criticosQ.isPending && (
+            <p className="col-span-full self-center text-[12.5px] text-muted-foreground">
+              Nenhum evento crítico hoje.
+            </p>
+          )}
+          {porTipo.map((c) => (
             <div key={c.label} className="rounded-xl bg-secondary/60 p-3">
               <div className="mb-2 flex items-center gap-2">
                 <c.icon className="h-4 w-4 text-coral" />

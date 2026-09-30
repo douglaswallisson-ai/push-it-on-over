@@ -43,10 +43,26 @@ export type FiltroRelatorio = {
   limite?: number;
 };
 
-const paramsDe = (f: FiltroRelatorio, cursor?: string) => {
+/**
+ * Endpoints que esperam **data pura**, sem hora.
+ *
+ * Eles consultam tabelas consolidadas por dia, e o parâmetro é `date` no
+ * servidor. Mandar `2026-08-31 12:33:41` devolve 422 com
+ * `date_from_datetime_inexact` — o Pydantic recusa horário diferente de zero
+ * em vez de truncar.
+ *
+ * Os demais consultam viagem e posição, onde a hora importa.
+ */
+const SOMENTE_DATA = new Set(["driver-km-fuel-hours", "rpm-band-time", "weight-range"]);
+
+/** `2026-08-31 12:33:41` vira `2026-08-31`. */
+const soData = (v: string) => v.slice(0, 10);
+
+const paramsDe = (f: FiltroRelatorio, cursor?: string, relatorio?: string) => {
+  const cortar = relatorio ? SOMENTE_DATA.has(relatorio) : false;
   const p = new URLSearchParams({
-    start_date: f.inicio,
-    end_date: f.fim,
+    start_date: cortar ? soData(f.inicio) : f.inicio,
+    end_date: cortar ? soData(f.fim) : f.fim,
     limit: String(f.limite ?? 1000),
   });
   /**
@@ -109,7 +125,7 @@ export function useRelatorioCursor<T>(relatorio: Relatorio, filtro: FiltroRelato
     enabled: habilitado && !erroJanela && !usandoMock(),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
-      api.get<RespostaCursor<T>>(`/api/v1/reports/${relatorio}/cursor?${paramsDe(filtro, pageParam)}`),
+      api.get<RespostaCursor<T>>(`/api/v1/reports/${relatorio}/cursor?${paramsDe(filtro, pageParam as string | undefined, relatorio)}`),
     getNextPageParam: (ultima) => (ultima.has_more ? (ultima.next_cursor ?? undefined) : undefined),
     staleTime: 5 * 60_000,
   });
@@ -135,7 +151,7 @@ export function useEstimativaExport(relatorio: Relatorio, filtro: FiltroRelatori
     enabled: habilitado && !validarJanela(filtro.inicio, filtro.fim) && !usandoMock(),
     queryFn: () =>
       api.get<{ estimated_rows: number; estimated_size_mb: number; warning?: string }>(
-        `/api/v1/reports/${relatorio}/export/estimate?${paramsDe(filtro)}`,
+        `/api/v1/reports/${relatorio}/export/estimate?${paramsDe(filtro, undefined, relatorio)}`,
       ),
     staleTime: 60_000,
   });
@@ -151,7 +167,7 @@ export function useEstimativaExport(relatorio: Relatorio, filtro: FiltroRelatori
  */
 export function urlExportCsv(relatorio: Relatorio, filtro: FiltroRelatorio): string {
   const base = (import.meta.env.VITE_API_BASE as string) || "";
-  return `${base}/api/v1/reports/${relatorio}/export/csv?${paramsDe(filtro)}`;
+  return `${base}/api/v1/reports/${relatorio}/export/csv?${paramsDe(filtro, undefined, relatorio)}`;
 }
 
 /* ------------------------------------------------------------------ */

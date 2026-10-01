@@ -17,6 +17,8 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
+import { PerfilElevacao } from "@/components/ss/frota/PerfilElevacao";
+import { relevoTrajetoQuery } from "@/lib/relevo-api";
 import { nf, trackingApiQuery, trackingQuery, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { resumoTracking } from "@/lib/mock-data";
@@ -80,8 +82,16 @@ export default function Tracking() {
   const [focado, setFocado] = useState<string | null>(null);
 
   const mockQ = useQuery(trackingQuery(veiculoId));
-  const hoje = new Date().toISOString().slice(0, 10);
+  // Data local: toISOString() é UTC e, depois das 21h, já marcava o dia seguinte.
+  const hojeLocal = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  const [hoje, setDia] = useState(hojeLocal);
   const apiQ = useQuery(trackingApiQuery(veiculoId, hoje));
+  // Posições do dia com a elevação de cada uma: perfil e traçado real.
+  const relevoQ = useQuery(relevoTrajetoQuery(veiculoId || undefined, hoje));
+  const [pontoHover, setPontoHover] = useState<number | null>(null);
 
   /**
    * Ligado à API, os eventos vêm derivados no servidor a partir das posições —
@@ -133,13 +143,33 @@ export default function Tracking() {
   }, [daApi, veiculoId, hoje]);
 
   /** Traçado do percurso: só os pontos, na ordem cronológica. */
-  const percurso = useMemo(() => eventos.map((e) => [e.lat, e.lng] as [number, number]), [eventos]);
+  const percurso = useMemo(() => {
+    const pts = relevoQ.data?.pontos ?? [];
+    if (pts.length > 1) return pts.map((p) => [p.lat, p.lon] as [number, number]);
+    return eventos.map((e) => [e.lat, e.lng] as [number, number]);
+  }, [eventos, relevoQ.data]);
 
   /**
    * Marcadores do mapa: o evento focado ou o último ponto. Plotar os 20 eventos
    * como veículo confundiria — o traçado já mostra o caminho.
    */
   const marcadores = useMemo(() => {
+    const ph = pontoHover != null ? relevoQ.data?.pontos[pontoHover] : undefined;
+    if (ph) {
+      return [
+        {
+          placa: veiculo?.placa ?? veiculoId,
+          rotulo: veiculo?.prefixo ?? veiculo?.placa ?? veiculoId,
+          veiculoId,
+          lat: ph.lat,
+          lng: ph.lon,
+          situacao: (ph.velocidade ?? 0) > 3 ? "em_viagem" : "ligado_parado",
+          velocidade: ph.velocidade ?? 0,
+          endereco: `${ph.elevacao != null ? Math.round(ph.elevacao) + " m de altitude" : ""}`,
+          atualizado: ph.hora,
+        },
+      ];
+    }
     const alvo = focado ? eventos.find((e) => e.id === focado) : eventos[eventos.length - 1];
     if (!alvo) return [];
     return [
@@ -155,7 +185,7 @@ export default function Tracking() {
         atualizado: hora(alvo.em),
       },
     ];
-  }, [eventos, focado, veiculo, veiculoId]);
+  }, [eventos, focado, veiculo, veiculoId, pontoHover, relevoQ.data]);
 
   return (
     <>
@@ -163,6 +193,15 @@ export default function Tracking() {
         title="Percurso do dia"
         subtitle="Frota › Tracking de eventos"
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            value={hoje}
+            max={hojeLocal}
+            onChange={(e) => e.target.value && setDia(e.target.value)}
+            aria-label="Dia"
+            className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+          />
           <select
             value={veiculoId}
             onChange={(e) => {
@@ -177,6 +216,7 @@ export default function Tracking() {
               </option>
             ))}
           </select>
+          </div>
         }
       />
 
@@ -219,7 +259,7 @@ export default function Tracking() {
                 {trackingQ.isPending ? (
                   <SkeletonRows rows={6} />
                 ) : eventos.length === 0 ? (
-                  <EmptyNote>Nenhum evento de percurso para este veículo hoje.</EmptyNote>
+                  <EmptyNote>Nenhum evento de percurso para este veículo neste dia.</EmptyNote>
                 ) : (
                   <ol className="max-h-[560px] space-y-0.5 overflow-y-auto pr-1">
                     {eventos.map((e, i) => (
@@ -249,11 +289,16 @@ export default function Tracking() {
                   percurso={percurso}
                 />
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  A linha liga os eventos na ordem em que aconteceram. Não é o traçado exato da rua — para isso seria
-                  preciso o histórico completo de posições, não só os eventos.
+                  {(relevoQ.data?.pontos.length ?? 0) > 1
+                    ? "Traçado pelas posições registradas com o veículo andando."
+                    : "A linha liga os eventos na ordem em que aconteceram — não é o traçado exato da rua."}
                 </p>
               </Card>
             </div>
+
+            {!usandoMock() && (
+              <PerfilElevacao dados={relevoQ.data} carregando={relevoQ.isLoading} erro={relevoQ.error} onHover={setPontoHover} />
+            )}
           </>
         )}
       </div>

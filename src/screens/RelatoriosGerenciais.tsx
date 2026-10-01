@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Activity, BarChart3, CalendarRange, ClipboardList, Clock, Fuel, Gauge, IdCard, LineChart, ListOrdered, Scale, ShieldAlert, Siren, Trophy,
+  Activity, BarChart3, CalendarRange, ClipboardList, Clock, Fuel, Gauge, IdCard, LineChart, ListOrdered, Mountain, Scale, ShieldAlert, Siren, Trophy,
   User, Warehouse, Wrench, X, type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -17,6 +17,7 @@ import { PaginaAnalise, PaginaEvolucao, PaginaPontuacao, PaginaRanking, type Ctx
 import { PaginaEventos, PaginaSeguranca } from "./gerencial/Seguranca";
 import { PaginaCombustivel, PaginaGeral, PaginaParado } from "./gerencial/Operacao";
 import { PaginaNaoIdentificado, PaginaTecnica } from "./gerencial/Qualidade";
+import { PaginaRelevo } from "./gerencial/Relevo";
 
 /**
  * Gerencial — as páginas do Power BI "Indicadores de Condução" e
@@ -28,7 +29,7 @@ import { PaginaNaoIdentificado, PaginaTecnica } from "./gerencial/Qualidade";
  */
 
 type PaginaId =
-  | "geral" | "operacao" | "ranking" | "analise" | "pontuacao" | "evolucao" | "eventos" | "seguranca" | "parado" | "combustivel" | "nao-identificado" | "tecnica";
+  | "geral" | "operacao" | "ranking" | "analise" | "pontuacao" | "evolucao" | "eventos" | "seguranca" | "parado" | "combustivel" | "relevo" | "nao-identificado" | "tecnica";
 
 const GRUPOS: { titulo: string; paginas: { id: PaginaId; label: string; icon: LucideIcon; dica: string }[] }[] = [
   {
@@ -59,6 +60,7 @@ const GRUPOS: { titulo: string; paginas: { id: PaginaId; label: string; icon: Lu
     paginas: [
       { id: "parado", label: "Parado ligado", icon: Clock, dica: "Paradas com motor ligado por local, placa, condutor, hora e dia." },
       { id: "combustivel", label: "Combustível", icon: Fuel, dica: "Consumo, média, CO₂ e as melhores e piores médias." },
+      { id: "relevo", label: "Relevo", icon: Mountain, dica: "Subida e descida das rotas pelo mapa de elevação, por veículo e motorista, e quanto o relevo explica o consumo." },
     ],
   },
   {
@@ -83,6 +85,7 @@ const COMPONENTE: Record<PaginaId, (c: Ctx) => ReactNode> = {
   seguranca: PaginaSeguranca,
   parado: PaginaParado,
   combustivel: PaginaCombustivel,
+  relevo: PaginaRelevo,
   "nao-identificado": PaginaNaoIdentificado,
   tecnica: PaginaTecnica,
 };

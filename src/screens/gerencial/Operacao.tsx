@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ANIM, BarrasRank, Carregando, DicaGrafico, Grafico, Info, Kpi, dataHoraBR } from "./pecas";
 import type { Ctx } from "./Conducao";
+import { KpiRelevo } from "./Relevo";
 
 /* -------------------------------- Visão geral ------------------------------- */
 
@@ -39,7 +40,7 @@ export function PaginaGeral({ f, ant, preco }: Ctx) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
         <Kpi icon={Fuel} label="Consumo" valor={i.consumo} unidade="L" atual={i.consumo} anterior={a?.consumo} menorMelhor dica="Litros consumidos no período (consolidação diária)." />
         <Kpi icon={Route} label="Km rodados" valor={i.km} unidade="km" atual={i.km} anterior={a?.km} dica="Distância percorrida no período." />
         <Kpi icon={Timer} label="Horas trabalhadas" valor={i.horas} unidade="h" atual={i.horas} anterior={a?.horas} dica="Horas com o motor em funcionamento." />
@@ -50,6 +51,7 @@ export function PaginaGeral({ f, ant, preco }: Ctx) {
         <Kpi icon={Hourglass} label="Estimativa do mês" valor={i.estMes} unidade="L" dica="Consumo ÷ dias do período × dias do mês." />
         <Kpi icon={Wallet} label="Custo estimado" valor={i.custoEstimado} fmt={(n) => brl(n)} dica={`Estimativa do mês × diesel a ${brl(preco)}/L (ajuste o preço no filtro).`} />
         <Kpi icon={Leaf} label="Economia potencial" valor={eco.total} fmt={(n) => brl(n)} dica="Ociosidade × 50% + faixa vermelha × 15% + amarela × 8% do custo (Dashboard Start)." />
+        <KpiRelevo f={f} ant={ant} preco={preco} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_1fr]">

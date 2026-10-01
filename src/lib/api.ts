@@ -534,6 +534,14 @@ export type MotoristaRankingApi = {
     velocidade_excessiva: number | null;
     embreagem: number | null;
   };
+  /** Quantidades no período (Análise de Condução QTD). */
+  eventos?: {
+    aceleracao_brusca: number;
+    freada_brusca: number;
+    velocidade_excessiva: number;
+    velocidade_chuva: number;
+    embreagem: number;
+  };
   sem_faixas: boolean;
 };
 

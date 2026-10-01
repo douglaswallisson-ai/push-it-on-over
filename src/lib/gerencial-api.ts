@@ -31,6 +31,7 @@ export type DiaGerencial = {
   dia: string;
   km: number;
   km_filtrado: number;
+  km_com_combustivel: number;
   litros: number;
   horas: number;
   horas_sem_condutor: number;
@@ -38,6 +39,9 @@ export type DiaGerencial = {
   freada: number;
   embreagem: number;
   velocidade: number;
+  velocidade_chuva: number;
+  turbo_acima: number;
+  turbo_abaixo: number;
   veiculos: number;
   motoristas: number;
   faixas: Faixas13;
@@ -51,6 +55,10 @@ export type SerieGerencial = {
   fim: string;
   meta_parado: number;
   meta_parado_cadastrada: boolean;
+  /** Por range_id de mova.faixas. Faixas em fração; eventos por hora. */
+  metas: Record<string, number>;
+  pesos: Record<string, number>;
+  motoristas_periodo: number;
   dias: DiaGerencial[];
 };
 
@@ -154,16 +162,16 @@ export type Totais = Omit<DiaGerencial, "dia"> & { dias: number };
 
 export function somar(dias: DiaGerencial[]): Totais {
   const z: Totais = {
-    km: 0, km_filtrado: 0, litros: 0, horas: 0, horas_sem_condutor: 0, aceleracao: 0, freada: 0, embreagem: 0,
-    velocidade: 0, veiculos: 0, motoristas: 0, faixas_13: 0, total_11: 0, stop_engine_on: 0, dias: dias.length,
+    km: 0, km_filtrado: 0, km_com_combustivel: 0, litros: 0, horas: 0, horas_sem_condutor: 0, aceleracao: 0, freada: 0, embreagem: 0,
+    velocidade: 0, velocidade_chuva: 0, turbo_acima: 0, turbo_abaixo: 0, veiculos: 0, motoristas: 0, faixas_13: 0, total_11: 0, stop_engine_on: 0, dias: dias.length,
     faixas: {
       verde: 0, extra_economica: 0, inercia: 0, eco_roll: 0, baixa_velocidade: 0, amarela: 0, vermelha: 0,
       batendo_transmissao: 0, movimento_sem_tracao: 0, parado_acelerando: 0, parado_ocioso: 0, parado_produtivo: 0, tolerancia: 0,
     },
   };
   for (const d of dias) {
-    for (const k of ["km", "km_filtrado", "litros", "horas", "horas_sem_condutor", "aceleracao", "freada", "embreagem", "velocidade", "faixas_13", "total_11", "stop_engine_on"] as const) {
-      z[k] += d[k];
+    for (const k of ["km", "km_filtrado", "km_com_combustivel", "litros", "horas", "horas_sem_condutor", "aceleracao", "freada", "embreagem", "velocidade", "velocidade_chuva", "turbo_acima", "turbo_abaixo", "faixas_13", "total_11", "stop_engine_on"] as const) {
+      z[k] += d[k] ?? 0;
     }
     z.veiculos = Math.max(z.veiculos, d.veiculos);
     z.motoristas = Math.max(z.motoristas, d.motoristas);

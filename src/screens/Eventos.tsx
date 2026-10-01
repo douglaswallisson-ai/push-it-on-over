@@ -28,6 +28,8 @@ import { Link } from "@/lib/router-compat";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { alarmesListaQuery } from "@/lib/queries";
+import { listaEventosBIQuery, ROTULO_EVENTO, serieBIQuery, type TipoEvento } from "@/lib/bi-api";
+import { iso } from "@/lib/gerencial-api";
 import { usandoMock } from "@/lib/modo";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -62,8 +64,10 @@ type Evento = {
   video: boolean;
   gravidade: Gravidade;
   visto: boolean;
-  velocidade: number;
+  /** Nulo quando a origem não informa (eventos de condução). */
+  velocidade: number | null;
   local: string;
+  origem?: "alarme" | "conducao";
   dur: string;
   x: number;
   y: number;
@@ -85,13 +89,26 @@ const EVENTOS: Evento[] = [
   { id: "e12", hora: "12:10", motorista: "Marco Taborda", veiculo: "BCA7A56", tipo: "Pânico acionado", icon: Siren, video: false, gravidade: "critica", visto: false, velocidade: 0, local: "BR-116, km 245 — SP", dur: "—", x: 60, y: 57, leituras: [{ label: "Acionado por", value: "Motorista", forte: true }, { label: "Central notificada", value: "sim" }, { label: "Velocidade", value: "0 km/h" }] },
 ];
 
+/** Eventos de condução (tabela de eventos com localização) no formato do feed. */
+const GRAV_CONDUCAO: Record<TipoEvento, Gravidade> = {
+  freada: "alta", aceleracao: "alta", velocidade_chuva: "alta", faixa_vermelha: "alta",
+  velocidade_seco: "media", parado_acelerando: "media", embreagem: "baixa", faixa_amarela: "baixa",
+  batendo_transmissao: "baixa", sem_tracao: "baixa",
+};
+const ICONE_CONDUCAO: Record<TipoEvento, LucideIcon> = {
+  freada: Octagon, aceleracao: Zap, velocidade_seco: Gauge, velocidade_chuva: Gauge, faixa_vermelha: AlertTriangle,
+  faixa_amarela: AlertTriangle, parado_acelerando: Clock, embreagem: Navigation, batendo_transmissao: Truck, sem_tracao: Navigation,
+};
+
 const uniq = (arr: string[]) => [...new Set(arr)].filter((v) => v && v !== "—");
 const tone = (g: Gravidade) => GRAV[g].tone;
 const iconBox = (t: PillTone) =>
   t === "coral" ? "bg-coral-tint text-coral" : t === "gold" ? "bg-gold-tint text-gold" : t === "sky" ? "bg-navy-tint text-brand-blue" : "bg-secondary text-muted-foreground";
 
 export default function Eventos() {
-  const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
+  const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: usandoMock() ? "2026-07-24" : iso(new Date()) });
+  const [origem, setOrigem] = useState<"todas" | "alarme" | "conducao">("todas");
+  const [mostrar, setMostrar] = useState(200);
   const [gravFiltro, setGravFiltro] = useState<Gravidade | "todas">("todas");
   const [vistos, setVistos] = useState<Set<string>>(() => new Set(EVENTOS.filter((e) => e.visto).map((e) => e.id)));
   const [validacao, setValidacao] = useState<Record<string, "correto" | "falso">>({});
@@ -111,8 +128,18 @@ export default function Eventos() {
    * nada. O nível do alarme vira gravidade: 3 (o que toca o som no monitor
    * antigo) é crítica, 2 alta, 1 média.
    */
-  const alarmesQ = useQuery(alarmesListaQuery(24));
-  const apiQ = alarmesQ;
+  // A rota de alarmes recebe uma janela em horas até agora: cobre do início
+  // do dia escolhido (até 30 dias atrás) e a tela recorta o dia.
+  const inicioDia = new Date(filtros.data + "T00:00");
+  const horasJanela = Math.min(720, Math.max(24, Math.ceil((Date.now() - inicioDia.getTime()) / 3600_000)));
+  const alarmesQ = useQuery(alarmesListaQuery(horasJanela));
+  // Eventos de condução do dia (freada, aceleração, velocidade, faixas…) e os
+  // totais consolidados, que chegam antes do detalhe.
+  const conducaoQ = useQuery(listaEventosBIQuery(filtros.data, {}, 5000));
+  const totaisQ = useQuery(serieBIQuery({ inicio: filtros.data, fim: filtros.data }));
+  const totDia = totaisQ.data?.dias[0];
+  const carga = conducaoQ.data?.ultimo_carregado ?? null;
+  const detalheNaoCarregado = !usandoMock() && !!carga && carga.slice(0, 10) < filtros.data;
 
   const eventosApi = useMemo(() => {
     if (usandoMock() || !alarmesQ.data) return null;
@@ -120,7 +147,7 @@ export default function Eventos() {
     const icone = (nome: string): LucideIcon =>
       /velocidade/i.test(nome) ? Gauge : /cerca|area|área/i.test(nome) ? MapPin : /igni/i.test(nome) ? Zap : /parad|ocios/i.test(nome) ? Clock : AlertTriangle;
     const hoje = new Date().toDateString();
-    return alarmesQ.data.itens.map((e) => {
+    return alarmesQ.data.itens.filter((e) => e.inicio && iso(new Date(e.inicio)) === filtros.data).map((e) => {
       const d = e.inicio ? new Date(e.inicio) : null;
       const hora = d
         ? d.toDateString() === hoje
@@ -150,12 +177,45 @@ export default function Eventos() {
         x: 0,
         y: 0,
         leituras,
+        origem: "alarme",
       } as Evento;
     });
-  }, [alarmesQ.data]);
+  }, [alarmesQ.data, filtros.data]);
+
+  const eventosConducao = useMemo(() => {
+    if (usandoMock() || !conducaoQ.data) return [];
+    return conducaoQ.data.itens.map(
+      (e): Evento => ({
+        id: `c${e.id}`,
+        hora: e.hora ? e.hora.slice(11, 16) : "—",
+        motorista: e.condutor ?? "Não identificado",
+        veiculo: e.placa,
+        tipo: ROTULO_EVENTO[e.tipo] ?? e.evento ?? "Evento",
+        icon: ICONE_CONDUCAO[e.tipo] ?? AlertTriangle,
+        video: false,
+        gravidade: GRAV_CONDUCAO[e.tipo] ?? "baixa",
+        // Evento de condução não tem "visualizado" no banco; só os alarmes têm.
+        visto: true,
+        velocidade: null,
+        local: e.cerca ? `${e.cerca} · ${e.endereco ?? ""}` : e.endereco ?? (e.latitude != null ? `${e.latitude.toFixed(5)}, ${e.longitude?.toFixed(5)}` : "local não informado"),
+        dur: "—",
+        x: 50,
+        y: 50,
+        leituras: [
+          { label: "Evento registrado", value: e.evento ?? ROTULO_EVENTO[e.tipo], forte: true },
+          { label: "Motorista", value: e.condutor ?? "não identificado" },
+          ...(e.latitude != null ? [{ label: "Coordenadas", value: `${e.latitude.toFixed(5)}, ${e.longitude?.toFixed(5)}` }] : []),
+        ],
+        origem: "conducao",
+      }),
+    );
+  }, [conducaoQ.data]);
 
   // Ligado à API, nunca o exemplo — nem quando a consulta falha.
-  const base = usandoMock() ? EVENTOS : (eventosApi ?? []);
+  const base = useMemo(
+    () => (usandoMock() ? EVENTOS : [...(eventosApi ?? []), ...eventosConducao].sort((a, b) => b.hora.localeCompare(a.hora))),
+    [eventosApi, eventosConducao],
+  );
   const veiculos = uniq(base.map((e) => e.veiculo));
   const motoristas = uniq(base.map((e) => e.motorista));
 
@@ -165,9 +225,10 @@ export default function Eventos() {
         (e) =>
           (filtros.veiculo === "Todos" || e.veiculo === filtros.veiculo) &&
           (filtros.motorista === "Todos" || e.motorista === filtros.motorista) &&
-          (gravFiltro === "todas" || e.gravidade === gravFiltro),
+          (gravFiltro === "todas" || e.gravidade === gravFiltro) &&
+          (origem === "todas" || e.origem === origem),
       ),
-    [base, filtros, gravFiltro],
+    [base, filtros, gravFiltro, origem],
   );
 
   const naoVistos = lista.filter((e) => !e.visto && !vistos.has(e.id)).length;
@@ -229,12 +290,40 @@ export default function Eventos() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatTile icon={Siren} label="Eventos hoje" value={String(lista.length)} color="var(--brand-navy)" />
-          <StatTile icon={ShieldAlert} label="Críticos" value={String(criticos)} color="var(--coral)" />
-          <StatTile icon={Video} label="Vídeo-telemetria" value={String(videos)} color="var(--brand-sky)" />
-          <StatTile icon={Eye} label="Não visualizados" value={String(naoVistos)} color="var(--gold)" />
-        </div>
+        {usandoMock() ? (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatTile icon={Siren} label="Eventos hoje" value={String(lista.length)} color="var(--brand-navy)" />
+            <StatTile icon={ShieldAlert} label="Críticos" value={String(criticos)} color="var(--coral)" />
+            <StatTile icon={Video} label="Vídeo-telemetria" value={String(videos)} color="var(--brand-sky)" />
+            <StatTile icon={Eye} label="Não visualizados" value={String(naoVistos)} color="var(--gold)" />
+          </div>
+        ) : (
+          <>
+            {/* Totais do dia pela consolidação diária, que chega antes do detalhe. */}
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+              <StatTile icon={Gauge} label="Excessos de velocidade" value={totDia ? totDia.velocidade.toLocaleString("pt-BR") : "—"} color="var(--brand-navy)" />
+              <StatTile icon={Octagon} label="Freadas bruscas" value={totDia ? totDia.freada.toLocaleString("pt-BR") : "—"} color="var(--coral)" />
+              <StatTile icon={Zap} label="Acelerações bruscas" value={totDia ? totDia.aceleracao.toLocaleString("pt-BR") : "—"} color="var(--gold)" />
+              <StatTile icon={Siren} label="Alarmes disparados" value={String((eventosApi ?? []).length)} color="var(--brand-sky)" />
+              <StatTile icon={Eye} label="Alarmes não vistos" value={String(naoVistos)} color="var(--gold)" />
+            </div>
+            {!totDia?.horas && !totaisQ.isPending && filtros.data >= iso(new Date()) && (
+              <p className="rounded-xl border border-border bg-card px-4 py-2.5 text-[12.5px] text-muted-foreground">
+                Os totais de condução de hoje são consolidados durante a madrugada; amanhã eles aparecem aqui.
+              </p>
+            )}
+            {detalheNaoCarregado && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[12.5px]">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                <span>
+                  O detalhe dos eventos de condução deste dia (hora, placa e local de cada um) ainda não foi carregado — a
+                  última carga vai até <b>{new Date(carga!).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</b>.
+                  Os totais acima já são do dia. Os alarmes do Monitor aparecem na lista assim que disparam.
+                </span>
+              </div>
+            )}
+          </>
+        )}
 
         <FleetFilters
           veiculos={veiculos}
@@ -242,7 +331,20 @@ export default function Eventos() {
           value={filtros}
           onChange={setFiltros}
           extra={
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {!usandoMock() && (
+                <div className="mr-2 flex items-center gap-1 rounded-lg bg-secondary p-0.5">
+                  {([["todas", "Tudo"], ["alarme", "Alarmes"], ["conducao", "Condução"]] as const).map(([v, r]) => (
+                    <button
+                      key={v}
+                      onClick={() => setOrigem(v)}
+                      className={cn("rounded-md px-2.5 py-1.5 text-[12.5px] font-medium", origem === v ? "bg-white shadow-sm" : "text-muted-foreground")}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
               {(["todas", "critica", "alta", "media", "baixa"] as const).map((g) => (
                 <button
                   key={g}
@@ -261,24 +363,35 @@ export default function Eventos() {
 
         {/* Feed. */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-6">
-          {lista.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">Nenhum evento com esses filtros.</p>
+          {(alarmesQ.isPending || conducaoQ.isPending) && !usandoMock() ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">Carregando os eventos do dia…</p>
+          ) : lista.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              {detalheNaoCarregado ? "Nenhum alarme neste dia e o detalhe da condução ainda não foi carregado." : "Nenhum evento com esses filtros."}
+            </p>
           ) : (
-            lista.map((e, i) => (
+            lista.slice(0, mostrar).map((e, i, arr) => (
               <EventoRow
                 key={e.id}
                 evento={e}
-                last={i === lista.length - 1}
+                last={i === arr.length - 1}
                 visto={vistos.has(e.id)}
                 validacao={validacao[e.id]}
                 onOpen={() => abrir(e.id)}
               />
             ))
           )}
+          {lista.length > mostrar && (
+            <button onClick={() => setMostrar((m) => m + 300)} className="mt-2 w-full rounded-xl border border-border py-2 text-[13px] font-medium text-brand-navy hover:bg-secondary">
+              Mostrar mais ({(lista.length - mostrar).toLocaleString("pt-BR")} restantes)
+            </button>
+          )}
         </div>
 
         <p className="pb-4 text-center text-xs text-muted-foreground">
-          {usandoMock() ? "Dados de exemplo — protótipo de interface, sem dados reais." : "Disparos do Monitor de Alarmes nas últimas 24 h, mais recentes primeiro."}
+          {usandoMock()
+            ? "Dados de exemplo — protótipo de interface, sem dados reais."
+            : `Alarmes do Monitor e eventos de condução de ${new Date(filtros.data + "T12:00").toLocaleDateString("pt-BR")}, mais recentes primeiro.${(conducaoQ.data?.itens.length ?? 0) >= 5000 ? " Mostrando os 5.000 eventos de condução mais recentes — filtre por veículo para ver o restante." : ""} Análise completa em Relatórios gerenciais › Gestão de eventos.`}
         </p>
       </div>
 
@@ -466,7 +579,7 @@ function EventoDrawer({
           <div className="grid grid-cols-2 gap-3">
             <InfoBox icon={User} label="Motorista" value={evento.motorista} />
             <InfoBox icon={Truck} label="Veículo" value={evento.veiculo} mono />
-            <InfoBox icon={Navigation} label="Velocidade" value={`${evento.velocidade} km/h`} />
+            <InfoBox icon={Navigation} label="Velocidade" value={evento.velocidade == null ? "—" : `${evento.velocidade} km/h`} />
             <InfoBox icon={Clock} label="Duração" value={evento.dur} />
           </div>
 

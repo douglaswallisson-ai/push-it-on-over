@@ -1,5 +1,4 @@
-import RelatoriosGerenciais from "./RelatoriosGerenciais";
-import { usandoMock as modoExemplo } from "@/lib/modo";
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useState } from "react";
 import {
   Activity,
@@ -278,7 +277,14 @@ function RelatoriosExemplo() {
   );
 }
 
-/** Com dados de exemplo, o protótipo; ligado à API, os relatórios gerenciais do BI. */
+/**
+ * Protótipo: com API ligada, aviso no lugar dos números escritos no código.
+ * Os indicadores do BI ficam no Gerencial.
+ */
 export default function Relatorios() {
-  return modoExemplo() ? <RelatoriosExemplo /> : <RelatoriosGerenciais />;
+  return (
+    <ModuloSemFonte titulo="Relatórios" motivo="Os relatórios reais estão em Relatórios operacionais; os indicadores do BI, no Gerencial.">
+      <RelatoriosExemplo />
+    </ModuloSemFonte>
+  );
 }

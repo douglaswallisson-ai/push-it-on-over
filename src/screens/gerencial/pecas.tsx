@@ -7,7 +7,7 @@ import { nf } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 
 /**
- * Peças das páginas do BI em Relatórios gerenciais: indicador com explicação,
+ * Peças das páginas do BI no Gerencial: indicador com explicação,
  * número animado, velocímetro contra a meta, matriz de calor e barras de
  * ranking. Tudo no visual do sistema (cartões, cores leaf/coral/gold/navy).
  */

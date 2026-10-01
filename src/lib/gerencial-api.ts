@@ -4,7 +4,7 @@ import { chaveComGrupo, filtroGrupo } from "@/lib/escopo-ativo";
 import { usandoMock } from "@/lib/modo";
 
 /**
- * Relatórios gerenciais — séries do BI e as contas em cima delas.
+ * Gerencial — séries do BI e as contas em cima delas.
  *
  * Cada regra aqui está no vault (BI/Dashboard-Start, Regras-de-Negocio/
  * indicadores-dashboard-start e indicadores-power-bi). Onde o vault não define,

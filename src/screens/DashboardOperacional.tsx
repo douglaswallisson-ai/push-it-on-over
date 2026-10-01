@@ -97,7 +97,11 @@ function janela(dias: number) {
   return { i: iso(inicio), f: iso(fim) };
 }
 
-export default function DashboardOperacional() {
+/**
+ * `embutido`: dentro do Gerencial, como a página "Painel da operação" — sem
+ * cabeçalho próprio; o seletor de 7/30/90 dias vai para o corpo.
+ */
+export default function DashboardOperacional({ embutido = false }: { embutido?: boolean } = {}) {
   const navigate = useNavigate();
   const [dias, setDias] = useState(30);
   const p = useMemo(() => janela(dias), [dias]);
@@ -208,12 +212,7 @@ export default function DashboardOperacional() {
 
   const carregando = indicadoresQ.isPending && !usandoMock();
 
-  return (
-    <>
-      <PageHeader
-        title="Gestão operacional"
-        subtitle="Gerencial › Painel da operação"
-        actions={
+  const seletorDias = (
           <div className="flex flex-wrap gap-1.5">
             {[7, 30, 90].map((d) => (
               <button
@@ -230,10 +229,14 @@ export default function DashboardOperacional() {
               </button>
             ))}
           </div>
-        }
-      />
+  );
 
-      <div className="mx-auto max-w-[1600px] space-y-6 px-6 py-6 md:px-8">
+  return (
+    <>
+      {!embutido && <PageHeader title="Gestão operacional" subtitle="Gerencial › Painel da operação" actions={seletorDias} />}
+
+      <div className={embutido ? "space-y-6" : "mx-auto max-w-[1600px] space-y-6 px-6 py-6 md:px-8"}>
+        {embutido && <div className="flex justify-end">{seletorDias}</div>}
         {/* ============ 1. A frota está operando agora? ============ */}
         <section>
           <Rotulo>Agora · estado da frota</Rotulo>

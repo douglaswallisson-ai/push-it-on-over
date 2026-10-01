@@ -391,7 +391,7 @@ export default function Eventos() {
         <p className="pb-4 text-center text-xs text-muted-foreground">
           {usandoMock()
             ? "Dados de exemplo — protótipo de interface, sem dados reais."
-            : `Alarmes do Monitor e eventos de condução de ${new Date(filtros.data + "T12:00").toLocaleDateString("pt-BR")}, mais recentes primeiro.${(conducaoQ.data?.itens.length ?? 0) >= 5000 ? " Mostrando os 5.000 eventos de condução mais recentes — filtre por veículo para ver o restante." : ""} Análise completa em Relatórios gerenciais › Gestão de eventos.`}
+            : `Alarmes do Monitor e eventos de condução de ${new Date(filtros.data + "T12:00").toLocaleDateString("pt-BR")}, mais recentes primeiro.${(conducaoQ.data?.itens.length ?? 0) >= 5000 ? " Mostrando os 5.000 eventos de condução mais recentes — filtre por veículo para ver o restante." : ""} Análise completa em Gerencial › Gestão de eventos.`}
         </p>
       </div>
 

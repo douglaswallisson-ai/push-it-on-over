@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  BarChart3, CalendarRange, ClipboardList, Clock, Fuel, Gauge, IdCard, LineChart, ListOrdered, Scale, ShieldAlert, Siren, Trophy,
+  Activity, BarChart3, CalendarRange, ClipboardList, Clock, Fuel, Gauge, IdCard, LineChart, ListOrdered, Scale, ShieldAlert, Siren, Trophy,
   User, Warehouse, Wrench, X, type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import DashboardOperacional from "./DashboardOperacional";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Link } from "@/lib/router-compat";
 import { garagensBIQuery, rankingBIQuery, type FiltrosBI } from "@/lib/bi-api";
@@ -18,7 +19,7 @@ import { PaginaCombustivel, PaginaGeral, PaginaParado } from "./gerencial/Operac
 import { PaginaNaoIdentificado, PaginaTecnica } from "./gerencial/Qualidade";
 
 /**
- * Relatórios gerenciais — as páginas do Power BI "Indicadores de Condução" e
+ * Gerencial — as páginas do Power BI "Indicadores de Condução" e
  * do Dashboard Start, navegáveis por cabeçalho, com os mesmos filtros em
  * todas: período, garagem, placa e condutor.
  *
@@ -27,10 +28,16 @@ import { PaginaNaoIdentificado, PaginaTecnica } from "./gerencial/Qualidade";
  */
 
 type PaginaId =
-  | "geral" | "ranking" | "analise" | "pontuacao" | "evolucao" | "eventos" | "seguranca" | "parado" | "combustivel" | "nao-identificado" | "tecnica";
+  | "geral" | "operacao" | "ranking" | "analise" | "pontuacao" | "evolucao" | "eventos" | "seguranca" | "parado" | "combustivel" | "nao-identificado" | "tecnica";
 
 const GRUPOS: { titulo: string; paginas: { id: PaginaId; label: string; icon: LucideIcon; dica: string }[] }[] = [
-  { titulo: "Visão geral", paginas: [{ id: "geral", label: "Visão geral", icon: BarChart3, dica: "Os indicadores do Dashboard Start: consumo, km, eficiência, faixas e economia potencial." }] },
+  {
+    titulo: "Visão geral",
+    paginas: [
+      { id: "geral", label: "Visão geral", icon: BarChart3, dica: "Os indicadores do Dashboard Start: consumo, km, eficiência, faixas e economia potencial." },
+      { id: "operacao", label: "Painel da operação", icon: Activity, dica: "A frota agora (em rota, parado ligado, sem sinal), pendências e o período contra o anterior." },
+    ],
+  },
   {
     titulo: "Condução",
     paginas: [
@@ -66,6 +73,8 @@ const GRUPOS: { titulo: string; paginas: { id: PaginaId; label: string; icon: Lu
 const TODAS = GRUPOS.flatMap((g) => g.paginas);
 const COMPONENTE: Record<PaginaId, (c: Ctx) => ReactNode> = {
   geral: PaginaGeral,
+  // Tem o próprio seletor de 7/30/90 dias; os filtros acima não se aplicam.
+  operacao: () => <DashboardOperacional embutido />,
   ranking: PaginaRanking,
   analise: PaginaAnalise,
   pontuacao: PaginaPontuacao,
@@ -80,7 +89,7 @@ const COMPONENTE: Record<PaginaId, (c: Ctx) => ReactNode> = {
 
 const lerHash = (): PaginaId => {
   const h = (typeof window !== "undefined" ? window.location.hash.slice(1) : "") as PaginaId;
-  return TODAS.some((p) => p.id === h) ? h : "ranking";
+  return TODAS.some((p) => p.id === h) ? h : "geral";
 };
 
 type PeriodoTela = Periodo | "livre";
@@ -132,7 +141,7 @@ export default function RelatoriosGerenciais() {
 
   return (
     <TooltipProvider>
-      <PageHeader title="Relatórios gerenciais" subtitle={`${atual.label} · ${dataBR(f.inicio)} a ${dataBR(f.fim)}`} />
+      <PageHeader title="Gerencial" subtitle={pagina === "operacao" ? atual.label : `${atual.label} · ${dataBR(f.inicio)} a ${dataBR(f.fim)}`} />
       <div className="mx-auto max-w-[1480px] space-y-5 px-4 py-5 md:px-8">
         {/* Cabeçalho de navegação: as páginas do BI agrupadas por tema. */}
         <nav className="sticky top-0 z-20 -mx-1 overflow-x-auto rounded-2xl border border-border bg-card/95 p-1.5 shadow-card backdrop-blur">
@@ -159,8 +168,8 @@ export default function RelatoriosGerenciais() {
           </div>
         </nav>
 
-        {/* Filtros: valem para todas as páginas. */}
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-card">
+        {/* Filtros: valem para todas as páginas, menos o painel da operação. */}
+        <div className={cn("flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-card", pagina === "operacao" && "hidden")}>
           <label className="inline-flex items-center gap-1.5">
             <CalendarRange className="h-4 w-4 text-muted-foreground" />
             <select value={periodo} onChange={(e) => setPeriodo(e.target.value as PeriodoTela)} className={sel} aria-label="Período">

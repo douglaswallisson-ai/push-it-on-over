@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
 import type { SaudeFrotaApi } from "@/lib/api";
-import { alarmesNaoVisualizadosQuery, eventosApiQuery, rankingMotoristasQuery, saudeFrotaQuery } from "@/lib/queries";
+import { alarmesListaQuery, alarmesNaoVisualizadosQuery, eventosApiQuery, rankingMotoristasQuery, saudeFrotaQuery } from "@/lib/queries";
+import { serieGerencialQuery } from "@/lib/gerencial-api";
 import { useSessao } from "@/hooks/use-sessao";
 import { usandoMock } from "@/lib/modo";
 import type { ResumoOperacao } from "@/types";
@@ -576,15 +577,32 @@ function CriticalCard() {
    * discordavam na mesma tela, o que corrói a confiança em tudo que está
    * ao redor.
    */
-  const criticosQ = useQuery(eventosApiQuery({ severity: "critical", limit: 200 }));
+  // `fleet_events` está vazia em produção: o cartão dava zero para todo
+  // cliente. Crítico aqui é alarme de nível 3 do Monitor de Alarmes (o que
+  // toca o som no sistema atual), disparado hoje.
+  const alarmesQ = useQuery(alarmesListaQuery(24));
+  const criticosQ = usandoMock() ? { isPending: false } : alarmesQ;
+  const ontemIso = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  // Contexto quando não há alarme: os eventos de condução do último dia
+  // fechado. Zero alarmes com centenas de freadas bruscas é sinal de alarme
+  // mal configurado, não de frota tranquila.
+  const conducaoQ = useQuery(serieGerencialQuery(ontemIso, ontemIso));
+  const conducao = conducaoQ.data?.dias[0];
 
   const { totalCriticos, porTipo } = useMemo(() => {
-    const itens = ((criticosQ.data as { items?: { event_type?: string }[] } | undefined)?.items ?? []);
+    const hoje = new Date().toDateString();
+    const itens = (alarmesQ.data?.itens ?? [])
+      .filter((e) => e.nivel === 3 && e.inicio && new Date(e.inicio).toDateString() === hoje)
+      .map((e) => ({ event_type: e.alarme }));
     const total = itens.length;
 
     const contagem = new Map<string, number>();
     for (const e of itens) {
-      const t = (e.event_type ?? "outro").toLowerCase();
+      const t = e.event_type ?? "outro";
       contagem.set(t, (contagem.get(t) ?? 0) + 1);
     }
 
@@ -597,11 +615,11 @@ function CriticalCard() {
         label: tipo.replace(/_/g, " "),
         count,
         pct: total ? Math.round((count / total) * 100) : 0,
-        icon: ICONE_EVENTO[tipo] ?? AlertTriangle,
+        icon: ICONE_EVENTO[tipo.toLowerCase()] ?? AlertTriangle,
       }));
 
     return { totalCriticos: total, porTipo: lista };
-  }, [criticosQ.data]);
+  }, [alarmesQ.data]);
 
   const navigate = useNavigate();
   return (
@@ -614,7 +632,7 @@ function CriticalCard() {
           </div>
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-coral">
-              Eventos críticos hoje
+              {usandoMock() ? "Eventos críticos hoje" : "Alarmes críticos hoje"}
             </p>
             <p className="font-display text-5xl font-bold leading-none tabular-nums">
               {criticosQ.isPending ? "—" : nf(totalCriticos)}
@@ -624,9 +642,19 @@ function CriticalCard() {
 
         <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3">
           {porTipo.length === 0 && !criticosQ.isPending && (
-            <p className="col-span-full self-center text-[12.5px] text-muted-foreground">
-              Nenhum evento crítico hoje.
-            </p>
+            <div className="col-span-full self-center text-[12.5px] text-muted-foreground">
+              <p>Nenhum alarme crítico (nível 3) disparado hoje.</p>
+              {conducao && (
+                <p className="mt-1">
+                  Eventos de condução em {new Date(ontemIso + "T12:00").toLocaleDateString("pt-BR")}:{" "}
+                  <strong className="text-foreground">{nf(conducao.freada)}</strong> freadas bruscas,{" "}
+                  <strong className="text-foreground">{nf(conducao.aceleracao)}</strong> acelerações bruscas,{" "}
+                  <strong className="text-foreground">{nf(conducao.velocidade)}</strong> excessos de velocidade.
+                  {conducao.freada + conducao.aceleracao + conducao.velocidade > 0 &&
+                    " Se a frota tem eventos e nenhum alarme dispara, vale conferir a configuração dos alarmes."}
+                </p>
+              )}
+            </div>
           )}
           {porTipo.map((c) => (
             <div key={c.label} className="rounded-xl bg-secondary/60 p-3">

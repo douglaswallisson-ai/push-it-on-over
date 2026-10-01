@@ -2,7 +2,9 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
 import type { SaudeFrotaApi } from "@/lib/api";
-import { eventosApiQuery, saudeFrotaQuery } from "@/lib/queries";
+import { alarmesNaoVisualizadosQuery, eventosApiQuery, rankingMotoristasQuery, saudeFrotaQuery } from "@/lib/queries";
+import { useSessao } from "@/hooks/use-sessao";
+import { usandoMock } from "@/lib/modo";
 import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
@@ -198,8 +200,71 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Abertura: gradiente navy, orb girando e a história de valor do produto. */
+/**
+ * Abertura: gradiente navy, orb e os números do período.
+ *
+ * Antes: "Sua frota economizou R$ 48.200", "ROI 3,4x", "Payback 4,2" e "Bom dia,
+ * Douglas" — tudo escrito no código, igual para qualquer cliente e qualquer
+ * usuário. Não há cálculo de economia nem de ROI no backend ou no vault, então
+ * saíram; no lugar, o que o ranking de motoristas já mede de verdade.
+ */
 function HeroValue() {
+  const { sessao } = useSessao();
+  const q = useQuery(rankingMotoristasQuery());
+  const r = q.data?.resumo;
+  const h = new Date().getHours();
+  const saudacao = h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+  const primeiroNome = (sessao?.nome ?? "").split(" ")[0];
+  const fmt = (v: number | null | undefined, casas = 0) =>
+    v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+
+  if (usandoMock()) return <HeroValueExemplo />;
+
+  return (
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-hero p-6 text-white shadow-elegant md:p-8">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full opacity-40"
+        style={{ background: "radial-gradient(circle, var(--brand-sky), transparent 68%)" }}
+      />
+      <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-5">
+          <SSOrb size={72} halo className="text-brand-green" />
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/60">
+              {saudacao}
+              {primeiroNome ? `, ${primeiroNome}` : ""}
+            </p>
+            <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[28px]">
+              {r ? (
+                <>
+                  <span className="text-brand-green">{fmt(r.km_total)} km</span> rodados nos últimos 30 dias.
+                </>
+              ) : q.isPending ? (
+                "Carregando o período…"
+              ) : (
+                "Sem viagens no período."
+              )}
+            </h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6 border-t border-white/10 pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+          <HeroMetric value={fmt(r?.motoristas)} label="Motoristas com viagem" foot="últimos 30 dias" />
+          <HeroMetric value={fmt(r?.nota_media, 1)} label="Nota média" foot="pontuação do BI" />
+          <HeroMetric
+            value={r?.pct_horas_nao_identificado == null ? "—" : `${fmt(r.pct_horas_nao_identificado, 1)}%`}
+            label="Horas sem motorista"
+            foot="não identificado"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** A abertura de demonstração, só com dados de exemplo ligados (sem API). */
+function HeroValueExemplo() {
   return (
     <section className="relative overflow-hidden rounded-2xl bg-gradient-hero p-6 text-white shadow-elegant md:p-8">
       <div
@@ -340,8 +405,30 @@ function PlanoCard() {
   );
 }
 
+/**
+ * Disparos do Monitor de Alarmes não visualizados nas últimas 24 h.
+ *
+ * O número era um 27 fixo no código. Agora vem de `alarm_violation`, com a
+ * regra do monitor do sistema atual. A janela de 24 h é decisão de produto: o
+ * total em aberto passa de dez mil e não permite "revisar agora" — por isso o
+ * rótulo diz a janela, para não ser confundido com o total do monitor antigo.
+ */
 function PendenciasCard() {
   const navigate = useNavigate();
+  const q = useQuery(alarmesNaoVisualizadosQuery(24));
+  const valor = usandoMock()
+    ? "27"
+    : q.isPending
+      ? "…"
+      : q.error || q.data == null
+        ? "—"
+        : nf(q.data.nao_visualizados);
+  const rotulo = usandoMock()
+    ? "eventos pendentes de revisão"
+    : q.error
+      ? "não foi possível carregar os alarmes"
+      : `alarmes não visualizados nas últimas ${q.data?.janela_horas ?? 24} h`;
+
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
@@ -353,8 +440,8 @@ function PendenciasCard() {
         </div>
       </div>
 
-      <p className="font-display text-5xl font-bold tabular-nums">27</p>
-      <p className="mt-1 text-sm text-muted-foreground">eventos pendentes de revisão</p>
+      <p className="font-display text-5xl font-bold tabular-nums">{valor}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{rotulo}</p>
 
       <button
         onClick={() => navigate("/app/eventos")}

@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useMemo, useState } from "react";
 import { exemploOuVazio } from "@/lib/modo";
 import { useNavigate } from "@/lib/router-compat";
@@ -49,7 +50,7 @@ const COLS: Column<Viagem>[] = [
 
 const uniq = (a: string[]) => [...new Set(a)].filter((v) => v && v !== "—");
 
-export default function Viagens() {
+function ViagensExemplo() {
   const navigate = useNavigate();
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "2026-07-24" });
   const lista = useMemo(
@@ -116,5 +117,14 @@ export default function Viagens() {
         </p>
       </div>
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Viagens() {
+  return (
+    <ModuloSemFonte titulo="Viagens" motivo="Não há tabela de viagens de fretamento no banco que o sistema novo leia.">
+      <ViagensExemplo />
+    </ModuloSemFonte>
   );
 }

@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useState } from "react";
 import {
   ChevronDown,
@@ -49,7 +50,7 @@ const STATS: Array<{ icon: LucideIcon; label: string; value: string; unit?: stri
 
 const NOTA_TREND = [40, 41, 38, 44, 39, 37, 41];
 
-export default function AnaliseIndividual() {
+function AnaliseIndividualExemplo() {
   const navigate = useNavigate();
   const [grafico, setGrafico] = useState(false);
   return (
@@ -158,5 +159,14 @@ export default function AnaliseIndividual() {
         <TelemetryModal titulo="EBZ3590 · Najla Maltaca" periodo="01/06/2026 00:00 – 30/06/2026 23:59" onClose={() => setGrafico(false)} />
       )}
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function AnaliseIndividual() {
+  return (
+    <ModuloSemFonte titulo="Acompanhamento do veículo" motivo="A tela tinha nota, velocidade e consumo escritos no código. Vai ser refeita sobre a telemetria real do veículo.">
+      <AnaliseIndividualExemplo />
+    </ModuloSemFonte>
   );
 }

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { linhasApiQuery, turnosApiQuery } from "@/lib/queries";
 import { EscalaPorLinha } from "@/components/ss/operacao/EscalaPorLinha";
-import { usandoMock } from "@/lib/modo";
+import { ex, usandoMock } from "@/lib/modo";
 import { useNavigate } from "@/lib/router-compat";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, StatTile } from "@/components/ss/ui/data";
@@ -69,18 +69,18 @@ export default function Escala() {
             subtitle="Turnos, folgas e cobertura da equipe numa só grade."
           >
             <div className="flex items-center gap-6">
-              <HeroMetric value="100" unit="%" label="Cobertura da semana" />
+              <HeroMetric value={ex("100")} unit="%" label="Cobertura da semana" />
               <div className="h-10 w-px bg-white/15" />
-              <HeroMetric value="36" label="Turnos escalados" />
+              <HeroMetric value={ex("36")} label="Turnos escalados" />
             </div>
           </HeroBanner>
         </div>
 
         <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatTile icon={Users} label="Motoristas escalados" value="6" color="var(--brand-navy)" />
-          <StatTile icon={CalendarDays} label="Turnos na semana" value="36" color="var(--brand-sky)" />
-          <StatTile icon={CalendarDays} label="Folgas" value="12" color="var(--leaf)" />
-          <StatTile icon={CalendarDays} label="Cobertura" value="100" unit="%" color="var(--gold)" />
+          <StatTile icon={Users} label="Motoristas escalados" value={ex("6")} color="var(--brand-navy)" />
+          <StatTile icon={CalendarDays} label="Turnos na semana" value={ex("36")} color="var(--brand-sky)" />
+          <StatTile icon={CalendarDays} label="Folgas" value={ex("12")} color="var(--leaf)" />
+          <StatTile icon={CalendarDays} label="Cobertura" value={ex("100")} unit="%" color="var(--gold)" />
         </div>
 
         {usandoMock() && <Card

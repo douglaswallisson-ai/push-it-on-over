@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useRelatorioCursor } from "@/lib/relatorios-api";
+import { useRelatorioCompleto } from "@/lib/relatorios-api";
 import { usandoMock } from "@/lib/modo";
 
 /**
@@ -54,6 +54,8 @@ export type FaixasBiVeiculo = {
   amarelaPct: number | null;
   vermelhaPct: number | null;
   inerciaPct: number | null;
+  /** `blue` — batendo transmissão. */
+  batendoPct: number | null;
   /** Soma das onze colunas, em segundos. */
   tempoClassificado: number;
 };
@@ -69,14 +71,25 @@ type LinhaKmFuel = {
   is_estimated?: boolean | null;
 };
 
+/**
+ * Nomes da **API**, não das colunas de `con_telemetry_day`.
+ *
+ * O endpoint renomeia na consulta (`time_green AS green`, `time_inercia AS
+ * inercia`…). Com os nomes da tabela, as quatro faixas chegavam como
+ * `undefined`, somavam zero, e a tela mostrava todo veículo com 0% — só
+ * parado ligado e total, que têm o mesmo nome nos dois lados, apareciam. O BI
+ * (`useRpmBandTime.js`) já lê estes nomes; ver a nota de divergência das
+ * faixas no vault.
+ */
 type LinhaFaixa = {
   unit_id?: number | null;
   stop_engine_on?: number | null;
   total_time?: number | null;
-  time_green?: number | null;
-  time_yellow?: number | null;
-  time_red?: number | null;
-  time_inercia?: number | null;
+  green?: number | null;
+  yellow?: number | null;
+  red?: number | null;
+  inercia?: number | null;
+  blue?: number | null;
 };
 
 function janela(dias: number) {
@@ -93,15 +106,19 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
       inicio: j.inicio,
       fim: j.fim,
       limite: 5000,
-      // Lote de trezentos: a URL tem teto, e a frota inteira não cabe.
-      veiculos: veiculoIds?.length ? veiculoIds.slice(0, 300) : undefined,
+      // A frota inteira. A divisão em lotes (a URL tem teto) é feita pela
+      // busca completa, que consulta todos eles — antes o corte em 300 aqui
+      // deixava o resto da frota sem indicador.
+      veiculos: veiculoIds?.length ? veiculoIds : undefined,
     };
   }, [dias, veiculoIds?.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const habilitado = !usandoMock() && Boolean(veiculoIds?.length);
 
-  const kmQ = useRelatorioCursor<LinhaKmFuel>("driver-km-fuel-hours", filtro, habilitado);
-  const faixasQ = useRelatorioCursor<LinhaFaixa>("rpm-band-time", filtro, habilitado);
+  // O período inteiro, não a primeira página: são somas por veículo, e uma
+  // soma parcial passa por total sem que ninguém perceba.
+  const kmQ = useRelatorioCompleto<LinhaKmFuel>("driver-km-fuel-hours", filtro, habilitado);
+  const faixasQ = useRelatorioCompleto<LinhaFaixa>("rpm-band-time", filtro, habilitado);
 
   const porVeiculo = useMemo(() => {
     const mapa = new Map<string, IndicadoresBiVeiculo>();
@@ -152,24 +169,25 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
 
     const acc = new Map<
       string,
-      { parado: number; total: number; verde: number; amarela: number; vermelha: number; inercia: number }
+      { parado: number; total: number; verde: number; amarela: number; vermelha: number; inercia: number; azul: number }
     >();
 
     for (const l of faixasQ.registros) {
       const id = String(l.unit_id ?? "");
       if (!id) continue;
 
-      const a = acc.get(id) ?? { parado: 0, total: 0, verde: 0, amarela: 0, vermelha: 0, inercia: 0 };
+      const a = acc.get(id) ?? { parado: 0, total: 0, verde: 0, amarela: 0, vermelha: 0, inercia: 0, azul: 0 };
       // `stop_engine_on` já vem somado com o parado produtivo pelo backend.
       a.parado += l.stop_engine_on ?? 0;
       // `total_time` é a soma das onze colunas. Eco-roll e baixa velocidade
       // ficam de fora — é a classificação do BI, diferente das treze faixas
       // do AI Ops Advisor.
       a.total += l.total_time ?? 0;
-      a.verde += l.time_green ?? 0;
-      a.amarela += l.time_yellow ?? 0;
-      a.vermelha += l.time_red ?? 0;
-      a.inercia += l.time_inercia ?? 0;
+      a.verde += l.green ?? 0;
+      a.amarela += l.yellow ?? 0;
+      a.vermelha += l.red ?? 0;
+      a.inercia += l.inercia ?? 0;
+      a.azul += l.blue ?? 0;
       acc.set(id, a);
     }
 
@@ -188,6 +206,7 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
         amarelaPct: pct(a.amarela, a.total),
         vermelhaPct: pct(a.vermelha, a.total),
         inerciaPct: pct(a.inercia, a.total),
+        batendoPct: pct(a.azul, a.total),
         tempoClassificado: a.total,
       });
     }
@@ -204,11 +223,5 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
     linhasFaixa: faixasQ.registros.length,
     /** Algum veículo teve valor estimado no período. */
     temEstimado: [...porVeiculo.values()].some((v) => v.temEstimado),
-    parcial: kmQ.hasNextPage || faixasQ.hasNextPage,
-    carregarMais: () => {
-      if (kmQ.hasNextPage) kmQ.fetchNextPage();
-      if (faixasQ.hasNextPage) faixasQ.fetchNextPage();
-    },
-    carregandoMais: kmQ.isFetchingNextPage || faixasQ.isFetchingNextPage,
   };
 }

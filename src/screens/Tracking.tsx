@@ -17,7 +17,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
-import { nf, trackingApiQuery, trackingQuery, veiculosQuery } from "@/lib/queries";
+import { nf, trackingApiQuery, trackingQuery, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { resumoTracking } from "@/lib/mock-data";
 import { EVENTO_TRACKING_LABEL, type EventoTracking, type TipoEventoTracking } from "@/types";
@@ -62,8 +62,21 @@ const hhmm = (min: number) => `${Math.floor(min / 60)}h${String(min % 60).padSta
 const hora = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
 export default function Tracking() {
-  const veiculosQ = useQuery(veiculosQuery(1, 200));
-  const [veiculoId, setVeiculoId] = useState("v1");
+  // Ligado à API, a frota real. A lista de exemplo e o "v1" fixo deixavam a
+  // tela aberta num veículo que não existe no banco, com o seletor vazio.
+  const exemploQ = useQuery({ ...veiculosQuery(1, 200), enabled: usandoMock() });
+  const realQ = useQuery(veiculosApiQuery(1, 200));
+  const veiculosQ = usandoMock() ? exemploQ : realQ;
+  const [escolhido, setVeiculoId] = useState<string | null>(null);
+  // O balão do mapa abre esta tela com `?veiculo=<id ou placa>`. Antes o
+  // parâmetro era ignorado e a tela abria em outro veículo.
+  const pedido = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("veiculo") : null;
+  const lista = veiculosQ.data?.items ?? [];
+  const veiculoId =
+    escolhido ??
+    lista.find((v) => v.id === pedido || v.placa === pedido)?.id ??
+    lista[0]?.id ??
+    (usandoMock() ? "v1" : "");
   const [focado, setFocado] = useState<string | null>(null);
 
   const mockQ = useQuery(trackingQuery(veiculoId));
@@ -115,7 +128,8 @@ export default function Tracking() {
         velocidadeMaxima: s.max_speed ?? 0,
       };
     }
-    return resumoTracking(veiculoId);
+    // Sem resumo do servidor, nada — o exemplo aqui aparecia como o dia real.
+    return usandoMock() ? resumoTracking(veiculoId) : null;
   }, [daApi, veiculoId, hoje]);
 
   /** Traçado do percurso: só os pontos, na ordem cronológica. */

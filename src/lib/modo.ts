@@ -87,6 +87,16 @@ export function exemploOuVazio<T>(dados: T[]): T[] {
 }
 
 /**
+ * Número de exemplo escrito na tela, só com dados de exemplo ligados.
+ *
+ * Ligado à API vira "—": o valor era literal no código ("66.030 h", "R$ 3.180")
+ * e aparecia ao lado do dado real como se fosse medido.
+ */
+export function ex(valor: string): string {
+  return usandoMock() ? valor : "—";
+}
+
+/**
  * Módulo sem endpoint no backend.
  *
  * Alguns módulos — manutenção, contratos, multas — não têm origem nenhuma. Para

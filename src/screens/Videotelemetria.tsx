@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { videoOcorrenciasApiQuery } from "@/lib/queries";
-import { usandoMock } from "@/lib/modo";
+import { ex, usandoMock } from "@/lib/modo";
 import { AoVivo } from "@/components/ss/video/AoVivo";
 import { Gravacoes } from "@/components/ss/video/Gravacoes";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -323,8 +323,8 @@ export default function Videotelemetria() {
                 color="var(--coral)"
                 foot="fila de trabalho"
               />
-              <StatTile icon={Wifi} label="Câmeras online" value="434" color="var(--leaf)" />
-              <StatTile icon={WifiOff} label="Câmeras offline" value="185" color="var(--gold)" />
+              <StatTile icon={Wifi} label="Câmeras online" value={ex("434")} color="var(--leaf)" />
+              <StatTile icon={WifiOff} label="Câmeras offline" value={ex("185")} color="var(--gold)" />
             </div>
 
             {/* Distribuição de risco. */}
@@ -471,10 +471,10 @@ export default function Videotelemetria() {
             {/* Eventos positivos — o contraponto. */}
             <Card title="Eventos positivos de condução" icon={CheckCircle2} bodyClassName="p-4">
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <StatTile icon={CheckCircle2} label="Uso de inércia" value="4.812" color="var(--leaf)" />
-                <StatTile icon={CheckCircle2} label="Freio motor" value="3.104" color="var(--leaf)" />
-                <StatTile icon={CheckCircle2} label="Faixa verde mantida" value="71%" color="var(--leaf)" />
-                <StatTile icon={CheckCircle2} label="Condução sem evento" value="62%" color="var(--leaf)" foot="motoristas no período" />
+                <StatTile icon={CheckCircle2} label="Uso de inércia" value={ex("4.812")} color="var(--leaf)" />
+                <StatTile icon={CheckCircle2} label="Freio motor" value={ex("3.104")} color="var(--leaf)" />
+                <StatTile icon={CheckCircle2} label="Faixa verde mantida" value={ex("71%")} color="var(--leaf)" />
+                <StatTile icon={CheckCircle2} label="Condução sem evento" value={ex("62%")} color="var(--leaf)" foot="motoristas no período" />
               </div>
               <p className="mt-3 text-[11.5px] text-muted-foreground">
                 Programa de segurança só com punição desgasta. O reconhecimento do que foi bem feito é o que sustenta a

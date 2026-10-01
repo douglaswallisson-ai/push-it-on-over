@@ -127,7 +127,9 @@ export const resumoQuery = () =>
  */
 export const posicoesQuery = () =>
   queryOptions({
-    queryKey: ["frota", "posicoes"],
+    // Com a empresa na chave: as posições agora vêm filtradas por ela, e sem
+    // isso a troca no seletor reaproveitaria o mapa da empresa anterior.
+    queryKey: chaveComGrupo("frota", "posicoes"),
     queryFn: () => Frota.posicoes(),
     staleTime: 30_000,
     refetchInterval: refetchInterval(),
@@ -517,6 +519,25 @@ export const eventosApiQuery = (filtros: Record<string, string | number | boolea
   queryOptions({
     queryKey: ["eventos", "api", JSON.stringify(filtros)],
     queryFn: () => Operacional.eventos(filtros),
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 30_000,
+    refetchInterval: refetchInterval(),
+  });
+
+export const rankingMotoristasQuery = (inicio?: string, fim?: string) =>
+  queryOptions({
+    queryKey: chaveComGrupo("motoristas", "ranking", inicio ?? "", fim ?? ""),
+    queryFn: () => Operacional.rankingMotoristas({ inicio, fim }),
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 5 * MINUTE,
+  });
+
+export const alarmesNaoVisualizadosQuery = (horas = 24) =>
+  queryOptions({
+    queryKey: ["alarmes", "nao-visualizados", horas],
+    queryFn: () => Operacional.alarmesNaoVisualizados(horas),
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
     staleTime: 30_000,

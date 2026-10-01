@@ -75,6 +75,7 @@ export type VeiculoFront = {
  */
 export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
   const [marca, ...resto] = (v.model ?? "").split(" ");
+  const odomMetros = v.estado_atual?.odom_total ?? v.estado_atual?.odom ?? null;
   return {
     id: String(v.id),
     placa: v.label,
@@ -110,10 +111,15 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
    * Leitura marcada como corrigida ainda vale: a correção foi feita
    * justamente para o número ser utilizável. O que não vale é apresentá-la
    * sem dizer, e por isso a marca acompanha o valor.
+   *
+   * `odom_total` primeiro, `odom` se vazio — a mesma regra do plataforma_web
+   * (`mapcontroller` e `devstatuscontroller`: `coalesce(odom_total, odom)`).
+   * Os dois divergem em ~1.000 dos 10.266 veículos, e só com `odom` a tela
+   * mostrava quilometragem diferente da que o cliente vê em produção.
    */
   odometro:
-    v.estado_atual?.odom != null
-      ? Math.round(v.estado_atual.odom / 1000)
+    odomMetros != null
+      ? Math.round(odomMetros / 1000)
       : v.initial_odometer
         ? Math.round(v.initial_odometer / 1000)
         : null,

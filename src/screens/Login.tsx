@@ -63,7 +63,8 @@ export default function Login() {
           nome: perfil?.name ?? perfil?.login ?? "Usuário",
           email: perfil?.email ?? "",
           organizacao: perfil?.account_name ?? "SS Telemática",
-          organizacaoId: String(perfil?.account_id ?? ""),
+          // Mesmo motivo do login por senha abaixo: conta não é grupo.
+          organizacaoId: perfil?.group_id != null ? String(perfil.group_id) : "",
           perfil: perfilDoUsuario(perfil),
         });
         navigate("/app");
@@ -110,10 +111,13 @@ export default function Login() {
         // Morais" onde deveria estar o cliente. Sem nome de conta, é melhor um
         // rótulo neutro que a interface substitui ao carregar as unidades.
         organizacao: perfil?.account_name ?? "SS Telemática",
-        // O grupo a que o usuário pertence define qual cliente a interface
-        // mostra. Sem ele, a organização ativa fica indefinida e as telas
-        // caem no exemplo.
-        organizacaoId: String(perfil?.group_id ?? perfil?.account_id ?? ""),
+        // Só o grupo serve aqui — nunca a conta. `organizacaoId` vira o
+        // `group_id` das consultas (ver escopo-ativo), e `account_id` é outra
+        // numeração: a conta 539 mandada como grupo 539 não casa com veículo
+        // nenhum e a frota inteira aparece vazia, sem erro. O `/auth/me` não
+        // devolve grupo (os grupos vêm de user_group_access), então o normal é
+        // ficar vazio, e vazio significa "todo o escopo do usuário".
+        organizacaoId: perfil?.group_id != null ? String(perfil.group_id) : "",
         perfil: perfilDoUsuario(perfil),
       });
       navigate("/app");

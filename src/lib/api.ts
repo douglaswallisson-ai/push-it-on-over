@@ -129,7 +129,38 @@ function modoMock(): boolean {
   }
 }
 
-const mock = <T>(value: T): Promise<T> => Promise.resolve(value);
+/**
+ * Erro de módulo que ainda não tem origem real no backend.
+ *
+ * Status 501 ("não implementado") para as telas tratarem como qualquer falha
+ * de API — com mensagem, e não com número inventado.
+ */
+export class SemFonteReal extends ApiError {
+  constructor() {
+    super(501, "Este módulo ainda não tem fonte de dados real no sistema novo.");
+  }
+}
+
+/**
+ * Resposta dos módulos sem endpoint.
+ *
+ * Com dados de exemplo ligados (sem `VITE_API_BASE`), devolve o exemplo. Ligado
+ * à API real, **nunca**: o exemplo ali se misturava ao dado verdadeiro e nada
+ * na tela distinguia os dois — garagens, linhas, multas e desempenho de
+ * motorista que não existem apareciam ao lado da frota real.
+ *
+ * Fora do modo de exemplo: lista vira lista vazia, página vira página vazia, e
+ * o resto (objetos de resumo e gravações) falha com `SemFonteReal`. Gravação
+ * falhar é o certo — antes ela "salvava" sem gravar nada.
+ */
+const mock = <T>(value: T): Promise<T> => {
+  if (modoMock()) return Promise.resolve(value);
+  if (Array.isArray(value)) return Promise.resolve([] as unknown as T);
+  if (value && typeof value === "object" && Array.isArray((value as { items?: unknown }).items)) {
+    return Promise.resolve({ ...(value as object), items: [], total: 0 } as T);
+  }
+  return Promise.reject(new SemFonteReal());
+};
 
 export const Motoristas = {
   list: (params?: Record<string, string | number>) =>
@@ -177,7 +208,7 @@ export const Frota = {
         local_time?: string | null;
         sem_sinal?: boolean;
       }[];
-    }>(`/api/v1/positions/`);
+    }>(`/api/v1/positions/${qs(filtroGrupo())}`);
 
     return (r.items ?? []).map<PosicaoVeiculo>((p) => ({
       veiculoId: String(p.unit_id),
@@ -442,6 +473,84 @@ export const Tracking = {
  * não está conectada, as telas correspondentes mostram dado de exemplo próprio,
  * e não uma versão simulada destas chamadas.
  */
+export type FaixasMotoristaApi = {
+  verde: number | null;
+  extra_economica: number | null;
+  inercia: number | null;
+  eco_roll: number | null;
+  baixa_velocidade: number | null;
+  amarela: number | null;
+  vermelha: number | null;
+  batendo_transmissao: number | null;
+  movimento_sem_tracao: number | null;
+  parado_acelerando: number | null;
+  parado_ligado: number | null;
+  parado_produtivo: number | null;
+  tolerancia: number | null;
+};
+
+/**
+ * Faixas do ranking no formato do gráfico de faixas (`lib/faixas`).
+ *
+ * Freio motor não tem coluna de origem e fica de fora — zero ali seria lido
+ * como "não usou", e o dado simplesmente não existe.
+ */
+export function distribuicaoDoRanking(f: FaixasMotoristaApi): Record<string, number> {
+  const v = (x: number | null) => x ?? 0;
+  return {
+    parado_ocioso: Math.max(0, v(f.parado_ligado) - v(f.parado_produtivo)),
+    parado_produtivo: v(f.parado_produtivo),
+    parado_acelerando: v(f.parado_acelerando),
+    baixa_velocidade: v(f.baixa_velocidade),
+    sem_tracao: v(f.movimento_sem_tracao),
+    eco_roll: v(f.eco_roll),
+    giro_baixo: v(f.batendo_transmissao),
+    verde: v(f.verde),
+    extra_economica: v(f.extra_economica),
+    amarela: v(f.amarela),
+    vermelha: v(f.vermelha),
+    inercia_simples: v(f.inercia),
+    tolerancia: v(f.tolerancia),
+  };
+}
+
+export type MotoristaRankingApi = {
+  posicao: number | null;
+  driver_id: number;
+  nome: string | null;
+  cnh_validade: string | null;
+  cnh_numero: string | null;
+  cnh_categoria: string | null;
+  km: number;
+  horas: number;
+  litros: number;
+  kml: number | null;
+  pontuacao: number | null;
+  estrelas: number;
+  faixas: FaixasMotoristaApi;
+  eventos_por_hora: {
+    aceleracao_brusca: number | null;
+    freada_brusca: number | null;
+    velocidade_excessiva: number | null;
+    embreagem: number | null;
+  };
+  sem_faixas: boolean;
+};
+
+export type RankingMotoristasApi = {
+  inicio: string;
+  fim: string;
+  resumo: {
+    motoristas: number;
+    km_total: number;
+    horas_total: number;
+    nota_media: number | null;
+    pct_horas_nao_identificado: number | null;
+    pesos_cadastrados: boolean;
+  };
+  motoristas: MotoristaRankingApi[];
+};
+
 export const Operacional = {
   tracking: (unitId: string | number, data: string) =>
     api.get<unknown>(`/api/v1/tracking/?unit_id=${unitId}&operation_date=${data}`),
@@ -451,6 +560,27 @@ export const Operacional = {
     // `false` seria descartado silenciosamente se passasse direto.
     api.get<unknown>(
       `/api/v1/events/${qs(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])))}`,
+    ),
+
+  /**
+   * Disparos do Monitor de Alarmes ainda não vistos, na janela pedida.
+   *
+   * Vem de `alarm_violation`, a mesma fonte do monitor do sistema atual — e
+   * não de `/events`, que lê `fleet_events`, vazia em produção.
+   */
+  alarmesNaoVisualizados: (horas = 24) =>
+    api.get<{ nao_visualizados: number; janela_horas: number }>(
+      `/api/v1/events/alarmes/nao-visualizados?horas=${horas}`,
+    ),
+
+  /**
+   * Ranking de motoristas pela Pontuação do Power BI (vault: indicadores-power-bi, P6).
+   *
+   * Datas puras e fim inclusivo; sem elas o servidor usa os 30 dias até ontem.
+   */
+  rankingMotoristas: (p: { inicio?: string; fim?: string } = {}) =>
+    api.get<RankingMotoristasApi>(
+      `/api/v1/driver-ranking/${qs({ ...filtroGrupo(), start_date: p.inicio, end_date: p.fim })}`,
     ),
 
   tratarEvento: (id: string | number, nota?: string) =>

@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useState } from "react";
 import {
   Activity,
@@ -199,7 +200,7 @@ const COLS: Column<Recente>[] = [
  */
 type Embutido = "telemetria" | "operacionais";
 
-export default function Relatorios() {
+function RelatoriosExemplo() {
   const navigate = useNavigate();
   const [embutido, setEmbutido] = useState<Embutido | null>(null);
 
@@ -273,5 +274,14 @@ export default function Relatorios() {
         </p>
       </div>
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Relatorios() {
+  return (
+    <ModuloSemFonte titulo="Relatórios" motivo="Os relatórios reais estão em Relatórios operacionais.">
+      <RelatoriosExemplo />
+    </ModuloSemFonte>
   );
 }

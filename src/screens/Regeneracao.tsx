@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { AlertTriangle, Ban, Flame, Info, RefreshCw, Thermometer } from "lucide-react";
 import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -108,7 +109,7 @@ const COLS: Column<Veiculo>[] = [
   },
 ];
 
-export default function Regeneracao() {
+function RegeneracaoExemplo() {
   return (
     <>
       <PageHeader title="Regeneração (DPF)" subtitle="Saúde do filtro de partículas · toda a frota" />
@@ -182,5 +183,14 @@ export default function Regeneracao() {
         </p>
       </div>
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Regeneracao() {
+  return (
+    <ModuloSemFonte titulo="Regeneração (DPF)" motivo="Não há leitura de DPF no banco que o sistema novo use.">
+      <RegeneracaoExemplo />
+    </ModuloSemFonte>
   );
 }

@@ -56,9 +56,15 @@ export function useResumoFrota() {
 
     // Comunicando nos últimos 20 minutos. Janela curta demais marcaria como
     // indisponível quem só perdeu sinal num túnel.
+    //
+    // Só conta posição de veículo que está no denominador. `/positions` não
+    // recebe o filtro de empresa e devolve todo o escopo do usuário; com a
+    // lista de veículos filtrada pela empresa ativa, o numerador trazia as
+    // outras empresas e a disponibilidade passava de 1.700%.
     const limite = Date.now() - 20 * 60_000;
+    const daFrota = new Set(veiculos.map((v) => v.id));
     const comunicando = (posicoesQ.data ?? []).filter(
-      (p) => new Date(p.atualizadoEm).getTime() > limite,
+      (p) => daFrota.has(p.veiculoId) && new Date(p.atualizadoEm).getTime() > limite,
     ).length;
 
     const eventos = eventosQ.data as { summary?: { pending: number } } | undefined;

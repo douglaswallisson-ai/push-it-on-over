@@ -15,8 +15,10 @@ import {
   Video,
   Wrench,
 } from "lucide-react";
-import { desde, nf, trackingQuery } from "@/lib/queries";
+import { desde, nf, trackingApiQuery, trackingQuery } from "@/lib/queries";
 import { resumoTracking } from "@/lib/mock-data";
+import { usandoMock } from "@/lib/modo";
+import type { EventoTracking } from "@/types";
 import { EVENTO_TRACKING_LABEL, ESTADO_MAPA_LABEL, type EstadoMapa } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -68,15 +70,52 @@ export function PopupVeiculo({
   eventosAbertos?: number;
 }) {
   const navigate = useNavigate();
-  const trackingQ = useQuery(trackingQuery(veiculoId));
+  const mock = usandoMock();
+  const trackingQ = useQuery({ ...trackingQuery(veiculoId), enabled: mock && Boolean(veiculoId) });
+  const hoje = new Date().toISOString().slice(0, 10);
+  // Mesma fonte da tela de percurso. Antes o "Hoje" do balão era sempre o
+  // resumo de exemplo, qualquer que fosse o veículo clicado.
+  const apiQ = useQuery(trackingApiQuery(veiculoId, hoje));
+  const daApi = apiQ.data as
+    | {
+        events?: { id: number; type: string; timestamp: string; duration_min?: number }[];
+        summary?: Record<string, number | string | null>;
+      }
+    | undefined;
 
-  const resumo = useMemo(() => (veiculoId ? resumoTracking(veiculoId) : null), [veiculoId]);
+  const resumo = useMemo(() => {
+    if (mock) return veiculoId ? resumoTracking(veiculoId) : null;
+    const s = daApi?.summary;
+    if (!s) return null;
+    const n = (k: string) => Number(s[k] ?? 0);
+    return {
+      minutosLigado: n("minutes_on"),
+      minutosEmMovimento: n("minutes_moving"),
+      minutosLigadoParado: n("minutes_idle"),
+      paradas: n("stops"),
+      kmPercorrido: n("distance_km"),
+      velocidadeMaxima: n("max_speed"),
+      primeiraIgnicao: (s.first_ignition as string | null) ?? undefined,
+      ultimaIgnicao: (s.last_ignition as string | null) ?? undefined,
+    };
+  }, [mock, veiculoId, daApi]);
 
   /** Últimos eventos do dia, do mais recente para trás. */
-  const ultimos = useMemo(
-    () => [...(trackingQ.data ?? [])].sort((a, b) => b.em.localeCompare(a.em)).slice(0, 4),
-    [trackingQ.data],
-  );
+  const ultimos = useMemo(() => {
+    const lista: EventoTracking[] = mock
+      ? (trackingQ.data ?? [])
+      : (daApi?.events ?? []).map((e) => ({
+          id: String(e.id),
+          veiculoId: veiculoId ?? "",
+          tipo: e.type as EventoTracking["tipo"],
+          em: e.timestamp,
+          lat: 0,
+          lng: 0,
+          velocidade: 0,
+          duracaoMin: e.duration_min ?? undefined,
+        }));
+    return [...lista].sort((a, b) => b.em.localeCompare(a.em)).slice(0, 4);
+  }, [mock, trackingQ.data, daApi, veiculoId]);
 
   return (
     <div className="w-[300px] text-[12.5px]">

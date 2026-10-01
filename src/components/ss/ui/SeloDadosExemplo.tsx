@@ -13,6 +13,35 @@ import { cn } from "@/lib/utils";
  * O selo aparece **mesmo em modo API**: é justamente aí que a confusão
  * aconteceria, porque o resto da tela está real.
  */
+/**
+ * Tela de módulo que não tem nenhuma fonte real.
+ *
+ * Ligado à API, substitui o conteúdo inteiro: a tela era protótipo de
+ * interface, com número e lista escritos no código, e o selo sozinho não
+ * bastava — ninguém lê selo e o número inventado continuava na frente.
+ * Com dados de exemplo ligados, a demonstração aparece como antes.
+ */
+export function ModuloSemFonte({
+  titulo,
+  motivo,
+  children,
+}: {
+  titulo: string;
+  /** O que falta para o módulo ter dado real. */
+  motivo: string;
+  children: React.ReactNode;
+}) {
+  if (usandoMock()) return <>{children}</>;
+  return (
+    <div className="mx-auto max-w-[900px] px-6 py-16 text-center md:px-8">
+      <Database className="mx-auto h-10 w-10 text-muted-foreground/60" />
+      <h1 className="mt-4 font-display text-xl font-bold text-foreground">{titulo}</h1>
+      <p className="mt-2 text-sm font-semibold text-gold">Módulo ainda sem dados reais no sistema novo.</p>
+      <p className="mx-auto mt-3 max-w-[560px] text-[13px] leading-relaxed text-muted-foreground">{motivo}</p>
+    </div>
+  );
+}
+
 export function SeloDadosExemplo({
   motivo,
   compacto,

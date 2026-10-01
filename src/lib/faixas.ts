@@ -36,7 +36,9 @@ export const FAIXAS: Faixa[] = [
   { id: "baixa_velocidade", label: "Baixa velocidade", curto: "Baixa vel.", grupo: "baixa", cor: "#B8A21A", desejavel: false, descricao: "Deslocamento abaixo da faixa de trabalho eficiente do motor." },
   { id: "sem_tracao", label: "Movimento sem tração", curto: "Sem tração", grupo: "movimento", cor: "#7B3FA0", desejavel: false, descricao: "Veículo em movimento sem transmitir força às rodas — ponto morto ou embreagem acionada." },
   { id: "eco_roll", label: "Eco-roll (roda livre)", curto: "Eco-roll", grupo: "movimento", cor: "#1B3A6B", desejavel: true, descricao: "Roda livre controlada pela transmissão, aproveitando a inércia com consumo mínimo." },
-  { id: "giro_baixo", label: "Faixa azul — giro baixo", curto: "Giro baixo", grupo: "movimento", cor: "#2E86C1", desejavel: false, descricao: "Rotação abaixo da faixa econômica: exige mais do motor para entregar torque." },
+  // `time_blue`. Era rotulada "giro baixo"; o vault (13-faixas-fleet-insights,
+  // cadastro mova.faixas) confirma que é BATENDO TRANSMISSÃO.
+  { id: "giro_baixo", label: "Batendo transmissão (faixa azul)", curto: "Batendo", grupo: "movimento", cor: "#2E86C1", desejavel: false, descricao: "Rotação baixa demais para a marcha engatada — a transmissão trabalha batendo." },
   { id: "verde", label: "Faixa verde", curto: "Verde", grupo: "movimento", cor: "#2E9E4F", desejavel: true, descricao: "Faixa de rotação econômica recomendada pelo fabricante." },
   { id: "extra_economica", label: "Faixa extra econômica", curto: "Extra econ.", grupo: "movimento", cor: "#1E7A38", desejavel: true, descricao: "Melhor ponto de consumo do motor — o alvo da condução eficiente." },
   { id: "amarela", label: "Faixa amarela", curto: "Amarela", grupo: "movimento", cor: "#E8C63A", desejavel: false, descricao: "Rotação acima da faixa econômica; consumo começa a subir." },

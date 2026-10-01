@@ -19,7 +19,7 @@ import { Info, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { aiContasQuery, aiPainelQuery } from "@/lib/queries";
 import { grupoAtivo } from "@/lib/escopo-ativo";
-import { usandoMock } from "@/lib/modo";
+import { ex, usandoMock } from "@/lib/modo";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
@@ -340,18 +340,18 @@ export default function IAFleetManager() {
           subtitle="Eu leio a telemetria da sua frota e devolvo as ações que geram resultado — com o porquê e o retorno de cada uma. Ações geram resultado; painéis geram relatório."
         >
           <div className="flex items-center gap-6">
-            <HeroMetric value="~21.000" unit="L" label="Economia potencial/ano" />
+            <HeroMetric value={ex("~21.000")} unit="L" label="Economia potencial/ano" />
             <div className="h-10 w-px bg-white/15" />
-            <HeroMetric value="16" label="Motoristas p/ retreinar" />
+            <HeroMetric value={ex("16")} label="Motoristas p/ retreinar" />
           </div>
         </HeroBanner>
 
         {/* Banner de oportunidade. */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatTile icon={Fuel} label="Economia potencial / ano" value="~21.000" unit="L" color="var(--leaf)" foot="combustível com meta +1% km/L" />
-          <StatTile icon={Clock} label="Horas não identificadas" value="66.030" unit="h" color="var(--gold)" foot="em 2025 · oportunidade de retreino" />
-          <StatTile icon={TrendingDown} label="Condução irregular" value="27,4" unit="%" color="var(--brand-navy)" foot="Fev/26 · −19,7% desde Jan/25" />
-          <StatTile icon={Users} label="Motoristas p/ retreinar" value="16" color="var(--coral)" foot="abaixo de 90% da média (72,6%)" to="/app/motoristas" />
+          <StatTile icon={Fuel} label="Economia potencial / ano" value={ex("~21.000")} unit="L" color="var(--leaf)" foot={ex("combustível com meta +1% km/L")} />
+          <StatTile icon={Clock} label="Horas não identificadas" value={ex("66.030")} unit="h" color="var(--gold)" foot={ex("em 2025 · oportunidade de retreino")} />
+          <StatTile icon={TrendingDown} label="Condução irregular" value={ex("27,4")} unit="%" color="var(--brand-navy)" foot={ex("Fev/26 · −19,7% desde Jan/25")} />
+          <StatTile icon={Users} label="Motoristas p/ retreinar" value={ex("16")} color="var(--coral)" foot={ex("abaixo de 90% da média (72,6%)")} to="/app/motoristas" />
         </div>
 
         {/* Ações prioritárias. */}
@@ -386,10 +386,10 @@ export default function IAFleetManager() {
         <section>
           <SectionTitle icon={BarChart3} tone="green" title="Projeção de ROI — impacto econômico" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <RoiCard label="Meta de km/L mensal" value="+1%" sub="2,653 → 2,680 km/L" pct={65} color="var(--brand-sky)" />
-            <RoiCard label="Economia mensal" value="2.616 L" sub="com a meta +1% aplicada" pct={45} color="var(--leaf)" />
-            <RoiCard label="Economia anual projetada" value="~21.000 L" sub="Abr–Dez/2026 (9 meses)" pct={80} color="var(--leaf)" />
-            <RoiCard label="Perda atual Jan–Fev/26" value="−1.216 L" sub="Jan −684 L · Fev −532 L" pct={25} color="var(--coral)" />
+            <RoiCard label="Meta de km/L mensal" value={ex("+1%")} sub={ex("2,653 → 2,680 km/L")} pct={usandoMock() ? 65 : 0} color="var(--brand-sky)" />
+            <RoiCard label="Economia mensal" value={ex("2.616 L")} sub={ex("com a meta +1% aplicada")} pct={usandoMock() ? 45 : 0} color="var(--leaf)" />
+            <RoiCard label="Economia anual projetada" value={ex("~21.000 L")} sub={ex("Abr–Dez/2026 (9 meses)")} pct={usandoMock() ? 80 : 0} color="var(--leaf)" />
+            <RoiCard label="Perda atual Jan–Fev/26" value={ex("−1.216 L")} sub={ex("Jan −684 L · Fev −532 L")} pct={usandoMock() ? 25 : 0} color="var(--coral)" />
           </div>
           <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-card">
             <p className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-leaf">Lógica do ROI</p>
@@ -456,9 +456,9 @@ export default function IAFleetManager() {
         <section>
           <SectionTitle icon={Search} tone="gold" title="Impacto das horas não identificadas" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <UnidCard label="Condução ideal — não identificados" value="66,0%" change="−6,5pp vs frota" tone="gold" />
-            <UnidCard label="Aceleração parado — não id." value="1,04%" change="+420% vs frota" tone="coral" />
-            <UnidCard label="Motor parado — não identificados" value="22,1%" change="+27% vs frota" tone="coral" />
+            <UnidCard label="Condução ideal — não identificados" value={ex("66,0%")} change={ex("−6,5pp vs frota")} tone="gold" />
+            <UnidCard label="Aceleração parado — não id." value={ex("1,04%")} change={ex("+420% vs frota")} tone="coral" />
+            <UnidCard label="Motor parado — não identificados" value={ex("22,1%")} change={ex("+27% vs frota")} tone="coral" />
           </div>
           <div className="mt-4 flex gap-4 rounded-2xl border border-gold-line bg-gold-tint/40 p-5">
             <Search className="mt-0.5 h-5 w-5 shrink-0 text-gold" />

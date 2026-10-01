@@ -138,6 +138,57 @@ export function useRelatorioCursor<T>(relatorio: Relatorio, filtro: FiltroRelato
   };
 }
 
+/** Veículos por requisição. Acima disso a URL passa do teto aceito. */
+const VEICULOS_POR_LOTE = 300;
+
+/**
+ * Relatório inteiro: todos os veículos e todas as páginas, numa consulta só.
+ *
+ * Existe para as telas que **somam** o período — faixas e km/l por veículo.
+ * Com `useRelatorioCursor` elas mostravam a primeira página (5.000 linhas,
+ * poucos dias) como se fosse o mês, e os veículos acima do 300º nunca eram
+ * consultados. O resultado parecia completo e não era: veículo sem faixa por
+ * falta de página, não por falta de dado.
+ *
+ * Os lotes correm em paralelo; dentro de cada lote, as páginas seguem o
+ * cursor em sequência, porque cada uma depende do `next_cursor` da anterior.
+ */
+export function useRelatorioCompleto<T>(relatorio: Relatorio, filtro: FiltroRelatorio, habilitado = true) {
+  const erroJanela = validarJanela(filtro.inicio, filtro.fim);
+  const veiculos = filtro.veiculos ?? [];
+
+  const q = useQuery({
+    queryKey: ["relatorio-completo", relatorio, filtro.inicio, filtro.fim, veiculos.join(","), grupoAtivo() ?? "todos"],
+    enabled: habilitado && !erroJanela && !usandoMock(),
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const lotes: (string[] | undefined)[] = [];
+      for (let i = 0; i < veiculos.length; i += VEICULOS_POR_LOTE) {
+        lotes.push(veiculos.slice(i, i + VEICULOS_POR_LOTE));
+      }
+      if (!lotes.length) lotes.push(undefined);
+
+      const porLote = await Promise.all(
+        lotes.map(async (lote) => {
+          const linhas: T[] = [];
+          let cursor: string | undefined;
+          do {
+            const pagina = await api.get<RespostaCursor<T>>(
+              `/api/v1/reports/${relatorio}/cursor?${paramsDe({ ...filtro, veiculos: lote }, cursor, relatorio)}`,
+            );
+            linhas.push(...pagina.data);
+            cursor = pagina.has_more ? (pagina.next_cursor ?? undefined) : undefined;
+          } while (cursor);
+          return linhas;
+        }),
+      );
+      return porLote.flat();
+    },
+  });
+
+  return { ...q, registros: q.data ?? [], erroJanela };
+}
+
 /**
  * Estimativa de tamanho antes de exportar.
  *

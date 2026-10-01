@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { Clock, Coffee, Download, LogIn, LogOut } from "lucide-react";
 import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -59,7 +60,7 @@ const COLS: Column<Registro>[] = [
   { key: "situacao", header: "Situação", align: "center", render: (r) => <Pill tone={sitTone[r.situacao]}>{r.situacao}</Pill> },
 ];
 
-export default function Ponto() {
+function PontoExemplo() {
   return (
     <>
       <PageHeader
@@ -128,5 +129,14 @@ export default function Ponto() {
         </p>
       </div>
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Ponto() {
+  return (
+    <ModuloSemFonte titulo="Ponto" motivo="Não há registro de ponto de motorista no banco que o sistema novo leia.">
+      <PontoExemplo />
+    </ModuloSemFonte>
   );
 }

@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, Bus, Route, TrendingUp, UserCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -73,7 +74,7 @@ const COLS: Column<Viagem>[] = [
   },
 ];
 
-export default function ContagemPassageiros() {
+function ContagemPassageirosExemplo() {
   /**
    * A tela é a mesma para os dois módulos, mas o filtro inicial acompanha de
    * onde o usuário veio: entrando por Transporte urbano ele espera ver linha,
@@ -196,5 +197,14 @@ function StopFlow() {
         <span className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-navy-tint" /> A bordo (capacidade {CAP})</span>
       </div>
     </div>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function ContagemPassageiros() {
+  return (
+    <ModuloSemFonte titulo="Contagem de passageiros" motivo="Não há tabela de embarque e desembarque no banco que o sistema novo leia. Precisa de integração com o contador de passageiros.">
+      <ContagemPassageirosExemplo />
+    </ModuloSemFonte>
   );
 }

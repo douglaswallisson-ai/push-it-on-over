@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { Layers, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -49,7 +50,7 @@ const CAMPOS: Campo<Grupo>[] = [
 
 const NOVO: Partial<Grupo> = { cor: "#1B3A6B", veiculos: 0, operacao: "Regional", responsavel: "" };
 
-export default function Grupos() {
+function GruposExemplo() {
   return (
     <CadastroScaffold<Grupo>
       title="Grupos"
@@ -82,5 +83,14 @@ export default function Grupos() {
       rotulo="Grupo"
       recurso="groups"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Grupos() {
+  return (
+    <ModuloSemFonte titulo="Grupos" motivo="A lista era de exemplo. Vai ser ligada aos grupos reais (rota /groups).">
+      <GruposExemplo />
+    </ModuloSemFonte>
   );
 }

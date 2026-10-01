@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { ShieldCheck, UserCog, UserX, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -92,7 +93,7 @@ const CAMPOS: Campo<Usuario>[] = [
 
 const NOVO: Partial<Usuario> = { perfil: "Consulta", ativo: true, acesso: "nunca", nome: "", email: "", garagens: [] };
 
-export default function Usuarios() {
+function UsuariosExemplo() {
   return (
     <CadastroScaffold<Usuario>
       title="Usuários"
@@ -125,5 +126,14 @@ export default function Usuarios() {
       rotulo="Usuário"
       searchPlaceholder="Buscar nome ou e-mail…"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Usuarios() {
+  return (
+    <ModuloSemFonte titulo="Usuários" motivo="O cadastro de usuários continua no sistema atual. O backend novo não tem rota de usuários.">
+      <UsuariosExemplo />
+    </ModuloSemFonte>
   );
 }

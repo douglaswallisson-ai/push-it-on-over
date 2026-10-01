@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { Building2, MapPin, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -50,7 +51,7 @@ const CAMPOS: Campo<Unidade>[] = [
 
 const NOVO: Partial<Unidade> = { veiculos: 0, motoristas: 0, responsavel: "" };
 
-export default function Unidades() {
+function UnidadesExemplo() {
   return (
     <CadastroScaffold<Unidade>
       title="Unidades"
@@ -83,5 +84,14 @@ export default function Unidades() {
       rotulo="Unidade"
       recurso="subgroups"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Unidades() {
+  return (
+    <ModuloSemFonte titulo="Unidades" motivo="A lista era de exemplo. Vai ser ligada aos subgrupos reais (mova.subgroup).">
+      <UnidadesExemplo />
+    </ModuloSemFonte>
   );
 }

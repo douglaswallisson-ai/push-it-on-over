@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useState } from "react";
 import { Clock, Flag, GripVertical, MapPin, Plus, Route, Sparkles, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -32,7 +33,7 @@ const PARADAS: Parada[] = [
   { nome: "Rio Claro — destino", tipo: "destino", horario: "10:45", trecho: "72 km · 65 min", x: 68, y: 20 },
 ];
 
-export default function Roteirizacao() {
+function RoteirizacaoExemplo() {
   const navigate = useNavigate();
   const [sugestaoAplicada, setSugestaoAplicada] = useState(false);
   return (
@@ -205,5 +206,14 @@ function RouteCanvas() {
         </div>
       ))}
     </div>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Roteirizacao() {
+  return (
+    <ModuloSemFonte titulo="Roteirização" motivo="Não há roteirizador no backend novo.">
+      <RoteirizacaoExemplo />
+    </ModuloSemFonte>
   );
 }

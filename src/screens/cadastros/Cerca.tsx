@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { CircleDot, Hexagon, MapPin } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -61,7 +62,7 @@ const CAMPOS: Campo<Cerca>[] = [
 
 const NOVO: Partial<Cerca> = { tipo: "Circular", status: "Ativa", veiculos: 0, abrangencia: "" };
 
-export default function Cerca() {
+function CercaExemplo() {
   return (
     <CadastroScaffold<Cerca>
       title="Cercas eletrônicas"
@@ -93,5 +94,14 @@ export default function Cerca() {
       novoPadrao={NOVO}
       rotulo="Cerca"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Cerca() {
+  return (
+    <ModuloSemFonte titulo="Cercas" motivo="O backend novo não tem rota de cercas. O cadastro continua no sistema atual.">
+      <CercaExemplo />
+    </ModuloSemFonte>
   );
 }

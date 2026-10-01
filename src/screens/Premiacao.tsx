@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { Award, CalendarDays, FileText, Printer, Star, Target, TrendingUp, Trophy, Truck } from "lucide-react";
 import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -93,7 +94,7 @@ const COLS: Column<Premiado>[] = [
   },
 ];
 
-export default function Premiacao() {
+function PremiacaoExemplo() {
   return (
     <>
       <PageHeader title="Premiação" subtitle="Acompanhamento do programa de bônus" />
@@ -173,5 +174,14 @@ export default function Premiacao() {
         </p>
       </div>
     </>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Premiacao() {
+  return (
+    <ModuloSemFonte titulo="Premiação" motivo="Vai ser calculada a partir do ranking de motoristas, com a regra do Saldo à pagar do Power BI.">
+      <PremiacaoExemplo />
+    </ModuloSemFonte>
   );
 }

@@ -7,7 +7,7 @@ import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from
 import { StarRating } from "@/components/ss/ui/gauges";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
-import { MOCK_INDICADORES_VEICULO, faixasDoVeiculo } from "@/lib/mock-data";
+import { MOCK_INDICADORES_VEICULO } from "@/lib/mock-data";
 import { escopoGaragens, filtrarPorGaragem } from "@/lib/escopo";
 import { useSessao } from "@/hooks/use-sessao";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
@@ -162,10 +162,12 @@ export default function Veiculos() {
     // Cadastro enriquecido com o que a telemetria mediu no período.
     const comIndicadores = (data?.items ?? []).map((v) => {
       const ind = indicadores.porVeiculo.get(v.id);
-      if (!ind) return v;
+      // Faixa e km/l vêm de relatórios diferentes. Exigir os dois descartava as
+      // faixas de quem não tinha linha de km no período.
+      if (!ind && !indicadores.faixasPorVeiculo.has(v.id)) return v;
       return {
         ...v,
-        kml: ind.kml ?? v.kml,
+        kml: ind?.kml ?? v.kml,
         // O endpoint consolidado não traz odômetro; ele continua vindo do
         // cadastro.
         odometro: v.odometro,
@@ -193,7 +195,10 @@ export default function Veiculos() {
 
     const noEscopo = filtrarPorGaragem(comIndicadores, sessao, (v) => v.garagemId);
     return garagem ? noEscopo.filter((v) => v.garagemId === garagem) : noEscopo;
-  }, [data, sessao, garagem]);
+    // Os indicadores chegam depois do cadastro. Sem eles aqui, a lista era
+    // montada uma vez com os mapas ainda vazios e nunca refeita: as faixas
+    // carregavam e a tabela seguia zerada.
+  }, [data, sessao, garagem, indicadores.porVeiculo, indicadores.faixasPorVeiculo]);
   const total = itens.length;
 
   const linhas: Linha[] = useMemo(() => {
@@ -456,16 +461,6 @@ export default function Veiculos() {
                 </span>
               )}
             </p>
-
-            {indicadores.parcial && (
-              <button
-                onClick={() => indicadores.carregarMais()}
-                disabled={indicadores.carregandoMais}
-                className="shrink-0 rounded-full border border-border bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-brand-navy hover:bg-secondary disabled:opacity-60"
-              >
-                {indicadores.carregandoMais ? "Carregando…" : "Carregar mais viagens"}
-              </button>
-            )}
           </div>
         )}
 
@@ -640,13 +635,33 @@ export default function Veiculos() {
               </p>
             </Card>
 
-            {faixasDe && (
-              <FaixasConducao
-                distribuicao={faixasDoVeiculo(faixasDe)}
-                titulo={`Faixas de condução — ${linhas.find((l) => l.id === faixasDe)?.placa ?? ""}`}
-                subtitulo="Distribuição do tempo deste veículo nas 14 faixas, na mesma leitura usada em frota e motorista."
-              />
-            )}
+            {faixasDe && (() => {
+              // Era `faixasDoVeiculo` da base de exemplo — a mesma distribuição
+              // para qualquer placa. Agora são as faixas reais do período.
+              const f = indicadores.faixasPorVeiculo.get(faixasDe);
+              const titulo = `Faixas de condução — ${linhas.find((l) => l.id === faixasDe)?.placa ?? ""}`;
+              if (!f) {
+                return (
+                  <Card title={titulo} icon={Truck}>
+                    <EmptyNote>Sem faixas de condução deste veículo nos últimos 30 dias.</EmptyNote>
+                  </Card>
+                );
+              }
+              return (
+                <FaixasConducao
+                  distribuicao={{
+                    parado_ocioso: f.paradoLigadoPct ?? 0,
+                    giro_baixo: f.batendoPct ?? 0,
+                    verde: f.verdePct ?? 0,
+                    amarela: f.amarelaPct ?? 0,
+                    vermelha: f.vermelhaPct ?? 0,
+                    inercia_simples: f.inerciaPct ?? 0,
+                  }}
+                  titulo={titulo}
+                  subtitulo="Últimos 30 dias. O relatório de faixas do backend entrega seis faixas; parado ligado inclui o produtivo."
+                />
+              );
+            })()}
           </>
         )}
       </div>

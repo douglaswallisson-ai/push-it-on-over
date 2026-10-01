@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useMemo, useState } from "react";
 import { BarChart3, Clock, Droplet, Gauge, Layers, Leaf, TrendingDown, Trophy, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -6,7 +7,7 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { Sparkline } from "@/components/ss/ui/Sparkline";
 import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import { MOCK_FAIXAS_FROTA } from "@/lib/mock-data";
-import { usandoMock } from "@/lib/modo";
+import { ex, usandoMock } from "@/lib/modo";
 import { useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 import { ScoreGauge } from "@/components/ss/ui/gauges";
 import { cn } from "@/lib/utils";
@@ -60,7 +61,7 @@ const RANKING = [
   { nome: "Davi Nadalin", nota: 13, tone: "coral" as PillTone },
 ];
 
-export default function DesempenhoFrota() {
+function DesempenhoFrotaExemplo() {
   /**
    * Distribuição de faixas a partir da telemetria do período.
    *
@@ -93,7 +94,7 @@ export default function DesempenhoFrota() {
       <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
         <HeroBanner orb eyebrow="Frota · Desempenho por categoria" title="Onde a frota está" subtitle="Cada placa classificada em Excelente, Regular, Atenção ou Crítico — e como isso evolui mês a mês.">
           <div className="flex items-center gap-4">
-            <ScoreGauge score={39} size={92} />
+            <ScoreGauge score={usandoMock() ? 39 : 0} size={92} />
             <div className="text-[12px] leading-tight text-white/70">
               <p className="font-semibold text-white">Nota geral</p>
               <p>44 placas</p>
@@ -223,10 +224,10 @@ function MotorLigadoParado() {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile icon={Clock} label="Tempo total ocioso" value="41h" color="var(--gold)" />
-        <StatTile icon={Droplet} label="Litros desperdi\u00e7ados" value="530" unit="L" color="var(--coral)" />
-        <StatTile icon={TrendingDown} label="Custo estimado" value="R$ 3.180" color="var(--brand-navy)" />
-        <StatTile icon={Leaf} label="CO\u2082 evit\u00e1vel" value="1,4" unit="t" color="var(--leaf)" />
+        <StatTile icon={Clock} label="Tempo total ocioso" value={ex("41h")} color="var(--gold)" />
+        <StatTile icon={Droplet} label="Litros desperdi\u00e7ados" value={ex("530")} unit="L" color="var(--coral)" />
+        <StatTile icon={TrendingDown} label="Custo estimado" value={ex("R$ 3.180")} color="var(--brand-navy)" />
+        <StatTile icon={Leaf} label="CO\u2082 evit\u00e1vel" value={ex("1,4")} unit="t" color="var(--leaf)" />
       </div>
 
       <Card title="Ranking \u2014 maiores tempos parados" icon={Clock} bodyClassName="p-4">
@@ -236,5 +237,14 @@ function MotorLigadoParado() {
         </p>
       </Card>
     </div>
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function DesempenhoFrota() {
+  return (
+    <ModuloSemFonte titulo="Desempenho da frota" motivo="A classificação em Excelente, Regular, Atenção e Crítico não tem regra no vault nem no sistema atual, e a tela era de exemplo. O ranking real de condução está em Motoristas.">
+      <DesempenhoFrotaExemplo />
+    </ModuloSemFonte>
   );
 }

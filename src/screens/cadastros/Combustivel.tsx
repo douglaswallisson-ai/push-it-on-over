@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { DollarSign, Droplet, Fuel, MapPin } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -46,7 +47,7 @@ const CAMPOS: Campo<Abastecimento>[] = [
 
 const NOVO: Partial<Abastecimento> = { data: "", veiculo: "", posto: "", litros: "", preco: "", total: "", km: "" };
 
-export default function Combustivel() {
+function CombustivelExemplo() {
   return (
     <CadastroScaffold<Abastecimento>
       title="Combustível"
@@ -79,5 +80,14 @@ export default function Combustivel() {
       rotulo="Abastecimento"
       searchPlaceholder="Buscar placa ou posto…"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Combustivel() {
+  return (
+    <ModuloSemFonte titulo="Combustível" motivo="O módulo de combustível existe no CodeCommit (29/09) mas ainda não foi trazido para o backend do GitHub.">
+      <CombustivelExemplo />
+    </ModuloSemFonte>
   );
 }

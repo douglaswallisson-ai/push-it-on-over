@@ -1,3 +1,4 @@
+import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { Cpu, Radio, Wifi, WifiOff } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -67,7 +68,7 @@ const CAMPOS: Campo<Dispositivo>[] = [
 
 const NOVO: Partial<Dispositivo> = { modelo: "SS Track 4G", operadora: "Vivo", online: false, veiculo: "", ultima: "—" };
 
-export default function Dispositivos() {
+function DispositivosExemplo() {
   return (
     <CadastroScaffold<Dispositivo>
       title="Dispositivos"
@@ -101,5 +102,14 @@ export default function Dispositivos() {
       recurso="devices"
       searchPlaceholder="Buscar serial ou placa…"
     />
+  );
+}
+
+/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+export default function Dispositivos() {
+  return (
+    <ModuloSemFonte titulo="Dispositivos" motivo="A lista era de exemplo. Vai ser ligada aos dispositivos reais (rota /devices).">
+      <DispositivosExemplo />
+    </ModuloSemFonte>
   );
 }

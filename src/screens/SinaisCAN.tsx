@@ -44,6 +44,19 @@ const LIMITES = {
   voltagemBaixa: 23,
 };
 
+/** Sobe para o primeiro nível os campos dos objetos aninhados (um nível). */
+function achatar(r: unknown): Record<string, unknown> {
+  const fora: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries((r ?? {}) as Record<string, unknown>)) {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      for (const [k2, v2] of Object.entries(v as Record<string, unknown>)) if (!(k2 in fora)) fora[k2] = v2;
+    } else {
+      fora[k] = v;
+    }
+  }
+  return fora;
+}
+
 export default function SinaisCAN() {
   const veiculosQ = useQuery(veiculosApiQuery(1, 200));
   const [veiculoId, setVeiculoId] = useState("");
@@ -60,7 +73,11 @@ export default function SinaisCAN() {
   );
 
   const q = useRelatorioCursor<HistoricoDetalhadoApi>("history/detailed", filtro, Boolean(veiculoId));
-  const registros = q.registros;
+  // O backend agrupa os sinais (`fuel.can_fuel_level_percent`,
+  // `temperature.can_engine_coolant_temp`, `electrical_data.…`); a tela lê os
+  // campos soltos. Sem abrir os grupos, todo sinal chegava vazio — o banco
+  // tem as leituras (898 de 898 posições de um veículo num dia).
+  const registros = useMemo(() => q.registros.map(achatar) as HistoricoDetalhadoApi[], [q.registros]);
 
   /** Última leitura conhecida de cada sinal — é o estado atual do veículo. */
   const atual = useMemo(() => {

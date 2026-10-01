@@ -27,7 +27,7 @@ import {
 import { Link } from "@/lib/router-compat";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useQuery } from "@tanstack/react-query";
-import { eventosApiQuery } from "@/lib/queries";
+import { alarmesListaQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -104,66 +104,60 @@ export default function Eventos() {
    * severidade junto, então os contadores do topo não precisam de outra
    * consulta.
    */
-  const apiQ = useQuery(
-    eventosApiQuery({
-      only_pending: gravFiltro === "todas" ? false : false,
-      limit: 300,
-    }),
-  );
-
-  const daApi = apiQ.data as
-    | {
-        items: {
-          id: number;
-          vehicle_label?: string;
-          vehicle_prefix?: string;
-          event_type?: string;
-          severity?: string;
-          timestamp?: string;
-          description?: string;
-          acknowledged?: boolean;
-        }[];
-        summary: { total: number; critical: number; warning: number; pending: number };
-      }
-    | undefined;
-
   /**
-   * Converte para o formato da tela.
+   * Disparos reais do Monitor de Alarmes (`alarm_violation`), últimas 24 h.
    *
-   * A severidade do backend é info/warning/critical; a interface usa leve,
-   * moderada e grave. Traduzir aqui evita mudar a tabela e todos os filtros.
+   * `/events` lê `fleet_events`, que está vazia em produção — a tela abria sem
+   * nada. O nível do alarme vira gravidade: 3 (o que toca o som no monitor
+   * antigo) é crítica, 2 alta, 1 média.
    */
+  const alarmesQ = useQuery(alarmesListaQuery(24));
+  const apiQ = alarmesQ;
+
   const eventosApi = useMemo(() => {
-    if (usandoMock() || !daApi?.items) return null;
-    const grav: Record<string, Gravidade> = {
-      critical: "critica",
-      warning: "media",
-      info: "baixa",
-    };
-    return daApi.items.map((e) => ({
-      id: String(e.id),
-      hora: e.timestamp ? new Date(e.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—",
-      motorista: "—",
-      veiculo: e.vehicle_prefix || e.vehicle_label || "—",
-      tipo: e.event_type ?? "—",
-      icon: AlertTriangle,
-      // O backend não guarda clipe vinculado ao evento; vídeo vem de outro
-      // serviço e ainda não está cruzado aqui.
-      video: false,
-      gravidade: grav[e.severity ?? "info"] ?? "baixa",
-      visto: Boolean(e.acknowledged),
-      velocidade: 0,
-      local: e.description ?? "—",
-      dur: "—",
-      x: 0,
-      y: 0,
-    })) as Evento[];
-  }, [daApi]);
+    if (usandoMock() || !alarmesQ.data) return null;
+    const grav = (n: number | null): Gravidade => (n === 3 ? "critica" : n === 2 ? "alta" : n === 1 ? "media" : "baixa");
+    const icone = (nome: string): LucideIcon =>
+      /velocidade/i.test(nome) ? Gauge : /cerca|area|área/i.test(nome) ? MapPin : /igni/i.test(nome) ? Zap : /parad|ocios/i.test(nome) ? Clock : AlertTriangle;
+    const hoje = new Date().toDateString();
+    return alarmesQ.data.itens.map((e) => {
+      const d = e.inicio ? new Date(e.inicio) : null;
+      const hora = d
+        ? d.toDateString() === hoje
+          ? d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+          : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+        : "—";
+      const leituras: Leitura[] = [
+        { label: "Velocidade", value: e.velocidade != null ? `${e.velocidade} km/h` : "—", forte: true },
+        { label: "Motorista", value: e.motorista ?? "não identificado" },
+      ];
+      if (e.latitude != null && e.longitude != null) leituras.push({ label: "Coordenadas", value: `${e.latitude.toFixed(5)}, ${e.longitude.toFixed(5)}` });
+      if (e.observacao) leituras.push({ label: "Observação", value: e.observacao });
+      return {
+        id: String(e.id),
+        hora,
+        motorista: e.motorista ?? "—",
+        veiculo: e.prefixo ? `${e.prefixo} · ${e.placa}` : e.placa,
+        tipo: e.alarme,
+        icon: icone(e.alarme),
+        // Clipe de vídeo por disparo não está ligado a este alarme no banco.
+        video: false,
+        gravidade: grav(e.nivel),
+        visto: e.visualizado,
+        velocidade: e.velocidade ?? 0,
+        local: e.endereco ?? "endereço não informado",
+        dur: "—",
+        x: 0,
+        y: 0,
+        leituras,
+      } as Evento;
+    });
+  }, [alarmesQ.data]);
 
-  const veiculos = uniq((eventosApi ?? EVENTOS).map((e) => e.veiculo));
-  const motoristas = uniq((eventosApi ?? EVENTOS).map((e) => e.motorista));
-
-  const base = eventosApi ?? EVENTOS;
+  // Ligado à API, nunca o exemplo — nem quando a consulta falha.
+  const base = usandoMock() ? EVENTOS : (eventosApi ?? []);
+  const veiculos = uniq(base.map((e) => e.veiculo));
+  const motoristas = uniq(base.map((e) => e.motorista));
 
   const lista = useMemo(
     () =>
@@ -176,7 +170,7 @@ export default function Eventos() {
     [base, filtros, gravFiltro],
   );
 
-  const naoVistos = lista.filter((e) => !vistos.has(e.id)).length;
+  const naoVistos = lista.filter((e) => !e.visto && !vistos.has(e.id)).length;
   const criticos = lista.filter((e) => e.gravidade === "critica").length;
   const videos = lista.filter((e) => e.video).length;
 
@@ -187,7 +181,7 @@ export default function Eventos() {
   };
   const validar = (id: string, v: "correto" | "falso") => setValidacao((m) => ({ ...m, [id]: v }));
 
-  const eventoAberto = EVENTOS.find((e) => e.id === aberto) ?? null;
+  const eventoAberto = base.find((e) => e.id === aberto) ?? null;
 
   return (
     <>
@@ -196,7 +190,7 @@ export default function Eventos() {
         subtitle="Segurança › Eventos de telemetria (CAN)"
         actions={
           <button
-            onClick={() => setVistos(new Set(EVENTOS.map((e) => e.id)))}
+            onClick={() => setVistos(new Set(base.map((e) => e.id)))}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary"
           >
             <Check className="h-[15px] w-[15px]" />
@@ -224,7 +218,7 @@ export default function Eventos() {
         <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
           <p className="text-[12.5px] text-muted-foreground">
-            Esta tela mostra eventos vindos da <strong className="text-foreground">telemetria do veículo (CAN)</strong> —
+            Esta tela mostra os <strong className="text-foreground">alarmes da telemetria</strong> (Monitor de Alarmes) —
             freada, curva, aceleração, excesso de velocidade — que existem em toda a frota, com ou sem câmera. O que a
             <strong className="text-foreground"> câmera</strong> detecta (distração, fadiga, celular, risco de colisão),
             junto da transmissão ao vivo e das gravações, está em{" "}
@@ -284,7 +278,7 @@ export default function Eventos() {
         </div>
 
         <p className="pb-4 text-center text-xs text-muted-foreground">
-          Dados de exemplo — protótipo de interface, sem dados reais.
+          {usandoMock() ? "Dados de exemplo — protótipo de interface, sem dados reais." : "Disparos do Monitor de Alarmes nas últimas 24 h, mais recentes primeiro."}
         </p>
       </div>
 

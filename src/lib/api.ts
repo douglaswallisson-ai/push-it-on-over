@@ -568,6 +568,30 @@ export const Operacional = {
    * Vem de `alarm_violation`, a mesma fonte do monitor do sistema atual — e
    * não de `/events`, que lê `fleet_events`, vazia em produção.
    */
+  /** Lista de disparos do Monitor de Alarmes, mais recentes primeiro. */
+  alarmes: (horas = 24) =>
+    api.get<{
+      janela_horas: number;
+      total: number;
+      nao_visualizados: number;
+      itens: {
+        id: number;
+        alarme: string;
+        nivel: number | null;
+        inicio: string | null;
+        unit_id: number;
+        placa: string;
+        prefixo: string | null;
+        motorista: string | null;
+        velocidade: number | null;
+        endereco: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        visualizado: boolean;
+        observacao: string | null;
+      }[];
+    }>(`/api/v1/events/alarmes${qs({ horas, ...filtroGrupo() })}`),
+
   alarmesNaoVisualizados: (horas = 24) =>
     api.get<{ nao_visualizados: number; janela_horas: number }>(
       `/api/v1/events/alarmes/nao-visualizados?horas=${horas}`,

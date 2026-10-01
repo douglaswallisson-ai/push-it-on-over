@@ -206,10 +206,40 @@ export function toCanvasXY(lat: number, lng: number) {
 export const garagensQuery = () =>
   queryOptions({ queryKey: ["garagens"], queryFn: () => Garagens.list(), staleTime: 10 * MINUTE });
 
+/**
+ * Equipamentos reais: dispositivos (`/devices`) cruzados com a última leitura
+ * do veículo a que estão vinculados (`/vehicles` → `estado_atual.local_time`).
+ * Antes a lista era só de exemplo e, ligada à API, chegava vazia.
+ */
+async function equipamentosReais() {
+  // O vínculo vem junto da lista de veículos (`equipamento`, de
+  // tracked_unit_device). `device.asset` não serve: os aparelhos ficam
+  // cadastrados no grupo da SS, não no do cliente.
+  type ComEquip = VeiculoApi & {
+    equipamento?: { device_id: number; identifier?: string | null; modelo?: string | null; operadora?: string | null } | null;
+  };
+  const brutos = (await buscarTudoPorCursor(Real.veiculos)) as ComEquip[];
+  return brutos.map((b) => {
+    const v = veiculoDaApiParaTela(b);
+    const e = b.equipamento;
+    return {
+      id: e ? String(e.device_id) : `sem-${v.id}`,
+      serial: e?.identifier ?? "sem equipamento",
+      modelo: e?.modelo ?? "—",
+      firmware: "—",
+      veiculoId: v.id,
+      placa: v.placa,
+      garagemId: v.garagemId,
+      ultimaComunicacao: v.odometroLidoEm ?? null,
+      simOperadora: e?.operadora ?? undefined,
+    };
+  });
+}
+
 export const equipamentosQuery = () =>
   queryOptions({
-    queryKey: ["equipamentos"],
-    queryFn: () => Equipamentos.list(),
+    queryKey: chaveComGrupo("equipamentos"),
+    queryFn: () => (usandoMock() ? Equipamentos.list() : equipamentosReais()),
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
@@ -532,6 +562,16 @@ export const rankingMotoristasQuery = (inicio?: string, fim?: string, por: "moto
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,
+  });
+
+export const alarmesListaQuery = (horas = 24) =>
+  queryOptions({
+    queryKey: chaveComGrupo("alarmes", "lista", horas),
+    queryFn: () => Operacional.alarmes(horas),
+    enabled: !usandoMock(),
+    retry: naoRepetirSeProibido,
+    staleTime: 30_000,
+    refetchInterval: refetchInterval(),
   });
 
 export const alarmesNaoVisualizadosQuery = (horas = 24) =>

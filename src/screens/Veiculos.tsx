@@ -260,7 +260,20 @@ export default function Veiculos() {
    * média daria quase zero.
    */
   const comKml = linhas.filter((v) => v.kml != null);
-  const kmlMedio = comKml.length ? comKml.reduce((a, v) => a + (v.kml ?? 0), 0) / comKml.length : null;
+  // Km filtrado da frota ÷ litros da frota, como o BI (vault: Dashboard Start,
+  // R4). A média simples dos km/l dava o mesmo peso a quem rodou 10 km e a
+  // quem rodou 8.000, e saía diferente do painel.
+  const kmlMedio = (() => {
+    const ids = new Set(linhas.map((v) => v.id));
+    let km = 0;
+    let litros = 0;
+    for (const [id, ind] of indicadores.porVeiculo) {
+      if (!ids.has(id)) continue;
+      km += ind.kmFiltrado;
+      litros += ind.litros;
+    }
+    return litros > 0 ? km / litros : null;
+  })();
 
   const COLS: Column<Linha>[] = [
     {

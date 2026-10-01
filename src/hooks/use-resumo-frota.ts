@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import { eventosApiQuery, posicoesQuery, veiculosApiQuery } from "@/lib/queries";
-import { useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
+import { useIndicadoresBi } from "@/hooks/use-indicadores-bi";
 import { usandoMock } from "@/lib/modo";
 import type { ResumoOperacao } from "@/types";
 
@@ -46,7 +46,10 @@ export function useResumoFrota() {
     () => (veiculosQ.data?.items ?? []).map((v) => v.id),
     [veiculosQ.data],
   );
-  const telemetria = useIndicadoresPorVeiculo(30, idsDaFrota);
+  // Mesma fonte e regra do BI (con_driver_h_km; km filtrado ÷ litros). A
+  // telemetria por viagem diverge 14,8% do BI (vault), e a tela Início ficava
+  // com um consumo e a de Veículos com outro.
+  const telemetria = useIndicadoresBi(30, idsDaFrota);
 
   const resumo = useMemo<ResumoOperacao | undefined>(() => {
     if (usandoMock()) return mockQ.data;
@@ -72,7 +75,7 @@ export function useResumoFrota() {
     // Consumo da frota: quilômetros somados sobre litros somados, não a média
     // das médias. Veículo que rodou 10 km não pesa igual ao que rodou 3.000.
     const vals = [...telemetria.porVeiculo.values()];
-    const kmTotal = vals.reduce((a, v) => a + v.distanciaKm, 0);
+    const kmTotal = vals.reduce((a, v) => a + v.kmFiltrado, 0);
     const litrosTotal = vals.reduce((a, v) => a + v.litros, 0);
 
     return {

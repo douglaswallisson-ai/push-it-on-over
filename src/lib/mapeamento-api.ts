@@ -27,6 +27,8 @@ export type VeiculoApi = {
     hourmeter_total?: number | null;
     can_avg_fuel_economy_kmpl?: number | null;
     local_time?: string | null;
+    speed?: number | null;
+    ignition?: boolean | null;
   } | null;
   id: number;
   label: string;
@@ -73,6 +75,15 @@ export type VeiculoFront = {
  * Campos que o backend não tem ficam com um padrão razoável, nunca inventado:
  * `kml` e `odometro` vêm zerados até o relatório de telemetria preencher.
  */
+const MINUTOS_SEM_SINAL = 20;
+
+function situacaoDaLeitura(e: VeiculoApi["estado_atual"]): "em_rota" | "parado" | "sem_sinal" {
+  if (!e?.local_time) return "sem_sinal";
+  const idadeMin = (Date.now() - new Date(e.local_time).getTime()) / 60_000;
+  if (!(idadeMin <= MINUTOS_SEM_SINAL)) return "sem_sinal";
+  return (e.speed ?? 0) > 3 ? "em_rota" : "parado";
+}
+
 export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
   const [marca, ...resto] = (v.model ?? "").split(" ");
   const odomMetros = v.estado_atual?.odom_total ?? v.estado_atual?.odom ?? null;
@@ -86,7 +97,10 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
     // zero; nulo diz que não foi informado.
     ano: v.vehicle_year ?? null,
     operacao: "—",
-    situacao: v.status === 1 ? "parado" : "sem_sinal",
+    // Da última leitura, não do cadastro. `status` é ativo/removido — usar ele
+    // marcava todo ativo como "parado". Mesmos critérios do mapa: 20 min sem
+    // leitura é sem sinal; acima de 3 km/h, em rota.
+    situacao: situacaoDaLeitura(v.estado_atual),
     // Zero seria mentira: o veículo não roda a 0 km/l, o dado é que não veio.
     // O cadastro entrega só a ficha; consumo e odômetro atual vêm de
     // con_telemetry, que é outra consulta. Nulo faz a tela mostrar traço.

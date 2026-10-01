@@ -342,7 +342,11 @@ export default function Veiculos() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setFaixasDe(faixasDe === v.id ? null : v.id);
+            const novo = faixasDe === v.id ? null : v.id;
+            setFaixasDe(novo);
+            // O gráfico abre abaixo da tabela, fora da vista: sem rolar, o
+            // clique parecia não fazer nada.
+            if (novo) setTimeout(() => document.getElementById("faixas-do-veiculo")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
           }}
           title="Ver distribuição por faixas de condução"
           className={cn(
@@ -418,7 +422,9 @@ export default function Veiculos() {
             mandaria o usuário pedir um acesso que ele já tem. */}
         {/* Declara a base do cálculo: sem saber quantas viagens entraram, o
             gestor não tem como julgar se o número é representativo. */}
-        {!usandoMock() && (
+        {/* Só aparece carregando, com erro ou sem viagem — com dado, o texto
+            explicativo saiu a pedido do produto. */}
+        {!usandoMock() && (indicadores.erro || indicadores.carregando || indicadores.linhasKm === 0) && (
           <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
             <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
@@ -436,7 +442,7 @@ export default function Veiculos() {
                 </span>
               ) : indicadores.carregando ? (
                 <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
-              ) : indicadores.linhasKm > 0 ? (
+              ) : indicadores.linhasKm > 0 ? null : false ? (
                 <span>
                   <strong className="text-foreground">{nf(indicadores.linhasKm)} registros</strong> consolidados por
                   dia, dos últimos 30 dias — mesma fonte do BI, para o número bater com o painel.
@@ -650,6 +656,7 @@ export default function Veiculos() {
               </p>
             </Card>
 
+            <div id="faixas-do-veiculo" className="scroll-mt-4" />
             {faixasDe && (() => {
               // Era `faixasDoVeiculo` da base de exemplo — a mesma distribuição
               // para qualquer placa. Agora são as faixas reais do período.

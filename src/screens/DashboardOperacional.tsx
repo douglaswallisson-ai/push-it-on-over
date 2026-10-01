@@ -28,13 +28,14 @@ import { Card, Pill, type PillTone } from "@/components/ss/ui/data";
 import { SkeletonRows } from "@/components/ss/ui/QueryState";
 import {
   eventosApiQuery,
-  indicadoresApiQuery,
+  alarmesNaoVisualizadosQuery,
   nf,
   posicoesQuery,
   veiculosApiQuery,
   veiculosQuery,
 } from "@/lib/queries";
 import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
+import { serieGerencialQuery, somar as somarSerie } from "@/lib/gerencial-api";
 import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +102,22 @@ export default function DashboardOperacional() {
   const [dias, setDias] = useState(30);
   const p = useMemo(() => janela(dias), [dias]);
 
-  const indicadoresQ = useQuery(indicadoresApiQuery(p.i, p.f));
+  // `/indicators` nunca foi publicado; o período sai da série do BI
+  // (`/gerencial/serie-diaria`), contra o período anterior de mesmo tamanho.
+  const fimSerie = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d;
+  }, []);
+  const isoL = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const menos = (base: Date, n: number) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() - n);
+    return d;
+  };
+  const serieQ = useQuery(serieGerencialQuery(isoL(menos(fimSerie, dias - 1)), isoL(fimSerie)));
+  const serieAntQ = useQuery(serieGerencialQuery(isoL(menos(fimSerie, 2 * dias - 1)), isoL(menos(fimSerie, dias))));
+  const indicadoresQ = serieQ;
   const posicoesQ = useQuery(posicoesQuery());
   const eventosQ = useQuery(eventosApiQuery({ only_pending: true, limit: 200 }));
   const mockVeic = useQuery(veiculosQuery(1, 300));
@@ -111,11 +127,45 @@ export default function DashboardOperacional() {
   const veiculos = (usandoMock() ? mockVeic.data : apiVeic.data)?.items ?? [];
   const posicoes = posicoesQ.data ?? [];
 
-  const ind = (indicadoresQ.data as
-    | { current: Record<string, number>; previous?: Record<string, number> | null; unavailable?: string[]; unavailable_reason?: string }
-    | undefined);
+  const ind = useMemo(() => {
+    if (!serieQ.data) return undefined;
+    const campos = (dias: typeof serieQ.data.dias) => {
+      const t = somarSerie(dias);
+      const eventos = t.aceleracao + t.freada + t.velocidade + t.embreagem;
+      return {
+        distance_km: t.km,
+        kml: t.litros > 0 ? Math.round((t.km_filtrado / t.litros) * 100) / 100 : 0,
+        events_per_100km: t.km > 0 ? Math.round((eventos / t.km) * 10000) / 100 : 0,
+        moving_hours: t.horas,
+        idle_hours: t.stop_engine_on / 3600,
+        total_hours: t.total_11 / 3600,
+        idle_pct: t.total_11 > 0 ? Math.round((t.stop_engine_on / t.total_11) * 1000) / 10 : 0,
+        green_band_pct: t.faixas_13 > 0 ? Math.round(((t.faixas.verde + t.faixas.extra_economica) / t.faixas_13) * 1000) / 10 : 0,
+        hard_brakes: t.freada,
+        hard_accelerations: t.aceleracao,
+        speed_violations: t.velocidade,
+        active_vehicles: t.veiculos,
+        active_drivers: t.motoristas,
+        fuel_liters: t.litros,
+      } as Record<string, number>;
+    };
+    return {
+      current: campos(serieQ.data.dias),
+      previous: serieAntQ.data ? campos(serieAntQ.data.dias) : null,
+      unavailable: ["MKBF", "viagens"],
+      unavailable_reason:
+        "MKBF depende de cadastro de falhas e viagens de uma contagem que o backend ainda não expõe. Veículos e motoristas são o maior número de um dia do período.",
+    };
+  }, [serieQ.data, serieAntQ.data]);
 
-  const eventos = (eventosQ.data as { summary?: { pending: number; critical: number } } | undefined)?.summary;
+  // `fleet_events` está vazia em produção; o que está aberto de verdade são os
+  // disparos do Monitor de Alarmes não visualizados (24 h).
+  const alarmesQ = useQuery(alarmesNaoVisualizadosQuery(24));
+  const eventos = usandoMock()
+    ? (eventosQ.data as { summary?: { pending: number; critical: number } } | undefined)?.summary
+    : alarmesQ.data
+      ? { pending: alarmesQ.data.nao_visualizados, critical: 0 }
+      : undefined;
 
   /* ---------------- Estado agora ---------------- */
 
@@ -215,10 +265,10 @@ export default function DashboardOperacional() {
             />
             <Tile
               icone={Siren}
-              rotulo="Eventos abertos"
-              valor={nf(eventos?.pending ?? 0)}
+              rotulo={usandoMock() ? "Eventos abertos" : "Alarmes não vistos"}
+              valor={eventos ? nf(eventos.pending) : "—"}
               cor={eventos?.pending ? "var(--coral)" : "var(--leaf)"}
-              nota={eventos?.critical ? `${eventos.critical} críticos` : "nenhum crítico"}
+              nota={usandoMock() ? (eventos?.critical ? `${eventos.critical} críticos` : "nenhum crítico") : "últimas 24 h"}
               aoClicar={() => navigate("/app/eventos")}
             />
           </div>
@@ -306,7 +356,7 @@ export default function DashboardOperacional() {
                 <TileVariacao
                   icone={Wrench}
                   rotulo="MKBF"
-                  valor={nf(Math.round(ind.current.mkbf ?? 0))}
+                  valor={ind.current.mkbf != null ? nf(Math.round(ind.current.mkbf)) : "—"}
                   unidade="km"
                   variacao={variacao("mkbf")}
                   maiorEhMelhor
@@ -374,7 +424,7 @@ export default function DashboardOperacional() {
 
               {/* Operação: quantos carros e motoristas de fato rodaram. */}
               <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <Tile icone={Bus} rotulo="Viagens" valor={nf(ind.current.trips ?? 0)} cor="var(--brand-navy)" />
+                <Tile icone={Bus} rotulo="Horas trabalhadas" valor={nf(Math.round(ind.current.moving_hours ?? 0))} unidade="h" cor="var(--brand-navy)" />
                 <Tile
                   icone={Truck}
                   rotulo="Veículos que rodaram"

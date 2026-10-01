@@ -55,6 +55,9 @@ export type FiltroRelatorio = {
  */
 const SOMENTE_DATA = new Set(["driver-km-fuel-hours", "rpm-band-time", "weight-range"]);
 
+/** Relatórios que filtram veículo por `unit_ids` (os outros, por `vehicle_ids`). */
+const USA_UNIT_IDS = new Set(["driver-km-fuel-hours", "rpm-band-time", "heatmap"]);
+
 /** `2026-08-31 12:33:41` vira `2026-08-31`. */
 const soData = (v: string) => v.slice(0, 10);
 
@@ -74,7 +77,11 @@ const paramsDe = (f: FiltroRelatorio, cursor?: string, relatorio?: string) => {
    *
    * Quem seleciona os veículos é a tela, que já tem a frota da empresa ativa.
    */
-  if (f.veiculos?.length) p.set("vehicle_ids", f.veiculos.join(","));
+  // O nome do parâmetro muda por relatório: os consolidados (km/combustível,
+  // faixas, mapa de calor) leem `unit_ids`; histórico e telemetria leem
+  // `vehicle_ids`. Com o nome errado o filtro era ignorado sem erro e a tela
+  // de Veículos baixava a base inteira — 119 mil linhas para 213 veículos.
+  if (f.veiculos?.length) p.set(USA_UNIT_IDS.has(relatorio ?? "") ? "unit_ids" : "vehicle_ids", f.veiculos.join(","));
   if (cursor) p.set("cursor", cursor);
   return p.toString();
 };

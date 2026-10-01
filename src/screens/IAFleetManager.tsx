@@ -26,7 +26,7 @@ import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/c
 import { cn } from "@/lib/utils";
 
 /**
- * IA Fleet Manager — a Selma. Painel de AÇÃO: lê a telemetria e diz o que fazer
+ * IA Ops Advisor (antigo IA Fleet Manager) — a Selma. Painel de AÇÃO: lê a telemetria e diz o que fazer
  * agora, por que, e qual o retorno. Estrutura e lógica herdadas do protótipo de
  * IA Fleet Manager, reescritas no design system da SS. Dados de exemplo,
  * anonimizados. (Selma como avatar da IA; a foto dela substitui o orb quando
@@ -209,7 +209,7 @@ export default function IAFleetManager() {
   return (
     <>
       <PageHeader
-        title="IA Fleet Manager"
+        title="IA Ops Advisor"
         subtitle="Selma · da telemetria à ação"
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -335,7 +335,7 @@ export default function IAFleetManager() {
         {/* Selma. */}
         <HeroBanner
           orb
-          eyebrow="IA Fleet Manager · Selma"
+          eyebrow="IA Ops Advisor · Selma"
           title="O que fazer agora."
           subtitle="Eu leio a telemetria da sua frota e devolvo as ações que geram resultado — com o porquê e o retorno de cada uma. Ações geram resultado; painéis geram relatório."
         >

@@ -142,7 +142,7 @@ export function SelmaLauncher() {
             </div>
           )}
 
-          {/* Ação sugerida do dia (do IA Fleet Manager). */}
+          {/* Ação sugerida do dia (do IA Ops Advisor). */}
           <div className="mx-4 mb-2 rounded-xl border border-navy-line bg-navy-tint/60 p-3">
             <p className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-blue">
               <Sparkles className="h-3.5 w-3.5" />
@@ -157,7 +157,7 @@ export function SelmaLauncher() {
               onClick={() => setOpen(false)}
               className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-brand-navy hover:text-brand-blue"
             >
-              Ver no IA Fleet Manager
+              Ver no IA Ops Advisor
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>

@@ -376,7 +376,7 @@ export const TOURS: Record<string, TourStep[]> = {
   ],
 
   "/app/estrategico": [
-    { selector: '[data-tour="page-header"]', title: "IA Fleet Manager", body: "A Selma — a inteligência que lê a telemetria e te diz o que fazer agora." },
+    { selector: '[data-tour="page-header"]', title: "IA Ops Advisor", body: "A Selma — a inteligência que lê a telemetria e te diz o que fazer agora." },
     { selector: '[data-tour="hero"]', title: "Da telemetria à ação", body: "A abertura traz a economia potencial e o número de motoristas para retreinar — a leitura da Selma num relance." },
     { selector: '[data-tour="acoes"]', title: "Ações prioritárias", body: "As ações em ordem de impacto e velocidade de resultado. Cada card traz o porquê, o impacto e o retorno." },
     { selector: '[data-tour="table"]', title: "Motoristas para retreinar", body: "A lista de quem opera abaixo da média, com a ação recomendada para cada um." },

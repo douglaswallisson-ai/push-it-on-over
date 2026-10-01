@@ -147,7 +147,7 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
-  { label: "IA Fleet Manager", icon: Sparkles, to: "/app/estrategico" },
+  { label: "IA Ops Advisor", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];

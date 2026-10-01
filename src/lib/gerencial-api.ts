@@ -64,6 +64,12 @@ export type VeiculoOcioso = {
   serie: number[];
 };
 
+/** Erro de login ou de permissão não se resolve repetindo — mostra a mensagem logo. */
+const semRepetirLogin = (n: number, e: unknown) => {
+  const s = (e as { status?: number })?.status;
+  return s !== 401 && s !== 403 && n < 2;
+};
+
 const qs = (p: Record<string, string | undefined>) => {
   const e = Object.entries(p).filter(([, v]) => v);
   return e.length ? "?" + new URLSearchParams(e as [string, string][]) : "";
@@ -75,6 +81,7 @@ export const serieGerencialQuery = (inicio?: string, fim?: string) =>
     queryFn: () =>
       api.get<SerieGerencial>(`/api/v1/gerencial/serie-diaria/${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`),
     enabled: !usandoMock(),
+    retry: semRepetirLogin,
     staleTime: 5 * 60_000,
   });
 
@@ -86,6 +93,7 @@ export const ociosoQuery = (inicio?: string, fim?: string) =>
         `/api/v1/gerencial/ocioso/${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`,
       ),
     enabled: !usandoMock(),
+    retry: semRepetirLogin,
     staleTime: 5 * 60_000,
   });
 

@@ -1,6 +1,9 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Award, CalendarDays, FileText, Printer, Star, Target, TrendingUp, Trophy, Truck } from "lucide-react";
-import { exemploOuVazio } from "@/lib/modo";
+import { exemploOuVazio, usandoMock } from "@/lib/modo";
+import { rankingMotoristasQuery } from "@/lib/queries";
+import type { MotoristaRankingApi } from "@/lib/api";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { exportarCSV, imprimir } from "@/lib/export";
 import { toast } from "sonner";
@@ -177,11 +180,127 @@ function PremiacaoExemplo() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dados de exemplo, a demonstração; ligado à API, a apuração real. */
 export default function Premiacao() {
+  return usandoMock() ? <PremiacaoExemplo /> : <PremiacaoReal />;
+}
+
+/* --------------------------------- Real --------------------------------- */
+
+type Periodo = "mes_anterior" | "mes";
+
+/**
+ * Saldo à pagar, regra do Power BI (vault: indicadores-power-bi, P7).
+ *
+ * Só apura com período ≤ 31 dias e ≥ 6.000 km do motorista:
+ *   ≥ 90 pts, ≥ 7.000 km, 1º/2º/3º   900 / 800 / 700
+ *   ≥ 90 pts, ≥ 7.000 km               600
+ *   ≥ 90 pts, 6.500–6.999 km           500
+ *   ≥ 90 pts, 6.000–6.499 km           400
+ *   ≥ 80 pts, ≥ 7.000 km               300
+ *
+ * A posição do pódio no BI é por instrutor; aqui é a posição geral do
+ * ranking, porque a ligação motorista ↔ instrutor não está no backend. A
+ * fórmula não diz a moeda, e o .pbix lido era de um cliente (Figueiredo).
+ */
+function saldo(m: MotoristaRankingApi, dias: number): number | null {
+  const p = m.pontuacao;
+  if (p == null || dias > 31 || m.km < 6000) return null;
+  if (p >= 90 && m.km >= 7000) {
+    const bonus = m.posicao === 1 ? 300 : m.posicao === 2 ? 200 : m.posicao === 3 ? 100 : 0;
+    return 600 + bonus;
+  }
+  if (p >= 90 && m.km >= 6500) return 500;
+  if (p >= 90) return 400;
+  if (p >= 80 && m.km >= 7000) return 300;
+  return 0;
+}
+
+/** Status do saldo, com os limites próprios do BI (diferentes do saldo). */
+const statusSaldo = (m: MotoristaRankingApi) =>
+  m.km < 7000 ? "KM abaixo" : (m.pontuacao ?? 0) >= 80 ? "Aprovado" : "Nota abaixo";
+
+function datas(p: Periodo) {
+  const ontem = new Date();
+  ontem.setDate(ontem.getDate() - 1);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const ini = p === "mes" ? new Date(ontem.getFullYear(), ontem.getMonth(), 1) : new Date(ontem.getFullYear(), ontem.getMonth() - 1, 1);
+  const fim = p === "mes" ? ontem : new Date(ontem.getFullYear(), ontem.getMonth(), 0);
+  return { inicio: iso(ini), fim: iso(fim), dias: Math.round((fim.getTime() - ini.getTime()) / 86_400_000) + 1 };
+}
+
+const fmt = (v: number | null | undefined, casas = 0) =>
+  v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+
+function PremiacaoReal() {
+  const [periodo, setPeriodo] = useState<Periodo>("mes_anterior");
+  const d = datas(periodo);
+  const q = useQuery(rankingMotoristasQuery(d.inicio, d.fim));
+
+  const linhas = useMemo(
+    () =>
+      (q.data?.motoristas ?? [])
+        .map((m) => ({ ...m, saldo: saldo(m, d.dias), status: statusSaldo(m) }))
+        .sort((a, b) => (b.saldo ?? -1) - (a.saldo ?? -1) || (b.pontuacao ?? 0) - (a.pontuacao ?? 0)),
+    [q.data, d.dias],
+  );
+  const premiados = linhas.filter((l) => (l.saldo ?? 0) > 0);
+  const total = premiados.reduce((a, l) => a + (l.saldo ?? 0), 0);
+  const aprovados = linhas.filter((l) => l.status === "Aprovado").length;
+
+  const COLS: Column<(typeof linhas)[number]>[] = [
+    { key: "posicao", header: "#", align: "center", render: (l) => <span className="font-mono text-muted-foreground">{l.posicao ?? "—"}</span> },
+    { key: "nome", header: "Motorista", render: (l) => <span className="font-semibold">{l.nome ?? `Motorista ${l.driver_id}`}</span> },
+    { key: "pontuacao", header: "Nota", align: "center", render: (l) => <Pill tone={(l.pontuacao ?? 0) >= 90 ? "green" : (l.pontuacao ?? 0) >= 80 ? "gold" : "coral"}>{fmt(l.pontuacao, 2)}</Pill> },
+    { key: "km", header: "Km", align: "right", render: (l) => <span className="font-mono">{fmt(l.km)}</span> },
+    { key: "status", header: "Status", align: "center", render: (l) => <Pill tone={l.status === "Aprovado" ? "green" : "neutral"}>{l.status}</Pill> },
+    { key: "saldo", header: "Saldo", align: "right", render: (l) => <span className="font-mono font-bold">{l.saldo == null ? "—" : fmt(l.saldo)}</span> },
+  ];
+
   return (
-    <ModuloSemFonte titulo="Premiação" motivo="Vai ser calculada a partir do ranking de motoristas, com a regra do Saldo à pagar do Power BI.">
-      <PremiacaoExemplo />
-    </ModuloSemFonte>
+    <>
+      <PageHeader title="Premiação" subtitle={`Saldo à pagar pela regra do Power BI · ${new Date(d.inicio + "T12:00").toLocaleDateString("pt-BR")} a ${new Date(d.fim + "T12:00").toLocaleDateString("pt-BR")}`} />
+      <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
+        <HeroBanner orb eyebrow="Equipe · Premiação" title={q.data ? `${fmt(premiados.length)} motoristas premiados` : q.isPending ? "Apurando…" : "Premiação"} subtitle="Pontuação do ranking de motoristas e a tabela de saldo do Power BI.">
+          <div className="flex items-center gap-6">
+            <HeroMetric value={fmt(total)} label="Saldo total" />
+            <div className="h-10 w-px bg-white/15" />
+            <HeroMetric value={fmt(q.data?.resumo.nota_media, 2)} label="Nota média" />
+          </div>
+        </HeroBanner>
+
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatTile icon={Trophy} label="Saldo total" value={fmt(total)} color="var(--leaf)" />
+          <StatTile icon={Award} label="Premiados" value={fmt(premiados.length)} color="var(--brand-navy)" />
+          <StatTile icon={Star} label="Status aprovado" value={fmt(aprovados)} color="var(--gold)" />
+          <StatTile icon={Truck} label="Motoristas no período" value={fmt(linhas.length)} color="var(--brand-sky)" />
+        </div>
+
+        <div className="rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3 text-[12.5px] text-gold">
+          Regra do Power BI da Figueiredo (vault, P7). A fórmula não indica a moeda e o pódio é pela posição geral, não
+          por instrutor. Só apura período de até 31 dias e motorista com 6.000 km ou mais.
+        </div>
+
+        <Card
+          title="Apuração por motorista"
+          icon={Target}
+          action={
+            <select value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)} className="h-8 rounded-full border border-border bg-white px-3 text-[12.5px]">
+              <option value="mes_anterior">Mês anterior</option>
+              <option value="mes">Mês atual (parcial)</option>
+            </select>
+          }
+          bodyClassName="p-4"
+        >
+          {q.error ? (
+            <p className="py-8 text-center text-sm text-coral">Não foi possível apurar: {(q.error as Error).message}</p>
+          ) : q.isPending ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Apurando a premiação…</p>
+          ) : (
+            <DataTable columns={COLS} rows={linhas} />
+          )}
+        </Card>
+      </div>
+    </>
   );
 }

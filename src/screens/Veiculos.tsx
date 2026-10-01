@@ -578,7 +578,9 @@ export default function Veiculos() {
                   <DataTable
                     columns={COLS}
                     rows={visiveis}
-                    onRowClick={(v) => navigate(`/app/manutencao?placa=${v.placa}`)}
+                    // A linha abre o acompanhamento do veículo. Abria a
+                    // manutenção — que tem botão próprio na coluna Manutenção.
+                    onRowClick={(v) => navigate(`/app/frota/analise?veiculo=${v.id}`)}
                   />
 
                   {totalPaginas > 1 && (
@@ -630,8 +632,8 @@ export default function Veiculos() {
                 <EmptyNote>Nenhum veículo encontrado com esse filtro.</EmptyNote>
               )}
               <p className="mt-3 text-[11.5px] text-muted-foreground">
-                Indicadores na mesma escala da tela de Motoristas (0 a 5 estrelas). Clique na linha para abrir a
-                manutenção da placa.
+                Faixas em percentual do tempo nos últimos 30 dias. Clique na linha para abrir o acompanhamento do
+                veículo; a coluna Manutenção leva à manutenção da placa.
               </p>
             </Card>
 

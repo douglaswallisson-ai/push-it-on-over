@@ -1,4 +1,5 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { UnidadesReal } from "./ListasReais";
+import { usandoMock as modoExemplo } from "@/lib/modo";
 import { Building2, MapPin, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -87,11 +88,7 @@ function UnidadesExemplo() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dados de exemplo, a demonstração; ligado à API, a consulta real. */
 export default function Unidades() {
-  return (
-    <ModuloSemFonte titulo="Unidades" motivo="A lista era de exemplo. Vai ser ligada aos subgrupos reais (mova.subgroup).">
-      <UnidadesExemplo />
-    </ModuloSemFonte>
-  );
+  return modoExemplo() ? <UnidadesExemplo /> : <UnidadesReal />;
 }

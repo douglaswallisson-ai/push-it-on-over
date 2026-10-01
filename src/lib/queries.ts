@@ -525,10 +525,10 @@ export const eventosApiQuery = (filtros: Record<string, string | number | boolea
     refetchInterval: refetchInterval(),
   });
 
-export const rankingMotoristasQuery = (inicio?: string, fim?: string) =>
+export const rankingMotoristasQuery = (inicio?: string, fim?: string, por: "motorista" | "veiculo" = "motorista") =>
   queryOptions({
-    queryKey: chaveComGrupo("motoristas", "ranking", inicio ?? "", fim ?? ""),
-    queryFn: () => Operacional.rankingMotoristas({ inicio, fim }),
+    queryKey: chaveComGrupo("motoristas", "ranking", por, inicio ?? "", fim ?? ""),
+    queryFn: () => Operacional.rankingMotoristas({ inicio, fim, por }),
     enabled: !usandoMock(),
     retry: naoRepetirSeProibido,
     staleTime: 5 * MINUTE,

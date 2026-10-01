@@ -1,5 +1,9 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { usandoMock } from "@/lib/modo";
+import { rankingMotoristasQuery, veiculosApiQuery } from "@/lib/queries";
+import { distribuicaoDoRanking } from "@/lib/api";
+import { FaixasConducao } from "@/components/ss/frota/FaixasConducao";
 import {
   ChevronDown,
   Fuel,
@@ -162,11 +166,166 @@ function AnaliseIndividualExemplo() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dados de exemplo, a demonstração; ligado à API, o veículo real. */
 export default function AnaliseIndividual() {
+  return usandoMock() ? <AnaliseIndividualExemplo /> : <AnaliseIndividualReal />;
+}
+
+/* --------------------------------- Real --------------------------------- */
+
+const fmt = (v: number | null | undefined, casas = 0) =>
+  v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+
+/**
+ * Acompanhamento de um veículo, com a Pontuação do BI agrupada por placa
+ * (`/driver-ranking?por=veiculo`, a "RANK POR PLACA" do Power BI).
+ *
+ * Fluxo corrigido: trocar de veículo acontece aqui, no seletor — antes o botão
+ * mandava para a lista de Veículos, e o clique na lista mandava para
+ * Manutenção, de modo que não havia caminho de volta para esta tela.
+ */
+function AnaliseIndividualReal() {
+  const navigate = useNavigate();
+  const veiculosQ = useQuery(veiculosApiQuery(1, 200));
+  const rankingQ = useQuery(rankingMotoristasQuery(undefined, undefined, "veiculo"));
+  const veiculos = useMemo(
+    () => [...(veiculosQ.data?.items ?? [])].sort((a, b) => (a.prefixo ?? a.placa).localeCompare(b.prefixo ?? b.placa, "pt-BR", { numeric: true })),
+    [veiculosQ.data],
+  );
+
+  const pedido = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("veiculo") : null;
+  const [escolhido, setEscolhido] = useState<string | null>(null);
+  const id = escolhido ?? (veiculos.find((v) => v.id === pedido || v.placa === pedido)?.id ?? veiculos[0]?.id);
+  const v = veiculos.find((x) => x.id === id);
+  const r = rankingQ.data?.motoristas.find((m) => String(m.driver_id) === id);
+  const total = rankingQ.data?.motoristas.filter((m) => m.posicao != null).length ?? 0;
+
+  const trocar = (novo: string) => {
+    setEscolhido(novo);
+    // Mantém o endereço em dia: recarregar ou compartilhar abre o mesmo veículo.
+    window.history.replaceState(null, "", `?veiculo=${novo}`);
+  };
+
+  const velMedia = r && r.horas > 0 ? r.km / r.horas : null;
+  const e = r?.eventos_por_hora;
+  const stats: { icon: LucideIcon; label: string; value: string; unit?: string }[] = [
+    { icon: Route, label: "Km no período", value: fmt(r?.km), unit: "km" },
+    { icon: Timer, label: "Horas trabalhadas", value: fmt(r?.horas, 1), unit: "h" },
+    { icon: Gauge, label: "Velocidade média", value: fmt(velMedia, 1), unit: "km/h" },
+    { icon: Fuel, label: "Combustível", value: fmt(r?.litros), unit: "L" },
+    { icon: TrendingUp, label: "Média", value: fmt(r?.kml, 2), unit: "km/l" },
+    { icon: Truck, label: "Odômetro", value: fmt(v?.odometro), unit: "km" },
+    { icon: Octagon, label: "Freada brusca / h", value: fmt(e?.freada_brusca, 2) },
+    { icon: Octagon, label: "Aceleração brusca / h", value: fmt(e?.aceleracao_brusca, 2) },
+  ];
+  const f = r?.faixas;
+
   return (
-    <ModuloSemFonte titulo="Acompanhamento do veículo" motivo="A tela tinha nota, velocidade e consumo escritos no código. Vai ser refeita sobre a telemetria real do veículo.">
-      <AnaliseIndividualExemplo />
-    </ModuloSemFonte>
+    <>
+      <PageHeader
+        title="Acompanhamento do veículo"
+        subtitle={`Frota › Desempenho do veículo${rankingQ.data ? ` · ${new Date(rankingQ.data.inicio + "T12:00").toLocaleDateString("pt-BR")} a ${new Date(rankingQ.data.fim + "T12:00").toLocaleDateString("pt-BR")}` : ""}`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={id ?? ""}
+              onChange={(ev) => trocar(ev.target.value)}
+              className="h-9 max-w-[280px] rounded-full border border-border bg-white px-3 text-[13px]"
+              title="Trocar de veículo"
+            >
+              {veiculos.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.prefixo ? `${x.prefixo} · ` : ""}
+                  {x.placa}
+                </option>
+              ))}
+            </select>
+            {id && (
+              <>
+                <button onClick={() => navigate(`/app/frota/tracking?veiculo=${id}`)} className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white">
+                  <Route className="h-[15px] w-[15px]" />
+                  Percurso do dia
+                </button>
+                <button onClick={() => navigate(`/app/manutencao?placa=${v?.placa ?? ""}`)} className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy hover:bg-secondary">
+                  Manutenção
+                </button>
+              </>
+            )}
+          </div>
+        }
+      />
+
+      <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
+        {!v ? (
+          <p className="py-10 text-center text-sm text-muted-foreground">
+            {veiculosQ.isPending ? "Carregando a frota…" : veiculosQ.error ? `Não foi possível carregar: ${(veiculosQ.error as Error).message}` : "Nenhum veículo na frota."}
+          </p>
+        ) : (
+          <>
+            <HeroBanner orb eyebrow="Frota · Análise individual" title={`${v.prefixo ? `${v.prefixo} · ` : ""}${v.placa}`} subtitle={`${v.marca} ${v.modelo}${v.ano ? ` · ${v.ano}` : ""}`}>
+              <div className="flex items-center gap-6">
+                <HeroMetric value={fmt(velMedia, 1)} unit="km/h" label="Velocidade média" />
+                <div className="h-10 w-px bg-white/15" />
+                <HeroMetric value={fmt(r?.kml, 2)} unit="km/l" label="Média" />
+              </div>
+            </HeroBanner>
+
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
+              <Card title="Pontuação" icon={Gauge}>
+                <div className="flex flex-col items-center gap-3">
+                  {rankingQ.isPending ? (
+                    <p className="py-10 text-sm text-muted-foreground">Calculando…</p>
+                  ) : r?.pontuacao == null ? (
+                    <p className="py-10 text-center text-sm text-muted-foreground">Sem faixas de condução nos últimos 30 dias.</p>
+                  ) : (
+                    <>
+                      <ScoreGauge score={Math.max(0, Math.min(100, r.pontuacao))} />
+                      <p className="font-mono text-sm font-bold">{fmt(r.pontuacao, 2)} pontos</p>
+                      <p className="text-[12px] text-muted-foreground">
+                        {r.posicao}º de {fmt(total)} veículos
+                      </p>
+                    </>
+                  )}
+                </div>
+              </Card>
+
+              <div>
+                <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="inline-block h-px w-4 bg-current opacity-50" />
+                  Indicadores de condução (% do tempo nas 13 faixas)
+                </p>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <IndicatorCard label="Faixa verde" value={f?.verde ?? 0} tone="leaf" />
+                  <IndicatorCard label="Inércia" value={f?.inercia ?? 0} tone="leaf" />
+                  <IndicatorCard label="Extra econômica" value={f?.extra_economica ?? 0} tone="leaf" />
+                  <IndicatorCard label="Parado com motor ligado" value={f?.parado_ligado ?? 0} tone="gold" />
+                  <IndicatorCard label="Faixa amarela" value={f?.amarela ?? 0} tone="gold" />
+                  <IndicatorCard label="Faixa vermelha" value={f?.vermelha ?? 0} tone="coral" />
+                </div>
+              </div>
+            </div>
+
+            <Card title="Estatísticas do período" icon={TrendingUp}>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {stats.map((s) => (
+                  <div key={s.label} className="rounded-xl border border-border bg-secondary/40 p-3">
+                    <s.icon className="h-4 w-4 text-brand-navy" />
+                    <p className="mt-2 font-display text-lg font-bold tabular-nums">
+                      {s.value}
+                      {s.unit && <span className="ml-0.5 text-[11px] font-medium text-muted-foreground">{s.unit}</span>}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {f && r?.pontuacao != null && (
+              <FaixasConducao distribuicao={distribuicaoDoRanking(f)} titulo="Faixas de condução" subtitulo="Últimos 30 dias, nas 13 faixas do Power BI." />
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }

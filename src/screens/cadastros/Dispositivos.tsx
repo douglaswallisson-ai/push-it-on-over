@@ -1,4 +1,5 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { DispositivosReal } from "./ListasReais";
+import { usandoMock as modoExemplo } from "@/lib/modo";
 import { Cpu, Radio, Wifi, WifiOff } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -105,11 +106,7 @@ function DispositivosExemplo() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dados de exemplo, a demonstração; ligado à API, a consulta real. */
 export default function Dispositivos() {
-  return (
-    <ModuloSemFonte titulo="Dispositivos" motivo="A lista era de exemplo. Vai ser ligada aos dispositivos reais (rota /devices).">
-      <DispositivosExemplo />
-    </ModuloSemFonte>
-  );
+  return modoExemplo() ? <DispositivosExemplo /> : <DispositivosReal />;
 }

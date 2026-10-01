@@ -1,4 +1,5 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { GruposReal } from "./ListasReais";
+import { usandoMock as modoExemplo } from "@/lib/modo";
 import { Layers, Truck, Users } from "lucide-react";
 import { CadastroScaffold } from "@/components/ss/layout/CadastroScaffold";
 import type { Campo } from "@/components/ss/cadastro/CrudSheet";
@@ -86,11 +87,7 @@ function GruposExemplo() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dados de exemplo, a demonstração; ligado à API, a consulta real. */
 export default function Grupos() {
-  return (
-    <ModuloSemFonte titulo="Grupos" motivo="A lista era de exemplo. Vai ser ligada aos grupos reais (rota /groups).">
-      <GruposExemplo />
-    </ModuloSemFonte>
-  );
+  return modoExemplo() ? <GruposExemplo /> : <GruposReal />;
 }

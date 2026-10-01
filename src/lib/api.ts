@@ -578,9 +578,9 @@ export const Operacional = {
    *
    * Datas puras e fim inclusivo; sem elas o servidor usa os 30 dias até ontem.
    */
-  rankingMotoristas: (p: { inicio?: string; fim?: string } = {}) =>
+  rankingMotoristas: (p: { inicio?: string; fim?: string; por?: "motorista" | "veiculo" } = {}) =>
     api.get<RankingMotoristasApi>(
-      `/api/v1/driver-ranking/${qs({ ...filtroGrupo(), start_date: p.inicio, end_date: p.fim })}`,
+      `/api/v1/driver-ranking/${qs({ ...filtroGrupo(), start_date: p.inicio, end_date: p.fim, por: p.por })}`,
     ),
 
   tratarEvento: (id: string | number, nota?: string) =>

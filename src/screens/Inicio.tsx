@@ -480,6 +480,10 @@ function useSaudeFrota() {
    * relação com o que eu calculava.
    */
   const q = useQuery(saudeFrotaQuery());
+  // Hooks sempre na mesma ordem: sair antes deles quando os dados da API
+  // chegavam derrubava a tela ("Rendered fewer hooks than expected").
+  const { porVeiculo } = usePreventivaFrota();
+  const local = useIndicePreventiva(porVeiculo);
 
   const daApi = q.data as SaudeFrotaApi | undefined;
   if (daApi) {
@@ -503,8 +507,11 @@ function useSaudeFrota() {
     };
   }
 
-  const { porVeiculo } = usePreventivaFrota();
+  return local;
+}
 
+/** Índice de manutenção preventiva — só usado sem a saúde da frota da API. */
+function useIndicePreventiva(porVeiculo: ReturnType<typeof usePreventivaFrota>["porVeiculo"]) {
   return useMemo(() => {
     if (!porVeiculo.length) {
       return { indice: null, titulo: "Sem dados de frota", descricao: "Nenhum veículo cadastrado ainda." };

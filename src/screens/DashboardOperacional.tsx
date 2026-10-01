@@ -36,6 +36,7 @@ import {
 } from "@/lib/queries";
 import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
 import { serieGerencialQuery, somar as somarSerie } from "@/lib/gerencial-api";
+import { ComparativoIndicadores, type GrupoComparativo } from "./gerencial/Comparativo";
 import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 
@@ -61,32 +62,52 @@ import { cn } from "@/lib/utils";
  * subindo é ruim. Sem declarar isso por indicador, a variação seria pintada
  * pelo sinal do número e diria o contrário do que significa.
  */
-const LINHAS_INDICADOR: {
-  campo: string;
-  rotulo: string;
-  unidade?: string;
-  maiorEhMelhor?: boolean;
-  nota?: string;
-}[] = [
-  { campo: "trips", rotulo: "Viagens realizadas", maiorEhMelhor: true },
-  { campo: "distance_km", rotulo: "Quilometragem rodada", unidade: "km", maiorEhMelhor: true },
-  { campo: "fuel_liters", rotulo: "Combustível consumido", unidade: "L" },
-  { campo: "kml", rotulo: "Consumo médio", unidade: "km/l", maiorEhMelhor: true },
-  { campo: "mkbf", rotulo: "MKBF", unidade: "km", maiorEhMelhor: true, nota: "quilômetros médios entre falhas críticas" },
-  { campo: "failures", rotulo: "Falhas críticas" },
-  { campo: "total_hours", rotulo: "Horas de operação", unidade: "h" },
-  { campo: "moving_hours", rotulo: "Horas em movimento", unidade: "h", maiorEhMelhor: true },
-  { campo: "idle_hours", rotulo: "Horas ocioso", unidade: "h", nota: "motor ligado com veículo parado" },
-  { campo: "idle_pct", rotulo: "Ociosidade", unidade: "%" },
-  { campo: "green_band_pct", rotulo: "Faixa econômica", unidade: "%", maiorEhMelhor: true },
-  { campo: "hard_brakes", rotulo: "Freadas bruscas" },
-  { campo: "hard_accelerations", rotulo: "Acelerações bruscas" },
-  { campo: "speed_violations", rotulo: "Excessos de velocidade" },
-  { campo: "events_per_100km", rotulo: "Eventos por 100 km", nota: "normalizado pela distância" },
-  { campo: "active_vehicles", rotulo: "Veículos ativos", maiorEhMelhor: true },
-  { campo: "active_drivers", rotulo: "Motoristas ativos", maiorEhMelhor: true },
-  { campo: "rain_pct", rotulo: "Tempo sob chuva", unidade: "%", nota: "distorce comparação de consumo" },
-];
+/**
+ * Indicadores do comparativo, agrupados por tema. Viagens, MKBF e falhas
+ * ficam fora: sem fonte no backend, o aviso abaixo do painel explica.
+ * "Horas de operação" (soma das faixas) também: ao lado de "horas
+ * trabalhadas", que vem de outra tabela, parecia contradição.
+ */
+function gruposComparativo(ind: { current: Record<string, number>; previous: Record<string, number> | null; porDia: Record<string, number>[] }): GrupoComparativo[] {
+  const it = (campo: string, rotulo: string, dica: string, o: { unidade?: string; maiorEhMelhor?: boolean; casas?: number } = {}) => ({
+    rotulo,
+    dica,
+    ...o,
+    atual: ind.current[campo] ?? null,
+    anterior: ind.previous?.[campo] ?? null,
+    serie: ind.porDia.map((d) => d[campo] ?? 0),
+  });
+  return [
+    {
+      titulo: "Produção",
+      itens: [
+        it("distance_km", "Quilometragem rodada", "Distância percorrida pela frota no período.", { unidade: "km", maiorEhMelhor: true }),
+        it("moving_hours", "Horas trabalhadas", "Horas com o veículo em operação (consolidação diária).", { unidade: "h", maiorEhMelhor: true }),
+        it("active_vehicles", "Veículos ativos", "Maior número de veículos que rodaram num mesmo dia do período.", { maiorEhMelhor: true }),
+        it("active_drivers", "Motoristas ativos", "Maior número de motoristas identificados num mesmo dia do período.", { maiorEhMelhor: true }),
+      ],
+    },
+    {
+      titulo: "Combustível e tempo",
+      itens: [
+        it("fuel_liters", "Combustível consumido", "Litros no período. Cair é bom quando a quilometragem se mantém.", { unidade: "L" }),
+        it("kml", "Consumo médio", "Km filtrado ÷ litros (regra do Dashboard Start). Subir é bom.", { unidade: "km/l", maiorEhMelhor: true, casas: 2 }),
+        it("idle_hours", "Horas parado ligado", "Motor ligado com o veículo parado: combustível gasto sem rodar.", { unidade: "h" }),
+        it("idle_pct", "Ociosidade", "Parado ligado ÷ tempo nas faixas de telemetria.", { unidade: "%", casas: 1 }),
+      ],
+    },
+    {
+      titulo: "Condução",
+      itens: [
+        it("green_band_pct", "Faixa econômica", "Verde + extra econômica ÷ tempo nas 13 faixas. Subir é bom.", { unidade: "%", maiorEhMelhor: true, casas: 1 }),
+        it("hard_brakes", "Freadas bruscas", "Quantidade no período."),
+        it("hard_accelerations", "Acelerações bruscas", "Quantidade no período."),
+        it("speed_violations", "Excessos de velocidade", "Quantidade no período (seco, níveis 1 a 3)."),
+        it("events_per_100km", "Eventos por 100 km", "Freadas + acelerações + velocidade + embreagem a cada 100 km: compara períodos com distâncias diferentes.", { casas: 2 }),
+      ],
+    },
+  ];
+}
 
 const hhmm = (min: number) => `${Math.floor(min / 60)}h${String(Math.round(min % 60)).padStart(2, "0")}`;
 
@@ -154,6 +175,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
       } as Record<string, number>;
     };
     return {
+      porDia: serieQ.data.dias.map((d) => campos([d])),
       current: campos(serieQ.data.dias),
       previous: serieAntQ.data ? campos(serieAntQ.data.dias) : null,
       unavailable: ["MKBF", "viagens"],
@@ -453,65 +475,8 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
                   período. Vinha de uma tela separada; separar consolidado de
                   detalhe obrigava o gestor a abrir duas telas para a mesma
                   pergunta. */}
-              <Card title="Indicadores do setor" icon={BarChart3} bodyClassName="p-4" className="mt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] border-collapse text-[13px]">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="py-2 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                          Indicador
-                        </th>
-                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                          Período
-                        </th>
-                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                          Anterior
-                        </th>
-                        <th className="py-2 text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                          Variação
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {LINHAS_INDICADOR.map((li) => {
-                        const atual = ind.current[li.campo];
-                        const anterior = ind.previous?.[li.campo];
-                        const v = variacao(li.campo);
-                        const bom = v == null ? null : li.maiorEhMelhor ? v > 0 : v < 0;
-                        return (
-                          <tr key={li.campo} className="border-b border-border last:border-0">
-                            <td className="py-2.5">
-                              <span className="text-[13px] text-foreground">{li.rotulo}</span>
-                              {li.nota && (
-                                <span className="block text-[11px] text-muted-foreground">{li.nota}</span>
-                              )}
-                            </td>
-                            <td className="py-2.5 text-right font-mono text-[13px] font-semibold text-foreground">
-                              {atual != null ? nf(Math.round(atual * 100) / 100) : "—"}
-                              {li.unidade && <span className="ml-1 text-[11px] text-muted-foreground">{li.unidade}</span>}
-                            </td>
-                            <td className="py-2.5 text-right font-mono text-[12.5px] text-muted-foreground">
-                              {anterior != null ? nf(Math.round(anterior * 100) / 100) : "—"}
-                            </td>
-                            <td className="py-2.5 text-right">
-                              {v == null ? (
-                                <span className="text-[12px] text-muted-foreground">—</span>
-                              ) : (
-                                <span
-                                  className="inline-flex items-center gap-0.5 font-mono text-[12.5px] font-semibold"
-                                  style={{ color: bom ? "var(--leaf)" : "var(--coral)" }}
-                                >
-                                  {v > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                  {Math.abs(v)}%
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              <Card title="Período × período anterior" icon={BarChart3} bodyClassName="p-4" className="mt-4">
+                <ComparativoIndicadores grupos={gruposComparativo(ind)} />
               </Card>
 
               {/* O que o backend não consegue calcular, e por quê. */}

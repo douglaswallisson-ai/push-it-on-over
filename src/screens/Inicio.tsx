@@ -242,6 +242,9 @@ function HeroValue() {
                 </>
               ) : q.isPending ? (
                 "Carregando o período…"
+              ) : q.error ? (
+                // Erro não é "sem viagens": dizer isso faria a frota parecer parada.
+                "Não foi possível carregar o período."
               ) : (
                 "Sem viagens no período."
               )}
@@ -369,14 +372,17 @@ function PlanoCard() {
     <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card lg:col-span-2">
       <div className="mb-5 flex items-center justify-between">
         <div>
+          {/* "Plano contratado · Plano Performance · Ativo" era texto fixo —
+              não há cadastro de plano no backend. O cartão mostra a saúde
+              da frota (cascata T11/DS-1511), e o título agora diz isso. */}
           <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-            Plano contratado
+            Saúde da frota
           </p>
-          <p className="mt-1 text-xl font-bold">Plano Performance</p>
+          <p className="mt-1 text-xl font-bold">Unidades sem ponto de atenção</p>
         </div>
-        <span className="rounded-full bg-leaf-tint px-3 py-1 text-[11px] font-semibold text-leaf">
-          Ativo
-        </span>
+        {usandoMock() && (
+          <span className="rounded-full bg-leaf-tint px-3 py-1 text-[11px] font-semibold text-leaf">Ativo</span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-6 sm:flex-row sm:items-center">

@@ -145,32 +145,36 @@ export default function RelatoriosGerenciais() {
   return (
     <TooltipProvider>
       <PageHeader title="Gerencial" subtitle={pagina === "operacao" ? atual.label : `${atual.label} · ${dataBR(f.inicio)} a ${dataBR(f.fim)}`} />
-      <div className="mx-auto max-w-[1480px] space-y-5 px-4 py-5 md:px-8">
-        {/* Cabeçalho de navegação: as páginas do BI agrupadas por tema. */}
-        <nav className="sticky top-0 z-20 -mx-1 overflow-x-auto rounded-2xl border border-border bg-card/95 p-1.5 shadow-card backdrop-blur">
-          <div className="flex min-w-max items-stretch gap-1">
-            {GRUPOS.map((g, gi) => (
-              <div key={g.titulo} className={cn("flex items-center gap-1", gi > 0 && "border-l border-border pl-1")}>
-                {g.paginas.length > 1 && <span className="px-1.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground">{g.titulo}</span>}
-                {g.paginas.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => ir(p.id)}
-                    title={p.dica}
-                    className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-medium transition-all duration-200",
-                      pagina === p.id ? "bg-brand-navy text-white shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                    )}
-                  >
-                    <p.icon className="h-4 w-4" />
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </nav>
+      <div className="mx-auto grid max-w-[1720px] gap-5 px-4 py-5 md:px-8 lg:grid-cols-[minmax(0,1fr)_236px]">
+        {/* Menu das páginas do BI: lateral direita na tela grande (acompanha a
+            rolagem); no celular fica no alto, rolando para o lado. */}
+        <aside className="order-first lg:order-last">
+          <nav className="rounded-2xl border border-border bg-card/95 p-1.5 shadow-card backdrop-blur lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:p-2">
+            <div className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-3 lg:overflow-visible">
+              {GRUPOS.map((g, gi) => (
+                <div key={g.titulo} className={cn("flex shrink-0 items-center gap-1 lg:flex-col lg:items-stretch lg:gap-0.5", gi > 0 && "border-l border-border pl-1 lg:border-l-0 lg:border-t lg:pl-0 lg:pt-2")}>
+                  <span className="px-1.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground lg:px-2.5 lg:pb-1 lg:pt-0.5">{g.titulo}</span>
+                  {g.paginas.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => ir(p.id)}
+                      title={p.dica}
+                      className={cn(
+                        "inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-[12.5px] font-medium transition-all duration-200 lg:w-full",
+                        pagina === p.id ? "bg-brand-navy text-white shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                      )}
+                    >
+                      <p.icon className="h-4 w-4 shrink-0" />
+                      <span className="whitespace-nowrap lg:whitespace-normal">{p.label}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </nav>
+        </aside>
 
+        <div className="min-w-0 space-y-5">
         {/* Filtros: valem para todas as páginas, menos o painel da operação. */}
         <div className={cn("flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-card", pagina === "operacao" && "hidden")}>
           <label className="inline-flex items-center gap-1.5">
@@ -240,6 +244,7 @@ export default function RelatoriosGerenciais() {
           <ClipboardList className="h-3.5 w-3.5" />
           O Controle Diário do Power BI está em <Link to="/app/motoristas" className="font-medium text-brand-navy hover:underline">Motoristas</Link>, no acompanhamento de cada motorista.
         </p>
+        </div>
       </div>
     </TooltipProvider>
   );

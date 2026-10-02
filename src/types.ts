@@ -219,7 +219,8 @@ export type CardManutencao = {
   servico: string;
   /** Prazo em dias (negativo = vencido). */
   prazoDias: number | null;
-  indiceSaude: number;
+  /** Nulo esconde o selo (a manutenção real não tem esse índice). */
+  indiceSaude: number | null;
   custoEstimado: number | null;
   /** Quantas pendências abertas além da principal. */
   pendencias: number;

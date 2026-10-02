@@ -183,6 +183,7 @@ function CardVeiculo({
               </p>
             </div>
           </div>
+          {card.indiceSaude != null && (
           <span
             className="shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold"
             style={{
@@ -193,6 +194,7 @@ function CardVeiculo({
           >
             {card.indiceSaude}
           </span>
+          )}
         </div>
 
         <p className="mt-2.5 line-clamp-2 text-[12.5px] leading-snug text-ink-soft">{card.servico}</p>

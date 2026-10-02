@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Gauge,
+  LayoutGrid,
   Loader2,
   Plus,
   Search,
@@ -18,7 +19,11 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { InspecaoVeiculo } from "@/components/ss/frota/InspecaoVeiculo";
+import { RelatorioVeiculo } from "@/screens/manutencao/RelatorioVeiculo";
 import { tipoPorCategoria } from "@/components/ss/mapa/iconesVeiculo";
+import { ManutencaoKanban } from "@/components/ss/frota/ManutencaoKanban";
+import { MANUTENCAO_COLUNAS } from "@/lib/queries";
+import type { CardManutencao } from "@/types";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { mensagemErro } from "@/lib/suporte-api";
 import {
@@ -49,7 +54,7 @@ import { cn } from "@/lib/utils";
  *   viram ordem de serviço, acompanhada até fechar.
  */
 
-type Aba = "geral" | "preventiva" | "corretiva" | "planos";
+type Aba = "quadro" | "geral" | "preventiva" | "corretiva" | "planos";
 const nf = (v: number | null | undefined, c = 0) =>
   v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: c, maximumFractionDigits: c });
 const dataBR = (s?: string | null) => (s ? new Date(s.length <= 10 ? `${s}T12:00` : s).toLocaleDateString("pt-BR") : "—");
@@ -76,7 +81,7 @@ function falta(i: ItemSituacao) {
 
 export default function ManutencaoReal() {
   const g = grupoAtivo();
-  const [aba, setAba] = useState<Aba>("geral");
+  const [aba, setAba] = useState<Aba>("quadro");
   const [veiculoId, setVeiculoId] = useState<number | null>(null);
   const [ordemId, setOrdemId] = useState<number | null>(null);
   const q = useQuery(painelManutQuery(g));
@@ -100,7 +105,8 @@ export default function ManutencaoReal() {
         <nav className="flex gap-1 rounded-2xl border border-border bg-card p-1" aria-label="Seções da manutenção">
           {(
             [
-              ["geral", "Visão geral", Gauge],
+              ["quadro", "Quadro", LayoutGrid],
+              ["geral", "Sinais do motor", Gauge],
               ["preventiva", "Preventiva", CalendarClock],
               ["corretiva", "Corretiva e ordens", Siren],
               ["planos", "Planos", ClipboardList],
@@ -137,6 +143,7 @@ export default function ManutencaoReal() {
               <StatTile icon={ClipboardList} label="Veículos com plano" value={`${nf(r.totais.com_plano)}/${nf(r.totais.veiculos)}`} color="var(--leaf)" foot={r.totais.com_plano ? "plano preventivo" : "cadastre em Planos"} />
             </div>
 
+            {aba === "quadro" && <Quadro veiculos={r.veiculos} ordens={ordens.data ?? []} onVeiculo={setVeiculoId} />}
             {aba === "geral" && <VisaoGeral r={r} onVeiculo={setVeiculoId} irPlanos={() => setAba("planos")} />}
             {aba === "preventiva" && <Preventiva veiculos={r.veiculos} onVeiculo={setVeiculoId} irPlanos={() => setAba("planos")} />}
             {aba === "corretiva" && <Corretiva g={g} veiculos={r.veiculos} ordens={ordens.data ?? []} onVeiculo={setVeiculoId} onOrdem={setOrdemId} />}
@@ -145,9 +152,103 @@ export default function ManutencaoReal() {
         )}
       </main>
 
-      <DetalheVeiculo g={g} v={veiculo} limites={r?.limites ?? {}} onClose={() => setVeiculoId(null)} />
+      <DetalheVeiculo g={g} v={veiculo} limites={r?.limites ?? {}} ordens={ordens.data ?? []} onClose={() => setVeiculoId(null)} />
       <DetalheOrdem g={g} o={(ordens.data ?? []).find((o) => o.id === ordemId) ?? null} veiculos={r?.veiculos ?? []} onClose={() => setOrdemId(null)} />
     </>
+  );
+}
+
+// ------------------------------------------------------------------ Quadro
+
+/**
+ * Quadro (kanban) com uma placa por cartão, na coluna da pendência mais grave:
+ * corretiva (alerta do motor ou OS corretiva aberta) > preventiva (serviço
+ * vencido ou OS preventiva aberta) > preditiva (vence em breve) > liberado
+ * (OS concluída nos últimos 7 dias) > em dia.
+ */
+function cartoes(veiculos: VeiculoManut[], ordens: OrdemServico[]): CardManutencao[] {
+  const abertas = new Map<number, OrdemServico[]>();
+  const liberadas = new Set<number>();
+  const semana = Date.now() - 7 * 86_400_000;
+  for (const o of ordens) {
+    if (o.status === "concluida" && o.concluida_em && new Date(o.concluida_em).getTime() > semana) liberadas.add(o.unit_id);
+    if (o.status !== "concluida" && o.status !== "cancelada") abertas.set(o.unit_id, [...(abertas.get(o.unit_id) ?? []), o]);
+  }
+  return veiculos.map((v) => {
+    const os = abertas.get(v.unit_id) ?? [];
+    const venc = v.itens.filter((i) => i.situacao === "vencido");
+    const breve = v.itens.filter((i) => i.situacao === "vence_em_breve");
+    const osCorr = os.filter((o) => o.tipo === "corretiva");
+    const osPrev = os.filter((o) => o.tipo === "preventiva");
+    let status: CardManutencao["status"] = "em_dia";
+    let servico = v.plano ? "Plano em dia, sem alerta do motor." : "Sem plano preventivo · sem alerta do motor.";
+    let prazo: number | null = null;
+    if (v.alertas.length || osCorr.length) {
+      status = "corretiva";
+      servico = osCorr[0] ? `OS ${osCorr[0].id} · ${osCorr[0].titulo} (${ROTULO_STATUS_OS[osCorr[0].status].toLowerCase()})` : `${v.alertas[0].titulo} · ${v.alertas[0].valor}`;
+    } else if (venc.length || osPrev.length) {
+      status = "preventiva";
+      servico = osPrev[0] ? `OS ${osPrev[0].id} · ${osPrev[0].titulo}` : `${venc[0].servico} · ${falta(venc[0])}`;
+      prazo = venc[0]?.falta_dias ?? null;
+    } else if (breve.length) {
+      status = "preditiva";
+      servico = `${breve[0].servico} · ${falta(breve[0])}`;
+      prazo = breve[0].falta_dias;
+    } else if (liberadas.has(v.unit_id)) {
+      status = "liberado";
+      servico = "Ordem de serviço concluída nesta semana.";
+    }
+    const tipo = tipoPorCategoria(v.categoria_id);
+    return {
+      veiculoId: String(v.unit_id),
+      placa: nomeVeiculo(v),
+      // A silhueta do cartão é escolhida pelo texto: o tipo do cadastro garante o desenho certo.
+      marca: tipo === "onibus" ? "Ônibus" : tipo === "caminhao" ? "Caminhão" : tipo === "carro" ? "Van" : "",
+      modelo: v.modelo ?? v.categoria ?? "",
+      status,
+      servico,
+      prazoDias: prazo,
+      indiceSaude: null,
+      custoEstimado: null,
+      pendencias: v.alertas.length + venc.length + breve.length + os.length,
+    };
+  });
+}
+
+function Quadro({ veiculos, ordens, onVeiculo }: { veiculos: VeiculoManut[]; ordens: OrdemServico[]; onVeiculo: (id: number) => void }) {
+  const [busca, setBusca] = useState("");
+  const todos = useMemo(() => cartoes(veiculos, ordens), [veiculos, ordens]);
+  const cards = useMemo(() => {
+    const b = busca.trim().toLowerCase();
+    return todos.filter((c) => !b || `${c.placa} ${c.modelo}`.toLowerCase().includes(b));
+  }, [todos, busca]);
+  const conta = (s: CardManutencao["status"]) => todos.filter((c) => c.status === s).length;
+  return (
+    <Card
+      title="Quadro da frota"
+      icon={LayoutGrid}
+      action={
+        <label className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar veículo" aria-label="Buscar veículo" className="h-8 w-48 rounded-lg border border-border bg-white pl-8 pr-3 text-[12.5px]" />
+        </label>
+      }
+      bodyClassName="p-4"
+    >
+      <div className="mb-3 flex flex-wrap gap-3 text-[12px] text-muted-foreground">
+        {MANUTENCAO_COLUNAS.map((c) => (
+          <span key={c.id} className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.cor }} />
+            {c.label}: <b className="text-foreground">{conta(c.id)}</b>
+          </span>
+        ))}
+      </div>
+      <ManutencaoKanban cards={cards} onSelect={(c) => onVeiculo(Number(c.veiculoId))} />
+      <p className="mt-2 text-[11.5px] text-muted-foreground">
+        Um cartão por veículo, na coluna da pendência mais grave: corretiva (alerta do motor ou ordem corretiva aberta), preventiva (serviço vencido),
+        preditiva (vence em breve), liberado (ordem concluída nesta semana). Clique no cartão para abrir o veículo.
+      </p>
+    </Card>
   );
 }
 
@@ -633,8 +734,9 @@ function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode
 
 // ------------------------------------------------------- Detalhe do veículo
 
-function DetalheVeiculo({ g, v, limites, onClose }: { g: string; v: VeiculoManut | null; limites: Record<string, number>; onClose: () => void }) {
+function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: VeiculoManut | null; limites: Record<string, number>; ordens: OrdemServico[]; onClose: () => void }) {
   const qc = useQueryClient();
+  const [relatorio, setRelatorio] = useState(false);
   const hist = useQuery(historicoServicosQuery(g, v?.unit_id));
   const [servico, setServico] = useState("");
   const [data, setData] = useState(hoje());
@@ -667,7 +769,12 @@ function DetalheVeiculo({ g, v, limites, onClose }: { g: string; v: VeiculoManut
         {v && (
           <>
             <SheetHeader>
-              <SheetTitle>{nomeVeiculo(v)}</SheetTitle>
+              <SheetTitle className="flex items-center justify-between gap-3 pr-8">
+                {nomeVeiculo(v)}
+                <button type="button" onClick={() => setRelatorio(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90">
+                  <ClipboardList className="h-3.5 w-3.5" /> Relatório para o cliente
+                </button>
+              </SheetTitle>
               <p className="text-[13px] text-muted-foreground">
                 {[v.placa, v.modelo, v.ano].filter(Boolean).join(" · ")} · odômetro {nf(v.odometro_km)} km{v.odometro_travado && " (travado)"}
               </p>
@@ -764,6 +871,7 @@ function DetalheVeiculo({ g, v, limites, onClose }: { g: string; v: VeiculoManut
             </div>
           </>
         )}
+        {v && relatorio && <RelatorioVeiculo v={v} limites={limites} ordens={ordens} historico={hist.data ?? []} onClose={() => setRelatorio(false)} />}
       </SheetContent>
     </Sheet>
   );

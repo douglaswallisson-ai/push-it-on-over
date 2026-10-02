@@ -444,7 +444,7 @@ function DetalheVeiculo({
       {/* Faixa compacta do veículo — placa, situação e índice de saúde. */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-5 py-4 shadow-card">
         <div className="flex items-center gap-4">
-          <ScoreGauge score={Math.round(manut?.indiceSaude ?? card.indiceSaude)} size={64} />
+          <ScoreGauge score={Math.round(manut?.indiceSaude ?? card.indiceSaude ?? 0)} size={64} />
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[20px] font-bold leading-none text-foreground">{card.placa}</span>
@@ -754,7 +754,7 @@ function PredicoesFrota({ cards, onSelect }: { cards: CardManutencao[]; onSelect
       header: "Saúde",
       align: "center",
       render: (c) => (
-        <Pill tone={c.indiceSaude >= 70 ? "green" : c.indiceSaude >= 50 ? "gold" : "coral"}>{c.indiceSaude}</Pill>
+        <Pill tone={(c.indiceSaude ?? 0) >= 70 ? "green" : (c.indiceSaude ?? 0) >= 50 ? "gold" : "coral"}>{c.indiceSaude}</Pill>
       ),
     },
   ];

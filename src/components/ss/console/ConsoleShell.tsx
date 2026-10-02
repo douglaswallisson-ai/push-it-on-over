@@ -13,6 +13,7 @@ import {
   Users,
   Wrench,
   X,
+  Activity,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { SSLogo } from "@/components/ss/brand/SSLogo";
@@ -42,6 +43,7 @@ const NAV: Item[] = [
   { label: "Administradores", to: "/console/administradores", icon: Users, descricao: "Quem acessa este console" },
   { label: "Catálogo de manutenção", to: "/console/catalogo", icon: Wrench, descricao: "Parâmetros do fabricante" },
   { label: "Indicadores gerais", to: "/console/indicadores", icon: Gauge, descricao: "Consolidado de toda a base" },
+  { label: "Acessos", to: "/console/acessos", icon: Activity, descricao: "Quem usa a plataforma e quando" },
   { label: "Auditoria", to: "/console/auditoria", icon: ShieldCheck, descricao: "Log de todas as organizações" },
   { label: "Configurações", to: "/console/configuracoes", icon: Settings, descricao: "Origem dos dados e sistema" },
 ];

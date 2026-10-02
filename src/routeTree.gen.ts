@@ -27,6 +27,7 @@ import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppSuporteRouteImport } from './routes/app.suporte'
 import { Route as ConsoleIndexRouteImport } from './routes/console.index'
+import { Route as ConsoleAcessosRouteImport } from './routes/console.acessos'
 import { Route as ConsoleAdministradoresRouteImport } from './routes/console.administradores'
 import { Route as ConsoleAuditoriaRouteImport } from './routes/console.auditoria'
 import { Route as ConsoleCatalogoRouteImport } from './routes/console.catalogo'
@@ -179,6 +180,11 @@ const AppSuporteRoute = AppSuporteRouteImport.update({
 const ConsoleIndexRoute = ConsoleIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleAcessosRoute = ConsoleAcessosRouteImport.update({
+  id: '/acessos',
+  path: '/acessos',
   getParentRoute: () => ConsoleRoute,
 } as any)
 const ConsoleAdministradoresRoute = ConsoleAdministradoresRouteImport.update({
@@ -524,6 +530,7 @@ export interface FileRoutesByFullPath {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/app/suporte': typeof AppSuporteRoute
+  '/console/acessos': typeof ConsoleAcessosRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -605,6 +612,7 @@ export interface FileRoutesByTo {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/app/suporte': typeof AppSuporteRoute
+  '/console/acessos': typeof ConsoleAcessosRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -689,6 +697,7 @@ export interface FileRoutesById {
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
   '/app/suporte': typeof AppSuporteRoute
+  '/console/acessos': typeof ConsoleAcessosRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -774,6 +783,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app/suporte'
+    | '/console/acessos'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -855,6 +865,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app/suporte'
+    | '/console/acessos'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -938,6 +949,7 @@ export interface FileRouteTypes {
     | '/app/mapa'
     | '/app/relatorios'
     | '/app/suporte'
+    | '/console/acessos'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -1139,6 +1151,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/console/'
       preLoaderRoute: typeof ConsoleIndexRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/acessos': {
+      id: '/console/acessos'
+      path: '/acessos'
+      fullPath: '/console/acessos'
+      preLoaderRoute: typeof ConsoleAcessosRouteImport
       parentRoute: typeof ConsoleRoute
     }
     '/console/administradores': {
@@ -1750,6 +1769,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface ConsoleRouteChildren {
+  ConsoleAcessosRoute: typeof ConsoleAcessosRoute
   ConsoleAdministradoresRoute: typeof ConsoleAdministradoresRoute
   ConsoleAuditoriaRoute: typeof ConsoleAuditoriaRoute
   ConsoleCatalogoRoute: typeof ConsoleCatalogoRoute
@@ -1761,6 +1781,7 @@ interface ConsoleRouteChildren {
 }
 
 const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleAcessosRoute: ConsoleAcessosRoute,
   ConsoleAdministradoresRoute: ConsoleAdministradoresRoute,
   ConsoleAuditoriaRoute: ConsoleAuditoriaRoute,
   ConsoleCatalogoRoute: ConsoleCatalogoRoute,

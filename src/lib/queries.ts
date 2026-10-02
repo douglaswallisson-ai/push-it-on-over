@@ -109,7 +109,8 @@ async function buscarTudoPorCursor<T>(
  */
 export function naoRepetirSeProibido(tentativas: number, erro: unknown) {
   const status = (erro as { status?: number })?.status;
-  if (status === 401 || status === 403 || status === 404) return false;
+  // 503 aqui é configuração do servidor (ex.: permissão no banco), não oscilação.
+  if (status === 401 || status === 403 || status === 404 || status === 503) return false;
   return tentativas < 2;
 }
 

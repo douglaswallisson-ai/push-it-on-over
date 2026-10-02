@@ -205,6 +205,19 @@ export default function IAFleetManager() {
   // 404 aqui significa "o worker ainda não processou esta conta no período",
   // que é estado normal — não falha.
   const semCarga = (painelQ.error as { status?: number } | null)?.status === 404;
+  // Sem a lista de contas o painel nem é pedido: antes a tela ficava em
+  // "Carregando…" para sempre quando /contas falhava.
+  const erro = (contasQ.error ?? painelQ.error) as (Error & { status?: number }) | null;
+  const semConta = contasQ.isSuccess && contas.length === 0;
+  const carregando = contasQ.isPending || (Boolean(contaAtiva) && painelQ.isPending);
+  const msgErro = (() => {
+    const m = erro?.message ?? "";
+    try {
+      return (JSON.parse(m) as { detail?: string }).detail ?? m;
+    } catch {
+      return m;
+    }
+  })();
 
   return (
     <>
@@ -238,29 +251,38 @@ export default function IAFleetManager() {
 
       <div className="mx-auto max-w-[1360px] space-y-8 px-6 py-6 md:px-8">
         {/* Estado da carga, antes de qualquer número. */}
-        {!usandoMock() && (painelQ.isPending || semCarga || Boolean(painelQ.error)) && (
+        {!usandoMock() && (carregando || semCarga || semConta || Boolean(erro)) && (
           <div
             className={cn(
               "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-[12.5px]",
-              semCarga || painelQ.error ? "border-gold-line bg-gold-tint/40 text-gold" : "border-border bg-card text-muted-foreground",
+              semCarga || semConta || erro ? "border-gold-line bg-gold-tint/40 text-gold" : "border-border bg-card text-muted-foreground",
             )}
           >
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="leading-relaxed">
-              {painelQ.isPending ? (
+              {erro && erro.status !== 404 && erro.status !== 403 ? (
+                <>
+                  <strong>Não foi possível abrir o painel.</strong> {msgErro}
+                </>
+              ) : carregando ? (
                 "Carregando o painel…"
+              ) : semConta ? (
+                <>
+                  <strong>Nenhuma conta habilitada para o IA Ops Advisor</strong> no seu acesso. As contas são habilitadas no
+                  worker de insights (fleet_mvp.conta).
+                </>
               ) : semCarga ? (
                 <>
                   <strong>Sem dado carregado para esta conta no período.</strong> O painel é alimentado pelo worker
                   de insights, que roda em lote — não há como gerá-lo sob demanda a partir daqui.
                 </>
-              ) : (painelQ.error as { status?: number })?.status === 403 ? (
+              ) : erro?.status === 403 ? (
                 <>
                   <strong>Sem acesso ao módulo.</strong> É preciso a permissão{" "}
                   <span className="font-mono">ai_fleet.read</span>, ou ser usuário interno da SS.
                 </>
               ) : (
-                <>Falha ao carregar: {(painelQ.error as Error)?.message}</>
+                <>Falha ao carregar: {msgErro}</>
               )}
             </p>
           </div>

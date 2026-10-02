@@ -54,11 +54,13 @@ export default function PainelSinotico() {
   const mockLinhasQ = useQuery(linhasQuery());
   const apiLinhasQ = useQuery(linhasApiQuery());
   const linhasQ = usandoMock() ? mockLinhasQ : apiLinhasQ;
-  const [linhaId, setLinhaId] = useState("l1");
+  // "l1" é a linha do exemplo; ligado à API, começa na primeira linha real.
+  const [escolhida, setLinhaId] = useState<string | null>(usandoMock() ? "l1" : null);
+  const linhaId = escolhida ?? (linhasQ.data ?? [])[0]?.id ?? "";
 
   const posicoesQ = useQuery(posicoesLinhaQuery(linhaId));
   const itinerariosQ = useQuery(itinerariosQuery(linhaId));
-  const turnosQ = useQuery(turnosApiQuery(usandoMock() ? undefined : linhaId));
+  const turnosQ = useQuery(turnosApiQuery(usandoMock() || !linhaId ? undefined : linhaId));
 
   /**
    * Viagens do dia. Servem para saber a hora de saída de cada carro, que é o

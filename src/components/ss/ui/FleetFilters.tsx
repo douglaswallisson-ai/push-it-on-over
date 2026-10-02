@@ -33,7 +33,8 @@ function FilterSelect({
           onChange={(e) => onChange(e.target.value)}
           className="cursor-pointer appearance-none bg-transparent pr-5 font-medium text-foreground outline-none"
         >
-          {options.map((o) => (
+          {/* Sem repetição: dois veículos com o mesmo rótulo duplicavam a chave. */}
+          {[...new Set(options)].map((o) => (
             <option key={o}>{o}</option>
           ))}
         </select>

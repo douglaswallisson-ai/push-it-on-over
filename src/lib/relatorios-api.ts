@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { usandoMock } from "@/lib/modo";
 import { grupoAtivo } from "@/lib/escopo-ativo";
+import { requisicaoAutenticada } from "@/lib/auth-api";
 
 /**
  * Relatórios do `ss-fleet-core`.
@@ -25,7 +26,7 @@ import { grupoAtivo } from "@/lib/escopo-ativo";
  *
  * A exportação em CSV continua limitada a 31 dias, que é outro limite.
  */
-export const MAX_DIAS_CURSOR = 365;
+export const MAX_DIAS_CURSOR = 93;
 export const MAX_DIAS_EXPORT = 31;
 
 export type RespostaCursor<T> = {
@@ -92,14 +93,17 @@ const paramsDe = (f: FiltroRelatorio, cursor?: string, relatorio?: string) => {
  * O backend rejeita acima de 93 dias com 400. Barrar aqui permite explicar o
  * motivo em vez de mostrar um erro cru vindo do servidor.
  */
-export function validarJanela(inicio: string, fim: string): string | null {
+/** Janela de cada relatório no servidor: 93 dias nos cursores, 31 no histórico de posições. */
+const MAX_DIAS_POR_RELATORIO: Partial<Record<string, number>> = { "history/detailed": 31, history: 93 };
+
+export function validarJanela(inicio: string, fim: string, maxDias = MAX_DIAS_CURSOR): string | null {
   const d1 = new Date(inicio);
   const d2 = new Date(fim);
   if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime())) return "Datas inválidas.";
   if (d2 < d1) return "A data final é anterior à inicial.";
   const dias = (d2.getTime() - d1.getTime()) / 86_400_000;
-  if (dias > MAX_DIAS_CURSOR) {
-    return `O período máximo é de ${MAX_DIAS_CURSOR} dias. Selecionado: ${Math.round(dias)}.`;
+  if (dias > maxDias) {
+    return `O período máximo é de ${maxDias} dias. Selecionado: ${Math.round(dias)}.`;
   }
   return null;
 }
@@ -125,7 +129,7 @@ type Relatorio =
  * que é justamente a consulta cara que o cursor evita.
  */
 export function useRelatorioCursor<T>(relatorio: Relatorio, filtro: FiltroRelatorio, habilitado = true) {
-  const erroJanela = validarJanela(filtro.inicio, filtro.fim);
+  const erroJanela = validarJanela(filtro.inicio, filtro.fim, MAX_DIAS_POR_RELATORIO[relatorio] ?? MAX_DIAS_CURSOR);
 
   const q = useInfiniteQuery({
     queryKey: ["relatorio", relatorio, filtro.inicio, filtro.fim, filtro.veiculos?.join(",") ?? "", grupoAtivo() ?? "todos"],
@@ -226,6 +230,38 @@ export function useEstimativaExport(relatorio: Relatorio, filtro: FiltroRelatori
 export function urlExportCsv(relatorio: Relatorio, filtro: FiltroRelatorio): string {
   const base = (import.meta.env.VITE_API_BASE as string) || "";
   return `${base}/api/v1/reports/${relatorio}/export/csv?${paramsDe(filtro, undefined, relatorio)}`;
+}
+
+/**
+ * Baixa o CSV com o login.
+ *
+ * Um link comum (`<a href>`) não leva o token: o servidor respondia 401 e o
+ * download nunca funcionava. A exportação é limitada a 31 dias no servidor,
+ * então o arquivo cabe na memória da aba.
+ */
+export async function baixarCsv(relatorio: Relatorio, filtro: FiltroRelatorio, nome: string): Promise<void> {
+  const erro = validarJanela(filtro.inicio, filtro.fim, MAX_DIAS_EXPORT);
+  if (erro) throw new Error(`Exportação: ${erro}`);
+  const r = await requisicaoAutenticada(urlExportCsv(relatorio, filtro));
+  if (!r.ok) {
+    const det = await r.text().catch(() => "");
+    let msg = det;
+    try {
+      msg = JSON.parse(det)?.detail ?? det;
+    } catch {
+      /* texto puro */
+    }
+    throw new Error(typeof msg === "string" && msg ? msg : `HTTP ${r.status}`);
+  }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${nome}-${filtro.inicio.slice(0, 10)}_a_${filtro.fim.slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 /* ------------------------------------------------------------------ */
@@ -380,11 +416,21 @@ export type FaixaRpmApi = {
 };
 
 /** Concentração de posições, para o mapa de calor. */
+/**
+ * Linha do "mapa de calor" (`/reports/heatmap/cursor`): não é geográfico.
+ * É a contagem de eventos de cada veículo em cada hora.
+ */
 export type PontoCalorApi = {
-  latitude: number;
-  longitude: number;
-  weight?: number | null;
-  count?: number | null;
+  data_hora: string;
+  unit_id: number;
+  label: string;
+  driver_id?: number | null;
+  driver_name?: string | null;
+  faixa_amarela: number;
+  faixa_vermelha: number;
+  batendo_transmissao: number;
+  parado_acelerando: number;
+  excesso_velocidade: number;
 };
 
 /** Meta e peso por faixa, de `mova.weight_range`. */
@@ -394,4 +440,23 @@ export type MetaPesoApi = {
   subgroup_id?: number | null;
   weight?: number | null;
   goal?: number | null;
+};
+
+
+/** Posição como `/reports/history/detailed/cursor` devolve (aninhada). */
+export type PosicaoHistoricoApi = {
+  id: number;
+  unit: { id: number; label: string; label2?: string | null };
+  driver?: { id?: number | null; name?: string | null } | null;
+  local_time: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  ign?: boolean | null;
+  speed?: number | null;
+  odom?: number | null;
+  rpm?: number | null;
+  address?: string | null;
+  poi?: { id?: number | null; name?: string | null; distance?: number | null } | null;
+  cerca?: { id?: number | null; name?: string | null } | null;
+  event?: { id?: number | null; name?: string | null } | null;
 };

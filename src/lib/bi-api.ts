@@ -148,14 +148,14 @@ export const serieBIQuery = (f: FiltrosBI) =>
   queryOptions({
     ...base,
     queryKey: chave("serie", f),
-    queryFn: () => api.get<SerieGerencial>(`/api/v1/gerencial/serie-diaria/${params(f)}`),
+    queryFn: () => api.get<SerieGerencial>(`/api/v1/gerencial/serie-diaria${params(f)}`),
   });
 
 export const ociosoBIQuery = (f: FiltrosBI) =>
   queryOptions({
     ...base,
     queryKey: chave("ocioso", f),
-    queryFn: () => api.get<{ inicio: string; fim: string; veiculos: VeiculoOcioso[] }>(`/api/v1/gerencial/ocioso/${params(f)}`),
+    queryFn: () => api.get<{ inicio: string; fim: string; veiculos: VeiculoOcioso[] }>(`/api/v1/gerencial/ocioso${params(f)}`),
   });
 
 /** O ranking não filtra por condutor no servidor: a tela recorta a lista. */

@@ -87,7 +87,7 @@ export const serieGerencialQuery = (inicio?: string, fim?: string) =>
   queryOptions({
     queryKey: chaveComGrupo("gerencial", "serie", inicio ?? "", fim ?? ""),
     queryFn: () =>
-      api.get<SerieGerencial>(`/api/v1/gerencial/serie-diaria/${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`),
+      api.get<SerieGerencial>(`/api/v1/gerencial/serie-diaria${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`),
     enabled: !usandoMock(),
     retry: semRepetirLogin,
     staleTime: 5 * 60_000,
@@ -98,7 +98,7 @@ export const ociosoQuery = (inicio?: string, fim?: string) =>
     queryKey: chaveComGrupo("gerencial", "ocioso", inicio ?? "", fim ?? ""),
     queryFn: () =>
       api.get<{ inicio: string; fim: string; veiculos: VeiculoOcioso[] }>(
-        `/api/v1/gerencial/ocioso/${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`,
+        `/api/v1/gerencial/ocioso${qs({ ...filtroGrupo(), start_date: inicio, end_date: fim })}`,
       ),
     enabled: !usandoMock(),
     retry: semRepetirLogin,

@@ -1,26 +1,13 @@
 import { useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  CloudRain,
-  Database,
-  Download,
-  Droplets,
-  Fuel,
-  Gauge,
-  Info,
-  Loader2,
-  MapPin,
-  Route,
-  Timer,
-} from "lucide-react";
+import { AlertTriangle, CloudRain, Database, Download, Droplets, Fuel, Gauge, Info, Loader2, MapPin, Route, Timer, ArrowLeft, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
+import { useVeiculosDoRelatorio } from "@/screens/RelatoriosOperacionais";
 import { Card, DataTable, Pill, StatTile, type Column } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import {
   MAX_DIAS_CURSOR,
-  urlExportCsv,
-  useEstimativaExport,
+  baixarCsv,
   useRelatorioCursor,
   type TelemetriaApi,
 } from "@/lib/relatorios-api";
@@ -56,19 +43,32 @@ function janelaPadrao() {
   return { inicio: iso(inicio), fim: iso(fim) };
 }
 
-export default function TelemetriaViagens() {
+export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void } = {}) {
   const padrao = janelaPadrao();
   const [inicio, setInicio] = useState(padrao.inicio.slice(0, 10));
   const [fim, setFim] = useState(padrao.fim.slice(0, 10));
-  const [pedirEstimativa, setPedirEstimativa] = useState(false);
+  const [placa, setPlaca] = useState("");
+  const [baixando, setBaixando] = useState(false);
+  // Só os veículos da empresa ativa: o relatório filtra por lista de veículos.
+  const veic = useVeiculosDoRelatorio(placa);
 
   const filtro = useMemo(
-    () => ({ inicio: `${inicio} 00:00:00`, fim: `${fim} 23:59:59`, limite: 500 }),
-    [inicio, fim],
+    () => ({ inicio: `${inicio} 00:00:00`, fim: `${fim} 23:59:59`, limite: 500, veiculos: veic.ids }),
+    [inicio, fim, veic.ids],
   );
 
-  const q = useRelatorioCursor<TelemetriaApi>("telemetry", filtro);
-  const estimativa = useEstimativaExport("telemetry", filtro, pedirEstimativa);
+  const q = useRelatorioCursor<TelemetriaApi>("telemetry", filtro, veic.pronto);
+  const baixar = async () => {
+    setBaixando(true);
+    try {
+      await baixarCsv("telemetry", filtro, "telemetria-por-viagem");
+      toast.success("CSV baixado.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBaixando(false);
+    }
+  };
 
   const registros = q.registros;
 
@@ -216,6 +216,20 @@ export default function TelemetriaViagens() {
         subtitle="Relatórios › Viagens consolidadas"
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {onVoltar && (
+              <button onClick={onVoltar} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-white px-3 text-[13px] text-brand-navy hover:bg-secondary">
+                <ArrowLeft className="h-4 w-4" /> Relatórios
+              </button>
+            )}
+            <label className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-white px-2.5">
+              <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+              <select value={placa} onChange={(e) => setPlaca(e.target.value)} aria-label="Placa" className="max-w-[170px] bg-transparent text-[13px] outline-none">
+                <option value="">Todas as placas</option>
+                {[...veic.lista].sort((a, b) => a.placa.localeCompare(b.placa)).map((v) => (
+                  <option key={v.id} value={v.id}>{v.placa}{v.prefixo ? ` · ${v.prefixo}` : ""}</option>
+                ))}
+              </select>
+            </label>
             <input
               type="date"
               value={inicio}
@@ -230,12 +244,13 @@ export default function TelemetriaViagens() {
               className="h-9 rounded-lg border border-border bg-white px-2.5 text-[13px] outline-none focus:border-accent"
             />
             <button
-              onClick={() => setPedirEstimativa(true)}
-              disabled={usandoMock() || Boolean(q.erroJanela)}
+              onClick={baixar}
+              title="Exporta em CSV o período escolhido (até 31 dias)"
+              disabled={usandoMock() || Boolean(q.erroJanela) || baixando}
               className="inline-flex items-center gap-2 rounded-full bg-brand-navy px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-50"
             >
-              <Download className="h-[15px] w-[15px]" />
-              Exportar
+              {baixando ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Download className="h-[15px] w-[15px]" />}
+              Exportar CSV
             </button>
           </div>
         }
@@ -259,37 +274,6 @@ export default function TelemetriaViagens() {
               {q.erroJanela} As tabelas são particionadas por mês, e janelas maiores que {MAX_DIAS_CURSOR} dias
               obrigariam a varrer partições demais.
             </p>
-          </div>
-        )}
-
-        {/* Estimativa antes de exportar. */}
-        {pedirEstimativa && estimativa.data && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-            <p className="text-[12.5px] text-ink-soft">
-              A exportação terá aproximadamente{" "}
-              <strong className="text-foreground">{nf(estimativa.data.estimated_rows)} linhas</strong> e{" "}
-              <strong className="text-foreground">{estimativa.data.estimated_size_mb.toFixed(1)} MB</strong>.
-              {estimativa.data.warning && <span className="ml-1 text-gold">{estimativa.data.warning}</span>}
-            </p>
-            <span className="flex gap-2">
-              <a
-                href={urlExportCsv("telemetry", filtro)}
-                onClick={() => {
-                  toast.success("Download iniciado.");
-                  setPedirEstimativa(false);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-navy px-3.5 py-1.5 text-[12.5px] font-semibold text-white"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Baixar CSV
-              </a>
-              <button
-                onClick={() => setPedirEstimativa(false)}
-                className="rounded-full border border-border px-3.5 py-1.5 text-[12.5px] text-muted-foreground hover:bg-secondary"
-              >
-                Cancelar
-              </button>
-            </span>
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
-import type { VeiculoMapa } from "./MapaLeaflet";
+import type { EventoMapa, VeiculoMapa } from "./MapaLeaflet";
 
 /**
  * Envoltório que carrega o mapa apenas no navegador.
@@ -35,6 +35,7 @@ export function MapaCliente(props: {
   onSelect: (placa: string) => void;
   altura?: string;
   percurso?: [number, number][];
+  eventos?: EventoMapa[];
 }) {
   const [montado, setMontado] = useState(false);
   const altura = props.altura ?? "h-[520px] lg:h-[640px]";

@@ -19,6 +19,7 @@ import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
 import { PerfilElevacao } from "@/components/ss/frota/PerfilElevacao";
 import { relevoTrajetoQuery } from "@/lib/relevo-api";
+import { COR_EVENTO, ROTULO_EVENTO } from "@/lib/bi-api";
 import { nf, trackingApiQuery, trackingQuery, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { resumoTracking } from "@/lib/mock-data";
@@ -153,6 +154,25 @@ export default function Tracking() {
    * Marcadores do mapa: o evento focado ou o último ponto. Plotar os 20 eventos
    * como veículo confundiria — o traçado já mostra o caminho.
    */
+  // Eventos de condução no lugar exato em que aconteceram.
+  const eventosMapa = useMemo(
+    () =>
+      (relevoQ.data?.eventos ?? []).map((e) => ({
+        lat: e.lat,
+        lng: e.lon,
+        cor: COR_EVENTO[e.tipo] ?? "#1B3A6B",
+        titulo: ROTULO_EVENTO[e.tipo] ?? e.evento ?? "Evento",
+        hora: e.hora.slice(0, 5),
+        detalhe: `${e.velocidade ?? 0} km/h${e.km != null ? ` · km ${e.km.toFixed(1)} do dia` : ""}`,
+      })),
+    [relevoQ.data],
+  );
+  const contagemEventos = useMemo(() => {
+    const m = new Map<string, { n: number; cor: string }>();
+    for (const e of eventosMapa) m.set(e.titulo, { n: (m.get(e.titulo)?.n ?? 0) + 1, cor: e.cor });
+    return [...m.entries()].sort((a, b) => b[1].n - a[1].n);
+  }, [eventosMapa]);
+
   const marcadores = useMemo(() => {
     const ph = pontoHover != null ? relevoQ.data?.pontos[pontoHover] : undefined;
     if (ph) {
@@ -287,7 +307,18 @@ export default function Tracking() {
                   onSelect={() => {}}
                   altura="h-[420px] lg:h-[560px]"
                   percurso={percurso}
+                  eventos={eventosMapa}
                 />
+                {contagemEventos.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {contagemEventos.map(([nome, c]) => (
+                      <span key={nome} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-0.5 text-[11.5px]">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.cor }} />
+                        {nome} <b>{c.n}</b>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="mt-2 text-[11px] text-muted-foreground">
                   {(relevoQ.data?.pontos.length ?? 0) > 1
                     ? "Traçado pelas posições registradas com o veículo andando."

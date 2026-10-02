@@ -1,4 +1,5 @@
-import { Area, ComposedChart, CartesianGrid, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, ComposedChart, CartesianGrid, Legend, Line, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { COR_EVENTO, ROTULO_EVENTO } from "@/lib/bi-api";
 import { Mountain, TrendingDown, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ss/ui/data";
 import { classeRelevo, type TrajetoRelevo } from "@/lib/relevo-api";
@@ -91,6 +92,15 @@ export function PerfilElevacao({
                 {dados?.altitude_do_equipamento && (
                   <Line yAxisId="e" dataKey="altitude_gps" name="Altitude do equipamento" stroke="var(--brand-navy)" strokeDasharray="4 3" strokeWidth={1.2} dot={false} connectNulls />
                 )}
+                {/* Eventos no km do percurso em que aconteceram, na altura do terreno. */}
+                {(dados?.eventos ?? []).filter((e) => e.km != null).map((e, i) => {
+                  const perto = pts.reduce((m, p) => (Math.abs(p.km - (e.km ?? 0)) < Math.abs(m.km - (e.km ?? 0)) ? p : m), pts[0]);
+                  return perto?.elevacao == null ? null : (
+                    <ReferenceDot key={i} yAxisId="e" x={perto.km} y={perto.elevacao} r={4.5} fill={COR_EVENTO[e.tipo]} stroke="#fff" strokeWidth={1.5} ifOverflow="extendDomain">
+                      <title>{`${ROTULO_EVENTO[e.tipo]} · ${e.hora.slice(0, 5)} · ${e.velocidade ?? 0} km/h`}</title>
+                    </ReferenceDot>
+                  );
+                })}
                 <Line yAxisId="v" dataKey="velocidade" name="Velocidade" stroke="var(--leaf)" strokeWidth={1.2} dot={false} strokeOpacity={0.7} />
               </ComposedChart>
             </ResponsiveContainer>

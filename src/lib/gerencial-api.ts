@@ -293,3 +293,37 @@ export const pct = (v: number | null | undefined, casas = 1) => (v == null ? "�
 export const brl = (v: number | null | undefined) =>
   v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 export const hhmm = (seg: number) => `${Math.floor(seg / 3600)}h${String(Math.round((seg % 3600) / 60)).padStart(2, "0")}`;
+
+/* ------------------------------ ROI e payback ------------------------------ */
+
+export type RoiContrato =
+  | { disponivel: false; motivo: string }
+  | {
+      disponivel: true;
+      inicio: string;
+      fim: string;
+      clientes: number;
+      litros: number;
+      economia_estimada_mes: number;
+      parcela_mensal: number;
+      implantacao: number;
+      roi: number;
+      payback_meses: number | null;
+      reducao_estimada_pct: number | null;
+      custo_litro: number | null;
+      vigencia_fim: string | null;
+    };
+
+/**
+ * ROI e payback do contrato (topo da Início). Estimativa: litros reais dos
+ * últimos 30 dias × custo do litro × redução estimada do contrato, contra a
+ * parcela mensal (`mova.cliente_financeiro_vigencia`).
+ */
+export const roiQuery = () =>
+  queryOptions({
+    queryKey: chaveComGrupo("gerencial", "roi"),
+    queryFn: () => api.get<RoiContrato>(`/api/v1/gerencial/roi${qs(filtroGrupo())}`),
+    enabled: !usandoMock(),
+    retry: semRepetirLogin,
+    staleTime: 30 * 60_000,
+  });

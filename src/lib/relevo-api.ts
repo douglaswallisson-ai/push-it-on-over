@@ -46,7 +46,19 @@ export type PontoTrajeto = {
   lon: number;
 };
 
+export type EventoTrajeto = {
+  hora: string;
+  tipo: import("@/lib/bi-api").TipoEvento;
+  evento: string | null;
+  lat: number;
+  lon: number;
+  velocidade: number | null;
+  km: number | null;
+};
+
 export type TrajetoRelevo = {
+  /** Eventos de condução no ponto exato (da própria posição). */
+  eventos?: EventoTrajeto[];
   unit_id: number;
   dia: string;
   altitude_do_equipamento: boolean;

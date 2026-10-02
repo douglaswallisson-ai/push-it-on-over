@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
 import type { SaudeFrotaApi } from "@/lib/api";
 import { alarmesListaQuery, alarmesNaoVisualizadosQuery, eventosApiQuery, rankingMotoristasQuery, saudeFrotaQuery } from "@/lib/queries";
+import { roiQuery } from "@/lib/gerencial-api";
 import { serieGerencialQuery } from "@/lib/gerencial-api";
 import { useSessao } from "@/hooks/use-sessao";
 import { usandoMock } from "@/lib/modo";
@@ -213,6 +214,11 @@ function HeroValue() {
   const { sessao } = useSessao();
   const q = useQuery(rankingMotoristasQuery());
   const r = q.data?.resumo;
+  // ROI e payback do contrato (mova.cliente_financeiro_vigencia).
+  const roiQ = useQuery(roiQuery());
+  const roi = roiQ.data?.disponivel ? roiQ.data : null;
+  const brlCurto = (v: number) =>
+    v >= 1_000_000 ? `R$ ${fmt(v / 1_000_000, 1)} mi` : v >= 1_000 ? `R$ ${fmt(v / 1_000, 1)} mil` : `R$ ${fmt(v)}`;
   const h = new Date().getHours();
   const saudacao = h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
   const primeiroNome = (sessao?.nome ?? "").split(" ")[0];
@@ -237,7 +243,11 @@ function HeroValue() {
               {primeiroNome ? `, ${primeiroNome}` : ""}
             </p>
             <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[28px]">
-              {r ? (
+              {roi ? (
+                <>
+                  Economia estimada de <span className="text-brand-green">{brlCurto(roi.economia_estimada_mes)}</span> no mês.
+                </>
+              ) : r ? (
                 <>
                   <span className="text-brand-green">{fmt(r.km_total)} km</span> rodados nos últimos 30 dias.
                 </>
@@ -253,7 +263,33 @@ function HeroValue() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6 border-t border-white/10 pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+        <div className="grid grid-cols-3 gap-6 border-t border-white/10 pt-6 lg:grid-cols-5 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+          <div
+            title={
+              roi
+                ? `Estimativa: ${fmt(roi.litros)} L nos últimos 30 dias × R$ ${fmt(roi.custo_litro ?? 0, 2)}/L × ${fmt(roi.reducao_estimada_pct ?? 0, 1)}% de redução prevista no contrato = ${brlCurto(roi.economia_estimada_mes)}, contra parcela de ${brlCurto(roi.parcela_mensal)}.`
+                : roiQ.data && !roiQ.data.disponivel
+                  ? roiQ.data.motivo
+                  : undefined
+            }
+          >
+            <HeroMetric value={roi ? `${fmt(roi.roi, 1)}x` : "—"} label="ROI" foot={roi ? "economia ÷ parcela" : "sem contrato"} />
+          </div>
+          <div
+            title={
+              roi
+                ? roi.implantacao > 0
+                  ? `Implantação de ${brlCurto(roi.implantacao)} ÷ (economia − parcela) por mês.`
+                  : "Sem custo de implantação no contrato: o retorno começa no primeiro mês."
+                : undefined
+            }
+          >
+            <HeroMetric
+              value={!roi ? "—" : roi.payback_meses == null ? "não se paga" : roi.payback_meses === 0 ? "imediato" : fmt(roi.payback_meses, 1)}
+              label="Payback"
+              foot={roi && roi.payback_meses ? "meses" : "retorno do investimento"}
+            />
+          </div>
           <HeroMetric value={fmt(r?.motoristas)} label="Motoristas com viagem" foot="últimos 30 dias" />
           <HeroMetric value={fmt(r?.nota_media, 1)} label="Nota média" foot="pontuação do BI" />
           <HeroMetric

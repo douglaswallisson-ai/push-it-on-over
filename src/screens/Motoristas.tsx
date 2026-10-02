@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
+import { CelulaRelevo, RelevoDetalhe, useRelevoDaTabela } from "@/components/ss/frota/RelevoDetalhe";
 import { StarRating } from "@/components/ss/ui/gauges";
 import { rankingMotoristasQuery } from "@/lib/queries";
 import type { MotoristaRankingApi } from "@/lib/api";
@@ -153,6 +154,31 @@ export default function Motoristas() {
       : todos;
   }, [todos, busca]);
 
+  // Relevo dos últimos 30 dias por motorista, com o gráfico ao clicar.
+  const relevo = useRelevoDaTabela();
+  const [relevoDe, setRelevoDe] = useState<{ id: string; nome: string } | null>(null);
+  const colunas = useMemo(() => {
+    const col: Column<MotoristaRankingApi> = {
+      key: "relevo",
+      header: "Relevo",
+      align: "center",
+      render: (m) => {
+        const x = relevo.porMotorista.get(m.driver_id);
+        return (
+          <CelulaRelevo
+            valor={x?.subida_por_100km}
+            km={x?.km}
+            calculando={relevo.calculando}
+            progresso={relevo.progresso}
+            onClick={() => setRelevoDe({ id: String(m.driver_id), nome: m.nome ?? String(m.driver_id) })}
+          />
+        );
+      },
+    };
+    const i = COLUNAS.findIndex((c) => c.key === "kml");
+    return [...COLUNAS.slice(0, i + 1), col, ...COLUNAS.slice(i + 1)];
+  }, [relevo.porMotorista, relevo.calculando, relevo.progresso]);
+
   const r = q.data?.resumo;
   const comNota = todos.filter((m) => m.pontuacao != null).length;
   const cnhAtencao = todos.filter((m) => exigeAtencao(statusCNH(m.cnh_validade))).length;
@@ -247,7 +273,7 @@ export default function Motoristas() {
             <p className="py-8 text-center text-sm text-muted-foreground">Nenhum motorista com viagem no período.</p>
           ) : (
             <DataTable
-              columns={COLUNAS}
+              columns={colunas}
               rows={lista}
               onRowClick={(m) => m.nome && navigate(`/app/motoristas/perfil/${encodeURIComponent(m.nome)}`)}
             />
@@ -259,6 +285,7 @@ export default function Motoristas() {
           Faixas sobre a soma das 13 faixas; eventos por hora trabalhada; motorista não identificado fora do ranking.
         </p>
       </div>
+      {relevoDe && <RelevoDetalhe tipo="motorista" id={relevoDe.id} nome={relevoDe.nome} onClose={() => setRelevoDe(null)} />}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
+import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { PopupVeiculo } from "./PopupVeiculo";
@@ -11,6 +11,8 @@ import { PopupVeiculo } from "./PopupVeiculo";
  * repetir essa derivação aqui abriria espaço para o marcador e a lista
  * discordarem sobre o mesmo veículo.
  */
+export type EventoMapa = { lat: number; lng: number; cor: string; titulo: string; hora: string; detalhe?: string };
+
 export type VeiculoMapa = {
   placa: string;
   rotulo: string;
@@ -153,6 +155,7 @@ export function MapaLeaflet({
   onSelect,
   altura = "h-[520px] lg:h-[640px]",
   percurso,
+  eventos,
 }: {
   veiculos: VeiculoMapa[];
   selecionado: string | null;
@@ -160,6 +163,8 @@ export function MapaLeaflet({
   altura?: string;
   /** Traçado do percurso do veículo selecionado, quando solicitado. */
   percurso?: [number, number][];
+  /** Eventos no ponto exato em que aconteceram (sobre o traçado). */
+  eventos?: EventoMapa[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -208,6 +213,22 @@ export function MapaLeaflet({
             <Polyline positions={percurso} pathOptions={{ color: "#1B3A6B", weight: 3.5, opacity: 0.95 }} />
           </>
         )}
+        {(eventos ?? []).map((e, i) => (
+          <CircleMarker
+            key={`ev-${i}`}
+            center={[e.lat, e.lng]}
+            radius={7}
+            pathOptions={{ color: "#ffffff", weight: 2, fillColor: e.cor, fillOpacity: 0.95 }}
+          >
+            <Tooltip direction="top" offset={[0, -6]}>{e.titulo} · {e.hora}</Tooltip>
+            <Popup>
+              <div className="text-[12.5px]">
+                <p className="font-semibold" style={{ color: e.cor }}>{e.titulo}</p>
+                <p>{e.hora}{e.detalhe ? ` · ${e.detalhe}` : ""}</p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
         <SeguirSelecionado posicao={posSelecionado} />
 
         {comCoordenada.map((v) => (

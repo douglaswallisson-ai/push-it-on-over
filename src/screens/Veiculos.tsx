@@ -4,6 +4,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { ChevronLeft, ChevronRight, Gauge, Info, Navigation, Plus, Radio, RefreshCw, Search, Truck, Wrench, X } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, DataTable, Dot, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
+import { CelulaRelevo, RelevoDetalhe, useRelevoDaTabela } from "@/components/ss/frota/RelevoDetalhe";
 import { StarRating } from "@/components/ss/ui/gauges";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
 import { SITUACAO_LABEL, SITUACAO_TONE, kanbanManutencaoQuery, nf, veiculosApiQuery, veiculosQuery } from "@/lib/queries";
@@ -275,6 +276,10 @@ export default function Veiculos() {
     return litros > 0 ? km / litros : null;
   })();
 
+  // Relevo dos últimos 30 dias por veículo (mapa de elevação).
+  const relevo = useRelevoDaTabela();
+  const [relevoDe, setRelevoDe] = useState<{ id: string; nome: string } | null>(null);
+
   const COLS: Column<Linha>[] = [
     {
       key: "placa",
@@ -318,6 +323,23 @@ export default function Veiculos() {
           {v.kml != null ? (<>{nf(v.kml, 2)} <span className="text-muted-foreground">km/l</span></>) : (<span className="text-muted-foreground">—</span>)}
         </span>
       ),
+    },
+    {
+      key: "relevo",
+      header: "Relevo",
+      align: "center",
+      render: (v) => {
+        const r = relevo.porVeiculo.get(v.id);
+        return (
+          <CelulaRelevo
+            valor={r?.subida_por_100km}
+            km={r?.km}
+            calculando={relevo.calculando}
+            progresso={relevo.progresso}
+            onClick={() => setRelevoDe({ id: v.id, nome: v.prefixo ? `${v.prefixo} · ${v.placa}` : v.placa })}
+          />
+        );
+      },
     },
     {
       key: "odometro",
@@ -687,6 +709,7 @@ export default function Veiculos() {
           </>
         )}
       </div>
+      {relevoDe && <RelevoDetalhe tipo="veiculo" id={relevoDe.id} nome={relevoDe.nome} onClose={() => setRelevoDe(null)} />}
     </>
   );
 }

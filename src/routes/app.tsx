@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { estaAutenticado } from "@/lib/session";
+import { dentroDeIframe } from "@/lib/embutido";
 import { AppShell } from "@/components/ss/layout/AppShell";
 
 export const Route = createFileRoute("/app")({
@@ -13,6 +14,8 @@ export const Route = createFileRoute("/app")({
   beforeLoad: ({ location }) => {
     if (typeof window === "undefined") return;
     if (!estaAutenticado()) {
+      // Dentro do sistema de um parceiro não há tela de login: avisa que expirou.
+      if (dentroDeIframe()) throw redirect({ to: "/embed", search: { expirou: "1" } as never });
       throw redirect({ to: "/login", search: { destino: location.href } as never });
     }
   },

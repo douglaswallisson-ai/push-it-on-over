@@ -7,6 +7,8 @@ import { SelmaLauncher } from "@/components/ss/selma/SelmaLauncher";
 import { Toaster } from "@/components/ui/sonner";
 import { ContextoOrganizacao } from "@/components/ss/layout/ContextoOrganizacao";
 import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
+import { PonteEmbutido } from "@/components/ss/layout/PonteEmbutido";
+import { lerEmbutido } from "@/lib/embutido";
 
 /**
  * Casca do sistema: trilho de ícones fixo + conteúdo sobre o canvas
@@ -17,12 +19,18 @@ import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
  */
 export function AppShell() {
   const [open, setOpen] = useState(false);
+  // Dentro do sistema de um parceiro: sem o menu e a marca da SS (o menu é o
+  // dele), a não ser que ele peça o menu com `menu=1`.
+  const embutido = lerEmbutido();
+  const comMenu = !embutido || embutido.menu;
 
   return (
     <TourProvider>
       <div className="min-h-screen bg-canvas">
-        <Sidebar open={open} onClose={() => setOpen(false)} />
+        {embutido && <PonteEmbutido />}
+        {comMenu && <Sidebar open={open} onClose={() => setOpen(false)} />}
 
+        {comMenu && (
         <button
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
@@ -30,14 +38,15 @@ export function AppShell() {
         >
           <Menu className="h-5 w-5" />
         </button>
+        )}
 
-        <div className="min-w-0 lg:ml-[68px]">
-          <ContextoOrganizacao />
+        <div className={comMenu ? "min-w-0 lg:ml-[68px]" : "min-w-0"}>
+          {!embutido && <ContextoOrganizacao />}
           <Outlet />
         </div>
 
-        <SelmaLauncher />
-        <BuscaGlobal />
+        {!embutido && <SelmaLauncher />}
+        {!embutido && <BuscaGlobal />}
 
         {/* Confirmações de ação. O sonner estava instalado mas nunca montado. */}
         <Toaster position="bottom-right" richColors closeButton />

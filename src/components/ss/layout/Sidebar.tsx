@@ -28,6 +28,7 @@ import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
 import { sair } from "@/lib/session";
+import { lerEmbutido } from "@/lib/embutido";
 import { useSessao } from "@/hooks/use-sessao";
 import { pode } from "@/lib/permissoes";
 
@@ -226,6 +227,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-2.5 overflow-hidden border-b border-white/10 px-[18px]">
+          {lerEmbutido()?.marca.logo ? (
+            <img src={lerEmbutido()!.marca.logo} alt={lerEmbutido()!.marca.nome ?? "Logo"} className="h-8 max-w-[200px] object-contain object-left" />
+          ) : (
+          <>
           <SSOrb size={30} />
           <span
             className={cn(
@@ -236,6 +241,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <span className="text-brand-sky">SS</span>
             <span className="text-white">Telemática</span>
           </span>
+          </>
+          )}
         </div>
 
         {/* Itens sensíveis só aparecem para quem tem permissão. */}
@@ -312,7 +319,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 <div className="truncate text-[11px] text-white/55">{orgUsuario}</div>
               </div>
             )}
-            {expanded && (
+            {expanded && !lerEmbutido() && (
               <button
                 onClick={() => {
                   sair();

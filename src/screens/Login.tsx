@@ -32,7 +32,7 @@ const STATS = [
  * `master` vem como 1 ou 0, não como booleano — comparar com `true` daria falso
  * para o administrador e o seletor de cliente nunca apareceria.
  */
-function perfilDoUsuario(u: { master?: number | boolean | null } | null | undefined) {
+export function perfilDoUsuario(u: { master?: number | boolean | null } | null | undefined) {
   const ehMaster = u?.master === 1 || u?.master === true;
   return ehMaster ? ("super_admin" as const) : ("gestor" as const);
 }

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ConsoleRouteImport } from './routes/console'
+import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
@@ -103,6 +104,11 @@ const AppRoute = AppRouteImport.update({
 const ConsoleRoute = ConsoleRouteImport.update({
   id: '/console',
   path: '/console',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedRoute = EmbedRouteImport.update({
+  id: '/embed',
+  path: '/embed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -505,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRouteWithChildren
+  '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
@@ -585,6 +592,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
@@ -668,6 +676,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRouteWithChildren
+  '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
@@ -752,6 +761,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/console'
+    | '/embed'
     | '/login'
     | '/app/$'
     | '/app/assistente'
@@ -832,6 +842,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/embed'
     | '/login'
     | '/app/$'
     | '/app/assistente'
@@ -914,6 +925,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/console'
+    | '/embed'
     | '/login'
     | '/app/$'
     | '/app/assistente'
@@ -997,6 +1009,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   ConsoleRoute: typeof ConsoleRouteWithChildren
+  EmbedRoute: typeof EmbedRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -1021,6 +1034,13 @@ declare module '@tanstack/react-router' {
       path: '/console'
       fullPath: '/console'
       preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed': {
+      id: '/embed'
+      path: '/embed'
+      fullPath: '/embed'
+      preLoaderRoute: typeof EmbedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1758,6 +1778,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   ConsoleRoute: ConsoleRouteWithChildren,
+  EmbedRoute: EmbedRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

@@ -190,6 +190,11 @@ export const temTokenValido = () => {
  * uso único impede que seja reaproveitado se aparecer no histórico do
  * navegador.
  */
+/** Tokens obtidos por outra entrada (ex.: modo embutido de parceiro). */
+export function gravarTokensRecebidos(t: { access_token: string; refresh_token: string; token_type: string; expires_in: number }) {
+  gravarTokens(t);
+}
+
 export async function entrarPorTicket(ticket: string) {
   const resp = await fetch(`${V1}/auth/sso-handoff`, {
     method: "POST",

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import TimelineEventos from "@/screens/eventos/TimelineEventos";
 import {
   AlertTriangle,
   BedDouble,
@@ -105,7 +106,57 @@ const tone = (g: Gravidade) => GRAV[g].tone;
 const iconBox = (t: PillTone) =>
   t === "coral" ? "bg-coral-tint text-coral" : t === "gold" ? "bg-gold-tint text-gold" : t === "sky" ? "bg-navy-tint text-brand-blue" : "bg-secondary text-muted-foreground";
 
+/** Duas visões: a lista por evento (de sempre) e a linha do tempo da frota. */
 export default function Eventos() {
+  const [visao, setVisao] = useState<"lista" | "timeline">(() => {
+    try {
+      return (localStorage.getItem("ss:eventos:visao") as "lista" | "timeline") || "lista";
+    } catch {
+      return "lista";
+    }
+  });
+  const trocar = (v: "lista" | "timeline") => {
+    setVisao(v);
+    try {
+      localStorage.setItem("ss:eventos:visao", v);
+    } catch {
+      /* ignora */
+    }
+  };
+  const alternar = (
+    <div className="flex gap-1 rounded-lg bg-secondary p-0.5" role="group" aria-label="Visão">
+      {(
+        [
+          ["lista", "Por evento"],
+          ["timeline", "Linha do tempo"],
+        ] as const
+      ).map(([id, rot]) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => trocar(id)}
+          aria-pressed={visao === id}
+          className={cn("rounded-md px-3 py-1.5 text-[12.5px] font-medium", visao === id ? "bg-white shadow-sm" : "text-muted-foreground")}
+        >
+          {rot}
+        </button>
+      ))}
+    </div>
+  );
+  if (visao === "timeline" && !usandoMock()) {
+    return (
+      <>
+        <PageHeader title="Eventos de condução" subtitle="Segurança › Linha do tempo de viagens e eventos" />
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-8">
+          <TimelineEventos alternar={alternar} />
+        </div>
+      </>
+    );
+  }
+  return <EventosLista alternar={usandoMock() ? null : alternar} />;
+}
+
+function EventosLista({ alternar }: { alternar: React.ReactNode }) {
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: usandoMock() ? "2026-07-24" : iso(new Date()) });
   const [origem, setOrigem] = useState<"todas" | "alarme" | "conducao">("todas");
   const [mostrar, setMostrar] = useState(200);
@@ -250,6 +301,8 @@ export default function Eventos() {
         title="Eventos de condução"
         subtitle="Segurança › Eventos de telemetria (CAN)"
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          {alternar}
           <button
             onClick={() => setVistos(new Set(base.map((e) => e.id)))}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy transition-colors hover:bg-secondary"
@@ -257,6 +310,7 @@ export default function Eventos() {
             <Check className="h-[15px] w-[15px]" />
             Marcar tudo como visto
           </button>
+          </div>
         }
       />
 

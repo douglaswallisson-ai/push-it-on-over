@@ -21,17 +21,18 @@ export type ConfigEmbutido = {
 
 const CHAVE = "embutido";
 
-export const lerEmbutido = () => ler<ConfigEmbutido | null>(CHAVE, null);
+/** Só vale dentro de um iframe: aberta direto no navegador, a plataforma é a normal. */
+export const lerEmbutido = () => (dentroDeIframe() ? ler<ConfigEmbutido | null>(CHAVE, null) : null);
 export const gravarEmbutido = (c: ConfigEmbutido) => gravar(CHAVE, c);
 export const limparEmbutido = () => limpar(CHAVE);
 export const estaEmbutido = () => Boolean(lerEmbutido());
-export const dentroDeIframe = () => {
+export function dentroDeIframe() {
   try {
     return typeof window !== "undefined" && window.self !== window.top;
   } catch {
     return true;
   }
-};
+}
 
 const COR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 

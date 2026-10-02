@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Scatter, Scatt
 import { Activity, Fuel, Mountain, MountainSnow, Route, TrendingDown, TrendingUp, Truck, Users } from "lucide-react";
 import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { classeRelevo, relevoResumoQuery, type ResumoRelevo } from "@/lib/relevo-api";
-import { nf } from "@/lib/gerencial-api";
+import { iso, nf } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 import { ANIM, Aviso, BarrasRank, Carregando, DicaGrafico, Grafico, Info, Kpi } from "./pecas";
 import type { Ctx } from "./Conducao";
@@ -13,6 +13,21 @@ import type { Ctx } from "./Conducao";
 const KM_MINIMO = 100;
 
 const ddmm = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
+
+/**
+ * O gráfico por dia precisa de vários dias para mostrar tendência. No começo
+ * do mês o filtro "Mês atual" tem 1 ou 2 dias e o gráfico virava um ponto só
+ * — parecia que tinha sumido. Com período curto, ele mostra os últimos 30 dias
+ * até o fim do período (o resto da página continua no período escolhido).
+ */
+const DIAS_TENDENCIA = 30;
+function janelaTendencia<T extends { inicio: string; fim: string }>(f: T): { f: T; estendida: boolean } {
+  const dias = Math.round((new Date(f.fim + "T12:00").getTime() - new Date(f.inicio + "T12:00").getTime()) / 86_400_000) + 1;
+  if (dias >= 14) return { f, estendida: false };
+  const ini = new Date(f.fim + "T12:00");
+  ini.setDate(ini.getDate() - (DIAS_TENDENCIA - 1));
+  return { f: { ...f, inicio: iso(ini) }, estendida: true };
+}
 
 function Calculando({ progresso }: { progresso: number }) {
   return (
@@ -35,6 +50,8 @@ type Mot = ResumoRelevo["por_motorista"][number];
 
 export function PaginaRelevo({ f }: Ctx) {
   const q = useQuery(relevoResumoQuery(f));
+  const tendencia = janelaTendencia(f);
+  const qT = useQuery(relevoResumoQuery(tendencia.f));
   const [por, setPor] = useState<"veiculo" | "motorista">("veiculo");
   const r = q.data;
   const t = r?.totais;
@@ -42,7 +59,7 @@ export function PaginaRelevo({ f }: Ctx) {
   const veiculos = useMemo(() => (r?.por_veiculo ?? []).filter((v) => v.km >= KM_MINIMO), [r]);
   const motoristas = useMemo(() => (r?.por_motorista ?? []).filter((m) => m.km >= KM_MINIMO), [r]);
   const dispersao = veiculos.filter((v) => v.kml != null && v.kml > 0.3 && v.kml < 8).map((v) => ({ x: v.subida_por_100km ?? 0, y: v.kml ?? 0, z: v.km, nome: v.placa }));
-  const porDia = (r?.por_dia ?? []).map((d) => ({ rotulo: ddmm(d.dia), "Subida por 100 km": d.subida_por_100km ?? 0, "% em aclive": d.pct_aclive ?? 0 }));
+  const porDia = ((tendencia.estendida ? qT.data?.por_dia : r?.por_dia) ?? []).map((d) => ({ rotulo: ddmm(d.dia), "Subida por 100 km": d.subida_por_100km ?? 0, "% em aclive": d.pct_aclive ?? 0 }));
   const corr = r?.correlacao_kml;
   const leituraCorr =
     corr == null ? "poucos veículos para medir" : Math.abs(corr) < 0.2 ? "fraca — o relevo explica pouco da diferença de consumo entre veículos" : corr < 0 ? "relevo mais forte, km/l menor" : "sem o efeito esperado; outros fatores pesam mais";
@@ -108,7 +125,17 @@ export function PaginaRelevo({ f }: Ctx) {
             </Scatter>
           </ScatterChart>
         </Grafico>
-        <Grafico titulo="Relevo por dia" icon={Activity} altura={320} dica="Subida a cada 100 km em cada dia. Dias de rota mais pesada aparecem como picos.">
+        <Grafico
+          titulo={tendencia.estendida ? "Relevo por dia · últimos 30 dias" : "Relevo por dia"}
+          icon={Activity}
+          altura={320}
+          rodape={
+            tendencia.estendida && qT.data?.calculando
+              ? `Calculando o relevo dos últimos 30 dias… ${Math.round((qT.data.progresso ?? 0) * 100)}% (só na primeira vez; leva alguns minutos)`
+              : undefined
+          }
+          dica={`Subida a cada 100 km em cada dia (barras) e % do caminho em aclive (linha). Dias de rota mais pesada aparecem como picos.${tendencia.estendida ? " O período escolhido tem poucos dias, então o gráfico mostra os 30 dias até o fim dele." : ""}`}
+        >
           <ComposedChart data={porDia}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />

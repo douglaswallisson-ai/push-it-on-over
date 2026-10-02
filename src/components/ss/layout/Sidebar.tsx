@@ -23,8 +23,7 @@ import {
   Truck,
   Users,
   type LucideIcon,
-  ArrowLeftRight,
-} from "lucide-react";
+  ArrowLeftRight, ClipboardCheck } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
@@ -112,6 +111,8 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Telemetria", to: "/app/frota/telemetria" },
     ],
   },
+  // Plano de viagem para a gerenciadora de risco (carga rodoviária).
+  { label: "Escala de viagem", icon: ClipboardCheck, to: "/app/escala-viagem" },
   {
     label: "Transporte urbano",
     icon: Route,

@@ -32,6 +32,7 @@ import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { projetarNaLinha, type PontoItinerario } from "@/lib/projecao-linha";
 import { DESPACHO_LABEL, type PosicaoNaLinha, type Sentido, type TipoDespacho } from "@/types";
 import { cn } from "@/lib/utils";
+import SinoticoUrbano, { useLinhasUrbanas } from "@/screens/operacao/SinoticoUrbano";
 
 /**
  * Painel sinótico.
@@ -50,7 +51,25 @@ const desvioTone = (d: number): PillTone => (Math.abs(d) <= 3 ? "green" : Math.a
 /** Cor do marcador conforme o desvio, para leitura à distância no telão. */
 const corDesvio = (d: number) => (Math.abs(d) <= 3 ? "var(--leaf)" : Math.abs(d) <= 8 ? "var(--gold)" : "var(--coral)");
 
+/**
+ * Urbano com linhas em operação (dados reais de viagens) abre a régua real;
+ * o resto (exemplo e fretamento por horário) segue na visão abaixo.
+ */
 export default function PainelSinotico() {
+  const urbano = useLinhasUrbanas();
+  if (!usandoMock() && urbano.data?.length) return <SinoticoUrbano linhas={urbano.data} />;
+  if (!usandoMock() && urbano.isLoading) {
+    return (
+      <>
+        <PageHeader title="Painel sinótico" subtitle="Operação › Visão da linha em tempo real" />
+        <div className="px-8 py-6 text-[13px] text-muted-foreground">Carregando as linhas em operação…</div>
+      </>
+    );
+  }
+  return <PainelSinoticoHorario />;
+}
+
+function PainelSinoticoHorario() {
   const mockLinhasQ = useQuery(linhasQuery());
   const apiLinhasQ = useQuery(linhasApiQuery());
   const linhasQ = usandoMock() ? mockLinhasQ : apiLinhasQ;

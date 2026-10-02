@@ -37,6 +37,7 @@ export function MapaCliente(props: {
   percurso?: [number, number][];
   eventos?: EventoMapa[];
   camadas?: boolean;
+  foco?: { lat: number; lng: number; titulo: string; detalhe?: string } | null;
 }) {
   const [montado, setMontado] = useState(false);
   const altura = props.altura ?? "h-[520px] lg:h-[640px]";

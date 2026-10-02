@@ -88,7 +88,13 @@ export default function Tracking() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   })();
-  const [hoje, setDia] = useState(hojeLocal);
+  // Vindo de outra tela (ex.: evento no gráfico de Veículos): dia e ponto em foco pelo endereço.
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const [hoje, setDia] = useState(() => (params?.get("dia") && /^d{4}-d{2}-d{2}$/.test(params.get("dia")!) ? params.get("dia")! : hojeLocal));
+  const [foco, setFoco] = useState<{ lat: number; lng: number; titulo: string; detalhe?: string } | null>(() => {
+    const f = params?.get("foco")?.split(",").map(Number);
+    return f && f.length === 2 && f.every(Number.isFinite) ? { lat: f[0], lng: f[1], titulo: params?.get("focoTitulo") ?? "Evento" } : null;
+  });
   const apiQ = useQuery(trackingApiQuery(veiculoId, hoje));
   // Posições do dia com a elevação de cada uma: perfil e traçado real.
   const relevoQ = useQuery(relevoTrajetoQuery(veiculoId || undefined, hoje));
@@ -301,6 +307,7 @@ export default function Tracking() {
 
               {/* Mapa com o traçado. */}
               <Card title="Traçado" icon={Route} bodyClassName="p-3">
+                <div id="mapa-tracking">
                 <MapaCliente
                   veiculos={marcadores}
                   selecionado={marcadores[0]?.placa ?? null}
@@ -308,7 +315,9 @@ export default function Tracking() {
                   altura="h-[420px] lg:h-[560px]"
                   percurso={percurso}
                   eventos={eventosMapa}
+                  foco={foco}
                 />
+                </div>
                 {contagemEventos.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {contagemEventos.map(([nome, c]) => (
@@ -328,7 +337,17 @@ export default function Tracking() {
             </div>
 
             {!usandoMock() && (
-              <PerfilElevacao dados={relevoQ.data} carregando={relevoQ.isLoading} erro={relevoQ.error} onHover={setPontoHover} />
+              <PerfilElevacao
+                dados={relevoQ.data}
+                carregando={relevoQ.isLoading}
+                erro={relevoQ.error}
+                onHover={setPontoHover}
+                rotuloVeiculo={veiculo?.prefixo ?? veiculo?.placa ?? veiculoId}
+                onVerNoMapa={(e) => {
+                  setFoco({ lat: e.lat, lng: e.lon, titulo: e.evento ?? "Evento", detalhe: e.hora.slice(0, 5) });
+                  document.getElementById("mapa-tracking")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
+              />
             )}
           </>
         )}

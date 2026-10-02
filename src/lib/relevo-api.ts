@@ -42,6 +42,7 @@ export type PontoTrajeto = {
   elevacao: number | null;
   altitude_gps: number | null;
   velocidade: number | null;
+  rpm?: number | null;
   lat: number;
   lon: number;
 };
@@ -54,6 +55,15 @@ export type EventoTrajeto = {
   lon: number;
   velocidade: number | null;
   km: number | null;
+  em?: string;
+  cod?: number;
+  rpm?: number | null;
+  motorista?: string | null;
+  driver_id?: number;
+  endereco?: string | null;
+  combustivel?: number | null;
+  altitude_gps?: number | null;
+  elevacao?: number | null;
 };
 
 export type TrajetoRelevo = {

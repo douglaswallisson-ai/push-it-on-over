@@ -114,9 +114,11 @@ export type EventoItem = {
   cerca: string | null;
   latitude: number | null;
   longitude: number | null;
+  velocidade?: number | null;
 };
 
-export type ListaEventosBI = { dia: string; ultimo_carregado: string | null; itens: EventoItem[] };
+/** `fonte`: "tempo_real" quando o dia ainda não chegou ao heatmap e veio do histórico de posições. */
+export type ListaEventosBI = { dia: string; ultimo_carregado: string | null; fonte?: "heatmap" | "tempo_real"; itens: EventoItem[] };
 
 type Agrupado = { nome: string; horas: number; paradas: number };
 export type ParadoBI = {

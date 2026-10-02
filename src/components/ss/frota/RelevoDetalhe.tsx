@@ -165,7 +165,14 @@ export function RelevoDetalhe({
                     Dia do perfil
                     <input type="date" value={dia} max={iso(ontem())} onChange={(e) => e.target.value && setDia(e.target.value)} className="h-8 rounded-lg border border-border bg-white px-2" />
                   </div>
-                  <PerfilElevacao dados={trajQ.data} carregando={trajQ.isLoading} erro={trajQ.error} onHover={() => {}} />
+                  <PerfilElevacao
+                    dados={trajQ.data}
+                    carregando={trajQ.isLoading}
+                    erro={trajQ.error}
+                    onHover={() => {}}
+                    rotuloVeiculo={nome}
+                    linkMapa={(e) => `/app/frota/tracking?veiculo=${encodeURIComponent(id)}&dia=${dia}&foco=${e.lat},${e.lon}&focoTitulo=${encodeURIComponent(`${e.evento ?? "Evento"} · ${e.hora.slice(0, 5)}`)}`}
+                  />
                 </>
               )}
             </>

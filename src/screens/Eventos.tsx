@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
 import TimelineEventos from "@/screens/eventos/TimelineEventos";
 import {
   AlertTriangle,
@@ -73,6 +74,11 @@ type Evento = {
   x: number;
   y: number;
   leituras: Leitura[];
+  /** Posição real do evento (quando a origem informa). */
+  lat?: number | null;
+  lng?: number | null;
+  /** Veículo, para abrir o percurso do dia. */
+  unitId?: number | string | null;
 };
 
 const EVENTOS: Evento[] = [
@@ -157,7 +163,14 @@ export default function Eventos() {
 }
 
 function EventosLista({ alternar }: { alternar: React.ReactNode }) {
-  const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: usandoMock() ? "2026-07-24" : iso(new Date()) });
+  const pedido = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const q = new URLSearchParams(window.location.search);
+    const data = q.get("data");
+    return data && /^\d{4}-\d{2}-\d{2}$/.test(data) ? { data, veiculo: (q.get("veiculo") ?? "").toLowerCase(), hora: q.get("hora") ?? "" } : null;
+  }, []);
+  const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: pedido?.data ?? (usandoMock() ? "2026-07-24" : iso(new Date())) });
+  const [pedidoAtendido, setPedidoAtendido] = useState(false);
   const [origem, setOrigem] = useState<"todas" | "alarme" | "conducao">("todas");
   const [mostrar, setMostrar] = useState(200);
   const [gravFiltro, setGravFiltro] = useState<Gravidade | "todas">("todas");
@@ -190,7 +203,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
   const totaisQ = useQuery(serieBIQuery({ inicio: filtros.data, fim: filtros.data }));
   const totDia = totaisQ.data?.dias[0];
   const carga = conducaoQ.data?.ultimo_carregado ?? null;
-  const detalheNaoCarregado = !usandoMock() && !!carga && carga.slice(0, 10) < filtros.data;
+  const detalheNaoCarregado = !usandoMock() && conducaoQ.data?.fonte !== "tempo_real" && !!carga && carga.slice(0, 10) < filtros.data;
 
   const eventosApi = useMemo(() => {
     if (usandoMock() || !alarmesQ.data) return null;
@@ -228,6 +241,8 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
         x: 0,
         y: 0,
         leituras,
+        lat: e.latitude ?? null,
+        lng: e.longitude ?? null,
         origem: "alarme",
       } as Evento;
     });
@@ -247,11 +262,14 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
         gravidade: GRAV_CONDUCAO[e.tipo] ?? "baixa",
         // Evento de condução não tem "visualizado" no banco; só os alarmes têm.
         visto: true,
-        velocidade: null,
+        velocidade: e.velocidade ?? null,
         local: e.cerca ? `${e.cerca} · ${e.endereco ?? ""}` : e.endereco ?? (e.latitude != null ? `${e.latitude.toFixed(5)}, ${e.longitude?.toFixed(5)}` : "local não informado"),
         dur: "—",
         x: 50,
         y: 50,
+        lat: e.latitude ?? null,
+        lng: e.longitude ?? null,
+        unitId: e.unit_id,
         leituras: [
           { label: "Evento registrado", value: e.evento ?? ROTULO_EVENTO[e.tipo], forte: true },
           { label: "Motorista", value: e.condutor ?? "não identificado" },
@@ -294,6 +312,15 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
   const validar = (id: string, v: "correto" | "falso") => setValidacao((m) => ({ ...m, [id]: v }));
 
   const eventoAberto = base.find((e) => e.id === aberto) ?? null;
+
+  // Abre o evento pedido pelo endereço, assim que a lista do dia chega.
+  useEffect(() => {
+    if (!pedido || pedidoAtendido || conducaoQ.isLoading || alarmesQ.isLoading) return;
+    setPedidoAtendido(true);
+    const achado = base.find((e) => e.hora === pedido.hora && (!pedido.veiculo || e.veiculo.toLowerCase().includes(pedido.veiculo) || pedido.veiculo.includes(e.veiculo.toLowerCase())));
+    if (achado) setAberto(achado.id);
+    else toast.info("Esse evento ainda não aparece na lista", { description: "Os eventos de condução chegam à lista com algumas horas de atraso. A linha do tempo mostra em tempo real." });
+  }, [pedido, pedidoAtendido, conducaoQ.isLoading, alarmesQ.isLoading, base]);
 
   return (
     <>
@@ -452,6 +479,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
       {eventoAberto && (
         <EventoDrawer
           evento={eventoAberto}
+          dia={filtros.data}
           validacao={validacao[eventoAberto.id]}
           onValidar={(v) => validar(eventoAberto.id, v)}
           onClose={() => setAberto(null)}
@@ -534,6 +562,7 @@ function EventoRow({
 /** Painel de detalhe do evento — tudo dentro. */
 function EventoDrawer({
   evento,
+  dia,
   validacao,
   onValidar,
   onClose,
@@ -543,6 +572,7 @@ function EventoDrawer({
   onGerarOcorrencia,
 }: {
   evento: Evento;
+  dia: string;
   validacao?: "correto" | "falso";
   onValidar: (v: "correto" | "falso") => void;
   onClose: () => void;
@@ -659,19 +689,30 @@ function EventoDrawer({
               <MapPin className="h-4 w-4 text-brand-navy" />
               {evento.local}
             </div>
-            <div className="relative h-40 w-full" style={{ background: "radial-gradient(circle at 55% 45%, #EAF3EC 0%, #E3EDF3 50%, #DCE6EC 100%)" }}>
-              <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
-                <path d="M-20 90 Q 160 60 340 120 T 700 140" fill="none" stroke="white" strokeWidth="5" opacity="0.7" />
-                <path d="M-20 200 Q 200 240 380 180 T 720 220" fill="none" stroke="white" strokeWidth="5" opacity="0.7" />
-              </svg>
-              <div style={{ left: `${evento.x}%`, top: `${evento.y}%` }} className="absolute -translate-x-1/2 -translate-y-full">
-                <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-white px-2.5 py-1 text-[11px] font-semibold shadow-card">
-                  <span className={cn("h-2 w-2 rounded-full", t === "coral" ? "bg-coral" : t === "gold" ? "bg-gold" : "bg-brand-sky")} />
-                  {evento.veiculo}
-                </div>
-                <div className="mx-auto h-2.5 w-2.5 -translate-y-1 rotate-45 border-b border-r border-border bg-white" />
-              </div>
-            </div>
+            {evento.lat != null && evento.lng != null ? (
+              <>
+                <MapaCliente
+                  veiculos={[]}
+                  selecionado={null}
+                  onSelect={() => {}}
+                  altura="h-56"
+                  camadas={false}
+                  foco={{ lat: evento.lat, lng: evento.lng, titulo: evento.tipo, detalhe: evento.hora }}
+                />
+                {evento.unitId != null && (
+                  <div className="border-t border-border px-4 py-2.5">
+                    <Link
+                      to={`/app/frota/tracking?veiculo=${encodeURIComponent(String(evento.unitId))}&dia=${dia}&foco=${evento.lat},${evento.lng}&focoTitulo=${encodeURIComponent(`${evento.tipo} · ${evento.hora}`)}`}
+                      className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-navy hover:underline"
+                    >
+                      <MapPin className="h-3.5 w-3.5" /> Ver no percurso do dia
+                    </Link>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="px-4 py-6 text-center text-[12.5px] text-muted-foreground">A origem deste evento não informou a posição.</p>
+            )}
           </div>
         </div>
 

@@ -155,6 +155,15 @@ function AjustarEnquadramento({ pontos, chave: chaveConjunto }: { pontos: [numbe
   return null;
 }
 
+/** Ponto em destaque (ex.: um evento aberto de outra tela): centraliza e aproxima uma vez. */
+function IrParaFoco({ foco }: { foco?: { lat: number; lng: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (foco) map.setView([foco.lat, foco.lng], 16, { animate: true });
+  }, [foco?.lat, foco?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 /** Centraliza no veículo selecionado, sem alterar o zoom escolhido. */
 function SeguirSelecionado({ posicao }: { posicao: [number, number] | null }) {
   const map = useMap();
@@ -172,6 +181,7 @@ export function MapaLeaflet({
   percurso,
   eventos,
   camadas = true,
+  foco,
 }: {
   veiculos: VeiculoMapa[];
   selecionado: string | null;
@@ -183,6 +193,8 @@ export function MapaLeaflet({
   eventos?: EventoMapa[];
   /** Mostra o seletor de cercas e pontos de interesse do cliente. */
   camadas?: boolean;
+  /** Ponto em destaque, com o texto do balão. */
+  foco?: { lat: number; lng: number; titulo: string; detalhe?: string } | null;
 }) {
   const [visiveis, setVisiveis] = useState<CamadasVisiveis>(lerCamadas);
   const [estadoCamadas, setEstadoCamadas] = useState({ carregando: false, longe: false, truncado: false, erro: false });
@@ -265,6 +277,18 @@ export function MapaLeaflet({
           </CircleMarker>
         ))}
         <SeguirSelecionado posicao={posSelecionado} />
+        {foco && (
+          <>
+            <IrParaFoco foco={foco} />
+            <CircleMarker center={[foco.lat, foco.lng]} radius={16} pathOptions={{ color: "#c0392b", weight: 2, fillColor: "#c0392b", fillOpacity: 0.15 }} />
+            <CircleMarker center={[foco.lat, foco.lng]} radius={7} pathOptions={{ color: "#ffffff", weight: 2.5, fillColor: "#c0392b", fillOpacity: 1 }}>
+              <Tooltip direction="top" offset={[0, -8]} permanent>
+                <span className="font-semibold">{foco.titulo}</span>
+                {foco.detalhe ? <span> · {foco.detalhe}</span> : null}
+              </Tooltip>
+            </CircleMarker>
+          </>
+        )}
 
         {comCoordenada.map((v) => (
           <Marker

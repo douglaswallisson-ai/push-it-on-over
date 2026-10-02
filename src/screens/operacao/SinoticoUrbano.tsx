@@ -45,6 +45,8 @@ type Sentido = {
   intervalo_medio_min: number | null;
   maior_buraco_min: number | null;
   colados: number;
+  cvh?: number | null;
+  nivel_servico?: string | null;
 };
 type Resposta = { linha: string; sentidos: Sentido[] };
 type Linha = { linha: string; agora: number; carros_3h: number };
@@ -141,10 +143,10 @@ export default function SinoticoUrbano({ linhas }: { linhas: Linha[] }) {
 
         <div className="flex flex-wrap items-center gap-4 text-[12px] text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COR.regular }} /> espaçamento regular</span>
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COR.colado }} /> colado no da frente</span>
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COR.buraco }} /> buraco à frente</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COR.colado }} /> colado (menos da metade do intervalo)</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COR.buraco }} /> buraco (mais de 1,5× o intervalo)</span>
           <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" /> primeiro da fila</span>
-          <span>Atualiza a cada 30 s.</span>
+          <span>Critério do manual TCQSM (TCRP 165). Atualiza a cada 30 s.</span>
         </div>
       </div>
     </>
@@ -163,6 +165,11 @@ function Regua({ s }: { s: Sentido }) {
         <div className="flex items-center gap-2">
           <Pill tone="sky">{naRota.length} na rota</Pill>
           {s.intervalo_medio_min != null && <Pill tone="green">intervalo ~{nf(s.intervalo_medio_min)} min</Pill>}
+          {s.nivel_servico && (
+            <Pill tone={"ABC".includes(s.nivel_servico) ? "green" : s.nivel_servico === "D" ? "gold" : "coral"}>
+              regularidade {s.nivel_servico}
+            </Pill>
+          )}
         </div>
       }
       bodyClassName="p-5"

@@ -48,15 +48,16 @@ function avaliar(id: keyof Sinais, s: Sinais, L: Record<string, number>): { tom:
       return {
         tom: v >= L.temp_critico ? "critico" : v >= L.temp_atencao ? "atencao" : "ok",
         valor: `${n(v)}°C`,
-        detalhe: `Líquido de arrefecimento a ${n(v)} °C. Atenção a partir de ${L.temp_atencao} °C, crítico a partir de ${L.temp_critico} °C.`,
+        detalhe: `Líquido de arrefecimento a ${n(v)} °C. Faixa normal até 95 °C; atenção a partir de ${L.temp_atencao} °C, crítico a partir de ${L.temp_critico} °C (Cummins).`,
       };
     case "oleo": {
       const girando = (s.rpm ?? 0) >= L.oleo_rpm_min;
+      if (v === 0 && girando) return { tom: "sem", valor: "—", detalhe: "Pressão zero com o motor girando: o veículo não tem esse sensor." };
       return {
         tom: girando && v < L.oleo_min_kpa ? "critico" : "ok",
         valor: `${n(v)} kPa`,
         detalhe: girando
-          ? `Pressão do óleo em ${n(v)} kPa com o motor a ${n(s.rpm ?? 0)} rpm. Mínimo de ${L.oleo_min_kpa} kPa com o motor acelerado.`
+          ? `Pressão do óleo em ${n(v)} kPa com o motor a ${n(s.rpm ?? 0)} rpm. Mínimo de ${L.oleo_min_kpa} kPa (Cummins).`
           : `Pressão do óleo em ${n(v)} kPa. Só é avaliada com o motor acima de ${L.oleo_rpm_min} rpm.`,
       };
     }
@@ -64,10 +65,14 @@ function avaliar(id: keyof Sinais, s: Sinais, L: Record<string, number>): { tom:
       const v24 = v > 18;
       const crit = v24 ? L.v24_critico : L.v12_critico;
       const aten = v24 ? L.v24_atencao : L.v12_atencao;
+      const carga = (v24 ? L.v24_carga_min : L.v12_carga_min) ?? aten;
+      const ligado = (s.rpm ?? 0) >= (L.rpm_ligado ?? 500);
       return {
-        tom: v < crit ? "critico" : v < aten ? "atencao" : "ok",
+        tom: v < crit ? "critico" : ligado ? (v < carga ? "atencao" : "ok") : v < aten ? "atencao" : "ok",
         valor: `${n(v, 1)} V`,
-        detalhe: `Sistema de ${v24 ? "24" : "12"} V. Atenção abaixo de ${aten} V, crítico abaixo de ${crit} V.`,
+        detalhe: ligado
+          ? `Sistema de ${v24 ? "24" : "12"} V com o motor ligado: carregando deveria passar de ${carga} V. Crítico abaixo de ${crit} V.`
+          : `Sistema de ${v24 ? "24" : "12"} V parado: abaixo de ${aten} V a bateria está com menos de metade da carga. Crítico abaixo de ${crit} V.`,
       };
     }
     case "arla":

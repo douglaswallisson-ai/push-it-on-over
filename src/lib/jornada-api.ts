@@ -9,7 +9,7 @@ import { usandoMock } from "@/lib/modo";
  * quando o cliente usa.
  */
 
-export type Infracao = { regra: "direcao_continua" | "jornada" | "refeicao" | "interjornada"; titulo: string; detalhe: string };
+export type Infracao = { regra: "direcao_continua" | "descanso" | "jornada" | "refeicao" | "interjornada"; titulo: string; detalhe: string };
 
 export type Jornada = {
   inicio: string;
@@ -19,6 +19,7 @@ export type Jornada = {
   extra_h: number;
   noturno_h: number;
   maior_direcao_continua_min: number;
+  maior_direcao_sem_descanso_min?: number;
   maior_pausa_min: number;
   pausas: { de: string; ate: string; min: number }[];
   interjornada_h: number | null;
@@ -45,7 +46,7 @@ export type LinhaDia = { driver_id: number; nome: string; jornada: Jornada | nul
 export type JornadaDia = {
   dia: string;
   operacao: "carga" | "passageiros";
-  regra: { jornada_h: number; extra_max_h: number; direcao_continua_min: number; refeicao_min: number; interjornada_h: number };
+  regra: { jornada_h: number; extra_max_h: number; extra_convencao_h?: number; direcao_continua_min: number; descanso_a_cada_min?: number; descanso_min?: number; refeicao_min: number; interjornada_h: number };
   pausa_min: number;
   motivos: string[];
   totais: {

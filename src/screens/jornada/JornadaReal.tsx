@@ -45,6 +45,7 @@ const DIA_SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 
 const ROTULO_INF: Record<Infracao["regra"], string> = {
   direcao_continua: "Direção contínua",
+  descanso: "Descanso de 30 min",
   jornada: "Jornada acima do limite",
   refeicao: "Sem intervalo de refeição",
   interjornada: "Interjornada curta",
@@ -139,7 +140,7 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
         {r && (
           <span className="text-[12.5px] text-muted-foreground">
             Regras de transporte de <b>{r.operacao}</b>: jornada {r.regra.jornada_h} h + até {r.regra.extra_max_h} h extras · direção contínua até{" "}
-            {minutos(r.regra.direcao_continua_min)} · refeição {r.regra.refeicao_min} min · interjornada {r.regra.interjornada_h} h
+            {minutos(r.regra.direcao_continua_min)} · 30 min de descanso a cada {minutos(r.regra.descanso_a_cada_min ?? r.regra.direcao_continua_min)} · refeição {r.regra.refeicao_min} min · interjornada {r.regra.interjornada_h} h seguidas (CLT 235-C, CTB 67-C, STF ADI 5322)
           </span>
         )}
         {q.isFetching && <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />}

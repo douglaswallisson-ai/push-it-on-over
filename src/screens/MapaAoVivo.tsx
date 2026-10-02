@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Gauge, MapPin, Navigation, Search, Truck } from "lucide-react";
+import { Bike, Bus, Car, Gauge, MapPin, Navigation, Search, Tractor, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Database, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { intervaloAtualizacao, usandoMock } from "@/lib/modo";
 import { MapaCliente } from "@/components/ss/mapa/MapaCliente";
+import { COR_SITUACAO, tipoPorCategoria } from "@/components/ss/mapa/iconesVeiculo";
 import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
@@ -22,18 +23,26 @@ import type { PosicaoVeiculo } from "@/types";
 
 type Status = "movimento" | "parado" | "desligado" | "sem-sinal";
 
-const STATUS: Record<Status, { label: string; tone: PillTone }> = {
-  movimento: { label: "Em movimento", tone: "green" },
-  parado: { label: "Motor ligado parado", tone: "gold" },
-  desligado: { label: "Motor desligado", tone: "neutral" },
-  "sem-sinal": { label: "Sem sinal recente", tone: "coral" },
+const STATUS: Record<Status, { label: string; tone: PillTone; cor: string }> = {
+  movimento: { label: "Em movimento", tone: "green", cor: COR_SITUACAO.em_viagem },
+  parado: { label: "Motor ligado parado", tone: "gold", cor: COR_SITUACAO.ligado_parado },
+  desligado: { label: "Motor desligado", tone: "neutral", cor: COR_SITUACAO.desligado },
+  "sem-sinal": { label: "Sem sinal recente", tone: "neutral", cor: COR_SITUACAO.sem_transmissao },
 };
+
+const ICONE_TIPO = { caminhao: Truck, onibus: Bus, carro: Car, moto: Bike, maquina: Tractor } as const;
+
+/** Bolinha com a cor exata do marcador do mapa. */
+function Cor({ cor, pisca }: { cor: string; pisca?: boolean }) {
+  return <span className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full", pisca && "animate-pulse")} style={{ background: cor }} />;
+}
 
 type Veiculo = {
   placa: string;
   veiculoId?: string;
   /** Estado usado pelo marcador: comunicação + ignição + pendências. */
   estadoMapa: string;
+  categoriaId?: number | null;
   status: Status;
   vel: number;
   local: string;
@@ -93,12 +102,12 @@ export default function MapaAoVivo() {
    * operador precisa distinguir de longe, e não a situação cadastral.
    */
   const estadoDe = (p: PosicaoVeiculo, temEventoCritico: boolean, emManutencao: boolean): string => {
-    const horas = (Date.now() - new Date(p.atualizadoEm).getTime()) / 3_600_000;
-    if (Number.isNaN(horas) || horas > 24) return "sem_transmissao";
+    // Mesma regra da lista e da legenda (statusDe): 20 min sem leitura = sem sinal.
+    if (statusDe(p) === "sem-sinal") return "sem_transmissao";
     if (temEventoCritico) return "evento_critico";
     if (emManutencao) return "manutencao";
     if (!p.ignicao) return "desligado";
-    return p.velocidade > 3 ? "em_viagem" : "ligado_parado";
+    return p.velocidade > 0 ? "em_viagem" : "ligado_parado";
   };
 
   const veiculos: Veiculo[] = useMemo(
@@ -114,6 +123,7 @@ export default function MapaAoVivo() {
           placa: p.placa,
           veiculoId: cad?.id,
           estadoMapa: estadoDe(p, criticosPorPlaca.has(p.placa), cad?.situacao === "manutencao"),
+          categoriaId: p.categoriaId,
           status: statusDe(p),
           vel: p.velocidade,
           local: p.endereco || "—",
@@ -236,12 +246,16 @@ export default function MapaAoVivo() {
                       on ? "border-border bg-white text-foreground" : "border-transparent bg-secondary text-muted-foreground opacity-60",
                     )}
                   >
-                    <Dot tone={STATUS[s].tone} />
+                    <Cor cor={STATUS[s].cor} />
                     {STATUS[s].label}
                     <span className="font-mono text-[11px] text-muted-foreground">({nf(contagem(s))})</span>
                   </button>
                 );
               })}
+              <span className="inline-flex items-center gap-2 px-2 py-2 text-[12.5px] text-muted-foreground" title="Vermelho piscando: ocorrência de risco alto aguardando tratativa. Laranja piscando: veículo em manutenção.">
+                <Cor cor={COR_SITUACAO.evento_critico} pisca /> Evento crítico
+                <Cor cor={COR_SITUACAO.manutencao} pisca /> Em manutenção
+              </span>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
@@ -268,13 +282,22 @@ export default function MapaAoVivo() {
                         selected === v.placa ? "bg-navy-tint" : "hover:bg-secondary/70",
                       )}
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                        <Truck className="h-4 w-4 text-brand-navy" />
-                      </div>
+                      {(() => {
+                        const Icone = ICONE_TIPO[tipoPorCategoria(v.categoriaId)];
+                        return (
+                          <div
+                            className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-sm", v.estadoMapa === "evento_critico" && "animate-pulse")}
+                            style={{ background: COR_SITUACAO[v.estadoMapa] ?? COR_SITUACAO.desligado }}
+                            title={STATUS[v.status].label}
+                          >
+                            <Icone className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                          </div>
+                        );
+                      })()}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-[13px] font-semibold">{v.placa}</span>
-                          <Dot tone={STATUS[v.status].tone} />
+                          <Cor cor={STATUS[v.status].cor} />
                         </div>
                         <div className="truncate text-[12px] text-muted-foreground">{v.local}</div>
                       </div>
@@ -294,6 +317,7 @@ export default function MapaAoVivo() {
                     lng: v.lng,
                     veiculoId: v.veiculoId,
                     situacao: v.estadoMapa,
+                    tipo: tipoPorCategoria(v.categoriaId),
                     eventosAbertos: criticosPorPlaca.has(v.placa) ? 1 : 0,
                     velocidade: v.vel,
                     endereco: v.local,

@@ -208,6 +208,7 @@ export const Frota = {
         address?: string | null;
         local_time?: string | null;
         sem_sinal?: boolean;
+        categoria_id?: number | null;
       }[];
     }>(`/api/v1/positions/${qs(filtroGrupo())}`);
 
@@ -222,6 +223,7 @@ export const Frota = {
       velocidade: p.speed ?? 0,
       ignicao: Boolean(p.ignition),
       atualizadoEm: p.local_time ?? new Date().toISOString(),
+      categoriaId: p.categoria_id ?? null,
     }));
   },
   resumo: () => (mock(M.MOCK_RESUMO)),

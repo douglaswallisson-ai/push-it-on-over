@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { PopupVeiculo } from "./PopupVeiculo";
 import { CamadasMapa, type CamadasVisiveis } from "./CamadasMapa";
+import { COR_SITUACAO, NOME_TIPO, svgVeiculo, type TipoVeiculo } from "./iconesVeiculo";
 
 const CHAVE_CAMADAS = "ss:mapa:camadas";
 
@@ -40,6 +41,8 @@ export type VeiculoMapa = {
   motorista?: string;
   linha?: string;
   eventosAbertos?: number;
+  /** Desenho do marcador (caminhão, ônibus…). Sem tipo, caminhão. */
+  tipo?: TipoVeiculo;
 };
 
 /**
@@ -70,55 +73,52 @@ const CENTRO_PADRAO: [number, number] = [-23.5505, -46.6333];
  * transmitindo, âmbar parado com motor ligado, vermelho e laranja pulsando
  * quando exigem ação, preto quando o equipamento sumiu.
  */
-const COR_ESTADO: Record<string, string> = {
-  evento_critico: "#c0392b",
-  manutencao: "#e07b1a",
-  em_viagem: "#2f9e44",
-  ligado_parado: "#d6a419",
-  desligado: "#5a6b7d",
-  sem_transmissao: "#1c1c1c",
-};
+const COR_ESTADO = COR_SITUACAO;
 
 /** Só o que exige ação pulsa — se tudo pulsa, nada chama atenção. */
 const PULSA = new Set(["evento_critico", "manutencao"]);
 
-/**
- * Silhueta de ônibus vista de frente.
- *
- * A vista lateral que estava aqui antes ficava ilegível no tamanho do
- * marcador: os detalhes viravam borrão. De frente, a forma é reconhecível
- * mesmo em 20 pixels — que é o tamanho real na tela.
- */
-const SVG_ONIBUS = `
-<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-  <path d="M5 4.5C5 3.1 6.1 2 7.5 2h9C17.9 2 19 3.1 19 4.5v13c0 .6-.3 1.1-.8 1.4v1.6c0 .3-.2.5-.5.5h-1.4c-.3 0-.5-.2-.5-.5V19H8.2v1.5c0 .3-.2.5-.5.5H6.3c-.3 0-.5-.2-.5-.5v-1.6c-.5-.3-.8-.8-.8-1.4v-13Zm2.2.7v5.6h9.6V5.2H7.2Zm1 10.9a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Zm7.6 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z"/>
-</svg>`;
+/** Rótulo da situação, para a dica do marcador. */
+const NOME_ESTADO: Record<string, string> = {
+  evento_critico: "evento crítico",
+  manutencao: "em manutenção",
+  em_viagem: "em movimento",
+  ligado_parado: "motor ligado parado",
+  desligado: "desligado",
+  sem_transmissao: "sem sinal recente",
+};
 
 /**
- * Marcador do veículo: silhueta de ônibus na cor do estado, com o prefixo ao
- * lado para o operador identificar sem clicar.
+ * Marcador do veículo: círculo na cor da situação com o desenho do tipo
+ * (caminhão, ônibus, carro…) em branco, e o prefixo ao lado numa etiqueta
+ * branca — legível de longe e sem esconder a cor. Só o que exige ação pulsa.
  */
-function iconeVeiculo(rotulo: string, estado: string, selecionado: boolean) {
+function iconeVeiculo(rotulo: string, estado: string, selecionado: boolean, tipo: TipoVeiculo = "caminhao") {
   const cor = COR_ESTADO[estado] ?? "#5a6b7d";
   const pulsa = PULSA.has(estado);
+  const d = selecionado ? 38 : 32;
 
   return L.divIcon({
     className: "",
     html: `
-      <div style="
-        display:flex;align-items:center;gap:6px;
-        background:${cor};border:2px solid #fff;
-        border-radius:999px;padding:4px 11px 4px 7px;
-        font:700 13px/1.1 ui-monospace,monospace;color:#fff;
-        letter-spacing:.02em;
-        box-shadow:0 2px 10px rgba(15,25,40,.32), 0 0 0 1px rgba(15,25,40,.06);
-        ${selecionado ? "outline:3px solid rgba(255,255,255,.9);outline-offset:0;box-shadow:0 4px 16px rgba(15,25,40,.45), 0 0 0 6px rgba(46,134,193,.35);transform:translate(-50%,-50%) scale(1.1);" : ""}
+      <div title="${NOME_TIPO[tipo]} ${rotulo} · ${NOME_ESTADO[estado] ?? estado}" style="
+        display:flex;align-items:center;width:max-content;transform:translate(-${d / 2}px,-50%);
         ${pulsa ? "animation:ss-pulsar 1.1s ease-in-out infinite;" : ""}
-        white-space:nowrap;
-        ${selecionado ? "" : "transform:translate(-50%,-50%);"}
       ">
-        <span style="display:flex;line-height:0;opacity:.95">${SVG_ONIBUS}</span>
-        ${rotulo}
+        <span style="
+          display:flex;align-items:center;justify-content:center;flex-shrink:0;
+          width:${d}px;height:${d}px;border-radius:50%;
+          background:${cor};color:#fff;border:2.5px solid #fff;
+          box-shadow:0 2px 8px rgba(15,25,40,.35)${selecionado ? ",0 0 0 5px rgba(46,134,193,.35)" : ""};
+          position:relative;z-index:1;
+        ">${svgVeiculo(tipo, selecionado ? 21 : 18)}</span>
+        <span style="
+          margin-left:-8px;padding:3px 9px 3px 13px;border-radius:0 999px 999px 0;
+          background:#fff;color:#16263a;border:1.5px solid ${cor};border-left:0;
+          font:700 12px/1.1 ui-monospace,monospace;letter-spacing:.02em;white-space:nowrap;
+          flex-shrink:0;width:max-content;max-width:118px;overflow:hidden;text-overflow:ellipsis;
+          box-shadow:0 2px 6px rgba(15,25,40,.18);
+        ">${rotulo}</span>
       </div>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
@@ -133,9 +133,11 @@ function iconeVeiculo(rotulo: string, estado: string, selecionado: boolean) {
  * apenas seleciona um veículo — arrastar o mapa embaixo do operador a cada
  * clique é desorientador.
  */
-function AjustarEnquadramento({ pontos }: { pontos: [number, number][] }) {
+function AjustarEnquadramento({ pontos, chave: chaveConjunto }: { pontos: [number, number][]; chave?: string }) {
   const map = useMap();
-  const chave = pontos.map((p) => p.join()).join("|");
+  // Com `chave`, só reenquadra quando muda QUEM está no mapa (filtro, empresa),
+  // não a cada posição nova — senão o zoom do operador se perde a cada 30 s.
+  const chave = chaveConjunto ?? pontos.map((p) => p.join()).join("|");
 
   useEffect(() => {
     // O container pode ter nascido oculto (aba, painel colapsado). Sem isto o
@@ -233,7 +235,10 @@ export function MapaLeaflet({
 
         {camadas && <CamadasMapa visiveis={visiveis} onEstado={setEstadoCamadas} />}
 
-        <AjustarEnquadramento pontos={percurso?.length ? percurso : pontos} />
+        <AjustarEnquadramento
+          pontos={percurso?.length ? percurso : pontos}
+          chave={percurso?.length ? undefined : comCoordenada.map((v) => v.placa).sort().join("|")}
+        />
 
         {/* Percurso: linha grossa clara por baixo, fina escura por cima — o
             contorno mantém o traçado legível sobre ruas de qualquer cor. */}
@@ -265,7 +270,7 @@ export function MapaLeaflet({
           <Marker
             key={v.placa}
             position={[v.lat, v.lng]}
-            icon={iconeVeiculo(v.rotulo, v.situacao, selecionado === v.placa)}
+            icon={iconeVeiculo(v.rotulo, v.situacao, selecionado === v.placa, v.tipo)}
             eventHandlers={{ click: () => onSelect(v.placa) }}
           >
             <Popup minWidth={300} maxWidth={320} autoPanPadding={[24, 24]}>

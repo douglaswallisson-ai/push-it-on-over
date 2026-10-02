@@ -87,6 +87,8 @@ export type PosicaoVeiculo = {
   velocidade: number;
   ignicao: boolean;
   atualizadoEm: string; // ISO
+  /** Categoria do cadastro (mova.unit_category): define o ícone no mapa. */
+  categoriaId?: number | null;
 };
 
 export type Viagem = {

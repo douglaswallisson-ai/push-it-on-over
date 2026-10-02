@@ -24,6 +24,7 @@ import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { cn } from "@/lib/utils";
+import { PainelReal } from "@/screens/ai-fleet/PainelReal";
 
 /**
  * IA Ops Advisor (antigo IA Fleet Manager) — a Selma. Painel de AÇÃO: lê a telemetria e diz o que fazer
@@ -191,13 +192,25 @@ export default function IAFleetManager() {
     conta ?? (contas.some((c) => String(c.group_id) === grupoSessao) ? grupoSessao : undefined) ??
     (contas.length ? String(contas[0].group_id) : undefined);
 
-  /** Mês corrente, que é o recorte do painel. */
-  const janela = useMemo(() => {
+  /**
+   * Recorte do painel: um mês. Abre no último mês fechado porque as metas são
+   * mensais e, com o mês incompleto, o worker suprime o veredito (vault A6).
+   * O mês atual vai até ontem — o worker roda em lote e não tem o dia corrente.
+   */
+  const meses = useMemo(() => {
     const hoje = new Date();
-    const primeiro = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    const iso = (d: Date) => d.toISOString().slice(0, 10);
-    return { inicio: iso(primeiro), fim: iso(hoje) };
+    const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const nomes = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    return [0, 1, 2, 3].map((n) => {
+      const ini = new Date(hoje.getFullYear(), hoje.getMonth() - n, 1);
+      const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() - n + 1, 0);
+      const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
+      const fim = n === 0 ? (ontem < ini ? ini : ontem) : fimMes;
+      return { id: iso(ini).slice(0, 7), rotulo: `${nomes[ini.getMonth()]}/${ini.getFullYear()}${n === 0 ? " (em andamento)" : ""}`, inicio: iso(ini), fim: iso(fim) };
+    });
   }, []);
+  const [mesId, setMesId] = useState(meses[1].id);
+  const janela = meses.find((m) => m.id === mesId) ?? meses[1];
 
   const painelQ = useQuery(aiPainelQuery(contaAtiva, janela.inicio, janela.fim, true));
   const painel = painelQ.data;
@@ -236,6 +249,18 @@ export default function IAFleetManager() {
                   <option key={c.group_id} value={String(c.group_id)}>
                     {c.nome ?? `Conta ${c.group_id}`}
                   </option>
+                ))}
+              </select>
+            )}
+            {!usandoMock() && (
+              <select
+                value={mesId}
+                onChange={(e) => setMesId(e.target.value)}
+                aria-label="Mês do painel"
+                className="h-9 rounded-lg border border-border bg-white px-3 text-[13px] outline-none focus:border-accent"
+              >
+                {meses.map((m) => (
+                  <option key={m.id} value={m.id}>{m.rotulo}</option>
                 ))}
               </select>
             )}
@@ -322,6 +347,15 @@ export default function IAFleetManager() {
           </Card>
         )}
 
+        {painel?.insight_indisponivel === "sem_permissao" && (
+          <Card title="Leitura do período" icon={Sparkles} bodyClassName="p-5">
+            <p className="text-[13px] leading-relaxed text-muted-foreground">
+              O texto da IA ainda não pode ser exibido: falta liberar a leitura do esquema <code>fleet_ai</code> no banco. Os indicadores e as
+              ações abaixo já são os reais.
+            </p>
+          </Card>
+        )}
+
         {/* Ações, na ordem que o motor definiu. */}
         {painel && painel.acoes_ordenadas.length > 0 && (
           <Card
@@ -354,6 +388,11 @@ export default function IAFleetManager() {
           </Card>
         )}
 
+        {!usandoMock() && painel && <PainelReal painel={painel} />}
+
+        {/* Protótipo com dados de exemplo: só no modo demonstração. */}
+        {usandoMock() && (
+        <>
         {/* Selma. */}
         <HeroBanner
           orb
@@ -537,6 +576,8 @@ export default function IAFleetManager() {
         <p className="pb-4 text-center text-xs text-muted-foreground">
           Dados de exemplo — protótipo de interface, sem dados reais. Ações geram resultado; painéis geram relatório.
         </p>
+        </>
+        )}
       </div>
     </>
   );

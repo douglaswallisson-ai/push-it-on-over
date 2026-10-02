@@ -122,6 +122,8 @@ export type PainelAi = {
     blocos?: Record<string, unknown> | null;
     gerado_em?: string | null;
   } | null;
+  /** "sem_permissao": o banco ainda não liberou leitura do texto da IA (esquema fleet_ai). */
+  insight_indisponivel?: "sem_permissao" | null;
   /**
    * Qualidade do dado — vem junto de propósito.
    *

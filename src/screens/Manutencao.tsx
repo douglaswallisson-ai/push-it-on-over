@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { usandoMock } from "@/lib/modo";
+import ManutencaoReal from "@/screens/manutencao/ManutencaoReal";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router-compat";
 import {
@@ -63,7 +65,12 @@ type TabId = (typeof TABS)[number]["id"];
 
 const BUS_PHOTO: string | null = "/onibus.webp";
 
+/** Com a API ligada, a manutenção é a real; o quadro abaixo fica para o modo demonstração. */
 export default function Manutencao() {
+  return usandoMock() ? <ManutencaoExemplo /> : <ManutencaoReal />;
+}
+
+function ManutencaoExemplo() {
   const location = useLocation();
   const placaUrl = useMemo(() => {
     const s = (location as { searchStr?: string; search?: unknown }).searchStr;

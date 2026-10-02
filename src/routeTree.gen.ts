@@ -18,6 +18,7 @@ import { Route as AppSplatRouteImport } from './routes/app.$'
 import { Route as AppAssistenteRouteImport } from './routes/app.assistente'
 import { Route as AppAuditoriaRouteImport } from './routes/app.auditoria'
 import { Route as AppCo2RouteImport } from './routes/app.co2'
+import { Route as AppEscalaViagemRouteImport } from './routes/app.escala-viagem'
 import { Route as AppEstrategicoRouteImport } from './routes/app.estrategico'
 import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppGerencialRouteImport } from './routes/app.gerencial'
@@ -131,6 +132,11 @@ const AppAuditoriaRoute = AppAuditoriaRouteImport.update({
 const AppCo2Route = AppCo2RouteImport.update({
   id: '/co2',
   path: '/co2',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEscalaViagemRoute = AppEscalaViagemRouteImport.update({
+  id: '/escala-viagem',
+  path: '/escala-viagem',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEstrategicoRoute = AppEstrategicoRouteImport.update({
@@ -498,6 +504,7 @@ export interface FileRoutesByFullPath {
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
+  '/app/escala-viagem': typeof AppEscalaViagemRoute
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/gerencial': typeof AppGerencialRouteWithChildren
@@ -576,6 +583,7 @@ export interface FileRoutesByTo {
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
+  '/app/escala-viagem': typeof AppEscalaViagemRoute
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/gerencial': typeof AppGerencialRouteWithChildren
@@ -657,6 +665,7 @@ export interface FileRoutesById {
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
   '/app/co2': typeof AppCo2Route
+  '/app/escala-viagem': typeof AppEscalaViagemRoute
   '/app/estrategico': typeof AppEstrategicoRoute
   '/app/eventos': typeof AppEventosRoute
   '/app/gerencial': typeof AppGerencialRouteWithChildren
@@ -739,6 +748,7 @@ export interface FileRouteTypes {
     | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
+    | '/app/escala-viagem'
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/gerencial'
@@ -817,6 +827,7 @@ export interface FileRouteTypes {
     | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
+    | '/app/escala-viagem'
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/gerencial'
@@ -897,6 +908,7 @@ export interface FileRouteTypes {
     | '/app/assistente'
     | '/app/auditoria'
     | '/app/co2'
+    | '/app/escala-viagem'
     | '/app/estrategico'
     | '/app/eventos'
     | '/app/gerencial'
@@ -1039,6 +1051,13 @@ declare module '@tanstack/react-router' {
       path: '/co2'
       fullPath: '/app/co2'
       preLoaderRoute: typeof AppCo2RouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/escala-viagem': {
+      id: '/app/escala-viagem'
+      path: '/escala-viagem'
+      fullPath: '/app/escala-viagem'
+      preLoaderRoute: typeof AppEscalaViagemRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/estrategico': {
@@ -1560,6 +1579,7 @@ interface AppRouteChildren {
   AppAssistenteRoute: typeof AppAssistenteRoute
   AppAuditoriaRoute: typeof AppAuditoriaRoute
   AppCo2Route: typeof AppCo2Route
+  AppEscalaViagemRoute: typeof AppEscalaViagemRoute
   AppEstrategicoRoute: typeof AppEstrategicoRoute
   AppEventosRoute: typeof AppEventosRoute
   AppGerencialRoute: typeof AppGerencialRouteWithChildren
@@ -1625,6 +1645,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssistenteRoute: AppAssistenteRoute,
   AppAuditoriaRoute: AppAuditoriaRoute,
   AppCo2Route: AppCo2Route,
+  AppEscalaViagemRoute: AppEscalaViagemRoute,
   AppEstrategicoRoute: AppEstrategicoRoute,
   AppEventosRoute: AppEventosRoute,
   AppGerencialRoute: AppGerencialRouteWithChildren,

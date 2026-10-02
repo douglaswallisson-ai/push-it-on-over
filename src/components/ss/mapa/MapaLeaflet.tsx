@@ -1,8 +1,21 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { PopupVeiculo } from "./PopupVeiculo";
+import { CamadasMapa, type CamadasVisiveis } from "./CamadasMapa";
+
+const CHAVE_CAMADAS = "ss:mapa:camadas";
+
+function lerCamadas(): CamadasVisiveis {
+  try {
+    const v = JSON.parse(localStorage.getItem(CHAVE_CAMADAS) ?? "null");
+    if (v && typeof v.pois === "boolean" && typeof v.cercas === "boolean") return v;
+  } catch {
+    /* sem armazenamento: usa o padrão */
+  }
+  return { pois: true, cercas: true };
+}
 
 /**
  * Contrato próprio do mapa, em vez de `PosicaoVeiculo` cru.
@@ -156,6 +169,7 @@ export function MapaLeaflet({
   altura = "h-[520px] lg:h-[640px]",
   percurso,
   eventos,
+  camadas = true,
 }: {
   veiculos: VeiculoMapa[];
   selecionado: string | null;
@@ -165,7 +179,21 @@ export function MapaLeaflet({
   percurso?: [number, number][];
   /** Eventos no ponto exato em que aconteceram (sobre o traçado). */
   eventos?: EventoMapa[];
+  /** Mostra o seletor de cercas e pontos de interesse do cliente. */
+  camadas?: boolean;
 }) {
+  const [visiveis, setVisiveis] = useState<CamadasVisiveis>(lerCamadas);
+  const [estadoCamadas, setEstadoCamadas] = useState({ carregando: false, longe: false, truncado: false, erro: false });
+  const alternar = (k: keyof CamadasVisiveis) =>
+    setVisiveis((v) => {
+      const n = { ...v, [k]: !v[k] };
+      try {
+        localStorage.setItem(CHAVE_CAMADAS, JSON.stringify(n));
+      } catch {
+        /* ignora */
+      }
+      return n;
+    });
   const containerRef = useRef<HTMLDivElement>(null);
 
   /** Só entra no mapa quem tem coordenada — sem isso o marcador cairia na Ilha Null. */
@@ -202,6 +230,8 @@ export function MapaLeaflet({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
+
+        {camadas && <CamadasMapa visiveis={visiveis} onEstado={setEstadoCamadas} />}
 
         <AjustarEnquadramento pontos={percurso?.length ? percurso : pontos} />
 
@@ -255,6 +285,45 @@ export function MapaLeaflet({
           </Marker>
         ))}
       </MapContainer>
+
+      {camadas && (
+        <div className="absolute right-3 top-3 z-[400] flex flex-col items-end gap-1">
+          <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white/95 text-[12px] font-medium shadow">
+            {(
+              [
+                ["cercas", "Cercas", "#2E86C1"],
+                ["pois", "Pontos (POIs)", "#7B4FBF"],
+              ] as const
+            ).map(([k, rotulo, tom]) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => alternar(k)}
+                aria-pressed={visiveis[k]}
+                title={visiveis[k] ? `Esconder ${rotulo.toLowerCase()}` : `Mostrar ${rotulo.toLowerCase()}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 transition-colors ${visiveis[k] ? "text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+              >
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-full border"
+                  style={{ background: visiveis[k] ? tom : "transparent", borderColor: tom }}
+                />
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          {(visiveis.pois || visiveis.cercas) && (estadoCamadas.longe || estadoCamadas.truncado || estadoCamadas.erro || estadoCamadas.carregando) && (
+            <span className="rounded-md bg-white/95 px-2 py-1 text-[11px] text-slate-600 shadow">
+              {estadoCamadas.erro
+                ? "Não foi possível carregar cercas e pontos."
+                : estadoCamadas.carregando
+                  ? "Carregando cercas e pontos…"
+                  : estadoCamadas.longe
+                    ? "Aproxime o mapa para ver cercas e pontos."
+                    : "Muitos itens nesta área — aproxime para ver todos."}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Veículo sem posição não some sem explicação. */}
       {semCoordenada > 0 && (

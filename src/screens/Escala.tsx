@@ -1,4 +1,5 @@
 import { useState } from "react";
+import JornadaReal from "@/screens/jornada/JornadaReal";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +36,12 @@ const ESCALA: Array<{ nome: string; turnos: Turno[] }> = [
   { nome: "Guilherme Souza", turnos: ["tarde", "tarde", "tarde", "folga", "folga", "manha", "manha"] },
 ];
 
+/** Com a API ligada, a tela real de jornada; o protótipo fica no modo demonstração. */
 export default function Escala() {
+  return usandoMock() ? <EscalaExemplo /> : <JornadaReal abaInicial="escala" />;
+}
+
+function EscalaExemplo() {
   const navigate = useNavigate();
   const [semana, setSemana] = useState(30);
   return (

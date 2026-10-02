@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { usandoMock } from "@/lib/modo";
+import JornadaReal from "@/screens/jornada/JornadaReal";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, Download, FileCheck2, Timer, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -28,7 +30,12 @@ const hora = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { hour: 
 
 const GRAV_TONE: Record<string, PillTone> = { leve: "sky", media: "gold", grave: "coral" };
 
+/** Com a API ligada, a tela real de jornada; o protótipo fica no modo demonstração. */
 export default function JornadaTrabalho() {
+  return usandoMock() ? <JornadaTrabalhoExemplo /> : <JornadaReal abaInicial="jornada" />;
+}
+
+function JornadaTrabalhoExemplo() {
   const { data, isPending, error, refetch } = useQuery(jornadasQuery());
   const linhasQ = useQuery(linhasQuery());
   const [aberta, setAberta] = useState<Jornada | null>(null);

@@ -1,4 +1,6 @@
 import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { usandoMock } from "@/lib/modo";
+import JornadaReal from "@/screens/jornada/JornadaReal";
 import { Clock, Coffee, Download, LogIn, LogOut } from "lucide-react";
 import { exemploOuVazio } from "@/lib/modo";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -133,7 +135,12 @@ function PontoExemplo() {
 }
 
 /** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com a API ligada, a tela real de jornada; o protótipo fica no modo demonstração. */
 export default function Ponto() {
+  return usandoMock() ? <PontoSemFonte /> : <JornadaReal abaInicial="ponto" />;
+}
+
+function PontoSemFonte() {
   return (
     <ModuloSemFonte titulo="Ponto" motivo="Não há registro de ponto de motorista no banco que o sistema novo leia.">
       <PontoExemplo />

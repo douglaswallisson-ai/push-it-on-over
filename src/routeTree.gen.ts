@@ -24,6 +24,7 @@ import { Route as AppEventosRouteImport } from './routes/app.eventos'
 import { Route as AppGerencialRouteImport } from './routes/app.gerencial'
 import { Route as AppMapaRouteImport } from './routes/app.mapa'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
+import { Route as AppSuporteRouteImport } from './routes/app.suporte'
 import { Route as ConsoleIndexRouteImport } from './routes/console.index'
 import { Route as ConsoleAdministradoresRouteImport } from './routes/console.administradores'
 import { Route as ConsoleAuditoriaRouteImport } from './routes/console.auditoria'
@@ -162,6 +163,11 @@ const AppMapaRoute = AppMapaRouteImport.update({
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSuporteRoute = AppSuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => AppRoute,
 } as any)
 const ConsoleIndexRoute = ConsoleIndexRouteImport.update({
@@ -510,6 +516,7 @@ export interface FileRoutesByFullPath {
   '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
+  '/app/suporte': typeof AppSuporteRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -589,6 +596,7 @@ export interface FileRoutesByTo {
   '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
+  '/app/suporte': typeof AppSuporteRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -671,6 +679,7 @@ export interface FileRoutesById {
   '/app/gerencial': typeof AppGerencialRouteWithChildren
   '/app/mapa': typeof AppMapaRoute
   '/app/relatorios': typeof AppRelatoriosRouteWithChildren
+  '/app/suporte': typeof AppSuporteRoute
   '/console/administradores': typeof ConsoleAdministradoresRoute
   '/console/auditoria': typeof ConsoleAuditoriaRoute
   '/console/catalogo': typeof ConsoleCatalogoRoute
@@ -754,6 +763,7 @@ export interface FileRouteTypes {
     | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/app/suporte'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -833,6 +843,7 @@ export interface FileRouteTypes {
     | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/app/suporte'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -914,6 +925,7 @@ export interface FileRouteTypes {
     | '/app/gerencial'
     | '/app/mapa'
     | '/app/relatorios'
+    | '/app/suporte'
     | '/console/administradores'
     | '/console/auditoria'
     | '/console/catalogo'
@@ -1093,6 +1105,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/app/relatorios'
       preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/suporte': {
+      id: '/app/suporte'
+      path: '/suporte'
+      fullPath: '/app/suporte'
+      preLoaderRoute: typeof AppSuporteRouteImport
       parentRoute: typeof AppRoute
     }
     '/console/': {
@@ -1585,6 +1604,7 @@ interface AppRouteChildren {
   AppGerencialRoute: typeof AppGerencialRouteWithChildren
   AppMapaRoute: typeof AppMapaRoute
   AppRelatoriosRoute: typeof AppRelatoriosRouteWithChildren
+  AppSuporteRoute: typeof AppSuporteRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAdminCatalogoRoute: typeof AppAdminCatalogoRoute
   AppAdminConfiguracoesRoute: typeof AppAdminConfiguracoesRoute
@@ -1651,6 +1671,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGerencialRoute: AppGerencialRouteWithChildren,
   AppMapaRoute: AppMapaRoute,
   AppRelatoriosRoute: AppRelatoriosRouteWithChildren,
+  AppSuporteRoute: AppSuporteRoute,
   AppIndexRoute: AppIndexRoute,
   AppAdminCatalogoRoute: AppAdminCatalogoRoute,
   AppAdminConfiguracoesRoute: AppAdminConfiguracoesRoute,

@@ -23,7 +23,7 @@ import {
   Truck,
   Users,
   type LucideIcon,
-  ArrowLeftRight, ClipboardCheck } from "lucide-react";
+  ArrowLeftRight, ClipboardCheck, LifeBuoy } from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
@@ -163,6 +163,7 @@ const NAV_SECONDARY: Entry[] = [
     ],
   },
   { label: "Emissão de CO₂", icon: Leaf, to: "/app/co2" },
+  { label: "Suporte", icon: LifeBuoy, to: "/app/suporte" },
 ];
 
 function useIsDesktop() {

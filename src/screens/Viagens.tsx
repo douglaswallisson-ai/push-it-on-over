@@ -1,3 +1,5 @@
+import OperacaoLinhas from "@/screens/OperacaoLinhas";
+import { usandoMock } from "@/lib/modo";
 import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
 import { useMemo, useState } from "react";
 import { exemploOuVazio } from "@/lib/modo";
@@ -121,7 +123,13 @@ function ViagensExemplo() {
 }
 
 /** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Ligado ao banco: o Monitor de Viagens do fretamento (horários × viagens executadas). */
 export default function Viagens() {
+  if (!usandoMock()) return <OperacaoLinhas titulo="Viagens do fretamento" subtitulo="Fretamento › Monitor de viagens" abaPadrao="monitor" />;
+  return <ViagensPrototipo />;
+}
+
+function ViagensPrototipo() {
   return (
     <ModuloSemFonte titulo="Viagens" motivo="Não há tabela de viagens de fretamento no banco que o sistema novo leia.">
       <ViagensExemplo />

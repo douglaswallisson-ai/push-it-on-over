@@ -1,3 +1,5 @@
+import OperacaoLinhas from "@/screens/OperacaoLinhas";
+import { usandoMock } from "@/lib/modo";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -82,7 +84,13 @@ function ParHorario({ prog, real }: { prog?: string; real?: string }) {
   );
 }
 
+/** Ligado ao banco, a operação real; o restante desta tela é o protótipo. */
 export default function GestaoViagens() {
+  if (!usandoMock()) return <OperacaoLinhas titulo="Gestão de viagens" subtitulo="Transporte urbano › Programado × realizado" />;
+  return <GestaoViagensExemplo />;
+}
+
+function GestaoViagensExemplo() {
   const hoje = dataOperacao(new Date());
   const [linhaId, setLinhaId] = useState<string>("");
   const [situacao, setSituacao] = useState<SituacaoViagem | "todas">("todas");

@@ -322,8 +322,14 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
     else toast.info("Esse evento ainda não aparece na lista", { description: "Os eventos de condução chegam à lista com algumas horas de atraso. A linha do tempo mostra em tempo real." });
   }, [pedido, pedidoAtendido, conducaoQ.isLoading, alarmesQ.isLoading, base]);
 
+  // Totais do dia: a consolidação diária chega de madrugada; até lá, conta pela lista em tempo real.
+  const contaLista = (tipos: string[]) => (conducaoQ.data?.itens ?? []).filter((e) => tipos.includes(e.tipo)).length;
+  const totVel = totDia?.velocidade || (conducaoQ.data?.fonte === "tempo_real" ? contaLista(["velocidade_seco", "velocidade_chuva"]) : 0);
+  const totFre = totDia?.freada || (conducaoQ.data?.fonte === "tempo_real" ? contaLista(["freada"]) : 0);
+  const totAce = totDia?.aceleracao || (conducaoQ.data?.fonte === "tempo_real" ? contaLista(["aceleracao"]) : 0);
+
   return (
-    <>
+    <div className="tema-denso">
       <PageHeader
         title="Eventos de condução"
         subtitle="Segurança › Eventos de telemetria (CAN)"
@@ -341,7 +347,8 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
         }
       />
 
-      <div className="mx-auto max-w-[1100px] space-y-6 px-6 py-6 md:px-8">
+      <div className="mx-auto max-w-[1760px] space-y-4 px-4 py-4 md:px-6">
+        {usandoMock() && (
         <HeroBanner
           orb
           eyebrow="Operação · Eventos"
@@ -354,22 +361,15 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
             <HeroMetric value={String(naoVistos)} label="Não visualizados" />
           </div>
         </HeroBanner>
+        )}
 
         {/* A sobreposição com Videotelemetria confundia. A separação é pela
             origem do dado, não pelo tipo de risco. */}
-        <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-          <p className="text-[12.5px] text-muted-foreground">
-            Esta tela mostra os <strong className="text-foreground">alarmes da telemetria</strong> (Monitor de Alarmes) —
-            freada, curva, aceleração, excesso de velocidade — que existem em toda a frota, com ou sem câmera. O que a
-            <strong className="text-foreground"> câmera</strong> detecta (distração, fadiga, celular, risco de colisão),
-            junto da transmissão ao vivo e das gravações, está em{" "}
-            <Link to="/app/seguranca/video" className="font-medium text-brand-navy underline">
-              Videotelemetria
-            </Link>
-            .
-          </p>
-        </div>
+        <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+          <Info className="h-3.5 w-3.5 shrink-0 text-brand-sky" />
+          Alarmes da telemetria e eventos de condução de toda a frota. O que a câmera detecta (fadiga, celular, distração) fica em{" "}
+          <Link to="/app/seguranca/video" className="font-medium text-brand-navy underline">Videotelemetria</Link>.
+        </p>
 
         {usandoMock() ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -380,32 +380,33 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
           </div>
         ) : (
           <>
-            {/* Totais do dia pela consolidação diária, que chega antes do detalhe. */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-              <StatTile icon={Gauge} label="Excessos de velocidade" value={totDia ? totDia.velocidade.toLocaleString("pt-BR") : "—"} color="var(--brand-navy)" />
-              <StatTile icon={Octagon} label="Freadas bruscas" value={totDia ? totDia.freada.toLocaleString("pt-BR") : "—"} color="var(--coral)" />
-              <StatTile icon={Zap} label="Acelerações bruscas" value={totDia ? totDia.aceleracao.toLocaleString("pt-BR") : "—"} color="var(--gold)" />
-              <StatTile icon={Siren} label="Alarmes disparados" value={String((eventosApi ?? []).length)} color="var(--brand-sky)" />
-              <StatTile icon={Eye} label="Alarmes não vistos" value={String(naoVistos)} color="var(--gold)" />
+            <div className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card sm:grid-cols-6">
+              {(
+                [
+                  ["Críticos", criticos, "text-coral"],
+                  ["Excessos de velocidade", totVel, ""],
+                  ["Freadas bruscas", totFre, ""],
+                  ["Acelerações bruscas", totAce, ""],
+                  ["Alarmes disparados", (eventosApi ?? []).length, ""],
+                  ["Alarmes não vistos", naoVistos, naoVistos ? "text-gold" : ""],
+                ] as const
+              ).map(([rot, val, cor]) => (
+                <div key={rot} className="px-4 py-2.5">
+                  <p className="truncate text-[11.5px] text-muted-foreground">{rot}</p>
+                  <p className={cn("text-[20px] font-semibold leading-tight tabular-nums", cor)}>{Number(val).toLocaleString("pt-BR")}</p>
+                </div>
+              ))}
             </div>
-            {!totDia?.horas && !totaisQ.isPending && filtros.data >= iso(new Date()) && (
-              <p className="rounded-xl border border-border bg-card px-4 py-2.5 text-[12.5px] text-muted-foreground">
-                Os totais de condução de hoje são consolidados durante a madrugada; amanhã eles aparecem aqui.
-              </p>
-            )}
             {detalheNaoCarregado && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[12.5px]">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                <span>
-                  O detalhe dos eventos de condução deste dia (hora, placa e local de cada um) ainda não foi carregado — a
-                  última carga vai até <b>{new Date(carga!).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</b>.
-                  Os totais acima já são do dia. Os alarmes do Monitor aparecem na lista assim que disparam.
-                </span>
-              </div>
+              <p className="flex items-center gap-2 rounded-lg border border-gold-line bg-gold-tint px-3 py-1.5 text-[12px]">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-gold" />
+                Detalhe da condução carregado até {new Date(carga!).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}; os alarmes aparecem assim que disparam.
+              </p>
             )}
           </>
         )}
 
+        <div className="sticky top-[72px] z-[5] -mx-1 px-1">
         <FleetFilters
           veiculos={veiculos}
           motoristas={motoristas}
@@ -441,6 +442,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
             </div>
           }
         />
+        </div>
 
         {/* Feed. */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-card sm:p-6">
@@ -489,7 +491,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
           onGerarOcorrencia={(numero) => setOcorrencias((o) => ({ ...o, [eventoAberto.id]: numero }))}
         />
       )}
-    </>
+    </div>
   );
 }
 

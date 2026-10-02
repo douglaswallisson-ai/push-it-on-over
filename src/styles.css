@@ -340,3 +340,19 @@
     animation: none !important;
   }
 }
+
+/* Piloto de usabilidade (Eventos, 02/10/2026): títulos e números na mesma
+   família do texto (Inter, números de largura igual) em vez da Space Grotesk,
+   cujos dígitos estilizados leem pior em dados. Se aprovado, vira o padrão. */
+.tema-denso h1,
+.tema-denso h2,
+.tema-denso h3,
+.tema-denso h4,
+.tema-denso .font-display {
+  font-family: var(--font-sans);
+  letter-spacing: -0.011em;
+}
+.tema-denso .tabular-nums,
+.tema-denso td {
+  font-variant-numeric: tabular-nums;
+}

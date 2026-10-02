@@ -73,7 +73,7 @@ const CATALOGO: Categoria[] = [
       { icon: Wrench, title: "Manutenção preventiva", desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.", color: "var(--coral)", rota: "/app/manutencao" },
       { icon: ClipboardCheck, title: "Checklist de inspeção", desc: "Modelos, itens e respostas, com reprovações destacadas.", color: "var(--leaf)", rota: "/app/frota/checklist" },
       { icon: Cable, title: "Equipamentos por veículo", desc: "Rastreador e câmera instalados, e quem está sem.", color: "var(--brand-sky)", rota: "/app/cadastros/equipamentos" },
-      { icon: Leaf, title: "Emissão de CO₂", desc: "Pegada de carbono estimada a partir do consumo real.", color: "var(--leaf)", rota: "/app/gerencial#combustivel" },
+      { icon: Leaf, title: "Emissão de CO₂", desc: "Pegada de carbono estimada a partir do consumo real.", color: "var(--leaf)", rota: "/app/co2" },
       { icon: Wrench, title: "Ordens de serviço", desc: "Abertas, em execução e concluídas, com custo.", color: "var(--gold)", rota: "/app/manutencao/ordens" },
       { icon: Gauge, title: "Diagnóstico DTC", desc: "Códigos de falha ativos e recomendação de ação.", color: "var(--coral)", rota: "/app/manutencao/diagnostico" },
     ],

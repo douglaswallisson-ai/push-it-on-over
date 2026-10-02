@@ -307,6 +307,9 @@ export type RoiContrato =
       economia_estimada_mes: number;
       parcela_mensal: number;
       implantacao: number;
+      /** Parcela × meses de contrato + implantação. */
+      custo_total_contrato: number;
+      meses_contrato: number | null;
       roi: number;
       payback_meses: number | null;
       reducao_estimada_pct: number | null;
@@ -323,6 +326,54 @@ export const roiQuery = () =>
   queryOptions({
     queryKey: chaveComGrupo("gerencial", "roi"),
     queryFn: () => api.get<RoiContrato>(`/api/v1/gerencial/roi${qs(filtroGrupo())}`),
+    enabled: !usandoMock(),
+    retry: semRepetirLogin,
+    staleTime: 30 * 60_000,
+  });
+
+/* ------------------------------ CO₂ evitado ------------------------------ */
+
+export type Co2Mes = {
+  mes: string;
+  litros: number;
+  km: number;
+  kml: number | null;
+  kml_referencia: number | null;
+  co2_emitido_t: number;
+  co2_evitado_t: number;
+};
+
+export type Co2Resultado = {
+  empresa: { name: string | null; corporate_name: string | null; cnpj: string | null } | null;
+  periodo: { inicio: string; fim: string; dias: number };
+  referencia: { inicio: string; fim: string; dias: number; cobertura: number };
+  fator_kg_l: number;
+  litros: number;
+  km: number;
+  veiculos: number;
+  kml: number | null;
+  kml_referencia: number | null;
+  melhora_pct: number | null;
+  litros_evitados: number;
+  co2_emitido_t: number;
+  co2_evitado_t: number;
+  co2_por_km_kg: number | null;
+  certificavel: boolean;
+  motivo: string | null;
+  serie: Co2Mes[];
+};
+
+/**
+ * CO₂ emitido e evitado (certificado "CO₂ Reduzido"). Regra do Power BI:
+ * litros evitados = melhora do km/l × consumo; CO₂ = litros × 3,21 kg.
+ */
+export const co2Query = (p: { inicio?: string; fim?: string; refInicio?: string; refFim?: string }) =>
+  queryOptions({
+    queryKey: chaveComGrupo("gerencial", "co2", p.inicio ?? "", p.fim ?? "", p.refInicio ?? "", p.refFim ?? ""),
+    queryFn: () =>
+      api.get<Co2Resultado>(
+        `/api/v1/gerencial/co2${qs({ ...filtroGrupo(), inicio: p.inicio, fim: p.fim, ref_inicio: p.refInicio, ref_fim: p.refFim })}`,
+      ),
     enabled: !usandoMock(),
     retry: semRepetirLogin,
     staleTime: 30 * 60_000,

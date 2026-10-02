@@ -1,4 +1,5 @@
-import { ModuloSemFonte } from "@/components/ss/ui/SeloDadosExemplo";
+import { usandoMock } from "@/lib/modo";
+import CO2Real from "@/screens/CO2Real";
 import { CalendarDays, Download, Leaf, TreePine, Truck, Wind } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { exportarCSV } from "@/lib/export";
@@ -209,11 +210,10 @@ function Bars({ data, labels, suffix = "" }: { data: number[]; labels: string[];
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/**
+ * Ligado ao banco: CO₂ emitido e evitado com o km/l da telemetria, e o
+ * certificado CO₂ Reduzido. Com dados de exemplo, o protótipo.
+ */
 export default function EmissaoCO2() {
-  return (
-    <ModuloSemFonte titulo="Emissão de CO₂" motivo="O cálculo de CO₂ (litros × 3,21, regra do Power BI) depende do módulo de combustível, que ainda não está no backend do GitHub.">
-      <EmissaoCO2Exemplo />
-    </ModuloSemFonte>
-  );
+  return usandoMock() ? <EmissaoCO2Exemplo /> : <CO2Real />;
 }

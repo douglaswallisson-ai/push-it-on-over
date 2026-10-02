@@ -278,16 +278,14 @@ function HeroValue() {
           <div
             title={
               roi
-                ? roi.implantacao > 0
-                  ? `Implantação de ${brlCurto(roi.implantacao)} ÷ (economia − parcela) por mês.`
-                  : "Sem custo de implantação no contrato: o retorno começa no primeiro mês."
+                ? `Contrato${roi.meses_contrato ? ` de ${roi.meses_contrato} meses` : ""}: ${brlCurto(roi.custo_total_contrato)}${roi.implantacao > 0 ? ` (inclui ${brlCurto(roi.implantacao)} de implantação)` : ""} ÷ economia estimada de ${brlCurto(roi.economia_estimada_mes)} por mês = ${fmt(roi.payback_meses ?? 0, 1)} meses para a economia pagar o contrato inteiro.`
                 : undefined
             }
           >
             <HeroMetric
-              value={!roi ? "—" : roi.payback_meses == null ? "não se paga" : roi.payback_meses === 0 ? "imediato" : fmt(roi.payback_meses, 1)}
-              label="Payback"
-              foot={roi && roi.payback_meses ? "meses" : "retorno do investimento"}
+              value={!roi || roi.payback_meses == null ? "—" : fmt(roi.payback_meses, 1)}
+              label="Payback (meses)"
+              foot="paga o contrato inteiro"
             />
           </div>
           <HeroMetric value={fmt(r?.motoristas)} label="Motoristas com viagem" foot="últimos 30 dias" />

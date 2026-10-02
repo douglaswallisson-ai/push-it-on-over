@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ContextoOrganizacao } from "@/components/ss/layout/ContextoOrganizacao";
 import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
 import { PonteEmbutido } from "@/components/ss/layout/PonteEmbutido";
+import { RegistroPaginas } from "@/components/ss/layout/RegistroPaginas";
 import { lerEmbutido } from "@/lib/embutido";
 
 /**
@@ -27,6 +28,7 @@ export function AppShell() {
   return (
     <TourProvider>
       <div className="min-h-screen bg-canvas">
+        <RegistroPaginas />
         {embutido && <PonteEmbutido />}
         {comMenu && <Sidebar open={open} onClose={() => setOpen(false)} />}
 

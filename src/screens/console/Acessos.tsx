@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import {
@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   Clock,
+  FileText,
   Laptop,
   Loader2,
   MonitorSmartphone,
@@ -20,7 +21,15 @@ import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Aviso, DicaGrafico, Grafico, Info, Kpi, MatrizCalor } from "@/screens/gerencial/pecas";
-import { detalhePessoaQuery, painelAcessosQuery, type EmpresaAcesso, type PessoaAcesso } from "@/lib/acessos-api";
+import {
+  detalhePessoaQuery,
+  painelAcessosQuery,
+  paginasAcessosQuery,
+  paginasPessoaQuery,
+  type EmpresaAcesso,
+  type PaginaAcesso,
+  type PessoaAcesso,
+} from "@/lib/acessos-api";
 import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +48,9 @@ const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 const dataHora = (s?: string | null) =>
   s ? new Date(s).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
 const ddmm = (s: string) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
+/** 95 → "1 min 35 s". */
+const duracao = (s: number) =>
+  s < 60 ? `${s} s` : s < 3600 ? `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ""}` : `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min`;
 const haDias = (s?: string | null) => (s ? Math.floor((Date.now() - new Date(s).getTime()) / 86_400_000) : null);
 
 type PeriodoId = "7" | "30" | "90" | "180";
@@ -230,8 +242,8 @@ function PainelAcessos() {
         ) : (
           <>
             <Aviso tom="sky">
-              Fonte: entradas no <b>sistema atual</b> (cada login ou renovação de sessão), só de pessoas. O uso da plataforma nova e o que cada
-              pessoa faz dentro das telas ainda não são registrados.
+              Fonte: entradas no <b>sistema atual</b> (cada login ou renovação de sessão), só de pessoas. As <b>páginas abertas</b> vêm da
+              plataforma nova, que passou a registrar cada tela visitada.
             </Aviso>
 
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
@@ -334,6 +346,8 @@ function PainelAcessos() {
               <p className="mt-2 text-[11.5px] text-muted-foreground">Clique numa pessoa para ver o mapa de calor dela e as últimas entradas.</p>
             </Card>
 
+            <PaginasMaisAcessadas janela={janela} grupo={grupo || undefined} incluirSS={incluirSS} onPessoa={setPessoaId} />
+
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
               <Card title="Pararam de entrar" icon={UserMinus} action={<Pill tone="coral">{r.sumidos.length}</Pill>} bodyClassName="p-4">
                 {r.sumidos.length ? (
@@ -389,6 +403,7 @@ function PainelAcessos() {
 
 function DetalhePessoa({ id, janela, onClose }: { id: number | null; janela: { inicio: string; fim: string }; onClose: () => void }) {
   const q = useQuery(detalhePessoaQuery(id, janela));
+  const pg = useQuery(paginasPessoaQuery(id, janela));
   const d = q.data;
   return (
     <Sheet open={id != null} onOpenChange={(o) => !o && onClose()}>
@@ -427,6 +442,22 @@ function DetalhePessoa({ id, janela, onClose }: { id: number | null; janela: { i
               {d.matriz.length ? <MatrizCalor celulas={paraMatriz(d.matriz)} unidade="entradas" /> : <p className="text-[13px] text-muted-foreground">Sem entradas no período.</p>}
             </div>
             <div>
+              <p className="mb-2 text-[13px] font-semibold">Páginas que mais abre (plataforma nova)</p>
+              {pg.data?.paginas.length ? (
+                <ul className="divide-y divide-border rounded-xl border border-border">
+                  {pg.data.paginas.slice(0, 10).map((p) => (
+                    <li key={p.caminho} className="flex items-center gap-3 px-4 py-2 text-[13px]">
+                      <span className="min-w-0 flex-1 truncate">{p.titulo}</span>
+                      <span className="font-mono">{nf(p.visitas)}×</span>
+                      <span className="w-24 text-right text-muted-foreground">{duracao(p.tempo_medio_s)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-[13px] text-muted-foreground">Nenhuma página registrada para esta pessoa no período.</p>
+              )}
+            </div>
+            <div>
               <p className="mb-2 text-[13px] font-semibold">Últimas entradas</p>
               <ul className="divide-y divide-border rounded-xl border border-border">
                 {d.ultimos.slice(0, 15).map((u, i) => (
@@ -442,5 +473,112 @@ function DetalhePessoa({ id, janela, onClose }: { id: number | null; janela: { i
         ) : null}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function PaginasMaisAcessadas({
+  janela,
+  grupo,
+  incluirSS,
+  onPessoa,
+}: {
+  janela: { inicio: string; fim: string };
+  grupo?: string;
+  incluirSS: boolean;
+  onPessoa: (id: number) => void;
+}) {
+  const q = useQuery(paginasAcessosQuery({ ...janela, grupo, incluirSS }));
+  const [aberta, setAberta] = useState<string | null>(null);
+  const d = q.data;
+  const max = Math.max(1, ...(d?.paginas ?? []).map((p) => p.visitas));
+  const desde = d?.registro_desde ? new Date(d.registro_desde).toLocaleDateString("pt-BR") : null;
+
+  return (
+    <Card
+      title="Páginas mais acessadas"
+      icon={FileText}
+      action={
+        <div className="flex items-center gap-2">
+          {d && <Pill tone="sky">{nf(d.total_visitas)} visitas</Pill>}
+          <Info texto="Telas abertas na plataforma nova: quantas vezes, por quantas pessoas e quanto tempo ficaram na tela (só o tempo com a aba visível; passagens de menos de 2 s não contam). Clique numa página para ver quem mais usa." />
+        </div>
+      }
+      bodyClassName="p-4"
+    >
+      {q.isLoading ? (
+        <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Carregando…
+        </p>
+      ) : !d?.paginas.length ? (
+        <p className="text-[13px] text-muted-foreground">
+          {desde
+            ? "Nenhuma página aberta neste período ou filtro."
+            : "O registro de páginas acabou de ser ligado: as visitas aparecem aqui conforme as pessoas usarem a plataforma nova."}
+        </p>
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <table className="w-full min-w-[720px] text-[13px]">
+              <thead className="bg-secondary/60 text-[11.5px] uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2.5 text-left font-semibold">Página</th>
+                  <th className="px-3 py-2.5 text-left font-semibold">Visitas</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Pessoas</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Tempo médio</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Última visita</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {d.paginas.map((p: PaginaAcesso) => (
+                  <Fragment key={p.caminho}>
+                    <tr className="cursor-pointer hover:bg-secondary/40" onClick={() => setAberta(aberta === p.caminho ? null : p.caminho)}>
+                      <td className="px-4 py-2.5">
+                        <span className="block font-medium">{p.titulo}</span>
+                        <span className="block font-mono text-[11px] text-muted-foreground">{p.caminho}</span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-28 overflow-hidden rounded-full bg-secondary">
+                            <span className="block h-full rounded-full bg-brand-navy/75" style={{ width: `${(100 * p.visitas) / max}%` }} />
+                          </span>
+                          <span className="font-mono">{nf(p.visitas)}</span>
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono">{nf(p.pessoas)}</td>
+                      <td className="px-3 py-2.5 text-right">{duracao(p.tempo_medio_s)}</td>
+                      <td className="px-4 py-2.5 text-right text-[12.5px] text-muted-foreground">{dataHora(p.ultimo)}</td>
+                    </tr>
+                    {aberta === p.caminho && (
+                      <tr className="bg-secondary/30">
+                        <td colSpan={5} className="px-4 py-3">
+                          <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Quem mais usa</p>
+                          <div className="flex flex-wrap gap-2">
+                            {p.quem_mais_usa.map((u) => (
+                              <button
+                                key={u.user_id}
+                                type="button"
+                                onClick={() => onPessoa(u.user_id)}
+                                className="rounded-lg border border-border bg-white px-3 py-1.5 text-left text-[12.5px] hover:border-brand-sky"
+                              >
+                                <span className="font-medium">{u.nome}</span>
+                                <span className="text-muted-foreground">
+                                  {" "}
+                                  · {u.empresa ?? "—"} · {nf(u.visitas)}×
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {desde && <p className="mt-2 text-[11.5px] text-muted-foreground">Registro de páginas desde {desde}.</p>}
+        </>
+      )}
+    </Card>
   );
 }

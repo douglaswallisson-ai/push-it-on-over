@@ -84,3 +84,43 @@ export const detalhePessoaQuery = (id: number | null, f: { inicio: string; fim: 
     enabled: !usandoMock() && id != null,
     staleTime: 5 * 60_000,
   });
+
+/* ------------------------- Páginas da plataforma nova ------------------------- */
+
+export type PaginaAcesso = {
+  caminho: string;
+  titulo: string;
+  visitas: number;
+  pessoas: number;
+  tempo_medio_s: number;
+  tempo_total_s: number;
+  ultimo: string;
+  quem_mais_usa: { user_id: number; nome: string; empresa?: string | null; visitas: number }[];
+};
+
+export type PaginasAcessos = {
+  registro_desde: string | null;
+  total_visitas: number;
+  paginas: PaginaAcesso[];
+  por_dia: { dia: string; visitas: number; pessoas: number }[];
+};
+
+export const paginasAcessosQuery = (f: { inicio: string; fim: string; grupo?: string; incluirSS: boolean }) =>
+  queryOptions({
+    queryKey: ["acessos", "paginas", f.inicio, f.fim, f.grupo ?? "", f.incluirSS],
+    queryFn: () =>
+      api.get<PaginasAcessos>(`/api/v1/acessos/paginas?${qs({ inicio: f.inicio, fim: f.fim, group_id: f.grupo, incluir_ss: f.incluirSS })}`),
+    enabled: !usandoMock(),
+    staleTime: 60_000,
+  });
+
+export const paginasPessoaQuery = (id: number | null, f: { inicio: string; fim: string }) =>
+  queryOptions({
+    queryKey: ["acessos", "paginas-pessoa", id, f.inicio, f.fim],
+    queryFn: () =>
+      api.get<{ paginas: { caminho: string; titulo: string; visitas: number; tempo_medio_s: number; ultimo: string }[] }>(
+        `/api/v1/acessos/paginas/pessoa/${id}?${qs({ inicio: f.inicio, fim: f.fim })}`,
+      ),
+    enabled: !usandoMock() && id != null,
+    staleTime: 60_000,
+  });

@@ -15,8 +15,9 @@ import { cn } from "@/lib/utils";
  * Regras e correções do vault documentadas no backend (relatorios_frota.py).
  */
 
-export type AbaFrota = "paradas" | "consolidado" | "paradas-poi" | "passagem-poi" | "cercas" | "distancia";
+export type AbaFrota = "paradas" | "consolidado" | "paradas-poi" | "passagem-poi" | "cercas" | "distancia" | "sla" | "configuracoes" | "odometro";
 
+/** maxDias 0 = relatório sem período (fotografia de agora). */
 const ABAS: { id: AbaFrota; rotulo: string; maxDias: number; dica: string }[] = [
   { id: "paradas", rotulo: "Paradas e deslocamentos", maxDias: 31, dica: "Cada parada e cada deslocamento do veículo, com duração, distância, local e motorista." },
   { id: "consolidado", rotulo: "Consolidado por veículo", maxDias: 31, dica: "Total de paradas, tempo parado (e parado ligado), tempo em movimento e km de cada veículo." },
@@ -24,6 +25,9 @@ const ABAS: { id: AbaFrota; rotulo: string; maxDias: number; dica: string }[] = 
   { id: "passagem-poi", rotulo: "Passagem por pontos", maxDias: 7, dica: "Veículos que passaram perto de um ponto de interesse, parando ou não." },
   { id: "cercas", rotulo: "Cercas", maxDias: 31, dica: "Entrada e saída de cercas eletrônicas, com o tempo que o veículo ficou dentro." },
   { id: "distancia", rotulo: "Distância e horímetro", maxDias: 31, dica: "Km rodados e horas de motor por veículo, dia a dia ou por semana." },
+  { id: "sla", rotulo: "SLA de paradas", maxDias: 31, dica: "Horário programado contra o realizado em cada ponto das viagens de fretamento." },
+  { id: "configuracoes", rotulo: "Configurações do veículo", maxDias: 0, dica: "Como o equipamento principal de cada veículo está configurado: firmware, script, faixas de RPM, fator de consumo." },
+  { id: "odometro", rotulo: "Odômetro travado", maxDias: 0, dica: "Veículos que andaram nas últimas 24 h com o odômetro parado (regra do Painel de Calibração)." },
 ];
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -70,7 +74,8 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
   const [porSemana, setPorSemana] = useState(false);
 
   const dias = Math.round((new Date(fim).getTime() - new Date(inicio).getTime()) / 86_400_000) + 1;
-  const periodoOk = dias >= 1 && dias <= cfg.maxDias;
+  const semPeriodo = cfg.maxDias === 0;
+  const periodoOk = semPeriodo || (dias >= 1 && dias <= cfg.maxDias);
 
   const veiculos = useQuery({
     queryKey: ["rel-frota", "veiculos", g],
@@ -78,9 +83,9 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
     enabled: Boolean(g), staleTime: 600_000,
   });
 
-  const endpoint = aba === "consolidado" ? "paradas-deslocamentos" : aba === "paradas" ? "paradas-deslocamentos" : aba === "distancia" ? "distancia-horimetro" : aba;
-  const params = new URLSearchParams({ group_id: String(g ?? ""), inicio, fim });
-  if (veiculo) params.set("unit_id", veiculo);
+  const endpoint = { consolidado: "paradas-deslocamentos", paradas: "paradas-deslocamentos", distancia: "distancia-horimetro", sla: "sla-paradas", odometro: "odometro-travado" }[aba as string] ?? aba;
+  const params = new URLSearchParams(semPeriodo ? { group_id: String(g ?? "") } : { group_id: String(g ?? ""), inicio, fim });
+  if (veiculo && !semPeriodo && aba !== "sla") params.set("unit_id", veiculo);
   if (aba === "paradas" && tipo) params.set("tipo", tipo);
   if (["paradas", "consolidado", "paradas-poi"].includes(aba) && minMin) params.set("min_minutos", String(minMin));
   if (aba === "passagem-poi") params.set("distancia_m", String(distancia));
@@ -95,7 +100,7 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
   const trocarAba = (a: AbaFrota) => {
     setAba(a);
     const m = ABAS.find((x) => x.id === a)!.maxDias;
-    if (dias > m) { const ini = new Date(`${fim}T12:00:00`); ini.setDate(ini.getDate() - (m - 1)); setInicio(iso(ini)); }
+    if (m && dias > m) { const ini = new Date(`${fim}T12:00:00`); ini.setDate(ini.getDate() - (m - 1)); setInicio(iso(ini)); }
   };
 
   // Distância e horímetro: dia a dia ou somado por semana (seg a dom).
@@ -189,6 +194,61 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
     ];
     csv = { cab: ["Placa", "Prefixo", "Cerca", "Entrou", "Saiu", "Tempo dentro (min)", "Motorista"],
       lin: (r) => [r.placa, r.prefixo, r.cerca, r.entrada, r.saida, r.permanencia_s == null ? "" : Math.round(Number(r.permanencia_s) / 60), r.motorista] };
+  } else if (aba === "sla") {
+    linhas = (d?.linhas as R[]) ?? [];
+    const tom: Record<string, "green" | "coral" | "gold" | "neutral"> = { no_horario: "green", atrasado: "coral", adiantado: "gold", nao_passou: "neutral" };
+    const rot: Record<string, string> = { no_horario: "No horário", atrasado: "Atrasado", adiantado: "Adiantado", nao_passou: "Não passou" };
+    colunas = [
+      { key: "dia", header: "Dia", render: (r) => <span className="font-mono">{String(r.dia).slice(8, 10)}/{String(r.dia).slice(5, 7)}</span> },
+      { key: "linha", header: "Linha", render: (r) => <span className="font-medium text-foreground">{String(r.linha ?? "—")}</span> },
+      { key: "tabela", header: "Viagem", render: (r) => String(r.tabela ?? "—") },
+      { key: "veiculo", header: "Veículo", render: (r) => <span className="font-mono">{String(r.veiculo ?? "—")}</span> },
+      { key: "ordem", header: "Ordem", align: "right", render: (r) => nf(r.ordem) },
+      { key: "ponto", header: "Ponto", render: (r) => <span className="line-clamp-1 max-w-[280px]">{String(r.ponto ?? "—")}</span> },
+      { key: "programado", header: "Programado", render: (r) => <span className="font-mono">{String(r.programado ?? "").slice(0, 5)}</span> },
+      { key: "realizado", header: "Realizado", render: (r) => <span className="font-mono">{r.realizado ? String(r.realizado).slice(11, 16) : "—"}</span> },
+      { key: "atraso_min", header: "Diferença", align: "right", render: (r) => (r.atraso_min == null ? "—" : `${Number(r.atraso_min) > 0 ? "+" : ""}${nf(r.atraso_min)} min`) },
+      { key: "situacao", header: "Situação", align: "center", render: (r) => <Pill tone={tom[String(r.situacao)]}>{rot[String(r.situacao)]}</Pill> },
+    ];
+    csv = { cab: ["Dia", "Linha", "Viagem", "Centro de custo", "Veículo", "Ordem", "Ponto", "Programado", "Realizado", "Diferença (min)", "Situação"],
+      lin: (r) => [r.dia, r.linha, r.tabela, r.centro_custo, r.veiculo, r.ordem, r.ponto, r.programado, r.realizado, r.atraso_min, rot[String(r.situacao)]] };
+  } else if (aba === "configuracoes") {
+    linhas = ((d?.veiculos as R[]) ?? []).filter((v) => !veiculo || String(v.unit_id) === veiculo);
+    const c = (k: string) => (r: R) => <span className="font-mono text-[12px]">{String((r.config as R)?.[k] ?? "—")}</span>;
+    colunas = [
+      { key: "placa", header: "Veículo", render: placa },
+      { key: "modelo", header: "Equipamento", render: (r) => <span className="leading-tight">{String(r.modelo ?? "—")}<span className="block text-[12px] text-muted-foreground">{String(r.equipamento ?? "")}</span></span> },
+      { key: "FW", header: "Firmware", render: (r) => <span className="line-clamp-2 max-w-[200px] font-mono text-[12px]">{String((r.config as R)?.FW ?? "—")}</span> },
+      { key: "script", header: "Script", render: c("script") },
+      { key: "calibration_factor", header: "Fator de consumo", align: "right", render: c("calibration_factor") },
+      { key: "rpm", header: "RPM verde / amarela / vermelha", render: (r) => {
+        const x = (r.config as R) ?? {};
+        return x.rpm_verde1 || x.rpm_amarela ? <span className="font-mono text-[12px]">{String(x.rpm_verde1 ?? "?")}–{String(x.rpm_verde2 ?? "?")} / {String(x.rpm_amarela ?? "?")} / {String(x.rpm_vermelha ?? "?")}</span> : "—";
+      } },
+      { key: "vel_verdes", header: "Vel. faixa verde", align: "right", render: c("vel_verdes") },
+      { key: "alterado_em", header: "Última alteração", render: (r) => <span className="font-mono text-[12px]">{r.alterado_em ? `${String(r.alterado_em).slice(8, 10)}/${String(r.alterado_em).slice(5, 7)}/${String(r.alterado_em).slice(0, 4)}` : "—"}</span> },
+    ];
+    const chaves = ((d?.chaves as string[]) ?? []);
+    csv = { cab: ["Placa", "Prefixo", "Unidade", "Modelo", "Equipamento", ...chaves],
+      lin: (r) => [r.placa, r.prefixo, r.unidade, r.modelo, r.equipamento, ...chaves.map((k) => (r.config as R)?.[k] ?? "")] };
+  } else if (aba === "odometro") {
+    linhas = (d?.veiculos as R[]) ?? [];
+    colunas = [
+      { key: "placa", header: "Veículo", render: placa },
+      { key: "odometro_travado_km", header: "Odômetro parado em", align: "right", render: (r) => `${nf(r.odometro_travado_km, 1)} km` },
+      { key: "odometro_bruto_km", header: "Equipamento está mandando", align: "right", render: (r) => (r.odometro_bruto_km == null ? "—" : `${nf(r.odometro_bruto_km, 1)} km`) },
+      { key: "leituras", header: "Leituras em 24 h", align: "right", render: (r) => nf(r.leituras) },
+      { key: "vel_max", header: "Vel. máx.", align: "right", render: (r) => `${nf(r.vel_max)} km/h` },
+      { key: "marcacao", header: "Marcação de qualidade", render: (r) => <span className="font-mono text-[12px]">{String(r.marcacao ?? "—")}</span> },
+      { key: "situacao", header: "Situação", align: "center", render: (r) => (r.situacao === "corrigivel"
+        ? <Pill tone="gold" >Pode ser corrigido</Pill> : <Pill tone="coral">Não corrigível agora</Pill>) },
+      { key: "ultima_correcao", header: "Última correção", render: (r) => {
+        const u = r.ultima_correcao as R | null;
+        return u ? `${String(u.status)} em ${dmh(u.applied_at)}` : "—";
+      } },
+    ];
+    csv = { cab: ["Placa", "Prefixo", "Odômetro parado (km)", "Odômetro do equipamento (km)", "Leituras 24h", "Vel. máx.", "Marcação", "Situação"],
+      lin: (r) => [r.placa, r.prefixo, r.odometro_travado_km, r.odometro_bruto_km, r.leituras, r.vel_max, r.marcacao, r.situacao === "corrigivel" ? "pode ser corrigido" : "não corrigível agora"] };
   } else {
     linhas = linhasDist;
     colunas = [
@@ -205,6 +265,13 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
 
   const totais = (() => {
     if (aba === "distancia") return `${nf(linhas.reduce((a, r) => a + Number(r.km ?? 0), 0), 0)} km · ${nf(linhas.reduce((a, r) => a + Number(r.horas ?? 0), 0), 0)} h de motor`;
+    if (aba === "sla") {
+      const ps = (d?.por_linha as R[]) ?? [];
+      const tot = ps.reduce((a, s) => a + Number(s.pontos), 0), ok = ps.reduce((a, s) => a + Number(s.no_horario), 0), np = ps.reduce((a, s) => a + Number(s.nao_passou), 0);
+      return `${nf(tot)} pontos · ${nf(tot ? (100 * ok) / tot : 0)}% no horário · ${nf(tot - np ? (100 * ok) / (tot - np) : 0)}% dos que passaram`;
+    }
+    if (aba === "configuracoes") return `${nf(linhas.length)} veículos · ${nf(((d?.chaves as string[]) ?? []).length)} configurações (todas no CSV)`;
+    if (aba === "odometro") return `${nf(linhas.length)} veículo(s) com odômetro travado`;
     if (aba === "consolidado") return `${nf(linhas.reduce((a, r) => a + Number(r.km ?? 0), 0), 0)} km em ${nf(linhas.length)} veículos`;
     return `${nf(linhas.length)} registros${d?.cortado ? " (os 5.000 mais recentes — filtre um veículo ou encurte o período)" : ""}`;
   })();
@@ -229,12 +296,14 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
         </div>
 
         <div className="mb-4 flex flex-wrap items-end gap-3">
+          {!semPeriodo && <>
           <label className="text-[12px] text-muted-foreground">De <input type="date" value={inicio} max={fim} onChange={(e) => setInicio(e.target.value)} className={cn(css, "ml-1")} /></label>
           <label className="text-[12px] text-muted-foreground">até <input type="date" value={fim} min={inicio} max={iso(new Date())} onChange={(e) => setFim(e.target.value)} className={cn(css, "ml-1")} /></label>
-          <select value={veiculo} onChange={(e) => setVeiculo(e.target.value)} className={cn(css, "max-w-[260px]")} aria-label="Veículo">
+          </>}
+          {aba !== "sla" && aba !== "odometro" && <select value={veiculo} onChange={(e) => setVeiculo(e.target.value)} className={cn(css, "max-w-[260px]")} aria-label="Veículo">
             <option value="">Todos os veículos</option>
             {(veiculos.data?.data ?? []).map((v) => <option key={v.id} value={v.id}>{v.placa}{v.prefixo ? ` · ${v.prefixo}` : ""}</option>)}
-          </select>
+          </select>}
           {aba === "paradas" && (
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={css} aria-label="Tipo">
               <option value="">Paradas e deslocamentos</option><option value="parada">Só paradas</option><option value="deslocamento">Só deslocamentos</option>
@@ -257,7 +326,7 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
           {aba === "distancia" && (
             <label className="flex items-center gap-2 text-[13px]"><input type="checkbox" checked={porSemana} onChange={(e) => setPorSemana(e.target.checked)} /> Somar por semana</label>
           )}
-          <span className="text-[12px] text-muted-foreground">Até {cfg.maxDias} dias.</span>
+          <span className="text-[12px] text-muted-foreground">{semPeriodo ? (aba === "odometro" ? "Últimas 24 horas." : "Situação atual.") : `Até ${cfg.maxDias} dias.`}</span>
           {q.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
 
@@ -267,6 +336,23 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
 
         {d && (
           <>
+            {aba === "sla" && ((d.por_linha as R[]) ?? []).length > 0 && (
+              <Card title="SLA por linha" className="mb-4" bodyClassName="p-4">
+                <DataTable porPagina={10} rows={(d.por_linha as R[])} columns={[
+                  { key: "linha", header: "Linha", render: (r) => <span className="font-medium text-foreground">{String(r.linha)}</span> },
+                  { key: "pontos", header: "Pontos", align: "right", render: (r) => nf(r.pontos) },
+                  { key: "no_horario", header: "No horário", align: "right", render: (r) => nf(r.no_horario) },
+                  { key: "atrasado", header: "Atrasados", align: "right", render: (r) => nf(r.atrasado) },
+                  { key: "adiantado", header: "Adiantados", align: "right", render: (r) => nf(r.adiantado) },
+                  { key: "nao_passou", header: "Não passou", align: "right", render: (r) => nf(r.nao_passou) },
+                  { key: "sla", header: "SLA", align: "center", render: (r) => <Pill tone={Number(r.sla) >= 80 ? "green" : Number(r.sla) >= 50 ? "gold" : "coral"}>{nf(r.sla)}%</Pill> },
+                  { key: "sla_passou", header: "SLA dos que passaram", align: "center", render: (r) => {
+                    const p = Number(r.pontos) - Number(r.nao_passou);
+                    return p ? `${nf((100 * Number(r.no_horario)) / p)}%` : "—";
+                  } },
+                ]} />
+              </Card>
+            )}
             {(aba === "paradas-poi" || aba === "passagem-poi") && ((d.por_ponto as R[]) ?? []).length > 0 && (
               <Card title="Pontos com mais visitas" className="mb-4" bodyClassName="p-4">
                 <DataTable porPagina={10} rows={(d.por_ponto as R[])} columns={[
@@ -302,6 +388,16 @@ export default function RelatoriosFrota({ abaInicial = "paradas", onVoltar }: { 
             }>
               <DataTable columns={colunas} rows={linhas} empty="Nada encontrado no período." />
             </Card>
+            {aba === "odometro" && (
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                O veículo andou (velocidade acima de 20 km/h) e o odômetro ficou no mesmo valor em pelo menos 30 leituras. "Pode ser corrigido": as 5 leituras mais recentes do equipamento sobem normalmente — a correção continua sendo aplicada no Painel de Calibração do sistema atual.
+              </p>
+            )}
+            {aba === "sla" && (
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                No horário = até {nf(d.tolerancia_min)} min antes ou depois do programado. "Não passou" = a viagem não registrou passagem pelo ponto.
+              </p>
+            )}
             {aba === "distancia" && (
               <p className="mt-3 text-[12px] text-muted-foreground">
                 Distância = maior − menor odômetro com ignição ligada, só com as leituras que a regra de qualidade aprovou. Horas de motor = soma do avanço do horímetro entre leituras seguidas; saltos do contador ficam fora.

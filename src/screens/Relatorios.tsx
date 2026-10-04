@@ -85,6 +85,8 @@ const CATALOGO: Categoria[] = [
       { icon: Leaf, title: "Emissão de CO₂", desc: "Pegada de carbono estimada a partir do consumo real.", color: "var(--leaf)", rota: "/app/co2" },
       { icon: Wrench, title: "Ordens de serviço", desc: "Abertas, em execução e concluídas, com custo.", color: "var(--gold)", rota: "/app/manutencao/ordens" },
       { icon: Gauge, title: "Diagnóstico DTC", desc: "Códigos de falha ativos e recomendação de ação.", color: "var(--coral)", rota: "/app/manutencao/diagnostico" },
+      { icon: Cable, title: "Configurações do veículo", desc: "Firmware, script, faixas de RPM e fator de consumo do equipamento.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "configuracoes" },
+      { icon: Gauge, title: "Odômetro travado", desc: "Veículos que andaram com o odômetro parado nas últimas 24 h.", color: "var(--coral)", embutido: "frota", abaFrota: "odometro" },
     ],
   },
   {
@@ -111,6 +113,7 @@ const CATALOGO: Categoria[] = [
   {
     grupo: "Fretamento",
     itens: [
+      { icon: Clock, title: "SLA de paradas", desc: "Programado contra realizado em cada ponto das viagens.", color: "var(--gold)", embutido: "frota", abaFrota: "sla" },
       { icon: Bus, title: "Embarques e taxa de frequência", desc: "Embarques por cartão por viagem e quem está na lista e não embarca.", color: "var(--brand-navy)", rota: "/app/fretamento/passageiros" },
       { icon: Route, title: "Economia de roteirização", desc: "Quilômetros poupados pela otimização de rota.", color: "var(--leaf)", rota: "/app/fretamento/roteirizacao" },
     ],

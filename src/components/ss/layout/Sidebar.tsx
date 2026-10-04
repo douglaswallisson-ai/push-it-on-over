@@ -91,7 +91,6 @@ const NAV_PRIMARY: Entry[] = [
     icon: Truck,
     items: [
       { label: "Veículos", to: "/app/veiculos" },
-      { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
       { label: "Tracking", to: "/app/frota/tracking" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },

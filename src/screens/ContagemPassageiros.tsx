@@ -8,6 +8,7 @@ import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
 import { Card, DataTable, FilterBar, FilterChip, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { nf } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import ContagemReal from "@/screens/passageiros/ContagemReal";
 
 /**
  * Contagem de passageiros — embarques/desembarques por parada e ocupação por
@@ -200,10 +201,11 @@ function StopFlow() {
   );
 }
 
-/** Protótipo: com API ligada, aviso no lugar dos números escritos no código. */
+/** Com dado real: embarques por cartão (passenger_board). Em demonstração, o protótipo. */
 export default function ContagemPassageiros() {
+  if (!usandoMock()) return <ContagemReal />;
   return (
-    <ModuloSemFonte titulo="Contagem de passageiros" motivo="Não há tabela de embarque e desembarque no banco que o sistema novo leia. Precisa de integração com o contador de passageiros.">
+    <ModuloSemFonte titulo="Contagem de passageiros" motivo="Dados de exemplo.">
       <ContagemPassageirosExemplo />
     </ModuloSemFonte>
   );

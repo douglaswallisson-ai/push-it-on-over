@@ -151,12 +151,21 @@ export function DataTable<T extends Record<string, unknown>>({
   rows,
   onRowClick,
   empty = "Nada por aqui.",
+  porPagina = 50,
 }: {
   columns: Column<T>[];
   rows: T[];
   onRowClick?: (row: T) => void;
   empty?: string;
+  /** Linhas por página. Listas grandes (1.378 motoristas na Premiação) viravam
+   *  páginas de 60 mil pixels; 0 desliga a paginação. */
+  porPagina?: number;
 }) {
+  const [pagina, setPagina] = React.useState(0);
+  const paginas = porPagina > 0 ? Math.max(1, Math.ceil(rows.length / porPagina)) : 1;
+  const atual = Math.min(pagina, paginas - 1);
+  React.useEffect(() => setPagina(0), [rows.length]);
+  const visiveis = porPagina > 0 ? rows.slice(atual * porPagina, atual * porPagina + porPagina) : rows;
   return (
     <div data-tour="table" className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[640px] border-collapse text-[14px]">
@@ -185,9 +194,9 @@ export function DataTable<T extends Record<string, unknown>>({
               </td>
             </tr>
           ) : (
-            rows.map((row, i) => (
+            visiveis.map((row, i) => (
               <tr
-                key={i}
+                key={atual * porPagina + i}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={cn(
                   "border-t border-border transition-colors",
@@ -213,6 +222,15 @@ export function DataTable<T extends Record<string, unknown>>({
           )}
         </tbody>
       </table>
+      {paginas > 1 && (
+        <div className="flex items-center justify-end gap-2 border-t border-border bg-card px-4 py-2 text-[13px]">
+          <span className="text-muted-foreground">
+            {(atual * porPagina + 1).toLocaleString("pt-BR")}–{Math.min(rows.length, (atual + 1) * porPagina).toLocaleString("pt-BR")} de {rows.length.toLocaleString("pt-BR")}
+          </span>
+          <button type="button" className="rounded-md border border-border px-2 py-1 disabled:opacity-40" disabled={atual === 0} onClick={() => setPagina(atual - 1)}>Anterior</button>
+          <button type="button" className="rounded-md border border-border px-2 py-1 disabled:opacity-40" disabled={atual >= paginas - 1} onClick={() => setPagina(atual + 1)}>Próxima</button>
+        </div>
+      )}
     </div>
   );
 }

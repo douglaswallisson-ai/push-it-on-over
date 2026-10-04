@@ -15,7 +15,10 @@ export type ItemSituacao = {
   servico: string;
   intervalo_km: number | null;
   intervalo_dias: number | null;
-  ultimo: { data: string; odometro_km: number | null } | null;
+  intervalo_horas?: number | null;
+  falta_horas?: number | null;
+  proximo_horimetro_h?: number | null;
+  ultimo: { data: string; odometro_km: number | null; horimetro_h?: number | null } | null;
   situacao: Situacao;
   falta_km: number | null;
   falta_dias: number | null;
@@ -45,6 +48,8 @@ export type VeiculoManut = {
   categoria: string | null;
   odometro_km: number | null;
   odometro_travado: boolean;
+  /** Horas de motor (horímetro em minutos ÷ 60). */
+  horimetro_h?: number | null;
   ultimo_sinal: string | null;
   sinais: Sinais;
   plano: { id: number; nome: string; escopo: string } | null;
@@ -73,7 +78,7 @@ export type PainelManut = {
   veiculos: VeiculoManut[];
 };
 
-export type ItemPlano = { servico: string; km: number | null; dias: number | null };
+export type ItemPlano = { servico: string; km: number | null; dias: number | null; horas?: number | null };
 export type Plano = { id: number; group_id: number; nome: string; escopo: "categoria" | "modelo" | "veiculo"; alvo: string; itens: ItemPlano[] };
 export type ModeloPlano = { id: string; nome: string; categorias: number[]; itens: ItemPlano[] };
 
@@ -143,6 +148,7 @@ export const Manut = {
     servico: string;
     data: string;
     odometro_km?: number | null;
+    horimetro_h?: number | null;
     custo?: number | null;
     oficina?: string | null;
     obs?: string | null;

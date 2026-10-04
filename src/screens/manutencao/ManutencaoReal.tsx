@@ -76,6 +76,7 @@ function falta(i: ItemSituacao) {
   const partes: string[] = [];
   if (i.falta_km != null) partes.push(i.falta_km <= 0 ? `${nf(-i.falta_km)} km atrasado` : `faltam ${nf(i.falta_km)} km`);
   if (i.falta_dias != null) partes.push(i.falta_dias <= 0 ? `${nf(-i.falta_dias)} dias atrasado` : `faltam ${nf(i.falta_dias)} dias`);
+  if (i.falta_horas != null) partes.push(i.falta_horas <= 0 ? `${nf(-i.falta_horas)} h de motor atrasado` : `faltam ${nf(i.falta_horas)} h de motor`);
   return partes.join(" · ") || "registre a última vez que foi feito";
 }
 
@@ -751,6 +752,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
         servico,
         data,
         odometro_km: odo ? Number(odo.replace(/\./g, "")) : v!.odometro_km,
+        horimetro_h: v!.horimetro_h ?? null,
         custo: custo ? Number(custo.replace(",", ".")) : null,
         oficina: oficina || null,
       }),
@@ -776,7 +778,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
                 </button>
               </SheetTitle>
               <p className="text-[13px] text-muted-foreground">
-                {[v.placa, v.modelo, v.ano].filter(Boolean).join(" · ")} · odômetro {nf(v.odometro_km)} km{v.odometro_travado && " (travado)"}
+                {[v.placa, v.modelo, v.ano].filter(Boolean).join(" · ")} · odômetro {nf(v.odometro_km)} km{v.odometro_travado && " (travado)"}{v.horimetro_h != null && ` · ${nf(v.horimetro_h)} h de motor`}
               </p>
             </SheetHeader>
             <div className="mt-5 space-y-5">
@@ -799,7 +801,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
                         <span className="min-w-0 flex-1">
                           <span className="block font-medium">{i.servico}</span>
                           <span className="block text-[12px] text-muted-foreground">
-                            a cada {[i.intervalo_km && `${nf(i.intervalo_km)} km`, i.intervalo_dias && `${i.intervalo_dias} dias`].filter(Boolean).join(" ou ")}
+                            a cada {[i.intervalo_km && `${nf(i.intervalo_km)} km`, i.intervalo_dias && `${i.intervalo_dias} dias`, i.intervalo_horas && `${nf(i.intervalo_horas)} h de motor`].filter(Boolean).join(" ou ")}
                             {i.ultimo ? ` · último em ${dataBR(i.ultimo.data)}${i.ultimo.odometro_km != null ? ` com ${nf(i.ultimo.odometro_km)} km` : ""}` : ""} · {falta(i)}
                           </span>
                         </span>
@@ -1012,23 +1014,24 @@ function Planos({ g, veiculos }: { g: string; veiculos: VeiculoManut[] }) {
               <p className="mb-2 text-[13px] font-medium">Serviços e intervalos (vence o que chegar primeiro)</p>
               <div className="space-y-2">
                 {edicao.itens.map((it, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_110px_90px_32px] items-center gap-2">
+                  <div key={i} className="grid grid-cols-[1fr_100px_80px_90px_32px] items-center gap-2">
                     <input value={it.servico} onChange={(e) => setEdicao({ ...edicao, itens: edicao.itens.map((x, j) => (j === i ? { ...x, servico: e.target.value } : x)) })} placeholder="Serviço" className="h-9 rounded-lg border border-border px-3 text-[13px]" />
                     <input value={it.km ?? ""} onChange={(e) => setEdicao({ ...edicao, itens: edicao.itens.map((x, j) => (j === i ? { ...x, km: e.target.value ? Number(e.target.value.replace(/\D/g, "")) : null } : x)) })} inputMode="numeric" placeholder="km" className="h-9 rounded-lg border border-border px-3 text-right text-[13px]" />
                     <input value={it.dias ?? ""} onChange={(e) => setEdicao({ ...edicao, itens: edicao.itens.map((x, j) => (j === i ? { ...x, dias: e.target.value ? Number(e.target.value.replace(/\D/g, "")) : null } : x)) })} inputMode="numeric" placeholder="dias" className="h-9 rounded-lg border border-border px-3 text-right text-[13px]" />
+                    <input value={it.horas ?? ""} title="Horas de motor (horímetro)" onChange={(e) => setEdicao({ ...edicao, itens: edicao.itens.map((x, j) => (j === i ? { ...x, horas: e.target.value ? Number(e.target.value.replace(/\D/g, "")) : null } : x)) })} inputMode="numeric" placeholder="horas" className="h-9 rounded-lg border border-border px-3 text-right text-[13px]" />
                     <button type="button" aria-label="Remover serviço" onClick={() => setEdicao({ ...edicao, itens: edicao.itens.filter((_, j) => j !== i) })} className="rounded p-1 text-muted-foreground hover:text-coral">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => setEdicao({ ...edicao, itens: [...edicao.itens, { servico: "", km: null, dias: null } as ItemPlano] })} className="mt-2 text-[13px] font-medium text-brand-navy hover:underline">
+              <button type="button" onClick={() => setEdicao({ ...edicao, itens: [...edicao.itens, { servico: "", km: null, dias: null, horas: null } as ItemPlano] })} className="mt-2 text-[13px] font-medium text-brand-navy hover:underline">
                 + Adicionar serviço
               </button>
             </div>
             <p className="rounded-lg bg-gold-tint px-3 py-2 text-[12px]">Os intervalos dos modelos são sugestões gerais. Ajuste ao manual do fabricante de cada veículo.</p>
             <div className="flex gap-2">
-              <button type="submit" disabled={!edicao.nome.trim() || !edicao.alvo || !edicao.itens.some((i) => i.servico.trim() && (i.km || i.dias)) || salvar.isPending} className="rounded-lg bg-brand-navy px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">
+              <button type="submit" disabled={!edicao.nome.trim() || !edicao.alvo || !edicao.itens.some((i) => i.servico.trim() && (i.km || i.dias || i.horas)) || salvar.isPending} className="rounded-lg bg-brand-navy px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">
                 {salvar.isPending ? "Salvando…" : "Salvar plano"}
               </button>
               <button type="button" onClick={() => setEdicao(null)} className="rounded-lg border border-border px-4 py-2 text-[13px]">Cancelar</button>

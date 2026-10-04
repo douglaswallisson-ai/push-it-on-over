@@ -33,16 +33,18 @@ export function ContextoOrganizacao() {
     if (typeof window !== "undefined") window.location.reload();
   };
 
+  // Recolhida vira uma faixa fina no topo, no fluxo da página. Antes era um
+  // botão flutuante no canto, que ficava por cima do cabeçalho de cada tela.
   if (recolhida) {
     return (
-      <button
-        onClick={() => setRecolhida(false)}
-        title={`Você está na base de ${sessao.organizacaoAtiva}`}
-        className="fixed right-4 top-4 z-[220] flex h-9 items-center gap-2 rounded-full bg-gold px-3 text-[12px] font-semibold text-white shadow-lg"
-      >
-        <ShieldAlert className="h-4 w-4" />
-        {sessao.organizacaoAtiva}
-      </button>
+      <div role="status" className="sticky top-0 z-[190] flex items-center justify-between gap-3 bg-gold px-5 py-1 text-[12px] text-white">
+        <button onClick={() => setRecolhida(false)} title="Mostrar o aviso completo" className="flex items-center gap-1.5 font-semibold">
+          <ShieldAlert className="h-3.5 w-3.5" /> Base de {sessao.organizacaoAtiva}
+        </button>
+        <button onClick={voltar} className="font-semibold underline-offset-2 hover:underline">
+          Voltar para {sessao.organizacao}
+        </button>
+      </div>
     );
   }
 

@@ -5,7 +5,6 @@ import { Sidebar } from "./Sidebar";
 import { TourProvider } from "@/components/ss/tour/TourProvider";
 import { SelmaLauncher } from "@/components/ss/selma/SelmaLauncher";
 import { Toaster } from "@/components/ui/sonner";
-import { ContextoOrganizacao } from "@/components/ss/layout/ContextoOrganizacao";
 import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
 import { PonteEmbutido } from "@/components/ss/layout/PonteEmbutido";
 import { RegistroPaginas } from "@/components/ss/layout/RegistroPaginas";
@@ -43,7 +42,6 @@ export function AppShell() {
         )}
 
         <div className={comMenu ? "min-w-0 lg:ml-[68px]" : "min-w-0"}>
-          {!embutido && <ContextoOrganizacao />}
           <Outlet />
         </div>
 

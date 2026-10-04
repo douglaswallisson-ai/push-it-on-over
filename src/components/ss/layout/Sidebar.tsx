@@ -83,6 +83,8 @@ const NAV_PRIMARY: Entry[] = [
       // Jornada, escala e ponto são abas da mesma tela: uma entrada só.
       { label: "Jornada, escala e ponto", to: "/app/pessoas/jornada" },
       { label: "Multas", to: "/app/pessoas/multas", beta: true },
+      { label: "Premiação", to: "/app/premiacao" },
+      { label: "Metas e pesos da premiação", to: "/app/premiacao/metas" },
     ],
   },
   {
@@ -171,16 +173,9 @@ const NAV_PRIMARY: Entry[] = [
   },
 ];
 
+// Itens de apoio, sem título de seção. Premiação foi para Pessoas e Auditoria
+// fica só no Console de gestão (pedido do PM, 04/10/2026).
 const NAV_SECONDARY: Entry[] = [
-  { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
-  {
-    label: "Premiação",
-    icon: Award,
-    items: [
-      { label: "Acompanhamento", to: "/app/premiacao" },
-      { label: "Metas e pesos", to: "/app/premiacao/metas" },
-    ],
-  },
   { label: "Emissão de CO₂", icon: Leaf, to: "/app/co2" },
   { label: "Suporte", icon: LifeBuoy, to: "/app/suporte" },
 ];
@@ -199,6 +194,7 @@ function useIsDesktop() {
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [menuUsuario, setMenuUsuario] = useState(false);
   // Segmentos do cliente aberto (Urbano/Fretamento). Sem cliente escolhido, mostra tudo.
   const grupo = grupoAtivo();
   const modulos = useQuery({
@@ -285,19 +281,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           ))}
 
           {/* Divisor entre o dia a dia e os itens de apoio. */}
-          <div className="my-2.5 px-4">
-            {expanded ? (
-              <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-white/35">
-                Gestão e configuração
-              </span>
-            ) : (
-              <div className="h-px bg-white/12" />
-            )}
-          </div>
+          <div className="mx-4 my-2.5 h-px bg-white/12" />
 
-          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte"))
-            .filter((e) => isGroup(e) || e.to !== "/app/auditoria" || pode(sessao?.perfil, "ver_auditoria"))
-            .map((entry) => (
+          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte")).map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}
@@ -312,39 +298,38 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         <div className="shrink-0 border-t border-white/10 px-[14px] py-3">
           <OrgSwitcher expanded={expanded} />
 
-          {/* Atalho para o console de gestão. Só o dono do software o enxerga —
-              para o cliente ele não existe. */}
-          {sessao?.perfil === "super_admin" && (
-            <NavLink
-              to="/console"
-              title="Console de gestão"
-              className={cn(
-                "mt-2 flex items-center gap-2.5 overflow-hidden rounded-lg border border-white/15 px-2 py-2 text-white/80 transition-colors hover:bg-white/10",
-                !expanded && "justify-center px-0",
-              )}
-            >
-              <ArrowLeftRight className="h-4 w-4 shrink-0" />
-              {expanded && (
-                <span className="min-w-0 leading-tight">
-                  <span className="block truncate text-[13px] font-medium">Console de gestão</span>
-                  <span className="block truncate text-[12px] text-white/45">contratos, perfis e plataforma</span>
-                </span>
-              )}
-            </NavLink>
-          )}
-
           <div className="my-2 border-t border-white/10" />
 
-          <div className="flex items-center gap-2.5 overflow-hidden rounded-lg px-2 py-1.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue text-[12px] font-semibold text-white">
-              {iniciais}
+          {/* Clicar no nome abre o menu do usuário: Console de gestão (só SS) e sair. */}
+          {menuUsuario && expanded && sessao?.perfil === "super_admin" && (
+            <div className="mb-2 overflow-hidden rounded-lg border border-white/15 bg-white/5">
+              <NavLink to="/console" onClick={() => setMenuUsuario(false)} className="flex items-center gap-2.5 px-3 py-2 text-white/85 hover:bg-white/10">
+                <ArrowLeftRight className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-[13px] font-medium">Console de gestão</span>
+                  <span className="block truncate text-[12px] text-white/45">contratos, acessos, auditoria e plataforma</span>
+                </span>
+              </NavLink>
             </div>
-            {expanded && (
-              <div className="min-w-0 flex-1 leading-tight">
-                <div className="truncate text-[13px] font-semibold text-white">{nomeUsuario}</div>
-                <div className="truncate text-[12px] text-white/55">{orgUsuario}</div>
-              </div>
-            )}
+          )}
+          <div className="flex items-center gap-2.5 overflow-hidden rounded-lg px-2 py-1.5">
+            <button
+              type="button"
+              onClick={() => setMenuUsuario((m) => !m)}
+              aria-expanded={menuUsuario}
+              title="Menu do usuário"
+              className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md text-left hover:bg-white/5"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue text-[12px] font-semibold text-white">
+                {iniciais}
+              </span>
+              {expanded && (
+                <span className="min-w-0 flex-1 leading-tight">
+                  <span className="block truncate text-[13px] font-semibold text-white">{nomeUsuario}</span>
+                  <span className="block truncate text-[12px] text-white/55">{orgUsuario}</span>
+                </span>
+              )}
+            </button>
             {expanded && !lerEmbutido() && (
               <button
                 onClick={() => {
@@ -469,7 +454,7 @@ function GroupRow({
       <div
         className={cn(
           "overflow-hidden transition-[max-height] duration-300",
-          expanded && open ? "max-h-96" : "max-h-0",
+          expanded && open ? "max-h-[1200px]" : "max-h-0",
         )}
       >
         <div className="ml-[30px] mr-3 mt-0.5 space-y-0.5 border-l border-white/10 pb-1 pl-3">

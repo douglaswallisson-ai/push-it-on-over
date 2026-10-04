@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { useNavigate } from "@/lib/router-compat";
 import TelemetriaViagens from "@/screens/TelemetriaViagens";
 import RelatoriosOperacionais, { type AbaOperacional } from "@/screens/RelatoriosOperacionais";
+import RelatoriosFrota, { type AbaFrota } from "@/screens/relatorios/RelatoriosFrota";
 import { exportarCSV } from "@/lib/export";
 import { toast } from "sonner";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
@@ -45,9 +46,11 @@ type Report = { icon: LucideIcon; title: string; desc: string; color: string
    */
   rota?: string;
   /** Relatório que abre dentro desta própria tela. */
-  embutido?: "telemetria" | "operacionais";
+  embutido?: "telemetria" | "operacionais" | "frota";
   /** Aba em que o relatório operacional abre. */
   aba?: AbaOperacional;
+  /** Aba em que o relatório de frota abre. */
+  abaFrota?: AbaFrota;
 };
 type Categoria = { grupo: string; itens: Report[] };
 
@@ -62,7 +65,11 @@ const CATALOGO: Categoria[] = [
       { icon: Gauge, title: "Excesso de velocidade", desc: "Por tipo de via e condição de pista — urbano, rodoviário, chuva.", color: "var(--coral)", rota: "/app/gerencial#seguranca" },
       { icon: Clock, title: "Tracking", desc: "Ignição, paradas e retomadas de um veículo, com traçado.", color: "var(--brand-navy)", rota: "/app/frota/tracking" },
       { icon: Flame, title: "Mapa de calor", desc: "Onde a frota mais circula, por concentração de passagens.", color: "var(--coral)", embutido: "operacionais", aba: "calor" },
-      { icon: MapPin, title: "Pontos e cercas", desc: "Passagens por ponto de interesse, com entrada e saída.", color: "var(--leaf)", rota: "/app/cadastros/pontos-interesse" },
+      { icon: Clock, title: "Paradas e deslocamentos", desc: "Cada parada e deslocamento, com duração, km, local e motorista.", color: "var(--brand-navy)", embutido: "frota", abaFrota: "paradas" },
+      { icon: BarChart3, title: "Paradas e deslocamentos consolidado", desc: "Por veículo: tempo parado, parado ligado, em movimento e km.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "consolidado" },
+      { icon: MapPin, title: "Paradas em pontos", desc: "Quanto tempo cada veículo ficou em cada ponto de interesse.", color: "var(--leaf)", embutido: "frota", abaFrota: "paradas-poi" },
+      { icon: MapPin, title: "Passagem por pontos", desc: "Quem passou perto de um ponto, parando ou não.", color: "var(--leaf)", embutido: "frota", abaFrota: "passagem-poi" },
+      { icon: ShieldAlert, title: "Cercas", desc: "Entrada e saída de cercas, com o tempo que ficou dentro.", color: "var(--gold)", embutido: "frota", abaFrota: "cercas" },
     ],
   },
   {
@@ -70,6 +77,8 @@ const CATALOGO: Categoria[] = [
     itens: [
       { icon: Fuel, title: "Consumo de combustível", desc: "Litros, km/l e desvio contra a média, por veículo.", color: "var(--gold)", embutido: "operacionais", aba: "motoristas" },
       { icon: Truck, title: "Utilização da frota", desc: "Disponibilidade, ociosidade e horas de motor.", color: "var(--brand-navy)", rota: "/app/gerencial" },
+      { icon: Route, title: "Distância por período e semana", desc: "Km por veículo, dia a dia ou por semana, sem os saltos de odômetro.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "distancia" },
+      { icon: Gauge, title: "Horímetro por período", desc: "Horas de motor por veículo e km por hora de motor.", color: "var(--gold)", embutido: "frota", abaFrota: "distancia" },
       { icon: Wrench, title: "Manutenção preventiva", desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.", color: "var(--coral)", rota: "/app/manutencao" },
       { icon: ClipboardCheck, title: "Checklist de inspeção", desc: "Modelos, itens e respostas, com reprovações destacadas.", color: "var(--leaf)", rota: "/app/frota/checklist" },
       { icon: Cable, title: "Equipamentos por veículo", desc: "Rastreador e câmera instalados, e quem está sem.", color: "var(--brand-sky)", rota: "/app/cadastros/equipamentos" },
@@ -102,8 +111,7 @@ const CATALOGO: Categoria[] = [
   {
     grupo: "Fretamento",
     itens: [
-      { icon: Bus, title: "Ocupação de viagens", desc: "Assentos ocupados contra capacidade, por viagem.", color: "var(--brand-navy)" },
-      { icon: BarChart3, title: "Faturamento por rota", desc: "Receita, custo e margem por trajeto.", color: "var(--leaf)" },
+      { icon: Bus, title: "Embarques e taxa de frequência", desc: "Embarques por cartão por viagem e quem está na lista e não embarca.", color: "var(--brand-navy)", rota: "/app/fretamento/passageiros" },
       { icon: Route, title: "Economia de roteirização", desc: "Quilômetros poupados pela otimização de rota.", color: "var(--leaf)", rota: "/app/fretamento/roteirizacao" },
     ],
   },
@@ -200,7 +208,7 @@ const COLS: Column<Recente>[] = [
  * Abrir aqui em vez de navegar mantém o usuário na central: ele compara dois
  * relatórios sem perder o caminho de volta.
  */
-type Embutido = { tipo: "telemetria" | "operacionais"; aba?: AbaOperacional };
+type Embutido = { tipo: "telemetria" | "operacionais" | "frota"; aba?: AbaOperacional; abaFrota?: AbaFrota };
 
 function CentralRelatorios() {
   const navigate = useNavigate();
@@ -211,6 +219,7 @@ function CentralRelatorios() {
   // O relatório escolhido abre aqui mesmo, com o caminho de volta.
   if (embutido?.tipo === "telemetria") return <TelemetriaViagens onVoltar={() => setEmbutido(null)} />;
   if (embutido?.tipo === "operacionais") return <RelatoriosOperacionais abaInicial={embutido.aba} onVoltar={() => setEmbutido(null)} />;
+  if (embutido?.tipo === "frota") return <RelatoriosFrota abaInicial={embutido.abaFrota} onVoltar={() => setEmbutido(null)} />;
 
   return (
     <>
@@ -249,7 +258,7 @@ function CentralRelatorios() {
                   disabled={real && semDestino}
                   onClick={() =>
                     r.embutido
-                      ? setEmbutido({ tipo: r.embutido, aba: r.aba })
+                      ? setEmbutido({ tipo: r.embutido, aba: r.aba, abaFrota: r.abaFrota })
                       : r.rota
                         ? navigate(r.rota)
                         : gerarRelatorio(r.title, cat.grupo)

@@ -145,10 +145,10 @@ export default function RelatoriosGerenciais() {
   return (
     <TooltipProvider>
       <PageHeader title="Gerencial" subtitle={pagina === "operacao" ? atual.label : `${atual.label} · ${dataBR(f.inicio)} a ${dataBR(f.fim)}`} />
-      <div className="mx-auto grid max-w-[1720px] gap-5 px-4 py-5 md:px-8 lg:grid-cols-[minmax(0,1fr)_236px]">
+      <div className="mx-auto grid max-w-[1720px] gap-5 px-4 py-5 md:px-8 lg:grid-cols-[236px_minmax(0,1fr)]">
         {/* Menu das páginas do BI: lateral direita na tela grande (acompanha a
             rolagem); no celular fica no alto, rolando para o lado. */}
-        <aside className="order-first lg:order-last">
+        <aside className="order-first">
           <nav className="rounded-2xl border border-border bg-card/95 p-1.5 shadow-card backdrop-blur lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:p-2">
             <div className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-3 lg:overflow-visible">
               {GRUPOS.map((g, gi) => (

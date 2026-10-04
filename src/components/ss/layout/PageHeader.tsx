@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useMarcaEmbutido } from "@/components/ss/layout/PonteEmbutido";
+import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { grupoAtivo } from "@/lib/escopo-ativo";
@@ -48,7 +49,20 @@ export function PageHeader({
             {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        <div className="flex shrink-0 items-center gap-2">
+          {actions}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("ss:abrir-busca"))}
+            title="Buscar (Ctrl+K)"
+            aria-label="Buscar"
+            className="flex h-9 items-center gap-2 rounded-lg border border-border bg-white px-3 text-[13px] text-muted-foreground hover:bg-secondary"
+          >
+            <Search className="h-4 w-4" />
+            <span className="hidden lg:inline">Buscar</span>
+            <kbd className="hidden rounded border border-border bg-secondary px-1.5 text-[12px] lg:inline">Ctrl K</kbd>
+          </button>
+        </div>
       </div>
     </header>
   );

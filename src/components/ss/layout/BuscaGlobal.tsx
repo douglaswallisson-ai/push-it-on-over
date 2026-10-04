@@ -130,6 +130,14 @@ export function BuscaGlobal() {
     navigate(r.destino);
   };
 
+  // O botão fica no cabeçalho de cada tela (PageHeader), não mais flutuando
+  // por cima do conteúdo: ele avisa por este evento.
+  useEffect(() => {
+    const abre = () => setAberto(true);
+    window.addEventListener("ss:abrir-busca", abre);
+    return () => window.removeEventListener("ss:abrir-busca", abre);
+  }, []);
+
   useEffect(() => {
     if (!aberto) return;
     const onNav = (e: KeyboardEvent) => {
@@ -150,21 +158,7 @@ export function BuscaGlobal() {
     return () => document.removeEventListener("keydown", onNav);
   });
 
-  if (!aberto) {
-    return (
-      <button
-        onClick={() => setAberto(true)}
-        title="Buscar (Ctrl+K)"
-        className="fixed bottom-[88px] right-6 z-[150] flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-brand-navy shadow-elegant transition-transform hover:-translate-y-0.5 lg:h-auto lg:w-auto lg:gap-2 lg:px-4"
-      >
-        <Search className="h-4 w-4" />
-        <span className="hidden text-[13px] font-medium lg:inline">Buscar</span>
-        <kbd className="hidden rounded border border-border bg-secondary px-1.5 font-mono text-[12px] text-muted-foreground lg:inline">
-          ⌘K
-        </kbd>
-      </button>
-    );
-  }
+  if (!aberto) return null;
 
   let grupoAtual = "";
 

@@ -262,6 +262,129 @@ export const CFG_PONTO_PARADA: ConfigCadastro = {
   ] }],
 };
 
+const horaCurta = (v: unknown) => (v ? String(v).slice(0, 5) : "—");
+const dataBr = (v: unknown) => (v ? String(v).slice(0, 10).split("-").reverse().join("/") : "—");
+
+/* ------------------------------------------------------------ fretamento */
+// Campos e regras do sistema atual (plataforma_web: passengercontroller,
+// costcentercontroller, routecontroller, linegroupcontroller, seat_layout).
+
+export const CFG_PASSAGEIRO: ConfigCadastro = {
+  tipo: "passageiro", titulo: "Cadastro de passageiros", subtitulo: "Fretamento › Passageiros transportados", singular: "Passageiro",
+  explicacao: "Quem embarca nas viagens de fretamento. O cartão (RFID) é o que o validador lê no embarque.",
+  rotulo: (r) => String(r.nome), padrao: { inativo: false },
+  colunas: [
+    { chave: "nome", rotulo: "Nome" }, { chave: "matricula", rotulo: "Matrícula" },
+    { chave: "cartao", rotulo: "Cartão", render: (r) => <span className="font-mono">{String(r.cartao || "—")}</span> },
+    { chave: "centro_custo", rotulo: "Centro de custo", render: (r, op) => String(r.centro_custo ?? nomeDe(op, "centros_custo", r.cost_center_id) ?? "—") },
+    { chave: "turno_id", rotulo: "Turno", render: (r, op) => nomeDe(op, "turnos", r.turno_id) ?? "—" },
+    { chave: "hora_inicio", rotulo: "Horário", render: (r) => (r.hora_inicio ? `${horaCurta(r.hora_inicio)} às ${horaCurta(r.hora_fim)}` : "—") },
+    { chave: "viagens", rotulo: "Viagens", num: true },
+    { chave: "inativo", rotulo: "Situação", render: (r) => (r.inativo ? `Inativo${r.inatividade_fim ? ` até ${dataBr(r.inatividade_fim)}` : ""}` : "Ativo") },
+  ],
+  secoes: [
+    { titulo: "Identificação", campos: [
+      { nome: "nome", rotulo: "Nome", tipo: "texto", obrig: true, cheio: true },
+      { nome: "cpf", rotulo: "CPF", tipo: "texto", placeholder: "999.999.999-99" }, { nome: "matricula", rotulo: "Matrícula", tipo: "texto" },
+      { nome: "cartao", rotulo: "Cartão (RFID)", tipo: "texto" }, { nome: "assento", rotulo: "Assento", tipo: "texto" },
+    ] },
+    { titulo: "Empresa e turno", campos: [
+      { nome: "cost_center_id", rotulo: "Centro de custo", tipo: "select", opcoes: "centros_custo", obrig: true },
+      { nome: "subgroup_id", rotulo: "Unidade", tipo: "select", opcoes: "subgrupos" },
+      { nome: "empresa", rotulo: "Empresa", tipo: "texto" }, { nome: "gerencia", rotulo: "Gerência", tipo: "texto" },
+      { nome: "gerencia_geral", rotulo: "Gerência geral", tipo: "texto" },
+      { nome: "turno_id", rotulo: "Turno", tipo: "select", opcoes: "turnos" },
+      { nome: "hora_inicio", rotulo: "Entrada", tipo: "hora" }, { nome: "hora_fim", rotulo: "Saída", tipo: "hora" },
+    ] },
+    { titulo: "Endereço", campos: [
+      { nome: "rua", rotulo: "Rua", tipo: "texto", cheio: true }, { nome: "numero", rotulo: "Número", tipo: "texto" },
+      { nome: "bairro", rotulo: "Bairro", tipo: "texto" }, { nome: "cidade", rotulo: "Cidade", tipo: "texto" },
+      { nome: "cep", rotulo: "CEP", tipo: "texto", placeholder: "99999-999" },
+    ] },
+    { titulo: "Inatividade", campos: [
+      { nome: "inativo", rotulo: "Passageiro inativo (férias, afastamento)", tipo: "toggle", cheio: true },
+      { nome: "inatividade_inicio", rotulo: "Início", tipo: "data", visivel: (v) => Boolean(v.inativo) },
+      { nome: "inatividade_fim", rotulo: "Fim", tipo: "data", visivel: (v) => Boolean(v.inativo) },
+      { nome: "observacao", rotulo: "Observação", tipo: "area" },
+    ] },
+  ],
+};
+
+export const CFG_CENTRO_CUSTO: ConfigCadastro = {
+  tipo: "centro_custo", titulo: "Centros de custo", subtitulo: "Fretamento › Contratantes e centros de custo", singular: "Centro de custo",
+  explicacao: "Cada contratante (ou área dele) que paga o transporte. Passageiros, rotas e linhas ficam ligados a um centro de custo.",
+  rotulo: (r) => String(r.nome),
+  colunas: [
+    { chave: "nome", rotulo: "Nome" }, { chave: "codigo_integracao", rotulo: "Código de integração" },
+    { chave: "passageiros", rotulo: "Passageiros", num: true }, { chave: "linhas", rotulo: "Linhas", num: true },
+  ],
+  secoes: [{ campos: [
+    { nome: "nome", rotulo: "Nome", tipo: "texto", obrig: true, cheio: true },
+    { nome: "codigo_integracao", rotulo: "Código de integração", tipo: "numero" },
+  ] }],
+};
+
+export const CFG_TURNO: ConfigCadastro = {
+  tipo: "turno", titulo: "Turnos", subtitulo: "Fretamento › Turnos de trabalho dos passageiros", singular: "Turno",
+  rotulo: (r) => String(r.nome),
+  colunas: [{ chave: "nome", rotulo: "Turno" }, { chave: "passageiros", rotulo: "Passageiros", num: true }],
+  secoes: [{ campos: [{ nome: "nome", rotulo: "Nome do turno", tipo: "texto", obrig: true, cheio: true, placeholder: "1º turno, ADM…" }] }],
+};
+
+export const CFG_GRUPO_LINHAS: ConfigCadastro = {
+  tipo: "grupo_linhas", titulo: "Grupos de linhas", subtitulo: "Cadastros › Linhas agrupadas para filtros e relatórios", singular: "Grupo de linhas",
+  rotulo: (r) => String(r.nome), padrao: { linhas: [] },
+  colunas: [
+    { chave: "nome", rotulo: "Grupo" },
+    { chave: "linhas", rotulo: "Linhas", render: (r, op) => {
+      const ids = (r.linhas as unknown[]) ?? [];
+      const nomes = ids.map((i) => nomeDe(op, "linhas", i) ?? String(i));
+      return nomes.length > 4 ? `${nomes.slice(0, 4).join(", ")} e mais ${nomes.length - 4}` : nomes.join(", ") || "—";
+    } },
+    { chave: "subgroup_id", rotulo: "Unidade", render: (r, op) => nomeDe(op, "subgrupos", r.subgroup_id) ?? "—" },
+  ],
+  secoes: [{ campos: [
+    { nome: "nome", rotulo: "Nome do grupo", tipo: "texto", obrig: true },
+    { nome: "subgroup_id", rotulo: "Unidade", tipo: "select", opcoes: "subgrupos" },
+    { nome: "linhas", rotulo: "Linhas do grupo", tipo: "multi", opcoes: "linhas", obrig: true },
+  ] }],
+};
+
+export const CFG_ROTA: ConfigCadastro = {
+  tipo: "rota", titulo: "Rotas", subtitulo: "Fretamento › Trajetos gravados das viagens", singular: "Rota",
+  explicacao: "O traçado de cada rota vem do sistema atual. Aqui se ajustam nome, cor, velocidade e centro de custo.",
+  rotulo: (r) => String(r.nome), padrao: { cor: "#0000FF", velocidade: 60 },
+  colunas: [
+    { chave: "nome", rotulo: "Rota" }, { chave: "descricao", rotulo: "Descrição" },
+    { chave: "centro_custo", rotulo: "Centro de custo", render: (r, op) => String(r.centro_custo ?? nomeDe(op, "centros_custo", r.cost_center_id) ?? "—") },
+    { chave: "km", rotulo: "Extensão", num: true, render: (r) => (Number(r.km) ? `${nf(r.km, 1)} km` : "—") },
+    { chave: "velocidade", rotulo: "Velocidade", num: true, render: (r) => (Number(r.velocidade) ? `${nf(r.velocidade)} km/h` : "—") },
+    { chave: "cor", rotulo: "Cor", render: (r) => <Cor c={r.cor} /> },
+  ],
+  secoes: [{ campos: [
+    { nome: "nome", rotulo: "Nome da rota", tipo: "texto", obrig: true }, { nome: "descricao", rotulo: "Descrição", tipo: "texto" },
+    { nome: "cost_center_id", rotulo: "Centro de custo", tipo: "select", opcoes: "centros_custo" },
+    { nome: "velocidade", rotulo: "Velocidade máxima (km/h)", tipo: "numero" }, { nome: "cor", rotulo: "Cor", tipo: "cor" },
+    { nome: "trajeto", rotulo: "Traçado", tipo: "trajeto" },
+  ] }],
+};
+
+export const CFG_LAYOUT_ASSENTOS: ConfigCadastro = {
+  tipo: "layout_assentos", titulo: "Layout de assentos", subtitulo: "Fretamento › Mapas de assentos dos veículos", singular: "Layout",
+  explicacao: "Imagem com a numeração das poltronas, usada para marcar o assento de cada passageiro.",
+  rotulo: (r) => String(r.nome), padrao: { assentos: 44 },
+  colunas: [
+    { chave: "nome", rotulo: "Layout" }, { chave: "assentos", rotulo: "Assentos", num: true }, { chave: "descricao", rotulo: "Descrição" },
+    { chave: "cost_center_id", rotulo: "Centro de custo", render: (r, op) => nomeDe(op, "centros_custo", r.cost_center_id) ?? "Todos" },
+  ],
+  secoes: [{ campos: [
+    { nome: "nome", rotulo: "Nome", tipo: "texto", obrig: true }, { nome: "assentos", rotulo: "Quantidade de assentos", tipo: "numero", obrig: true },
+    { nome: "cost_center_id", rotulo: "Centro de custo", tipo: "select", opcoes: "centros_custo" },
+    { nome: "descricao", rotulo: "Descrição", tipo: "texto", cheio: true },
+    { nome: "imagem", rotulo: "Imagem do layout", tipo: "imagem", ajuda: "PNG ou JPG de até 500 KB." },
+  ] }],
+};
+
 export const CFG_LINHA: ConfigCadastro = {
   tipo: "linha", titulo: "Linhas", subtitulo: "Cadastros › Linhas e itinerários", singular: "Linha",
   rotulo: (r) => `${r.nome}${r.descricao ? ` · ${r.descricao}` : ""}`, padrao: { circular: false, pontos: [] },

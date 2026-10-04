@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Clock, Coffee, Fuel, Loader2, MapPin, Moon, Plus, Route, Save, Sparkles, Trash2, Wallet } from "lucide-react";
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { grupoAtivo } from "@/lib/escopo-ativo";

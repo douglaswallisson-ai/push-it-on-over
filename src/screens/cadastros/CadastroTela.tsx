@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { Circle, MapContainer, Marker, Polygon, Polyline, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 export type TipoCampo =
   | "texto" | "numero" | "select" | "multi" | "toggle" | "cor" | "area" | "email" | "hora" | "data"
-  | "mapa" | "regras" | "geometria" | "pontos" | "imagem";
+  | "mapa" | "regras" | "geometria" | "pontos" | "imagem" | "trajeto";
 
 export type Campo = {
   nome: string;
@@ -252,7 +253,7 @@ function Formulario({ cfg, g, op, alvo, ss, onFechar }: { cfg: ConfigCadastro; g
               {s.titulo && <legend className="mb-1 text-[13px] font-semibold">{s.titulo}</legend>}
               <div className="grid grid-cols-2 gap-3">
                 {s.campos.filter((c) => (c.visivel?.(v) ?? true) && (!c.somenteSS || ss)).map((c) => (
-                  <div key={c.nome} className={cn(["area", "mapa", "regras", "geometria", "pontos", "multi", "imagem"].includes(c.tipo) || c.cheio ? "col-span-2" : "")}>
+                  <div key={c.nome} className={cn(["area", "mapa", "regras", "geometria", "pontos", "multi", "imagem", "trajeto"].includes(c.tipo) || c.cheio ? "col-span-2" : "")}>
                     <CampoEditor c={c} v={v} set={set} op={op} erro={erroCampo === c.nome} g={g} />
                   </div>
                 ))}
@@ -361,6 +362,8 @@ function CampoEditor({ c, v, set, op, erro, g }: { c: Campo; v: Record<string, u
       return <EditorRegras v={v} set={set} op={op} />;
     case "pontos":
       return <EditorPontosLinha v={v} set={set} g={g} />;
+    case "trajeto":
+      return <VerTrajeto v={v} />;
     default:
       return <Rotulo c={c} erro={erro}><input type={c.tipo === "email" ? "email" : "text"} maxLength={c.max} className={css} value={String(val ?? "")} onChange={(e) => set(c.nome, e.target.value)} placeholder={c.placeholder} /></Rotulo>;
   }
@@ -386,6 +389,29 @@ function Centrar({ centro }: { centro: [number, number] | null }) {
   const k = centro?.join(",");
   useEffect(() => { if (centro) map.setView(centro, Math.max(map.getZoom(), 14)); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [k]);
   return null;
+}
+
+/** Desenho da rota, só para conferir: o traçado é gravado pelo equipamento/sistema atual. */
+function VerTrajeto({ v }: { v: Record<string, unknown> }) {
+  const pts = useMemo(() => ((v.trajeto as [number, number][]) ?? []).filter((p) => Array.isArray(p) && p.length === 2), [v.trajeto]);
+  // O painel lateral abre animado; montar o mapa antes disso deixa o Leaflet com o tamanho errado.
+  const [pronto, setPronto] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setPronto(true), 400); return () => clearTimeout(t); }, []);
+  if (!pts.length) return <p className="text-[12px] text-muted-foreground">Rota sem traçado gravado.</p>;
+  return (
+    <div className="space-y-1">
+      <div className="h-56 overflow-hidden rounded-lg border border-border bg-secondary">
+        {pronto && (
+          <MapContainer bounds={L.latLngBounds(pts)} boundsOptions={{ padding: [16, 16] }} className="h-full w-full">
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+            <Polyline positions={pts} pathOptions={{ color: String(v.cor || "#1d4ed8"), weight: 4 }} />
+            <Marker position={pts[0]} icon={pinoSimples} />
+          </MapContainer>
+        )}
+      </div>
+      <p className="text-[12px] text-muted-foreground">O traçado vem do sistema atual e não é editado aqui.</p>
+    </div>
+  );
 }
 
 function EditorMapa({ v, set }: { v: Record<string, unknown>; set: (k: string, x: unknown) => void }) {

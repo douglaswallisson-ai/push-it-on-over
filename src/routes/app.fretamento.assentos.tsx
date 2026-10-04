@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Screen from "@/screens/LayoutAssentos";
+import Exemplo from "@/screens/LayoutAssentos";
+import CadastroTela from "@/screens/cadastros/CadastroTela";
+import { CFG_LAYOUT_ASSENTOS } from "@/screens/cadastros/config";
+import { usandoMock } from "@/lib/modo";
 
-export const Route = createFileRoute("/app/fretamento/assentos")({
-  component: Screen,
-});
+function Screen() {
+  return usandoMock() ? <Exemplo /> : <CadastroTela cfg={CFG_LAYOUT_ASSENTOS} />;
+}
+
+export const Route = createFileRoute("/app/fretamento/assentos")({ component: Screen });

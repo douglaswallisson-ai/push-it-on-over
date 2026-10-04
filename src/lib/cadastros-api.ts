@@ -7,7 +7,8 @@ import { api } from "@/lib/api";
 
 export type TipoCadastro =
   | "empresa" | "subgrupo" | "garagem" | "veiculo" | "dispositivo" | "vinculo"
-  | "usuario" | "alarme" | "cerca" | "poi" | "ponto_parada" | "linha";
+  | "usuario" | "alarme" | "cerca" | "poi" | "ponto_parada" | "linha"
+  | "passageiro" | "centro_custo" | "turno" | "grupo_linhas" | "rota" | "layout_assentos";
 
 export type Registro = Record<string, unknown> & {
   id: string;
@@ -24,6 +25,7 @@ export type Opcoes = {
   motivos_remocao: Opcao[]; categorias_cerca: Opcao[]; categorias_poi: Opcao[];
   parametros_alarme: (Opcao & { tipo_id: number; operadores: string | null; nomes_operadores: string | null })[];
   eventos: Opcao[]; modalidades_linha: Opcao[]; veiculos: Opcao[]; dispositivos: (Opcao & { placa: string | null })[];
+  centros_custo: Opcao[]; turnos: Opcao[]; linhas: Opcao[];
   account_id: number | null;
 };
 

@@ -45,6 +45,7 @@ import { Route as AppCadastrosDispositivosRouteImport } from './routes/app.cadas
 import { Route as AppCadastrosEquipamentosRouteImport } from './routes/app.cadastros.equipamentos'
 import { Route as AppCadastrosGaragensRouteImport } from './routes/app.cadastros.garagens'
 import { Route as AppCadastrosGruposRouteImport } from './routes/app.cadastros.grupos'
+import { Route as AppCadastrosGruposLinhasRouteImport } from './routes/app.cadastros.grupos-linhas'
 import { Route as AppCadastrosLinhasRouteImport } from './routes/app.cadastros.linhas'
 import { Route as AppCadastrosPontosRouteImport } from './routes/app.cadastros.pontos'
 import { Route as AppCadastrosPontosInteresseRouteImport } from './routes/app.cadastros.pontos-interesse'
@@ -52,10 +53,14 @@ import { Route as AppCadastrosUnidadesRouteImport } from './routes/app.cadastros
 import { Route as AppCadastrosUsuariosRouteImport } from './routes/app.cadastros.usuarios'
 import { Route as AppCadastrosVeiculosRouteImport } from './routes/app.cadastros.veiculos'
 import { Route as AppFretamentoAssentosRouteImport } from './routes/app.fretamento.assentos'
+import { Route as AppFretamentoCadastroPassageirosRouteImport } from './routes/app.fretamento.cadastro-passageiros'
+import { Route as AppFretamentoCentrosCustoRouteImport } from './routes/app.fretamento.centros-custo'
 import { Route as AppFretamentoEscalaRouteImport } from './routes/app.fretamento.escala'
 import { Route as AppFretamentoPassageirosRouteImport } from './routes/app.fretamento.passageiros'
 import { Route as AppFretamentoPontoRouteImport } from './routes/app.fretamento.ponto'
+import { Route as AppFretamentoRotasRouteImport } from './routes/app.fretamento.rotas'
 import { Route as AppFretamentoRoteirizacaoRouteImport } from './routes/app.fretamento.roteirizacao'
+import { Route as AppFretamentoTurnosRouteImport } from './routes/app.fretamento.turnos'
 import { Route as AppFrotaAnaliseRouteImport } from './routes/app.frota.analise'
 import { Route as AppFrotaChecklistRouteImport } from './routes/app.frota.checklist'
 import { Route as AppFrotaCombustivelRouteImport } from './routes/app.frota.combustivel'
@@ -276,6 +281,12 @@ const AppCadastrosGruposRoute = AppCadastrosGruposRouteImport.update({
   path: '/cadastros/grupos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCadastrosGruposLinhasRoute =
+  AppCadastrosGruposLinhasRouteImport.update({
+    id: '/cadastros/grupos-linhas',
+    path: '/cadastros/grupos-linhas',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppCadastrosLinhasRoute = AppCadastrosLinhasRouteImport.update({
   id: '/cadastros/linhas',
   path: '/cadastros/linhas',
@@ -312,6 +323,18 @@ const AppFretamentoAssentosRoute = AppFretamentoAssentosRouteImport.update({
   path: '/fretamento/assentos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFretamentoCadastroPassageirosRoute =
+  AppFretamentoCadastroPassageirosRouteImport.update({
+    id: '/fretamento/cadastro-passageiros',
+    path: '/fretamento/cadastro-passageiros',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppFretamentoCentrosCustoRoute =
+  AppFretamentoCentrosCustoRouteImport.update({
+    id: '/fretamento/centros-custo',
+    path: '/fretamento/centros-custo',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppFretamentoEscalaRoute = AppFretamentoEscalaRouteImport.update({
   id: '/fretamento/escala',
   path: '/fretamento/escala',
@@ -328,12 +351,22 @@ const AppFretamentoPontoRoute = AppFretamentoPontoRouteImport.update({
   path: '/fretamento/ponto',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFretamentoRotasRoute = AppFretamentoRotasRouteImport.update({
+  id: '/fretamento/rotas',
+  path: '/fretamento/rotas',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFretamentoRoteirizacaoRoute =
   AppFretamentoRoteirizacaoRouteImport.update({
     id: '/fretamento/roteirizacao',
     path: '/fretamento/roteirizacao',
     getParentRoute: () => AppRoute,
   } as any)
+const AppFretamentoTurnosRoute = AppFretamentoTurnosRouteImport.update({
+  id: '/fretamento/turnos',
+  path: '/fretamento/turnos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFrotaAnaliseRoute = AppFrotaAnaliseRouteImport.update({
   id: '/frota/analise',
   path: '/frota/analise',
@@ -562,6 +595,7 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/grupos-linhas': typeof AppCadastrosGruposLinhasRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
@@ -569,10 +603,14 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
+  '/app/fretamento/cadastro-passageiros': typeof AppFretamentoCadastroPassageirosRoute
+  '/app/fretamento/centros-custo': typeof AppFretamentoCentrosCustoRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
+  '/app/fretamento/rotas': typeof AppFretamentoRotasRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
+  '/app/fretamento/turnos': typeof AppFretamentoTurnosRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
@@ -646,6 +684,7 @@ export interface FileRoutesByTo {
   '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/grupos-linhas': typeof AppCadastrosGruposLinhasRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
@@ -653,10 +692,14 @@ export interface FileRoutesByTo {
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
+  '/app/fretamento/cadastro-passageiros': typeof AppFretamentoCadastroPassageirosRoute
+  '/app/fretamento/centros-custo': typeof AppFretamentoCentrosCustoRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
+  '/app/fretamento/rotas': typeof AppFretamentoRotasRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
+  '/app/fretamento/turnos': typeof AppFretamentoTurnosRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
@@ -733,6 +776,7 @@ export interface FileRoutesById {
   '/app/cadastros/equipamentos': typeof AppCadastrosEquipamentosRoute
   '/app/cadastros/garagens': typeof AppCadastrosGaragensRoute
   '/app/cadastros/grupos': typeof AppCadastrosGruposRoute
+  '/app/cadastros/grupos-linhas': typeof AppCadastrosGruposLinhasRoute
   '/app/cadastros/linhas': typeof AppCadastrosLinhasRoute
   '/app/cadastros/pontos': typeof AppCadastrosPontosRoute
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
@@ -740,10 +784,14 @@ export interface FileRoutesById {
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
   '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
+  '/app/fretamento/cadastro-passageiros': typeof AppFretamentoCadastroPassageirosRoute
+  '/app/fretamento/centros-custo': typeof AppFretamentoCentrosCustoRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
   '/app/fretamento/ponto': typeof AppFretamentoPontoRoute
+  '/app/fretamento/rotas': typeof AppFretamentoRotasRoute
   '/app/fretamento/roteirizacao': typeof AppFretamentoRoteirizacaoRoute
+  '/app/fretamento/turnos': typeof AppFretamentoTurnosRoute
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
@@ -821,6 +869,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/grupos-linhas'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
     | '/app/cadastros/pontos-interesse'
@@ -828,10 +877,14 @@ export interface FileRouteTypes {
     | '/app/cadastros/usuarios'
     | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
+    | '/app/fretamento/cadastro-passageiros'
+    | '/app/fretamento/centros-custo'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
     | '/app/fretamento/ponto'
+    | '/app/fretamento/rotas'
     | '/app/fretamento/roteirizacao'
+    | '/app/fretamento/turnos'
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
@@ -905,6 +958,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/grupos-linhas'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
     | '/app/cadastros/pontos-interesse'
@@ -912,10 +966,14 @@ export interface FileRouteTypes {
     | '/app/cadastros/usuarios'
     | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
+    | '/app/fretamento/cadastro-passageiros'
+    | '/app/fretamento/centros-custo'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
     | '/app/fretamento/ponto'
+    | '/app/fretamento/rotas'
     | '/app/fretamento/roteirizacao'
+    | '/app/fretamento/turnos'
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
@@ -991,6 +1049,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/equipamentos'
     | '/app/cadastros/garagens'
     | '/app/cadastros/grupos'
+    | '/app/cadastros/grupos-linhas'
     | '/app/cadastros/linhas'
     | '/app/cadastros/pontos'
     | '/app/cadastros/pontos-interesse'
@@ -998,10 +1057,14 @@ export interface FileRouteTypes {
     | '/app/cadastros/usuarios'
     | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
+    | '/app/fretamento/cadastro-passageiros'
+    | '/app/fretamento/centros-custo'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
     | '/app/fretamento/ponto'
+    | '/app/fretamento/rotas'
     | '/app/fretamento/roteirizacao'
+    | '/app/fretamento/turnos'
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
@@ -1303,6 +1366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCadastrosGruposRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/cadastros/grupos-linhas': {
+      id: '/app/cadastros/grupos-linhas'
+      path: '/cadastros/grupos-linhas'
+      fullPath: '/app/cadastros/grupos-linhas'
+      preLoaderRoute: typeof AppCadastrosGruposLinhasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cadastros/linhas': {
       id: '/app/cadastros/linhas'
       path: '/cadastros/linhas'
@@ -1352,6 +1422,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFretamentoAssentosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/fretamento/cadastro-passageiros': {
+      id: '/app/fretamento/cadastro-passageiros'
+      path: '/fretamento/cadastro-passageiros'
+      fullPath: '/app/fretamento/cadastro-passageiros'
+      preLoaderRoute: typeof AppFretamentoCadastroPassageirosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/centros-custo': {
+      id: '/app/fretamento/centros-custo'
+      path: '/fretamento/centros-custo'
+      fullPath: '/app/fretamento/centros-custo'
+      preLoaderRoute: typeof AppFretamentoCentrosCustoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/fretamento/escala': {
       id: '/app/fretamento/escala'
       path: '/fretamento/escala'
@@ -1373,11 +1457,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFretamentoPontoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/fretamento/rotas': {
+      id: '/app/fretamento/rotas'
+      path: '/fretamento/rotas'
+      fullPath: '/app/fretamento/rotas'
+      preLoaderRoute: typeof AppFretamentoRotasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/fretamento/roteirizacao': {
       id: '/app/fretamento/roteirizacao'
       path: '/fretamento/roteirizacao'
       fullPath: '/app/fretamento/roteirizacao'
       preLoaderRoute: typeof AppFretamentoRoteirizacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fretamento/turnos': {
+      id: '/app/fretamento/turnos'
+      path: '/fretamento/turnos'
+      fullPath: '/app/fretamento/turnos'
+      preLoaderRoute: typeof AppFretamentoTurnosRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/frota/analise': {
@@ -1693,6 +1791,7 @@ interface AppRouteChildren {
   AppCadastrosEquipamentosRoute: typeof AppCadastrosEquipamentosRoute
   AppCadastrosGaragensRoute: typeof AppCadastrosGaragensRoute
   AppCadastrosGruposRoute: typeof AppCadastrosGruposRoute
+  AppCadastrosGruposLinhasRoute: typeof AppCadastrosGruposLinhasRoute
   AppCadastrosLinhasRoute: typeof AppCadastrosLinhasRoute
   AppCadastrosPontosRoute: typeof AppCadastrosPontosRoute
   AppCadastrosPontosInteresseRoute: typeof AppCadastrosPontosInteresseRoute
@@ -1700,10 +1799,14 @@ interface AppRouteChildren {
   AppCadastrosUsuariosRoute: typeof AppCadastrosUsuariosRoute
   AppCadastrosVeiculosRoute: typeof AppCadastrosVeiculosRoute
   AppFretamentoAssentosRoute: typeof AppFretamentoAssentosRoute
+  AppFretamentoCadastroPassageirosRoute: typeof AppFretamentoCadastroPassageirosRoute
+  AppFretamentoCentrosCustoRoute: typeof AppFretamentoCentrosCustoRoute
   AppFretamentoEscalaRoute: typeof AppFretamentoEscalaRoute
   AppFretamentoPassageirosRoute: typeof AppFretamentoPassageirosRoute
   AppFretamentoPontoRoute: typeof AppFretamentoPontoRoute
+  AppFretamentoRotasRoute: typeof AppFretamentoRotasRoute
   AppFretamentoRoteirizacaoRoute: typeof AppFretamentoRoteirizacaoRoute
+  AppFretamentoTurnosRoute: typeof AppFretamentoTurnosRoute
   AppFrotaAnaliseRoute: typeof AppFrotaAnaliseRoute
   AppFrotaChecklistRoute: typeof AppFrotaChecklistRoute
   AppFrotaCombustivelRoute: typeof AppFrotaCombustivelRoute
@@ -1762,6 +1865,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosEquipamentosRoute: AppCadastrosEquipamentosRoute,
   AppCadastrosGaragensRoute: AppCadastrosGaragensRoute,
   AppCadastrosGruposRoute: AppCadastrosGruposRoute,
+  AppCadastrosGruposLinhasRoute: AppCadastrosGruposLinhasRoute,
   AppCadastrosLinhasRoute: AppCadastrosLinhasRoute,
   AppCadastrosPontosRoute: AppCadastrosPontosRoute,
   AppCadastrosPontosInteresseRoute: AppCadastrosPontosInteresseRoute,
@@ -1769,10 +1873,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosUsuariosRoute: AppCadastrosUsuariosRoute,
   AppCadastrosVeiculosRoute: AppCadastrosVeiculosRoute,
   AppFretamentoAssentosRoute: AppFretamentoAssentosRoute,
+  AppFretamentoCadastroPassageirosRoute: AppFretamentoCadastroPassageirosRoute,
+  AppFretamentoCentrosCustoRoute: AppFretamentoCentrosCustoRoute,
   AppFretamentoEscalaRoute: AppFretamentoEscalaRoute,
   AppFretamentoPassageirosRoute: AppFretamentoPassageirosRoute,
   AppFretamentoPontoRoute: AppFretamentoPontoRoute,
+  AppFretamentoRotasRoute: AppFretamentoRotasRoute,
   AppFretamentoRoteirizacaoRoute: AppFretamentoRoteirizacaoRoute,
+  AppFretamentoTurnosRoute: AppFretamentoTurnosRoute,
   AppFrotaAnaliseRoute: AppFrotaAnaliseRoute,
   AppFrotaChecklistRoute: AppFrotaChecklistRoute,
   AppFrotaCombustivelRoute: AppFrotaCombustivelRoute,

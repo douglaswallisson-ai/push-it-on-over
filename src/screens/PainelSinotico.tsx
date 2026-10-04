@@ -358,7 +358,7 @@ function PainelSinoticoHorario() {
                                 )}
                                 title={p?.controle ? `${p?.nome} (ponto de controle)` : p?.nome}
                               />
-                              <span className="mt-2 block w-24 -translate-x-[38px] text-center text-[10.5px] leading-tight text-muted-foreground">
+                              <span className="mt-2 block w-24 -translate-x-[38px] text-center text-[12px] leading-tight text-muted-foreground">
                                 {p?.codigo}
                                 {p?.controle && <span className="block font-semibold text-coral">PC</span>}
                               </span>
@@ -387,7 +387,7 @@ function PainelSinoticoHorario() {
                               )}
                             >
                               <Bus className="h-3.5 w-3.5" style={{ color: corDesvio(c.desvioMin) }} />
-                              <span className="font-mono text-[11px] font-bold text-foreground">
+                              <span className="font-mono text-[12px] font-bold text-foreground">
                                 {prefixo.get(c.veiculoId)}
                               </span>
                             </span>
@@ -396,14 +396,14 @@ function PainelSinoticoHorario() {
                               style={{ background: corDesvio(c.desvioMin) }}
                             />
                             <span
-                              className="mx-auto block font-mono text-[10px] font-bold"
+                              className="mx-auto block font-mono text-[12px] font-bold"
                               style={{ color: corDesvio(c.desvioMin) }}
                             >
                               {c.desvioMin > 0 ? "+" : ""}
                               {c.desvioMin}
                             </span>
                             {desp && (
-                              <span className="mt-0.5 block rounded bg-brand-navy px-1 text-[9px] font-semibold text-white">
+                              <span className="mt-0.5 block rounded bg-brand-navy px-1 text-[12px] font-semibold text-white">
                                 {DESPACHO_LABEL[desp]}
                               </span>
                             )}
@@ -412,7 +412,7 @@ function PainelSinoticoHorario() {
                       })}
                     </div>
 
-                    <p className="text-[11.5px] text-muted-foreground">
+                    <p className="text-[12px] text-muted-foreground">
                       O número sob cada carro é o desvio em minutos contra o programado. Verde até 3, âmbar até 8,
                       vermelho acima. Clique num carro para despachar.
                     </p>
@@ -427,13 +427,13 @@ function PainelSinoticoHorario() {
                 title={`Despacho — carro ${prefixo.get(selecionado.veiculoId)}`}
                 icon={Gauge}
                 action={
-                  <button onClick={() => setSelecionado(null)} className="text-[12.5px] text-muted-foreground underline">
+                  <button onClick={() => setSelecionado(null)} className="text-[13px] text-muted-foreground underline">
                     fechar
                   </button>
                 }
                 bodyClassName="p-4"
               >
-                <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px]">
+                <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px]">
                   <span className="text-muted-foreground">
                     Tabela <strong className="text-foreground">{selecionado.tabela}</strong>
                   </span>
@@ -495,7 +495,7 @@ function PainelSinoticoHorario() {
                   </button>
                 </div>
 
-                <p className="mt-3 text-[11.5px] text-muted-foreground">
+                <p className="mt-3 text-[12px] text-muted-foreground">
                   Toda ação de despacho fica registrada na auditoria com operador, motivo e horário — é o que sustenta
                   a decisão depois, quando alguém perguntar por que o carro foi retido.
                 </p>

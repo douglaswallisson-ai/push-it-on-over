@@ -120,7 +120,7 @@ function AnaliseIndividualExemplo() {
           </Card>
 
           <div>
-            <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               <span className="inline-block h-px w-4 bg-current opacity-50" />
               Indicadores de condução
             </p>
@@ -145,9 +145,9 @@ function AnaliseIndividualExemplo() {
                   <s.icon className="h-4 w-4 text-brand-navy" />
                   <p className="mt-2 font-display text-lg font-bold tabular-nums">
                     {s.value}
-                    {s.unit && <span className="ml-0.5 text-[11px] font-medium text-muted-foreground">{s.unit}</span>}
+                    {s.unit && <span className="ml-0.5 text-[12px] font-medium text-muted-foreground">{s.unit}</span>}
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-[12px] leading-tight text-muted-foreground">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -290,7 +290,7 @@ function AnaliseIndividualReal() {
               </Card>
 
               <div>
-                <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   <span className="inline-block h-px w-4 bg-current opacity-50" />
                   Indicadores de condução (% do tempo nas 13 faixas)
                 </p>
@@ -312,9 +312,9 @@ function AnaliseIndividualReal() {
                     <s.icon className="h-4 w-4 text-brand-navy" />
                     <p className="mt-2 font-display text-lg font-bold tabular-nums">
                       {s.value}
-                      {s.unit && <span className="ml-0.5 text-[11px] font-medium text-muted-foreground">{s.unit}</span>}
+                      {s.unit && <span className="ml-0.5 text-[12px] font-medium text-muted-foreground">{s.unit}</span>}
                     </p>
-                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-[12px] leading-tight text-muted-foreground">{s.label}</p>
                   </div>
                 ))}
               </div>

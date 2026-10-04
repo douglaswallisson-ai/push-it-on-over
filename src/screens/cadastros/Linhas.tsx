@@ -73,7 +73,7 @@ export default function Linhas() {
           <span className="h-8 w-1.5 shrink-0 rounded-full" style={{ background: l.cor }} />
           <div>
             <div className="font-mono text-[13px] font-bold text-foreground">{l.codigo}</div>
-            <div className="max-w-[280px] truncate text-[11.5px] text-muted-foreground">{l.nome}</div>
+            <div className="max-w-[280px] truncate text-[12px] text-muted-foreground">{l.nome}</div>
           </div>
         </div>
       ),
@@ -87,11 +87,11 @@ export default function Linhas() {
         </Pill>
       ),
     },
-    { key: "operadora", header: "Operadora", render: (l) => <span className="text-[12.5px]">{l.operadora ?? "—"}</span> },
+    { key: "operadora", header: "Operadora", render: (l) => <span className="text-[13px]">{l.operadora ?? "—"}</span> },
     {
       key: "grupoId",
       header: "Grupo",
-      render: (l) => <span className="text-[12.5px] text-muted-foreground">{l.grupoId ? grupoNome.get(l.grupoId) ?? "—" : "—"}</span>,
+      render: (l) => <span className="text-[13px] text-muted-foreground">{l.grupoId ? grupoNome.get(l.grupoId) ?? "—" : "—"}</span>,
     },
     {
       key: "itinerarios",
@@ -119,7 +119,7 @@ export default function Linhas() {
       key: "tarifa",
       header: "Tarifa",
       align: "right",
-      render: (l) => <span className="font-mono text-[12.5px]">{l.tarifa ? `R$ ${l.tarifa.toFixed(2)}` : "—"}</span>,
+      render: (l) => <span className="font-mono text-[13px]">{l.tarifa ? `R$ ${l.tarifa.toFixed(2)}` : "—"}</span>,
     },
     {
       key: "ativa",
@@ -209,7 +209,7 @@ export default function Linhas() {
               ) : (
                 <EmptyNote>Nenhuma linha encontrada.</EmptyNote>
               )}
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Linha ativa sem itinerário não entra na programação nem gera indicador por linha.
               </p>
             </Card>
@@ -220,7 +220,7 @@ export default function Linhas() {
                 title={`Itinerários — ${linhas.find((l) => l.id === expandida)?.codigo ?? ""}`}
                 icon={ArrowLeftRight}
                 action={
-                  <button onClick={() => setExpandida(null)} className="text-[12.5px] text-muted-foreground underline">
+                  <button onClick={() => setExpandida(null)} className="text-[13px] text-muted-foreground underline">
                     fechar
                   </button>
                 }
@@ -234,9 +234,9 @@ export default function Linhas() {
                           <Pill tone={it.sentido === "ida" ? "sky" : "neutral"}>
                             {it.sentido === "ida" ? "Ida" : it.sentido === "volta" ? "Volta" : "Circular"}
                           </Pill>
-                          <span className="text-[13.5px] font-semibold text-foreground">{it.nome}</span>
+                          <span className="text-[14px] font-semibold text-foreground">{it.nome}</span>
                         </span>
-                        <span className="font-mono text-[12.5px] text-muted-foreground">
+                        <span className="font-mono text-[13px] text-muted-foreground">
                           {it.extensaoKm} km · {it.duracaoMin} min · {it.paradas.length} paradas
                         </span>
                       </div>
@@ -246,13 +246,13 @@ export default function Linhas() {
                         {it.paradas.map((pa) => {
                           const p = pontoNome.get(pa.pontoId);
                           return (
-                            <li key={pa.pontoId} className="flex items-center gap-3 text-[12.5px]">
+                            <li key={pa.pontoId} className="flex items-center gap-3 text-[13px]">
                               <span className="w-5 shrink-0 text-right font-mono text-muted-foreground">{pa.ordem}</span>
                               <MapPin className={p?.controle ? "h-3.5 w-3.5 shrink-0 text-coral" : "h-3.5 w-3.5 shrink-0 text-muted-foreground"} />
                               <span className="flex-1 truncate text-ink-soft">
                                 {p?.nome ?? pa.pontoId}
                                 {p?.controle && (
-                                  <span className="ml-2 rounded bg-coral-tint px-1.5 text-[10px] font-semibold text-coral">
+                                  <span className="ml-2 rounded bg-coral-tint px-1.5 text-[12px] font-semibold text-coral">
                                     PC
                                   </span>
                                 )}

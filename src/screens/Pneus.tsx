@@ -67,7 +67,7 @@ export default function Pneus() {
       render: (p) => (
         <div>
           <div className="font-mono text-[13px] font-bold text-foreground">{p.fogo}</div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-[12px] text-muted-foreground">
             {p.marca} · {p.medida}
           </div>
         </div>
@@ -80,10 +80,10 @@ export default function Pneus() {
         p.veiculoId ? (
           <span className="whitespace-nowrap">
             <span className="font-mono text-[13px] font-semibold text-foreground">{prefixo.get(p.veiculoId) ?? "—"}</span>
-            <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-ink-soft">{p.posicao}</span>
+            <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 font-mono text-[12px] text-ink-soft">{p.posicao}</span>
           </span>
         ) : (
-          <span className="text-[12.5px] text-muted-foreground">—</span>
+          <span className="text-[13px] text-muted-foreground">—</span>
         ),
     },
     {
@@ -97,7 +97,7 @@ export default function Pneus() {
         return (
           <div className="ml-auto w-24">
             <div className="flex items-baseline justify-end gap-1">
-              <span className={cn("font-mono text-[12.5px] font-semibold", critico ? "text-coral" : atencao ? "text-gold" : "text-leaf")}>
+              <span className={cn("font-mono text-[13px] font-semibold", critico ? "text-coral" : atencao ? "text-gold" : "text-leaf")}>
                 {p.sulcoMm.toFixed(1)} mm
               </span>
               {critico && <AlertTriangle className="h-3 w-3 text-coral" />}
@@ -131,7 +131,7 @@ export default function Pneus() {
       key: "kmAcumulado",
       header: "Km rodado",
       align: "right",
-      render: (p) => <span className="font-mono text-[12.5px]">{nf(p.kmAcumulado)}</span>,
+      render: (p) => <span className="font-mono text-[13px]">{nf(p.kmAcumulado)}</span>,
     },
     {
       key: "cpk",
@@ -140,7 +140,7 @@ export default function Pneus() {
       render: (p) => {
         const v = cpkPneu(p);
         return (
-          <span className={cn("font-mono text-[12.5px] font-semibold", v > 0.05 ? "text-coral" : v > 0.03 ? "text-gold" : "text-leaf")}>
+          <span className={cn("font-mono text-[13px] font-semibold", v > 0.05 ? "text-coral" : v > 0.03 ? "text-gold" : "text-leaf")}>
             {v ? `R$ ${v.toFixed(4)}` : "—"}
           </span>
         );
@@ -150,7 +150,7 @@ export default function Pneus() {
       key: "pressaoPsi",
       header: "Pressão",
       align: "right",
-      render: (p) => <span className="font-mono text-[12.5px] text-muted-foreground">{p.pressaoPsi ? `${p.pressaoPsi} psi` : "—"}</span>,
+      render: (p) => <span className="font-mono text-[13px] text-muted-foreground">{p.pressaoPsi ? `${p.pressaoPsi} psi` : "—"}</span>,
     },
     { key: "status", header: "Status", align: "center", render: (p) => <Pill tone={STATUS_TONE[p.status]}>{STATUS_LABEL[p.status]}</Pill> },
   ];
@@ -224,7 +224,7 @@ export default function Pneus() {
                 <EmptyNote>Nenhum pneu com esse filtro.</EmptyNote>
               )}
 
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 O número que decide a compra é o custo por quilômetro, não o preço: um pneu caro que roda 120 mil km sai
                 mais barato que um barato que roda 60 mil. A recapagem multiplica isso, por isso as vidas ficam ao lado.
               </p>

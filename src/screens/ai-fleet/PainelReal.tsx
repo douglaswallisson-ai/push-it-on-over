@@ -54,11 +54,11 @@ function CartaoKpi({ k }: { k: KpiAi & { suprimido_por?: string | null } }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-[12.5px] font-medium text-muted-foreground">{k.rotulo ?? k.chave}</span>
+        <span className="text-[13px] font-medium text-muted-foreground">{k.rotulo ?? k.chave}</span>
         <Pill tone={v.tom}>{v.rotulo}</Pill>
       </div>
       <span className="font-mono text-[20px] font-semibold text-foreground">{valorKpi(k)}</span>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
         {k.meta && (
           <span>
             Meta {k.meta.tipo === "maximo" ? "até" : k.meta.tipo === "minimo" ? "a partir de" : ""} {nf(k.meta.valor, k.unidade === "%" ? 1 : 2)}
@@ -81,14 +81,14 @@ type LinhaEvento = { evento: string; posicao: number; driver_nome?: string | nul
 type LinhaFaixa = { faixa: string; posicao: number; driver_nome?: string | null; pct: number; meta_valor?: number | null; desvio_pp?: number | null };
 
 function ListaCondutores({ itens, tom }: { itens: LinhaCondutor[]; tom: "coral" | "leaf" }) {
-  if (!itens.length) return <p className="text-[12.5px] text-muted-foreground">Ninguém nesta lista no período.</p>;
+  if (!itens.length) return <p className="text-[13px] text-muted-foreground">Ninguém nesta lista no período.</p>;
   return (
     <ul className="divide-y divide-border">
       {itens.map((c) => (
         <li key={c.driver_id} className="flex items-center gap-3 py-2">
           <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{c.driver_nome ?? `Condutor ${c.driver_id}`}</span>
-          <span className="font-mono text-[12.5px]">{nf(c.pct_ideal, 1)}% ideal</span>
-          <span className={cn("w-16 text-right font-mono text-[12.5px] font-semibold", tom === "coral" ? "text-coral" : "text-leaf")}>
+          <span className="font-mono text-[13px]">{nf(c.pct_ideal, 1)}% ideal</span>
+          <span className={cn("w-16 text-right font-mono text-[13px] font-semibold", tom === "coral" ? "text-coral" : "text-leaf")}>
             {c.desvio_pp != null ? `${c.desvio_pp > 0 ? "+" : ""}${nf(c.desvio_pp, 1)} pp` : "—"}
           </span>
         </li>
@@ -127,7 +127,7 @@ export function PainelReal({ painel }: { painel: PainelAi }) {
         <StatTile icon={Users} label="Condutores para retreinar" value={String(abaixo.length)} color="var(--coral)" foot="abaixo de 90% da média de condução ideal" to="/app/motoristas" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-[12.5px] text-muted-foreground sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 text-[13px] text-muted-foreground sm:grid-cols-4">
         <span className="flex items-center gap-2"><Truck className="h-4 w-4" /> {nf(f.veiculos)} veículos com telemetria</span>
         <span className="flex items-center gap-2"><Route className="h-4 w-4" /> {nf(f.viagens)} viagens</span>
         <span className="flex items-center gap-2"><Activity className="h-4 w-4" /> {nf(f.tempo_horas)} h rodadas</span>
@@ -173,7 +173,7 @@ export function PainelReal({ painel }: { painel: PainelAi }) {
                 </ul>
               </div>
             ))}
-            {!eventos.length && <p className="text-[12.5px] text-muted-foreground">Sem eventos no período.</p>}
+            {!eventos.length && <p className="text-[13px] text-muted-foreground">Sem eventos no período.</p>}
           </div>
         </Card>
         <Card title="Plano de reciclagem por faixa" icon={Activity} bodyClassName="p-4">
@@ -195,7 +195,7 @@ export function PainelReal({ painel }: { painel: PainelAi }) {
                 </ul>
               </div>
             ))}
-            {!rankFaixas.length && <p className="text-[12.5px] text-muted-foreground">Sem desvios de faixa no período.</p>}
+            {!rankFaixas.length && <p className="text-[13px] text-muted-foreground">Sem desvios de faixa no período.</p>}
           </div>
         </Card>
       </div>

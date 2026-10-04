@@ -29,7 +29,7 @@ const COLS: Column<Garagem & Record<string, unknown>>[] = [
         </div>
         <div>
           <div className="font-semibold text-foreground">{g.nome}</div>
-          <div className="text-[11.5px] text-muted-foreground">{g.endereco}</div>
+          <div className="text-[12px] text-muted-foreground">{g.endereco}</div>
         </div>
       </div>
     ),
@@ -66,8 +66,8 @@ const COLS: Column<Garagem & Record<string, unknown>>[] = [
       return (
         <div className="ml-auto w-28">
           <div className="flex items-baseline justify-end gap-1.5">
-            <span className={`font-mono text-[12.5px] font-semibold ${tone}`}>{pct}%</span>
-            <span className="font-mono text-[11px] text-muted-foreground">
+            <span className={`font-mono text-[13px] font-semibold ${tone}`}>{pct}%</span>
+            <span className="font-mono text-[12px] text-muted-foreground">
               {g.veiculos}/{g.vagas}
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function Garagens() {
               ) : (
                 <EmptyNote>Nenhuma garagem encontrada com esse filtro.</EmptyNote>
               )}
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Uma unidade pode ter várias garagens. A garagem é o menor escopo de permissão previsto para gestores de
                 pátio.
               </p>

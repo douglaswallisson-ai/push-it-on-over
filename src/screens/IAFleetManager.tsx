@@ -264,7 +264,7 @@ export default function IAFleetManager() {
                 ))}
               </select>
             )}
-            <span className="inline-flex items-center gap-2 rounded-full bg-navy-tint px-3.5 py-2 font-mono text-[11px] font-semibold text-brand-blue">
+            <span className="inline-flex items-center gap-2 rounded-full bg-navy-tint px-3.5 py-2 font-mono text-[12px] font-semibold text-brand-blue">
               <Zap className="h-3.5 w-3.5" />
               {painel
                 ? `${painel.periodo.dias} dias carregados`
@@ -279,7 +279,7 @@ export default function IAFleetManager() {
         {!usandoMock() && (carregando || semCarga || semConta || Boolean(erro)) && (
           <div
             className={cn(
-              "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-[12.5px]",
+              "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-[13px]",
               semCarga || semConta || erro ? "border-gold-line bg-gold-tint/40 text-gold" : "border-border bg-card text-muted-foreground",
             )}
           >
@@ -341,7 +341,7 @@ export default function IAFleetManager() {
         {/* Insight da IA, quando há geração aprovada para o último dia. */}
         {painel?.insight?.texto && (
           <Card title="Leitura do período" icon={Sparkles} bodyClassName="p-5">
-            <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-ink-soft">
+            <p className="whitespace-pre-line text-[14px] leading-relaxed text-ink-soft">
               {painel.insight.texto}
             </p>
           </Card>
@@ -378,7 +378,7 @@ export default function IAFleetManager() {
                     {a.texto && <span className="mt-0.5 block text-[12px] text-muted-foreground">{a.texto}</span>}
                   </span>
                   {a.desvio_relativo != null && (
-                    <span className="shrink-0 font-mono text-[12.5px] font-semibold text-coral">
+                    <span className="shrink-0 font-mono text-[13px] font-semibold text-coral">
                       {Math.round(a.desvio_relativo)}%
                     </span>
                   )}
@@ -428,10 +428,10 @@ export default function IAFleetManager() {
           <div className="mt-5 flex gap-4 rounded-2xl border border-navy-line bg-navy-tint/50 p-5">
             <SSOrb size={40} className="text-brand-green" />
             <div>
-              <p className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue">
+              <p className="mb-1 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-brand-blue">
                 Por que essas ações, nessa ordem?
               </p>
-              <p className="text-[13.5px] leading-relaxed text-ink-soft">
+              <p className="text-[14px] leading-relaxed text-ink-soft">
                 Priorizei por <strong className="text-foreground">impacto econômico direto</strong> e{" "}
                 <strong className="text-foreground">velocidade até o resultado</strong>. As ações 1 e 2 atacam as maiores
                 fontes de perda hoje: motoristas com baixa condução ideal e horas não identificadas que escondem
@@ -453,8 +453,8 @@ export default function IAFleetManager() {
             <RoiCard label="Perda atual Jan–Fev/26" value={ex("−1.216 L")} sub={ex("Jan −684 L · Fev −532 L")} pct={usandoMock() ? 25 : 0} color="var(--coral)" />
           </div>
           <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-card">
-            <p className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-leaf">Lógica do ROI</p>
-            <p className="text-[13.5px] leading-relaxed text-ink-soft">
+            <p className="mb-1 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-leaf">Lógica do ROI</p>
+            <p className="text-[14px] leading-relaxed text-ink-soft">
               A frota rodou <strong className="text-foreground">600.481 km em Jan/26</strong> e{" "}
               <strong className="text-foreground">566.553 km em Fev/26</strong>. O km/L médio de 2026 está levemente
               abaixo de 2025, resultando em <strong className="text-foreground">1.216 litros a mais consumidos</strong>{" "}
@@ -472,12 +472,12 @@ export default function IAFleetManager() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {DIAG.map((d) => (
               <div key={d.label} className={cn("rounded-2xl border-l-4 border border-border bg-card p-4 shadow-card", d.good ? "border-l-leaf" : "border-l-coral")}>
-                <p className="text-[11.5px] text-muted-foreground">{d.label}</p>
+                <p className="text-[12px] text-muted-foreground">{d.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-[22px] font-bold tabular-nums">{d.value}</span>
+                  <span className="font-display text-[20px] font-bold tabular-nums">{d.value}</span>
                   <span className={cn("font-mono text-[12px] font-semibold", d.good ? "text-leaf" : "text-coral")}>{d.change}</span>
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">{d.sub}</p>
+                <p className="mt-1 text-[12px] text-muted-foreground">{d.sub}</p>
               </div>
             ))}
           </div>
@@ -502,13 +502,13 @@ export default function IAFleetManager() {
             </p>
           </div>
           <Card icon={Users} title="Lista de retreino" bodyClassName="p-4" action={
-            <Link to="/app/motoristas" className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-navy hover:text-brand-blue">
+            <Link to="/app/motoristas" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-navy hover:text-brand-blue">
               Ver motoristas <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           }>
             <DataTable columns={DRIVER_COLS} rows={DRIVERS} />
           </Card>
-          <p className="mt-2 px-1 text-[11px] text-muted-foreground">
+          <p className="mt-2 px-1 text-[12px] text-muted-foreground">
             * Nomes anonimizados neste protótipo. No sistema, cada motorista é identificado com seu histórico e plano de ação personalizado.
           </p>
         </section>
@@ -524,8 +524,8 @@ export default function IAFleetManager() {
           <div className="mt-4 flex gap-4 rounded-2xl border border-gold-line bg-gold-tint/40 p-5">
             <Search className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
             <div>
-              <p className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-gold">Por que isso importa</p>
-              <p className="text-[13.5px] leading-relaxed text-ink-soft">
+              <p className="mb-1 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-gold">Por que isso importa</p>
+              <p className="text-[14px] leading-relaxed text-ink-soft">
                 As <strong className="text-foreground">5.970 horas não identificadas em Fev/26</strong> representam 22,2%
                 das horas totais da frota — e apresentam desempenho pior em todos os indicadores, especialmente
                 aceleração parado (+420%) e motor parado (+27%). Em 2025 foram{" "}
@@ -542,13 +542,13 @@ export default function IAFleetManager() {
           <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
             {TIMELINE.map((t, i) => (
               <div key={i} className="flex gap-4">
-                <div className="w-24 shrink-0 pt-0.5 text-right font-mono text-[11px] text-muted-foreground">{t.data}</div>
+                <div className="w-24 shrink-0 pt-0.5 text-right font-mono text-[12px] text-muted-foreground">{t.data}</div>
                 <div className="flex flex-col items-center">
                   <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white" style={{ background: t.cor }} />
                   {i < TIMELINE.length - 1 && <span className="w-px flex-1 bg-border" />}
                 </div>
                 <div className={cn("flex-1", i < TIMELINE.length - 1 && "pb-5")}>
-                  <p className="text-[13.5px] font-semibold text-foreground">{t.titulo}</p>
+                  <p className="text-[14px] font-semibold text-foreground">{t.titulo}</p>
                   <p className="mt-0.5 text-[12px] text-muted-foreground">{t.dono}</p>
                 </div>
               </div>
@@ -562,9 +562,9 @@ export default function IAFleetManager() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {METAS.map((m) => (
               <div key={m.label} className="rounded-2xl border border-border border-t-[3px] border-t-brand-sky bg-card p-4 shadow-card">
-                <p className="text-[11.5px] text-muted-foreground">{m.label}</p>
+                <p className="text-[12px] text-muted-foreground">{m.label}</p>
                 <p className="mt-1 font-display text-2xl font-bold text-brand-navy">{m.value}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{m.sub}</p>
+                <p className="mt-1 text-[12px] text-muted-foreground">{m.sub}</p>
                 <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                   <div className="h-1.5 rounded-full bg-gradient-to-r from-brand-sky to-brand-green" style={{ width: `${m.pct}%` }} />
                 </div>
@@ -606,7 +606,7 @@ function SectionTitle({
         <Icon className="h-4 w-4" />
       </span>
       <h2 className="text-[16px] font-bold text-foreground">{title}</h2>
-      {count && <span className="rounded-md bg-secondary px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{count}</span>}
+      {count && <span className="rounded-md bg-secondary px-2 py-0.5 font-mono text-[12px] text-muted-foreground">{count}</span>}
     </div>
   );
 }
@@ -620,13 +620,13 @@ function ActionCard({ acao }: { acao: Acao }) {
       </div>
 
       <div>
-        <h3 className="text-[14.5px] font-bold text-foreground">{acao.titulo}</h3>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">{acao.desc}</p>
+        <h3 className="text-[14px] font-bold text-foreground">{acao.titulo}</h3>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{acao.desc}</p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {acao.tags.map((t) => (
             <span
               key={t}
-              className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+              className="rounded px-1.5 py-0.5 text-[12px] font-semibold"
               style={{ background: CAT[t].bg, color: CAT[t].color }}
             >
               {CAT[t].label}
@@ -639,13 +639,13 @@ function ActionCard({ acao }: { acao: Acao }) {
         <div className="font-display text-lg font-bold tabular-nums" style={{ color: acao.impacto.cor }}>
           {acao.impacto.valor}
         </div>
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{acao.impacto.label}</div>
-        {acao.impacto.sub && <div className="mt-0.5 text-[11px] text-muted-foreground">{acao.impacto.sub}</div>}
+        <div className="text-[12px] uppercase tracking-wide text-muted-foreground">{acao.impacto.label}</div>
+        {acao.impacto.sub && <div className="mt-0.5 text-[12px] text-muted-foreground">{acao.impacto.sub}</div>}
       </div>
 
       <div className="text-right">
         <Pill tone={acao.roi.tone}>{acao.roi.chip}</Pill>
-        <div className="mt-1 text-[10px] text-muted-foreground">{acao.roi.prazo}</div>
+        <div className="mt-1 text-[12px] text-muted-foreground">{acao.roi.prazo}</div>
       </div>
     </div>
   );
@@ -654,9 +654,9 @@ function ActionCard({ acao }: { acao: Acao }) {
 function RoiCard({ label, value, sub, pct, color }: { label: string; value: string; sub: string; pct: number; color: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
-      <p className="text-[11.5px] text-muted-foreground">{label}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
       <p className="mt-1 font-display text-2xl font-bold tabular-nums" style={{ color }}>{value}</p>
-      <p className="mt-1 text-[11px] text-muted-foreground">{sub}</p>
+      <p className="mt-1 text-[12px] text-muted-foreground">{sub}</p>
       <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-secondary">
         <div className="h-1 rounded-full" style={{ width: `${pct}%`, background: color }} />
       </div>
@@ -667,9 +667,9 @@ function RoiCard({ label, value, sub, pct, color }: { label: string; value: stri
 function UnidCard({ label, value, change, tone }: { label: string; value: string; change: string; tone: "gold" | "coral" }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
-      <p className="text-[11.5px] text-muted-foreground">{label}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
       <div className="mt-1 flex items-baseline gap-2">
-        <span className={cn("font-display text-[22px] font-bold tabular-nums", tone === "gold" ? "text-gold" : "text-coral")}>{value}</span>
+        <span className={cn("font-display text-[20px] font-bold tabular-nums", tone === "gold" ? "text-gold" : "text-coral")}>{value}</span>
         <span className={cn("font-mono text-[12px] font-semibold", tone === "gold" ? "text-gold" : "text-coral")}>{change}</span>
       </div>
     </div>
@@ -696,8 +696,8 @@ function QualidadeItem({
         alerta ? "border-gold-line bg-gold-tint/30" : "border-border bg-card",
       )}
     >
-      <div className="text-[11.5px] text-muted-foreground">{rotulo}</div>
-      <div className={cn("mt-1 font-mono text-[18px] font-bold", alerta ? "text-gold" : "text-foreground")}>
+      <div className="text-[12px] text-muted-foreground">{rotulo}</div>
+      <div className={cn("mt-1 font-mono text-[20px] font-bold", alerta ? "text-gold" : "text-foreground")}>
         {valor != null ? `${Math.round(valor * 10) / 10}${sufixo ?? ""}` : "—"}
       </div>
     </div>

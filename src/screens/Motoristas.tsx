@@ -72,7 +72,7 @@ const COLUNAS: Column<MotoristaRankingApi>[] = [
         <div className="truncate font-semibold text-foreground" title={m.nome ?? undefined}>
           {m.nome ?? `Motorista ${m.driver_id}`}
         </div>
-        <div className="font-mono text-[11px] text-muted-foreground">id {m.driver_id}</div>
+        <div className="font-mono text-[12px] text-muted-foreground">id {m.driver_id}</div>
       </div>
     ),
   },
@@ -246,13 +246,13 @@ export default function Motoristas() {
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   placeholder="Nome ou id"
-                  className="h-8 w-48 rounded-full border border-border bg-white pl-8 pr-3 text-[12.5px]"
+                  className="h-8 w-48 rounded-full border border-border bg-white pl-8 pr-3 text-[13px]"
                 />
               </div>
               <select
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value as Periodo)}
-                className="h-8 rounded-full border border-border bg-white px-3 text-[12.5px]"
+                className="h-8 rounded-full border border-border bg-white px-3 text-[13px]"
               >
                 <option value="30d">Últimos 30 dias</option>
                 <option value="mes">Mês atual</option>

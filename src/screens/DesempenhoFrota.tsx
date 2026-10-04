@@ -129,7 +129,7 @@ function DesempenhoFrotaExemplo() {
                   <span className="font-display text-3xl font-bold tabular-nums">{modo === "placas" ? c.qtd : c.nota}</span>
                   {modo === "placas" && <span className="text-[12px] text-muted-foreground">· {c.pct}%</span>}
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">{modo === "placas" ? `nota média: ${c.nota}` : `${c.qtd} placas`}</p>
+                <p className="mt-1 text-[12px] text-muted-foreground">{modo === "placas" ? `nota média: ${c.nota}` : `${c.qtd} placas`}</p>
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                   <div className={cn("h-1.5 rounded-full", c.tone === "green" ? "bg-leaf" : c.tone === "sky" ? "bg-brand-sky" : c.tone === "gold" ? "bg-gold" : "bg-coral")} style={{ width: `${c.pct}%` }} />
                 </div>
@@ -155,8 +155,8 @@ function DesempenhoFrotaExemplo() {
           <ol className="space-y-2">
             {RANKING.map((r, i) => (
               <li key={r.nome} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-mono text-[11px] font-bold text-muted-foreground">{i + 1}</span>
-                <span className="flex-1 text-[13.5px] font-medium">{r.nome}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-mono text-[12px] font-bold text-muted-foreground">{i + 1}</span>
+                <span className="flex-1 text-[14px] font-medium">{r.nome}</span>
                 <Pill tone={r.tone}><Gauge className="h-3 w-3" />{r.nota}</Pill>
               </li>
             ))}
@@ -166,8 +166,8 @@ function DesempenhoFrotaExemplo() {
         {/* Motor ligado parado — antes era rota separada. */}
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 className="text-[15px] font-semibold text-foreground">Motor ligado parado</h2>
-            <span className="text-[11.5px] text-muted-foreground">últimos 7 dias · toda a frota</span>
+            <h2 className="text-[16px] font-semibold text-foreground">Motor ligado parado</h2>
+            <span className="text-[12px] text-muted-foreground">últimos 7 dias · toda a frota</span>
           </div>
           <MotorLigadoParado />
         </div>
@@ -214,7 +214,7 @@ const OCIOSO_COLS: Column<OciosoRow & Record<string, unknown>>[] = [
         </div>
         <div>
           <div className="font-mono font-semibold text-foreground">{r.placa}</div>
-          <div className="text-[11.5px] text-muted-foreground">{r.motorista}</div>
+          <div className="text-[12px] text-muted-foreground">{r.motorista}</div>
         </div>
       </div>
     ),
@@ -237,7 +237,7 @@ function MotorLigadoParado() {
 
       <Card title="Ranking \u2014 maiores tempos parados" icon={Clock} bodyClassName="p-4">
         <DataTable columns={OCIOSO_COLS} rows={OCIOSO as (OciosoRow & Record<string, unknown>)[]} />
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           Motor ligado com o ve\u00edculo parado \u2014 combust\u00edvel queimado sem rodar um metro.
         </p>
       </Card>
@@ -377,7 +377,7 @@ function DesempenhoFrotaReal() {
                     <span className="font-display text-3xl font-bold tabular-nums">{modo === "placas" ? nf(c.qtd) : nf(c.media, 1)}</span>
                     {modo === "placas" && <span className="text-[12px] text-muted-foreground">· {nf(c.pct)}%</span>}
                   </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{modo === "placas" ? `nota média: ${nf(c.media, 1)}` : `${nf(c.qtd)} placas`}</p>
+                  <p className="mt-1 text-[12px] text-muted-foreground">{modo === "placas" ? `nota média: ${nf(c.media, 1)}` : `${nf(c.qtd)} placas`}</p>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                     <div className={cn("h-1.5 rounded-full transition-all duration-700", c.barra)} style={{ width: `${c.pct}%` }} />
                   </div>
@@ -419,8 +419,8 @@ function DesempenhoFrotaReal() {
               <ol className="space-y-2">
                 {bloco.lista.map((r) => (
                   <li key={r.driver_id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-mono text-[11px] font-bold text-muted-foreground">{r.posicao}</span>
-                    <span className="flex-1 truncate text-[13.5px] font-medium">{r.nome ?? `Motorista ${r.driver_id}`}</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-mono text-[12px] font-bold text-muted-foreground">{r.posicao}</span>
+                    <span className="flex-1 truncate text-[14px] font-medium">{r.nome ?? `Motorista ${r.driver_id}`}</span>
                     <Pill tone={categoria(r.pontuacao ?? 0).tone}>
                       <Gauge className="h-3 w-3" />
                       {nf(r.pontuacao, 1)}
@@ -435,8 +435,8 @@ function DesempenhoFrotaReal() {
 
         <div>
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 className="text-[15px] font-semibold text-foreground">Motor ligado parado</h2>
-            <span className="text-[11.5px] text-muted-foreground">últimos 7 dias · toda a frota</span>
+            <h2 className="text-[16px] font-semibold text-foreground">Motor ligado parado</h2>
+            <span className="text-[12px] text-muted-foreground">últimos 7 dias · toda a frota</span>
           </div>
           <MotorLigadoParadoReal />
         </div>
@@ -485,7 +485,7 @@ function MotorLigadoParadoReal() {
         ) : (
           <DataTable columns={OCIOSO_COLS} rows={linhas as (OciosoRow & Record<string, unknown>)[]} />
         )}
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           Parado ligado inclui o produtivo. Litros e custo evitáveis pela regra do Dashboard Start (50% do tempo ocioso),
           diesel a {brl(PRECO_DIESEL_PADRAO)}/L (padrão do BI) e CO₂ = litros × 3,21 (Power BI).
         </p>

@@ -248,11 +248,11 @@ export default function MapaAoVivo() {
                   >
                     <Cor cor={STATUS[s].cor} />
                     {STATUS[s].label}
-                    <span className="font-mono text-[11px] text-muted-foreground">({nf(contagem(s))})</span>
+                    <span className="font-mono text-[12px] text-muted-foreground">({nf(contagem(s))})</span>
                   </button>
                 );
               })}
-              <span className="inline-flex items-center gap-2 px-2 py-2 text-[12.5px] text-muted-foreground" title="Vermelho piscando: ocorrência de risco alto aguardando tratativa. Laranja piscando: veículo em manutenção.">
+              <span className="inline-flex items-center gap-2 px-2 py-2 text-[13px] text-muted-foreground" title="Vermelho piscando: ocorrência de risco alto aguardando tratativa. Laranja piscando: veículo em manutenção.">
                 <Cor cor={COR_SITUACAO.evento_critico} pisca /> Evento crítico
                 <Cor cor={COR_SITUACAO.manutencao} pisca /> Em manutenção
               </span>
@@ -382,7 +382,7 @@ function MapCanvas({
           >
             <div
               className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-card transition-transform group-hover:-translate-y-0.5",
+                "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-semibold shadow-card transition-transform group-hover:-translate-y-0.5",
                 isSel ? "border-brand-navy bg-brand-navy text-white" : "border-border bg-white text-foreground",
               )}
             >
@@ -416,7 +416,7 @@ function MapCanvas({
           onClick={() => setZoom(1)}
           aria-label="Restaurar zoom"
           title={`${Math.round(zoom * 100)}%`}
-          className="flex h-8 w-8 items-center justify-center font-mono text-[10px] text-muted-foreground transition-colors hover:bg-secondary"
+          className="flex h-8 w-8 items-center justify-center font-mono text-[12px] text-muted-foreground transition-colors hover:bg-secondary"
         >
           {Math.round(zoom * 100)}
         </button>
@@ -444,7 +444,7 @@ function SelectedCard({ veiculo }: { veiculo?: Veiculo }) {
         <span className="font-mono text-sm font-bold">{veiculo.placa}</span>
         <Pill tone={STATUS[veiculo.status].tone}>{STATUS[veiculo.status].label}</Pill>
       </div>
-      <div className="mt-3 space-y-1.5 text-[12.5px] text-ink-soft">
+      <div className="mt-3 space-y-1.5 text-[13px] text-ink-soft">
         <p className="flex items-start gap-2">
           <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" /> {veiculo.local}
         </p>

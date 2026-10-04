@@ -273,7 +273,7 @@ export default function Suporte() {
                   value={termo}
                   onChange={(e) => onTermo(e.target.value)}
                   placeholder="Escreva sua dúvida. Ex.: senha, cerca, sem sinal, relatório…"
-                  className="h-12 w-full rounded-xl border border-border bg-white pl-10 pr-10 text-[14.5px] shadow-sm outline-none transition focus:border-brand-sky focus:ring-4 focus:ring-brand-sky/15"
+                  className="h-12 w-full rounded-xl border border-border bg-white pl-10 pr-10 text-[14px] shadow-sm outline-none transition focus:border-brand-sky focus:ring-4 focus:ring-brand-sky/15"
                 />
                 {termo && (
                   <button
@@ -302,7 +302,7 @@ export default function Suporte() {
                 onClick={() => (id === "chamado" && aba !== "chamado" ? chamadoSobre() : irPara(id))}
                 aria-current={aba === id ? "page" : undefined}
                 className={cn(
-                  "-mb-px flex items-center gap-2 border-b-2 px-3 py-3 text-[13.5px] font-medium transition-colors",
+                  "-mb-px flex items-center gap-2 border-b-2 px-3 py-3 text-[14px] font-medium transition-colors",
                   aba === id ? "border-brand-navy text-brand-navy" : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -358,7 +358,7 @@ export default function Suporte() {
                         className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-secondary/50"
                       >
                         <span className="flex-1">
-                          <span className="block text-[14.5px] font-medium text-foreground">{d.pergunta}</span>
+                          <span className="block text-[14px] font-medium text-foreground">{d.pergunta}</span>
                           <span className="text-[12px] text-muted-foreground">{d.categoria}</span>
                         </span>
                         <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", aberto && "rotate-180")} />
@@ -413,7 +413,7 @@ export default function Suporte() {
             )}
 
             <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-border bg-white px-5 py-4 sm:flex-row sm:items-center">
-              <p className="text-[13.5px] text-muted-foreground">Não achou o que precisava? O time SS responde pelo chamado.</p>
+              <p className="text-[14px] text-muted-foreground">Não achou o que precisava? O time SS responde pelo chamado.</p>
               <button
                 type="button"
                 onClick={() => chamadoSobre()}
@@ -443,7 +443,7 @@ export default function Suporte() {
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-leaf-line bg-leaf-tint/60 px-6 py-8 text-center">
                 <CheckCircle2 className="h-8 w-8 text-[#2f6b1f]" />
                 <p className="text-[16px] font-semibold text-foreground">Chamado nº {enviar.data.id} registrado</p>
-                <p className="max-w-md text-[13.5px] text-muted-foreground">
+                <p className="max-w-md text-[14px] text-muted-foreground">
                   {enviar.data.integrado
                     ? "O time de Suporte já recebeu. Quando responderem, a resposta aparece em “Meus chamados”."
                     : "Ele ficou registrado na plataforma e será enviado ao Suporte quando a integração com o Zendesk for ativada."}
@@ -490,7 +490,7 @@ export default function Suporte() {
                               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-tint text-brand-navy">
                                 <Icone className="h-4.5 w-4.5" />
                               </span>
-                              <span className="text-[13.5px] font-medium text-foreground">{g.nome}</span>
+                              <span className="text-[14px] font-medium text-foreground">{g.nome}</span>
                             </button>
                           );
                         })}
@@ -525,7 +525,7 @@ export default function Suporte() {
                         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand-sky/40 bg-brand-sky/5 px-4 py-3">
                           <CheckCircle2 className="h-4.5 w-4.5 text-brand-navy" />
                           <span className="flex-1 text-[14px] font-medium">{assunto}</span>
-                          <button type="button" onClick={() => setAssunto(null)} className="text-[12.5px] text-muted-foreground underline-offset-2 hover:underline">
+                          <button type="button" onClick={() => setAssunto(null)} className="text-[13px] text-muted-foreground underline-offset-2 hover:underline">
                             Trocar
                           </button>
                         </div>
@@ -535,7 +535,7 @@ export default function Suporte() {
                             value={filtroAssunto}
                             onChange={(e) => setFiltroAssunto(e.target.value)}
                             placeholder="Filtrar assuntos…"
-                            className="h-10 w-full rounded-lg border border-border px-3 text-[13.5px] outline-none focus:border-brand-sky sm:max-w-sm"
+                            className="h-10 w-full rounded-lg border border-border px-3 text-[14px] outline-none focus:border-brand-sky sm:max-w-sm"
                           />
                           <div className="grid max-h-72 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
                             {servicosDoGrupo.map((s) => (
@@ -565,7 +565,7 @@ export default function Suporte() {
                     placeholder={"Ex.: O veículo ABC-1234 não aparece no mapa desde ontem às 14h.\nInforme placa, dia e horário, e em qual tela viu o problema."}
                     className="w-full rounded-xl border border-border bg-white px-4 py-3 text-[14px] leading-relaxed outline-none focus:border-brand-sky focus:ring-4 focus:ring-brand-sky/15"
                   />
-                  <p className="mt-1 text-right text-[11.5px] text-muted-foreground">{descricao.length} / 4000</p>
+                  <p className="mt-1 text-right text-[12px] text-muted-foreground">{descricao.length} / 4000</p>
                 </Etapa>
 
                 {/* 3. Urgência */}
@@ -598,7 +598,7 @@ export default function Suporte() {
                   {anexo ? (
                     <div className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3">
                       <Paperclip className="h-4 w-4 text-muted-foreground" />
-                      <span className="flex-1 truncate text-[13.5px]">{anexo.name}</span>
+                      <span className="flex-1 truncate text-[14px]">{anexo.name}</span>
                       <span className="text-[12px] text-muted-foreground">{(anexo.size / 1024 / 1024).toFixed(1)} MB</span>
                       <button type="button" onClick={() => setAnexo(null)} aria-label="Remover anexo" className="rounded p-1 hover:bg-secondary">
                         <X className="h-4 w-4" />
@@ -607,18 +607,18 @@ export default function Suporte() {
                   ) : (
                     <label className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed border-border bg-white px-4 py-5 text-center hover:border-brand-sky hover:bg-brand-sky/5">
                       <Paperclip className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-[13.5px] font-medium text-foreground">Clique para anexar um print ou arquivo</span>
+                      <span className="text-[14px] font-medium text-foreground">Clique para anexar um print ou arquivo</span>
                       <span className="text-[12px] text-muted-foreground">Imagem, PDF, Word, Excel, CSV ou texto, até 10 MB</span>
                       <input type="file" accept={TIPOS_ACEITOS} className="sr-only" onChange={(e) => escolherAnexo(e.target.files?.[0] ?? null)} />
                     </label>
                   )}
-                  {erroAnexo && <p className="mt-2 text-[12.5px] text-[#9b3326]">{erroAnexo}</p>}
+                  {erroAnexo && <p className="mt-2 text-[13px] text-[#9b3326]">{erroAnexo}</p>}
                 </Etapa>
 
                 {enviar.isError && <Aviso tom="coral">{mensagemErro(enviar.error)}</Aviso>}
 
                 <div className="flex flex-col-reverse items-stretch justify-between gap-3 rounded-2xl border border-border bg-white px-5 py-4 sm:flex-row sm:items-center">
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-[13px] text-muted-foreground">
                     {faltando ?? (
                       <>
                         O chamado será aberto em nome de <b>{sessao?.email ?? "você"}</b>.
@@ -628,7 +628,7 @@ export default function Suporte() {
                   <button
                     type="submit"
                     disabled={Boolean(faltando) || enviar.isPending || mock}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-brand-navy px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-brand-navy px-5 py-2.5 text-[14px] font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {enviar.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     Enviar chamado
@@ -742,7 +742,7 @@ function Etapa({ n, titulo, feito, children }: { n: number; titulo: string; feit
         >
           {feito ? <CheckCircle2 className="h-4 w-4" /> : n}
         </span>
-        <h2 className="text-[14.5px] font-semibold text-foreground">{titulo}</h2>
+        <h2 className="text-[14px] font-semibold text-foreground">{titulo}</h2>
       </div>
       {children}
     </fieldset>
@@ -768,7 +768,7 @@ function ItemChamado({ chamado: c, aberto, onClick }: { chamado: Chamado; aberto
   return (
     <li>
       <button type="button" onClick={onClick} aria-expanded={aberto} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-secondary/50">
-        <span className="w-16 shrink-0 font-mono text-[12.5px] text-muted-foreground">#{c.id}</span>
+        <span className="w-16 shrink-0 font-mono text-[13px] text-muted-foreground">#{c.id}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14px] font-medium">{c.assunto}</span>
           <span className="text-[12px] text-muted-foreground">
@@ -784,13 +784,13 @@ function ItemChamado({ chamado: c, aberto, onClick }: { chamado: Chamado; aberto
         <div className="space-y-3 bg-secondary/30 px-5 py-4">
           {String(c.id).startsWith("L") ? (
             <>
-              {c.descricao && <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed">{c.descricao.split("\n\n—\n")[0]}</p>}
+              {c.descricao && <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{c.descricao.split("\n\n—\n")[0]}</p>}
               {c.anexo && (
-                <p className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
                   <Paperclip className="h-3.5 w-3.5" /> {c.anexo}
                 </p>
               )}
-              <p className="text-[12.5px] text-muted-foreground">Ainda sem respostas: este chamado não foi enviado ao Zendesk.</p>
+              <p className="text-[13px] text-muted-foreground">Ainda sem respostas: este chamado não foi enviado ao Zendesk.</p>
             </>
           ) : respostas.isLoading ? (
             <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
@@ -803,7 +803,7 @@ function ItemChamado({ chamado: c, aberto, onClick }: { chamado: Chamado; aberto
               <div
                 key={i}
                 className={cn(
-                  "max-w-[85%] rounded-2xl border px-4 py-3 text-[13.5px]",
+                  "max-w-[85%] rounded-2xl border px-4 py-3 text-[14px]",
                   r.do_suporte ? "border-brand-sky/30 bg-white" : "ml-auto border-navy-line bg-navy-tint",
                 )}
               >
@@ -812,7 +812,7 @@ function ItemChamado({ chamado: c, aberto, onClick }: { chamado: Chamado; aberto
                 </p>
                 <p className="whitespace-pre-wrap leading-relaxed">{r.texto}</p>
                 {r.anexos.map((a) => (
-                  <a key={a.url} href={a.url} target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-1.5 text-[12.5px] text-brand-navy hover:underline">
+                  <a key={a.url} href={a.url} target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-1.5 text-[13px] text-brand-navy hover:underline">
                     <Paperclip className="h-3.5 w-3.5" /> {a.nome}
                   </a>
                 ))}
@@ -820,7 +820,7 @@ function ItemChamado({ chamado: c, aberto, onClick }: { chamado: Chamado; aberto
             ))
           )}
           {c.status_codigo === "pending" && (
-            <p className="flex items-center gap-1.5 text-[12.5px] font-medium text-[#7a4f10]">
+            <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#7a4f10]">
               <ArrowRight className="h-3.5 w-3.5" /> O Suporte aguarda sua resposta. Responda pelo e-mail do chamado que você recebeu.
             </p>
           )}

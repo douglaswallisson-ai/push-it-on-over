@@ -70,13 +70,13 @@ export function StatTile({
         >
           <Icon className="h-[17px] w-[17px]" style={{ color }} />
         </div>
-        <span className="text-[11.5px] font-medium text-muted-foreground">{label}</span>
+        <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
       </div>
-      <p className="font-display text-[26px] font-bold leading-none tabular-nums">
+      <p className="font-display text-[24px] font-bold leading-none tabular-nums">
         {value}
         {unit && <span className="ml-1 text-sm font-medium text-muted-foreground">{unit}</span>}
       </p>
-      {foot && <p className="mt-1.5 text-[11px] text-muted-foreground">{foot}</p>}
+      {foot && <p className="mt-1.5 text-[12px] text-muted-foreground">{foot}</p>}
     </>
   );
 
@@ -116,7 +116,7 @@ export function Pill({ tone = "neutral", children }: { tone?: PillTone; children
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold",
         PILL[tone],
       )}
     >
@@ -159,14 +159,14 @@ export function DataTable<T extends Record<string, unknown>>({
 }) {
   return (
     <div data-tour="table" className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full min-w-[640px] border-collapse text-[13.5px]">
+      <table className="w-full min-w-[640px] border-collapse text-[14px]">
         <thead>
           <tr className="bg-secondary">
             {columns.map((c) => (
               <th
                 key={c.key}
                 className={cn(
-                  "whitespace-nowrap px-4 py-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground",
+                  "whitespace-nowrap px-4 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground",
                   c.align === "right" && "text-right",
                   c.align === "center" && "text-center",
                   (!c.align || c.align === "left") && "text-left",

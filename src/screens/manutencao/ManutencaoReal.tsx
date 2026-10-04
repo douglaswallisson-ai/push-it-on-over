@@ -79,9 +79,9 @@ function falta(i: ItemSituacao) {
   return partes.join(" · ") || "registre a última vez que foi feito";
 }
 
-export default function ManutencaoReal() {
+export default function ManutencaoReal({ abaInicial = "quadro" }: { abaInicial?: Aba }) {
   const g = grupoAtivo();
-  const [aba, setAba] = useState<Aba>("quadro");
+  const [aba, setAba] = useState<Aba>(abaInicial);
   const [veiculoId, setVeiculoId] = useState<number | null>(null);
   const [ordemId, setOrdemId] = useState<number | null>(null);
   const q = useQuery(painelManutQuery(g));
@@ -230,7 +230,7 @@ function Quadro({ veiculos, ordens, onVeiculo }: { veiculos: VeiculoManut[]; ord
       action={
         <label className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar veículo" aria-label="Buscar veículo" className="h-8 w-48 rounded-lg border border-border bg-white pl-8 pr-3 text-[12.5px]" />
+          <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar veículo" aria-label="Buscar veículo" className="h-8 w-48 rounded-lg border border-border bg-white pl-8 pr-3 text-[13px]" />
         </label>
       }
       bodyClassName="p-4"
@@ -244,7 +244,7 @@ function Quadro({ veiculos, ordens, onVeiculo }: { veiculos: VeiculoManut[]; ord
         ))}
       </div>
       <ManutencaoKanban cards={cards} onSelect={(c) => onVeiculo(Number(c.veiculoId))} />
-      <p className="mt-2 text-[11.5px] text-muted-foreground">
+      <p className="mt-2 text-[12px] text-muted-foreground">
         Um cartão por veículo, na coluna da pendência mais grave: corretiva (alerta do motor ou ordem corretiva aberta), preventiva (serviço vencido),
         preditiva (vence em breve), liberado (ordem concluída nesta semana). Clique no cartão para abrir o veículo.
       </p>
@@ -301,7 +301,7 @@ function VisaoGeral({ r, onVeiculo, irPlanos }: { r: PainelManut; onVeiculo: (id
       <Card
         title={v ? `Sinais do motor · ${nomeVeiculo(v)}` : "Sinais do motor"}
         icon={Gauge}
-        action={v && <button type="button" onClick={() => onVeiculo(v.unit_id)} className="text-[12.5px] font-medium text-brand-navy hover:underline">Abrir veículo</button>}
+        action={v && <button type="button" onClick={() => onVeiculo(v.unit_id)} className="text-[13px] font-medium text-brand-navy hover:underline">Abrir veículo</button>}
         bodyClassName="p-4"
       >
         {v ? (
@@ -312,7 +312,7 @@ function VisaoGeral({ r, onVeiculo, irPlanos }: { r: PainelManut; onVeiculo: (id
               limites={r.limites}
               onSelect={(_, info) => setPonto(info)}
             />
-            <p className="mt-3 min-h-[36px] rounded-lg bg-secondary/50 px-3 py-2 text-[12.5px]">
+            <p className="mt-3 min-h-[36px] rounded-lg bg-secondary/50 px-3 py-2 text-[13px]">
               {ponto ? (
                 <>
                   <b>{ponto.rotulo}:</b> {ponto.detalhe}
@@ -321,7 +321,7 @@ function VisaoGeral({ r, onVeiculo, irPlanos }: { r: PainelManut; onVeiculo: (id
                 "Clique num ponto para ver o detalhe. Cinza = o veículo não envia esse sinal."
               )}
             </p>
-            <p className="mt-2 text-[11.5px] text-muted-foreground">
+            <p className="mt-2 text-[12px] text-muted-foreground">
               Última leitura: {v.ultimo_sinal ? new Date(v.ultimo_sinal).toLocaleString("pt-BR") : "—"} · odômetro {nf(v.odometro_km)} km
               {v.odometro_travado && " (travado)"}
             </p>
@@ -368,7 +368,7 @@ function Preventiva({ veiculos, onVeiculo, irPlanos }: { veiculos: VeiculoManut[
           </div>
           <label className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar veículo" aria-label="Buscar veículo" className="h-8 w-44 rounded-lg border border-border bg-white pl-8 pr-3 text-[12.5px]" />
+            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar veículo" aria-label="Buscar veículo" className="h-8 w-44 rounded-lg border border-border bg-white pl-8 pr-3 text-[13px]" />
           </label>
         </div>
       }
@@ -386,7 +386,7 @@ function Preventiva({ veiculos, onVeiculo, irPlanos }: { veiculos: VeiculoManut[
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full min-w-[760px] text-[13px]">
-            <thead className="bg-secondary/60 text-[11.5px] uppercase tracking-wide text-muted-foreground">
+            <thead className="bg-secondary/60 text-[12px] uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-2.5 text-left font-semibold">Veículo</th>
                 <th className="px-3 py-2.5 text-right font-semibold">Odômetro</th>
@@ -402,23 +402,23 @@ function Preventiva({ veiculos, onVeiculo, irPlanos }: { veiculos: VeiculoManut[
                   <tr key={v.unit_id} className="cursor-pointer hover:bg-secondary/40" onClick={() => onVeiculo(v.unit_id)}>
                     <td className="px-4 py-2.5">
                       <span className="block font-mono font-semibold">{nomeVeiculo(v)}</span>
-                      <span className="block text-[11.5px] text-muted-foreground">{v.modelo ?? v.categoria ?? "—"}</span>
+                      <span className="block text-[12px] text-muted-foreground">{v.modelo ?? v.categoria ?? "—"}</span>
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono">
-                      {nf(v.odometro_km)} km{v.odometro_travado && <span className="block text-[10.5px] text-gold">travado</span>}
+                      {nf(v.odometro_km)} km{v.odometro_travado && <span className="block text-[12px] text-gold">travado</span>}
                     </td>
                     <td className="px-3 py-2.5">
                       {i ? (
                         <>
                           <span className="block">{i.servico}</span>
-                          <span className="block text-[11.5px] text-muted-foreground">{falta(i)}</span>
+                          <span className="block text-[12px] text-muted-foreground">{falta(i)}</span>
                         </>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="px-3 py-2.5">{i ? <Pill tone={SIT[i.situacao].tom}>{SIT[i.situacao].rotulo}</Pill> : <Pill tone="neutral">Sem plano</Pill>}</td>
-                    <td className="px-4 py-2.5 text-[12.5px] text-muted-foreground">{v.plano?.nome ?? "—"}</td>
+                    <td className="px-4 py-2.5 text-[13px] text-muted-foreground">{v.plano?.nome ?? "—"}</td>
                   </tr>
                 );
               })}
@@ -496,7 +496,7 @@ function Corretiva({
                       type="button"
                       disabled={abrir.isPending}
                       onClick={() => abrir.mutate({ v, a })}
-                      className="rounded-lg bg-brand-navy px-3 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90 disabled:opacity-50"
+                      className="rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-90 disabled:opacity-50"
                     >
                       Abrir ordem de serviço
                     </button>
@@ -512,7 +512,7 @@ function Corretiva({
         title="Ordens de serviço"
         icon={Wrench}
         action={
-          <button type="button" onClick={() => setNova(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90">
+          <button type="button" onClick={() => setNova(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-90">
             <Plus className="h-3.5 w-3.5" /> Nova ordem
           </button>
         }
@@ -530,11 +530,11 @@ function Corretiva({
                   {doStatus.map((o) => (
                     <button key={o.id} type="button" onClick={() => onOrdem(o.id)} className="block w-full rounded-lg border border-border bg-white p-3 text-left shadow-sm hover:border-brand-sky">
                       <span className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11.5px] text-muted-foreground">OS {o.id} · {nome(o.unit_id)}</span>
+                        <span className="font-mono text-[12px] text-muted-foreground">OS {o.id} · {nome(o.unit_id)}</span>
                         <Pill tone={PRIOR[o.prioridade]}>{o.prioridade}</Pill>
                       </span>
                       <span className="mt-1 block text-[13px] font-medium leading-snug">{o.titulo}</span>
-                      <span className="mt-1 block text-[11.5px] text-muted-foreground">
+                      <span className="mt-1 block text-[12px] text-muted-foreground">
                         {o.tipo} · aberta em {dataBR(o.aberta_em)}
                         {o.responsavel && ` · ${o.responsavel}`}
                       </span>
@@ -612,13 +612,13 @@ function NovaOrdem({ g, aberto, veiculos, onClose }: { g: string; aberto: boolea
           <Campo rotulo="Prioridade">
             <div className="grid grid-cols-4 gap-2">
               {(["baixa", "media", "alta", "critica"] as const).map((p) => (
-                <button key={p} type="button" onClick={() => setPrioridade(p)} className={cn("rounded-lg border px-2 py-2 text-[12.5px] capitalize", prioridade === p ? "border-brand-navy bg-navy-tint font-medium" : "border-border")}>
+                <button key={p} type="button" onClick={() => setPrioridade(p)} className={cn("rounded-lg border px-2 py-2 text-[13px] capitalize", prioridade === p ? "border-brand-navy bg-navy-tint font-medium" : "border-border")}>
                   {p === "media" ? "média" : p === "critica" ? "crítica" : p}
                 </button>
               ))}
             </div>
           </Campo>
-          <button type="submit" disabled={!ok || salvar.isPending} className="w-full rounded-lg bg-brand-navy px-4 py-2.5 text-[13.5px] font-medium text-white disabled:opacity-40">
+          <button type="submit" disabled={!ok || salvar.isPending} className="w-full rounded-lg bg-brand-navy px-4 py-2.5 text-[14px] font-medium text-white disabled:opacity-40">
             {salvar.isPending ? "Abrindo…" : "Abrir ordem de serviço"}
           </button>
           {!ok && <p className="text-center text-[12px] text-muted-foreground">Escolha o veículo e descreva o serviço.</p>}
@@ -692,7 +692,7 @@ function DetalheOrdem({ g, o, veiculos, onClose }: { g: string; o: OrdemServico 
                 <p className="mb-2 text-[13px] font-semibold">Histórico</p>
                 <ul className="space-y-2 border-l-2 border-border pl-4">
                   {[...o.historico].reverse().map((h, i) => (
-                    <li key={i} className="text-[12.5px]">
+                    <li key={i} className="text-[13px]">
                       <span className="font-medium">{ROTULO_STATUS_OS[h.status as StatusOS] ?? h.status}</span>
                       <span className="text-muted-foreground"> · {new Date(h.em).toLocaleString("pt-BR")}</span>
                       {h.nota && <span className="block text-muted-foreground">{h.nota}</span>}
@@ -714,7 +714,7 @@ function BotaoStatus({ children, onClick, principal, perigo }: { children: React
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[12.5px] font-medium",
+        "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[13px] font-medium",
         principal ? "border-leaf bg-leaf text-white" : perigo ? "border-coral-line text-coral hover:bg-coral-tint" : "border-border hover:bg-secondary",
       )}
     >
@@ -726,7 +726,7 @@ function BotaoStatus({ children, onClick, principal, perigo }: { children: React
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[12.5px] font-medium text-foreground">{rotulo}</span>
+      <span className="mb-1 block text-[13px] font-medium text-foreground">{rotulo}</span>
       {children}
     </label>
   );
@@ -771,7 +771,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between gap-3 pr-8">
                 {nomeVeiculo(v)}
-                <button type="button" onClick={() => setRelatorio(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90">
+                <button type="button" onClick={() => setRelatorio(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-90">
                   <ClipboardList className="h-3.5 w-3.5" /> Relatório para o cliente
                 </button>
               </SheetTitle>
@@ -784,7 +784,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
               {v.alertas.length > 0 && (
                 <div className="space-y-1.5">
                   {v.alertas.map((a) => (
-                    <p key={a.chave} className={cn("rounded-lg px-3 py-2 text-[12.5px]", a.nivel === "critico" ? "bg-coral-tint" : "bg-gold-tint")}>
+                    <p key={a.chave} className={cn("rounded-lg px-3 py-2 text-[13px]", a.nivel === "critico" ? "bg-coral-tint" : "bg-gold-tint")}>
                       <b>{a.titulo}:</b> {a.detalhe}
                     </p>
                   ))}
@@ -798,7 +798,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
                       <li key={i.servico} className="flex items-center gap-3 px-4 py-2.5 text-[13px]">
                         <span className="min-w-0 flex-1">
                           <span className="block font-medium">{i.servico}</span>
-                          <span className="block text-[11.5px] text-muted-foreground">
+                          <span className="block text-[12px] text-muted-foreground">
                             a cada {[i.intervalo_km && `${nf(i.intervalo_km)} km`, i.intervalo_dias && `${i.intervalo_dias} dias`].filter(Boolean).join(" ou ")}
                             {i.ultimo ? ` · último em ${dataBR(i.ultimo.data)}${i.ultimo.odometro_km != null ? ` com ${nf(i.ultimo.odometro_km)} km` : ""}` : ""} · {falta(i)}
                           </span>
@@ -848,7 +848,7 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
                 <button type="submit" disabled={servico.trim().length < 2 || registrar.isPending} className="rounded-lg bg-brand-navy px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">
                   {registrar.isPending ? "Registrando…" : "Registrar serviço"}
                 </button>
-                <p className="text-[11.5px] text-muted-foreground">Sem odômetro informado, vale o atual do veículo. Para um serviço antigo, informe o km da época.</p>
+                <p className="text-[12px] text-muted-foreground">Sem odômetro informado, vale o atual do veículo. Para um serviço antigo, informe o km da época.</p>
               </form>
 
               <div>
@@ -939,7 +939,7 @@ function Planos({ g, veiculos }: { g: string; veiculos: VeiculoManut[] }) {
             {planos.data!.map((p) => (
               <li key={p.id} className="flex items-start gap-3 rounded-xl border border-border px-4 py-3">
                 <button type="button" onClick={() => setEdicao({ id: p.id, nome: p.nome, escopo: p.escopo, alvo: p.alvo, itens: p.itens })} className="min-w-0 flex-1 text-left">
-                  <span className="block text-[13.5px] font-semibold">{p.nome}</span>
+                  <span className="block text-[14px] font-semibold">{p.nome}</span>
                   <span className="block text-[12px] text-muted-foreground">{rotuloAlvo(p)} · {cobertos(p)} veículos · {p.itens.length} serviços</span>
                 </button>
                 <button type="button" aria-label="Remover plano" onClick={() => apagar.mutate(p.id)} className="rounded p-1 text-muted-foreground hover:bg-coral-tint hover:text-coral">
@@ -955,11 +955,11 @@ function Planos({ g, veiculos }: { g: string; veiculos: VeiculoManut[] }) {
           <p className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Começar por um modelo</p>
           <div className="flex flex-wrap gap-2">
             {(modelos.data ?? []).map((m) => (
-              <button key={m.id} type="button" onClick={() => novoDoModelo(m.id)} className="rounded-lg border border-border bg-white px-3 py-2 text-[12.5px] hover:border-brand-sky">
+              <button key={m.id} type="button" onClick={() => novoDoModelo(m.id)} className="rounded-lg border border-border bg-white px-3 py-2 text-[13px] hover:border-brand-sky">
                 {m.nome}
               </button>
             ))}
-            <button type="button" onClick={() => setEdicao({ nome: "", escopo: "categoria", alvo: String(categorias[0]?.[0] ?? ""), itens: [{ servico: "", km: null, dias: null }] })} className="rounded-lg border border-dashed border-border px-3 py-2 text-[12.5px] hover:border-brand-sky">
+            <button type="button" onClick={() => setEdicao({ nome: "", escopo: "categoria", alvo: String(categorias[0]?.[0] ?? ""), itens: [{ servico: "", km: null, dias: null }] })} className="rounded-lg border border-dashed border-border px-3 py-2 text-[13px] hover:border-brand-sky">
               <Plus className="mr-1 inline h-3.5 w-3.5" /> Em branco
             </button>
           </div>
@@ -1009,7 +1009,7 @@ function Planos({ g, veiculos }: { g: string; veiculos: VeiculoManut[] }) {
             {edicao.alvo && <p className="text-[12px] text-muted-foreground">Vale para {cobertos(edicao)} veículos. Um plano por veículo vale mais que o do modelo, e o do modelo mais que o do tipo.</p>}
 
             <div>
-              <p className="mb-2 text-[12.5px] font-medium">Serviços e intervalos (vence o que chegar primeiro)</p>
+              <p className="mb-2 text-[13px] font-medium">Serviços e intervalos (vence o que chegar primeiro)</p>
               <div className="space-y-2">
                 {edicao.itens.map((it, i) => (
                   <div key={i} className="grid grid-cols-[1fr_110px_90px_32px] items-center gap-2">
@@ -1022,7 +1022,7 @@ function Planos({ g, veiculos }: { g: string; veiculos: VeiculoManut[] }) {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => setEdicao({ ...edicao, itens: [...edicao.itens, { servico: "", km: null, dias: null } as ItemPlano] })} className="mt-2 text-[12.5px] font-medium text-brand-navy hover:underline">
+              <button type="button" onClick={() => setEdicao({ ...edicao, itens: [...edicao.itens, { servico: "", km: null, dias: null } as ItemPlano] })} className="mt-2 text-[13px] font-medium text-brand-navy hover:underline">
                 + Adicionar serviço
               </button>
             </div>

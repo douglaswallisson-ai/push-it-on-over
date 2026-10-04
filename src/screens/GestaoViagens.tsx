@@ -62,7 +62,7 @@ function Desvio({ programado, realizado }: { programado?: string; realizado?: st
   return (
     <span
       className={cn(
-        "font-mono text-[12.5px] font-semibold",
+        "font-mono text-[13px] font-semibold",
         d === 0 ? "text-leaf" : forte ? "text-coral" : "text-gold",
       )}
       title={d < 0 ? "Adiantada" : d > 0 ? "Atrasada" : "No horário"}
@@ -179,7 +179,7 @@ function GestaoViagensExemplo() {
       render: (v) => (
         <span
           className={cn(
-            "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11.5px] font-semibold",
+            "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[12px] font-semibold",
             v.sentido === "ida" ? "bg-navy-tint text-brand-navy" : "bg-secondary text-ink-soft",
           )}
         >
@@ -210,7 +210,7 @@ function GestaoViagensExemplo() {
       align: "right",
       render: (v) => (
         <div className="ml-auto w-20">
-          <div className="text-right font-mono text-[12.5px] font-semibold text-foreground">{v.percursoPct}%</div>
+          <div className="text-right font-mono text-[13px] font-semibold text-foreground">{v.percursoPct}%</div>
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
             <div
               className={cn(
@@ -231,7 +231,7 @@ function GestaoViagensExemplo() {
         const real = v.veiculoRealizadoId ? carroPorId.get(v.veiculoRealizadoId) : undefined;
         const trocou = Boolean(prog && real && v.veiculoProgramadoId !== v.veiculoRealizadoId);
         return (
-          <span className="whitespace-nowrap font-mono text-[12.5px]" title={real ? `Placa ${real.placa}` : undefined}>
+          <span className="whitespace-nowrap font-mono text-[13px]" title={real ? `Placa ${real.placa}` : undefined}>
             <span className="text-muted-foreground">{prog?.prefixo ?? "—"}</span>
             <span className="mx-1 text-muted-foreground/50">/</span>
             <span className={cn("font-semibold", trocou ? "text-gold" : "text-foreground")}>
@@ -251,7 +251,7 @@ function GestaoViagensExemplo() {
             ? Math.abs(v.headwayRealizadoMin - v.headwayProgramadoMin) > 3
             : false;
         return (
-          <span className="whitespace-nowrap font-mono text-[12.5px]">
+          <span className="whitespace-nowrap font-mono text-[13px]">
             <span className="text-muted-foreground">{v.headwayProgramadoMin ?? "—"}</span>
             <span className="mx-1 text-muted-foreground/50">/</span>
             <span className={cn("font-semibold", irregular ? "text-coral" : "text-foreground")}>
@@ -314,7 +314,7 @@ function GestaoViagensExemplo() {
       <div className="mx-auto max-w-[1600px] space-y-5 px-6 py-6 md:px-8">
         {/* A janela do dia fiscal precisa ficar explícita: não é o dia do calendário. */}
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-2.5">
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted-foreground">
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
             <span>
               Operação de <strong className="text-foreground">{new Date(`${hoje}T12:00`).toLocaleDateString("pt-BR")}</strong>
             </span>
@@ -406,7 +406,7 @@ function GestaoViagensExemplo() {
                 <EmptyNote>Nenhuma viagem com esse filtro.</EmptyNote>
               )}
 
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Cada par mostra <strong>programado / realizado</strong>. Tolerância: 3 min de adiantamento e 5 min de
                 atraso. Viagem sem partida cujo horário já passou conta como não realizada. Veículo em destaque indica
                 troca em relação ao escalado.

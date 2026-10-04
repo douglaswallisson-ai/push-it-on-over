@@ -83,7 +83,7 @@ export function PlanoPreventivo({
       {semCatalogo > 0 && (
         <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-          <p className="text-[12.5px] text-gold">
+          <p className="text-[13px] text-gold">
             <strong>
               {semCatalogo} veículo{semCatalogo > 1 ? "s" : ""} sem parâmetro de manutenção aplicável.
             </strong>{" "}
@@ -135,21 +135,21 @@ export function PlanoPreventivo({
                     <span className="min-w-0">
                       <span className="flex items-baseline gap-2">
                         <span className="font-mono text-[14px] font-bold text-foreground">{prefixo}</span>
-                        <span className="font-mono text-[11.5px] text-muted-foreground">{veiculo.placa}</span>
+                        <span className="font-mono text-[12px] text-muted-foreground">{veiculo.placa}</span>
                         {modelo?.propulsao === "eletrico" && <Zap className="h-3.5 w-3.5 text-gold" />}
                       </span>
-                      <span className="block truncate text-[11.5px] text-muted-foreground">
+                      <span className="block truncate text-[12px] text-muted-foreground">
                         {modelo?.nome ?? "sem modelo"} · {veiculo.odometro != null ? nf(veiculo.odometro) : "—"} km
                       </span>
                     </span>
 
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 text-[11.5px] text-ink-soft">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 text-[12px] text-ink-soft">
                       <Route className="h-3 w-3" />
                       {TIPO_OPERACAO_LABEL[operacao].replace(/^\d+(:\d+)? — /, "")}
                     </span>
 
                     <span className="ml-auto flex items-center gap-2">
-                      <span className="max-w-[220px] truncate text-[12.5px] text-ink-soft">{top?.item}</span>
+                      <span className="max-w-[220px] truncate text-[13px] text-ink-soft">{top?.item}</span>
                       {top && <Pill tone={URGENCIA_TONE[top.urgencia]}>{URGENCIA_LABEL[top.urgencia]}</Pill>}
                       <span className="font-mono text-[12px] text-muted-foreground">{preventivas.length} itens</span>
                     </span>
@@ -158,7 +158,7 @@ export function PlanoPreventivo({
                   {abertoAqui && (
                     <div className="border-t border-border bg-secondary/20 px-4 py-3">
                       {/* Sinais que classificaram a operação. */}
-                      <p className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-muted-foreground">
+                      <p className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
                         <Gauge className="h-3.5 w-3.5" />
                         <span>
                           Marcha-lenta <strong className="text-foreground">{sinais.parado_motor_ligado ?? "—"}%</strong>
@@ -190,7 +190,7 @@ export function PlanoPreventivo({
           </div>
         )}
 
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           O disparo é o que ocorrer primeiro entre quilometragem, horas e tempo. Itens cujo parâmetro não tem número
           oficial no catálogo ficam de fora do cálculo — melhor não avisar do que avisar com número estimado.
         </p>
@@ -220,25 +220,25 @@ function ItemPreventiva({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded bg-secondary px-1.5 py-0.5 text-[10.5px] font-semibold text-ink-soft">
+            <span className="rounded bg-secondary px-1.5 py-0.5 text-[12px] font-semibold text-ink-soft">
               {p.sistema}
             </span>
             <span className="text-[13px] font-medium text-foreground">{p.item}</span>
           </div>
-          {p.especificacao && <p className="mt-0.5 text-[11px] text-muted-foreground">{p.especificacao}</p>}
+          {p.especificacao && <p className="mt-0.5 text-[12px] text-muted-foreground">{p.especificacao}</p>}
         </div>
 
         <span className="flex shrink-0 items-center gap-2">
           <Pill tone={URGENCIA_TONE[p.urgencia]}>{URGENCIA_LABEL[p.urgencia]}</Pill>
           {agendada ? (
-            <span className="inline-flex items-center gap-1 rounded-lg bg-leaf-tint px-2 py-1 text-[11.5px] font-semibold text-leaf">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-leaf-tint px-2 py-1 text-[12px] font-semibold text-leaf">
               <Check className="h-3 w-3" />
               Agendada
             </span>
           ) : (
             <button
               onClick={onAgendar}
-              className="rounded-lg bg-brand-navy px-2.5 py-1 text-[11.5px] font-semibold text-white"
+              className="rounded-lg bg-brand-navy px-2.5 py-1 text-[12px] font-semibold text-white"
             >
               Agendar
             </button>
@@ -248,7 +248,7 @@ function ItemPreventiva({
 
       {/* Consumo do intervalo. */}
       <div className="mt-2.5">
-        <div className="flex items-baseline justify-between text-[11.5px]">
+        <div className="flex items-baseline justify-between text-[12px]">
           <span className="text-muted-foreground">
             {p.kmRestante !== null && (
               <>
@@ -269,7 +269,7 @@ function ItemPreventiva({
                 )}
               </>
             )}
-            {p.disparoPor && <span className="ml-1.5 text-[10.5px]">(vence por {p.disparoPor})</span>}
+            {p.disparoPor && <span className="ml-1.5 text-[12px]">(vence por {p.disparoPor})</span>}
           </span>
           <span className="font-mono font-semibold text-foreground">{p.consumidoPct}%</span>
         </div>
@@ -279,7 +279,7 @@ function ItemPreventiva({
       </div>
 
       {/* Intervalo aplicado e por que foi encurtado. */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
         {p.intervaloOriginalKm !== null && (
           <span className="text-muted-foreground">
             Intervalo{" "}
@@ -304,7 +304,7 @@ function ItemPreventiva({
       </div>
 
       {p.ajustes.map((a, i) => (
-        <p key={i} className="mt-1.5 flex items-start gap-1.5 rounded bg-gold-tint/50 px-2 py-1 text-[11px] text-gold">
+        <p key={i} className="mt-1.5 flex items-start gap-1.5 rounded bg-gold-tint/50 px-2 py-1 text-[12px] text-gold">
           <Gauge className="mt-0.5 h-3 w-3 shrink-0" />
           <span>
             Intervalo reduzido para {Math.round(a.fator * 100)}% — {a.nome.toLowerCase()}: {a.motivo}.

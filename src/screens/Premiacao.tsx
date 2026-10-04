@@ -43,7 +43,7 @@ const COLS: Column<Premiado>[] = [
     header: "Motorista",
     render: (m) => (
       <div className="flex items-center gap-3">
-        <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${m.pos <= 3 ? "bg-gold-tint text-gold" : "bg-secondary text-muted-foreground"}`}>
+        <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold ${m.pos <= 3 ? "bg-gold-tint text-gold" : "bg-secondary text-muted-foreground"}`}>
           {m.pos}
         </div>
         <span className="font-semibold text-foreground">{m.nome}</span>
@@ -130,11 +130,11 @@ function PremiacaoExemplo() {
               <div className="grid w-full grid-cols-2 gap-3 text-center">
                 <div className="rounded-xl bg-secondary/50 p-3">
                   <p className="font-display text-lg font-bold tabular-nums">128.367</p>
-                  <p className="text-[11px] text-muted-foreground">Km rodados</p>
+                  <p className="text-[12px] text-muted-foreground">Km rodados</p>
                 </div>
                 <div className="rounded-xl bg-secondary/50 p-3">
                   <p className="font-display text-lg font-bold tabular-nums">201.628</p>
-                  <p className="text-[11px] text-muted-foreground">Meta</p>
+                  <p className="text-[12px] text-muted-foreground">Meta</p>
                 </div>
               </div>
             </div>
@@ -276,7 +276,7 @@ function PremiacaoReal() {
           <StatTile icon={Truck} label="Motoristas no período" value={fmt(linhas.length)} color="var(--brand-sky)" />
         </div>
 
-        <div className="rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3 text-[12.5px] text-gold">
+        <div className="rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3 text-[13px] text-gold">
           Regra do Power BI da Figueiredo (vault, P7). A fórmula não indica a moeda e o pódio é pela posição geral, não
           por instrutor. Só apura período de até 31 dias e motorista com 6.000 km ou mais.
         </div>
@@ -285,7 +285,7 @@ function PremiacaoReal() {
           title="Apuração por motorista"
           icon={Target}
           action={
-            <select value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)} className="h-8 rounded-full border border-border bg-white px-3 text-[12.5px]">
+            <select value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)} className="h-8 rounded-full border border-border bg-white px-3 text-[13px]">
               <option value="mes_anterior">Mês anterior</option>
               <option value="mes">Mês atual (parcial)</option>
             </select>

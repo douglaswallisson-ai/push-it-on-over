@@ -37,7 +37,7 @@ const COLS: Column<Cerca>[] = [
     ),
   },
   { key: "tipo", header: "Tipo", render: (c) => <Pill tone="sky">{c.tipo}</Pill> },
-  { key: "abrangencia", header: "Abrangência", render: (c) => <span className="font-mono text-[12.5px]">{c.abrangencia}</span> },
+  { key: "abrangencia", header: "Abrangência", render: (c) => <span className="font-mono text-[13px]">{c.abrangencia}</span> },
   { key: "veiculos", header: "Veículos", align: "right" },
   {
     key: "status",

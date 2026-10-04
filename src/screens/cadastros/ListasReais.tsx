@@ -64,7 +64,7 @@ function ListaConsulta<T extends object>({
                   value={termo}
                   onChange={(e) => setTermo(e.target.value)}
                   placeholder="Buscar"
-                  className="h-8 w-52 rounded-full border border-border bg-white pl-8 pr-3 text-[12.5px]"
+                  className="h-8 w-52 rounded-full border border-border bg-white pl-8 pr-3 text-[13px]"
                 />
               </div>
               <Pill tone="sky">{nf(linhas.length)}</Pill>

@@ -64,7 +64,7 @@ export function Variacao({ atual, anterior, menorMelhor, rotulo = "vs. período 
   const bom = menorMelhor ? v < 0 : v > 0;
   const Icone = v >= 0 ? ArrowUpRight : ArrowDownRight;
   return (
-    <span className={cn("inline-flex items-center gap-0.5 text-[11.5px] font-semibold", bom ? "text-leaf" : "text-coral")}>
+    <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-semibold", bom ? "text-leaf" : "text-coral")}>
       <Icone className="h-3.5 w-3.5" />
       {nf(Math.abs(v) * 100, 1)}% {rotulo}
     </span>
@@ -105,7 +105,7 @@ export function Kpi({
         {texto ?? <Numero valor={valor} fmt={fmt} />}
         {unidade && <span className="ml-1 text-[12px] font-medium text-muted-foreground">{unidade}</span>}
       </p>
-      <div className="mt-1 min-h-[16px] text-[11.5px] text-muted-foreground">
+      <div className="mt-1 min-h-[16px] text-[12px] text-muted-foreground">
         {atual !== undefined ? <Variacao atual={atual ?? null} anterior={anterior ?? null} menorMelhor={menorMelhor} /> : sub}
       </div>
     </div>
@@ -177,7 +177,7 @@ export function Velocimetro({
           {animado == null ? "—" : fmt(animado)}
         </text>
       </svg>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-[12px] text-muted-foreground">
         {meta == null ? "sem meta cadastrada" : <>Meta {fmt(meta)} {cumpre != null && <span className={cumpre ? "text-leaf" : "text-coral"}>· {cumpre ? "cumprida" : "fora"}</span>}</>}
       </p>
     </div>
@@ -195,7 +195,7 @@ export function Grafico({ titulo, icon, children, altura = 280, rodape, dica, ac
       <div style={{ height: altura }}>
         <ResponsiveContainer>{children as ReactElement}</ResponsiveContainer>
       </div>
-      {rodape && <p className="mt-2 text-[11.5px] text-muted-foreground">{rodape}</p>}
+      {rodape && <p className="mt-2 text-[12px] text-muted-foreground">{rodape}</p>}
     </Card>
   );
 }
@@ -252,10 +252,10 @@ export function BarrasRank({
         <li
           key={it.chave ?? it.nome + i}
           onClick={onClick ? () => onClick(it.chave) : undefined}
-          className={cn("group grid grid-cols-[22px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1 text-[12.5px]", onClick && "cursor-pointer hover:bg-secondary/70")}
+          className={cn("group grid grid-cols-[22px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1 text-[13px]", onClick && "cursor-pointer hover:bg-secondary/70")}
           title={`${it.nome}: ${fmt(it.valor)}`}
         >
-          <span className="text-right font-mono text-[11px] text-muted-foreground">{i + 1}</span>
+          <span className="text-right font-mono text-[12px] text-muted-foreground">{i + 1}</span>
           <div className="min-w-0">
             <div className="flex items-baseline justify-between gap-2">
               <span className="truncate font-medium text-foreground">{it.nome}</span>
@@ -270,7 +270,7 @@ export function BarrasRank({
                 }}
               />
             </div>
-            {it.detalhe && <div className="mt-0.5 text-[10.5px] text-muted-foreground">{it.detalhe}</div>}
+            {it.detalhe && <div className="mt-0.5 text-[12px] text-muted-foreground">{it.detalhe}</div>}
           </div>
           <span className="font-mono text-[12px] font-semibold tabular-nums">{fmt(it.valor)}</span>
         </li>
@@ -295,7 +295,7 @@ export function MatrizCalor({ celulas, fmt = (n) => nf(n), unidade = "eventos", 
   const ordem = [1, 2, 3, 4, 5, 6, 0];
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] border-separate border-spacing-[3px] text-[10.5px]">
+      <table className="w-full min-w-[760px] border-separate border-spacing-[3px] text-[12px]">
         <thead>
           <tr>
             <th />
@@ -336,7 +336,7 @@ export function MatrizCalor({ celulas, fmt = (n) => nf(n), unidade = "eventos", 
 
 export function Aviso({ children, tom = "gold" }: { children: ReactNode; tom?: "gold" | "sky" }) {
   return (
-    <div className={cn("flex items-start gap-2 rounded-xl border px-3.5 py-2.5 text-[12.5px]", tom === "gold" ? "border-gold-line bg-gold-tint text-foreground" : "border-border bg-navy-tint")}>
+    <div className={cn("flex items-start gap-2 rounded-xl border px-3.5 py-2.5 text-[13px]", tom === "gold" ? "border-gold-line bg-gold-tint text-foreground" : "border-border bg-navy-tint")}>
       <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-navy" />
       <div>{children}</div>
     </div>

@@ -98,7 +98,7 @@ export function AlarmesOperacionaisPainel() {
       key: "sentido",
       header: "Sentido",
       align: "center",
-      render: (a) => <span className="text-[12.5px] text-ink-soft">{a.sentido === "ida" ? "Ida" : a.sentido === "volta" ? "Volta" : "—"}</span>,
+      render: (a) => <span className="text-[13px] text-ink-soft">{a.sentido === "ida" ? "Ida" : a.sentido === "volta" ? "Volta" : "—"}</span>,
     },
     {
       key: "veiculoId",
@@ -116,7 +116,7 @@ export function AlarmesOperacionaisPainel() {
       key: "em",
       header: "Hora",
       render: (a) => (
-        <span className="whitespace-nowrap font-mono text-[12.5px] text-ink-soft" title={new Date(a.em).toLocaleString("pt-BR")}>
+        <span className="whitespace-nowrap font-mono text-[13px] text-ink-soft" title={new Date(a.em).toLocaleString("pt-BR")}>
           {new Date(a.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
           <span className="ml-1.5 text-muted-foreground">({desde(a.em)})</span>
         </span>
@@ -127,7 +127,7 @@ export function AlarmesOperacionaisPainel() {
       header: "Matrícula",
       render: (a) => <span className="font-mono text-[12px] text-muted-foreground">{a.matricula ?? "—"}</span>,
     },
-    { key: "observacao", header: "Observação", render: (a) => <span className="text-[12.5px]">{a.observacao ?? "—"}</span> },
+    { key: "observacao", header: "Observação", render: (a) => <span className="text-[13px]">{a.observacao ?? "—"}</span> },
     {
       key: "pontuacao",
       header: "Pontos",
@@ -166,7 +166,7 @@ export function AlarmesOperacionaisPainel() {
 
     <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-[15px] font-semibold text-foreground">Ocorrências operacionais</h2>
+          <h2 className="text-[16px] font-semibold text-foreground">Ocorrências operacionais</h2>
           <div className="flex items-center gap-2">
             <select
               value={linhaId}
@@ -212,7 +212,7 @@ export function AlarmesOperacionaisPainel() {
               <button
                 onClick={() => setMostrarTratados((v) => !v)}
                 className={cn(
-                  "rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+                  "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
                   mostrarTratados
                     ? "bg-brand-navy text-white"
                     : "border border-border bg-white text-muted-foreground hover:bg-secondary",

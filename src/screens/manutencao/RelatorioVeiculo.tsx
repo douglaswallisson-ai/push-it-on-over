@@ -64,11 +64,11 @@ export function RelatorioVeiculo({
         </button>
       </div>
 
-      <div className="rel-veic mx-auto max-w-[860px] space-y-5 rounded-2xl bg-white p-10 text-[12.5px] text-foreground shadow-elegant">
+      <div className="rel-veic mx-auto max-w-[860px] space-y-5 rounded-2xl bg-white p-10 text-[13px] text-foreground shadow-elegant">
         <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-brand-navy">SS Telemática · relatório técnico do veículo</p>
-            <h1 className="mt-1 text-[22px] font-bold">{nome}</h1>
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-brand-navy">SS Telemática · relatório técnico do veículo</p>
+            <h1 className="mt-1 text-[20px] font-bold">{nome}</h1>
             <p className="text-muted-foreground">{[v.modelo, v.ano, v.categoria].filter(Boolean).join(" · ")}</p>
           </div>
           <div className="text-right text-[12px]">
@@ -84,7 +84,7 @@ export function RelatorioVeiculo({
             ["Plano preventivo", v.plano?.nome ?? "sem plano"],
           ].map(([a, b]) => (
             <div key={a} className="rounded-lg border border-border px-3 py-2">
-              <p className="text-[10.5px] uppercase tracking-wide text-muted-foreground">{a}</p>
+              <p className="text-[12px] uppercase tracking-wide text-muted-foreground">{a}</p>
               <p className="font-semibold">{b}</p>
             </div>
           ))}
@@ -98,7 +98,7 @@ export function RelatorioVeiculo({
           <h2 className="mb-2 text-[14px] font-bold">Sinais do veículo</h2>
           <table className="w-full border-collapse text-[12px]">
             <thead>
-              <tr className="border-b border-border text-left text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-left text-[12px] uppercase tracking-wide text-muted-foreground">
                 <th className="py-1.5">Sinal</th>
                 <th className="py-1.5">Valor</th>
                 <th className="py-1.5">Situação</th>
@@ -145,7 +145,7 @@ export function RelatorioVeiculo({
             <h2 className="mb-2 text-[14px] font-bold">Manutenção preventiva</h2>
             <table className="w-full border-collapse text-[12px]">
               <thead>
-                <tr className="border-b border-border text-left text-[10.5px] uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b border-border text-left text-[12px] uppercase tracking-wide text-muted-foreground">
                   <th className="py-1.5">Serviço</th>
                   <th className="py-1.5">Último</th>
                   <th className="py-1.5">Próximo</th>
@@ -211,11 +211,11 @@ export function RelatorioVeiculo({
 
         <div className="grid grid-cols-2 gap-8 border-t border-border pt-4">
           <div>
-            <p className="text-[10.5px] uppercase tracking-wide text-muted-foreground">Responsável técnico</p>
+            <p className="text-[12px] uppercase tracking-wide text-muted-foreground">Responsável técnico</p>
             <input value={responsavel} onChange={(e) => setResponsavel(e.target.value)} className="rel-nao-imprimir mt-1 h-9 w-full rounded-lg border border-border px-3 text-[13px]" />
             <p className="rel-so-impressao hidden font-semibold">{responsavel || "—"}</p>
           </div>
-          <div className="text-right text-[11px] text-muted-foreground">
+          <div className="text-right text-[12px] text-muted-foreground">
             Sinais da última leitura do equipamento embarcado. As faixas de referência são as usadas pela plataforma e podem ser ajustadas por cliente.
           </div>
         </div>

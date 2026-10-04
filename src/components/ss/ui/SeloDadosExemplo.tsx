@@ -61,7 +61,7 @@ export function SeloDadosExemplo({
       <span
         title={motivo}
         className={cn(
-          "inline-flex items-center gap-1 rounded-full bg-gold-tint px-2 py-0.5 text-[10.5px] font-semibold text-gold",
+          "inline-flex items-center gap-1 rounded-full bg-gold-tint px-2 py-0.5 text-[12px] font-semibold text-gold",
           className,
         )}
       >
@@ -79,7 +79,7 @@ export function SeloDadosExemplo({
       )}
     >
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-      <p className="text-[12.5px] leading-relaxed text-gold">
+      <p className="text-[13px] leading-relaxed text-gold">
         <strong>Esta tela ainda usa dados de exemplo.</strong> {motivo}{" "}
         <span className="opacity-80">
           O restante do sistema já está lendo da API — só este módulo continua com exemplo.

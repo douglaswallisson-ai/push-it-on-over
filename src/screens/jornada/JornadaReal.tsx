@@ -138,7 +138,7 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
         <CalendarDays className="h-4 w-4 text-muted-foreground" />
         <input type="date" value={dia} max={isoDia(new Date())} onChange={(e) => setDia(e.target.value)} aria-label="Dia" className="h-9 rounded-lg border border-border bg-white px-3 text-[13px]" />
         {r && (
-          <span className="text-[12.5px] text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground">
             Regras de transporte de <b>{r.operacao}</b>: jornada {r.regra.jornada_h} h + até {r.regra.extra_max_h} h extras · direção contínua até{" "}
             {minutos(r.regra.direcao_continua_min)} · 30 min de descanso a cada {minutos(r.regra.descanso_a_cada_min ?? r.regra.direcao_continua_min)} · refeição {r.regra.refeicao_min} min · interjornada {r.regra.interjornada_h} h seguidas (CLT 235-C, CTB 67-C, STF ADI 5322)
           </span>
@@ -163,7 +163,7 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
           </div>
 
           {r.totais.trechos_sem_identificacao > 0 && (
-            <p className="rounded-xl border border-gold-line bg-gold-tint px-4 py-2.5 text-[12.5px]">
+            <p className="rounded-xl border border-gold-line bg-gold-tint px-4 py-2.5 text-[13px]">
               {r.totais.trechos_sem_identificacao.toLocaleString("pt-BR")} trechos de viagem rodaram sem motorista identificado (ou com o cadastro "Não Informado").
               A jornada desses motoristas não pode ser apurada — vale reforçar a identificação no veículo.
             </p>
@@ -177,13 +177,13 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
               </Chip>
             ))}
             <Chip ativo={filtro === "conferir"} onClick={() => setFiltro("conferir")}>A conferir ({r.totais.a_conferir})</Chip>
-            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar motorista" aria-label="Buscar motorista" className="ml-auto h-8 w-48 rounded-lg border border-border bg-white px-3 text-[12.5px]" />
+            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar motorista" aria-label="Buscar motorista" className="ml-auto h-8 w-48 rounded-lg border border-border bg-white px-3 text-[13px]" />
           </div>
 
           <Card title="Jornadas" icon={Scale} bodyClassName="p-0">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-[13px]">
-                <thead className="bg-secondary/60 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <thead className="bg-secondary/60 text-[12px] uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-4 py-2.5 text-left font-semibold">Motorista</th>
                     <th className="px-3 py-2.5 text-left font-semibold">Início – fim</th>
@@ -203,13 +203,13 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
                       <tr key={l.driver_id} className="cursor-pointer hover:bg-secondary/40" onClick={() => onLinha(l)}>
                         <td className="px-4 py-2.5">
                           <span className="block font-medium">{capital(l.nome)}</span>
-                          <span className="block text-[11px] text-muted-foreground">
+                          <span className="block text-[12px] text-muted-foreground">
                             {j.fonte === "diario" ? "diário de bordo" : "telemetria"} · {j.veiculos.slice(0, 2).join(", ")}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-[12.5px]">
+                        <td className="px-3 py-2.5 font-mono text-[13px]">
                           {hm(j.inicio)} – {hm(j.fim)}
-                          {j.fim.slice(0, 10) !== j.inicio.slice(0, 10) && <span className="ml-1 text-[10.5px] text-muted-foreground">+1</span>}
+                          {j.fim.slice(0, 10) !== j.inicio.slice(0, 10) && <span className="ml-1 text-[12px] text-muted-foreground">+1</span>}
                         </td>
                         <td className={cn("px-3 py-2.5 text-right font-mono", j.extra_h > 0 && "font-semibold")}>{horas(j.jornada_h)}</td>
                         <td className="px-3 py-2.5 text-right font-mono">{horas(j.direcao_h)}</td>
@@ -240,7 +240,7 @@ function JornadaDoDia({ g, dia, setDia, onLinha }: { g: string; dia: string; set
               </table>
             </div>
           </Card>
-          <p className="text-[11.5px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             Jornada pela telemetria: do primeiro ao último trecho de viagem com o motorista identificado; pausa = parada de {r.pausa_min} min ou mais;
             jornadas são separadas por 6 h ou mais sem rodar. É uma estimativa — o motorista trabalha antes de ligar e depois de desligar o veículo.
           </p>
@@ -309,36 +309,36 @@ function DetalheJornada({ g, dia, l, onClose, onEspelho }: { g: string; dia: str
                       ["Interjornada", horas(j.interjornada_h)],
                     ].map(([a, b]) => (
                       <div key={a} className="rounded-xl border border-border px-3 py-2">
-                        <p className="text-[11px] text-muted-foreground">{a}</p>
-                        <p className="font-mono text-[15px] font-semibold">{b}</p>
+                        <p className="text-[12px] text-muted-foreground">{a}</p>
+                        <p className="font-mono text-[16px] font-semibold">{b}</p>
                       </div>
                     ))}
                   </div>
                   {j.a_conferir && (
-                    <p className="rounded-lg bg-secondary/60 px-3 py-2 text-[12.5px]">
+                    <p className="rounded-lg bg-secondary/60 px-3 py-2 text-[13px]">
                       Jornada acima de 16 h: provavelmente o motorista não fez logout e outro dirigiu com a identificação dele. Confira antes de tratar como infração.
                     </p>
                   )}
                   {j.infracoes.map((i) => (
-                    <p key={i.regra} className="rounded-lg bg-coral-tint px-3 py-2 text-[12.5px]">
+                    <p key={i.regra} className="rounded-lg bg-coral-tint px-3 py-2 text-[13px]">
                       <b>{i.titulo}:</b> {i.detalhe}
                     </p>
                   ))}
                   {j.entrada_diario && (
-                    <p className="text-[12.5px] text-muted-foreground">
+                    <p className="text-[13px] text-muted-foreground">
                       Diário de bordo: entrou {hm(j.entrada_diario)}, saiu {hm(j.saida_diario)}.
                     </p>
                   )}
                   <div>
                     <p className="mb-1 text-[13px] font-semibold">Pausas de {q.data?.pausa_min ?? 10} min ou mais</p>
-                    <p className="text-[12.5px] text-muted-foreground">
+                    <p className="text-[13px] text-muted-foreground">
                       {j.pausas.length ? j.pausas.map((p) => `${p.de}–${p.ate} (${p.min} min)`).join(" · ") : "Nenhuma pausa registrada."}
                     </p>
                   </div>
                 </>
               )}
               {l.escala && (
-                <p className="text-[12.5px]">
+                <p className="text-[13px]">
                   Escala: <Pill tone={ESCALA[l.escala.situacao].tom}>{ESCALA[l.escala.situacao].rotulo}</Pill>
                   {l.escala.planejado && ` planejado ${l.escala.planejado}`}
                   {l.escala.atraso_min != null && ` · início ${l.escala.atraso_min > 0 ? `${l.escala.atraso_min} min depois` : `${-l.escala.atraso_min} min antes`}`}
@@ -353,7 +353,7 @@ function DetalheJornada({ g, dia, l, onClose, onEspelho }: { g: string; dia: str
               >
                 <p className="text-[13px] font-semibold">Justificar o dia</p>
                 {l.justificativa && (
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-[13px] text-muted-foreground">
                     Atual: {l.justificativa.motivo}
                     {l.justificativa.texto ? ` — ${l.justificativa.texto}` : ""}
                     {l.justificativa.folga ? " (folga)" : ""}
@@ -366,7 +366,7 @@ function DetalheJornada({ g, dia, l, onClose, onEspelho }: { g: string; dia: str
                   ))}
                 </select>
                 <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={2} placeholder="Detalhes (opcional)" className="w-full rounded-lg border border-border px-3 py-2 text-[13px]" />
-                <label className="flex items-center gap-2 text-[12.5px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={folga} onChange={(e) => setFolga(e.target.checked)} /> Era folga (não conta como falta)
                 </label>
                 <button type="submit" disabled={!motivo || salvar.isPending} className="rounded-lg bg-brand-navy px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">
@@ -407,7 +407,7 @@ function LinhaDoDia({ j }: { j: Jornada }) {
           return <div key={i} className="absolute inset-y-1 rounded bg-white/90" style={{ left: pos(a), width: `calc(${pos(b)} - ${pos(a)})` }} title={`Pausa ${p.de}–${p.ate}`} />;
         })}
       </div>
-      <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
+      <div className="mt-1 flex justify-between font-mono text-[12px] text-muted-foreground">
         {[0, 6, 12, 18, 24, 30, 36].map((h) => (
           <span key={h}>{String(h % 24).padStart(2, "0")}h</span>
         ))}
@@ -456,7 +456,7 @@ function EscalaAba({ g, dia, setDia, onLinha }: { g: string; dia: string; setDia
       <Card
         title="Planejado × realizado"
         icon={CalendarDays}
-        action={<input type="date" value={dia} onChange={(e) => setDia(e.target.value)} aria-label="Dia" className="h-8 rounded-lg border border-border bg-white px-2 text-[12.5px]" />}
+        action={<input type="date" value={dia} onChange={(e) => setDia(e.target.value)} aria-label="Dia" className="h-8 rounded-lg border border-border bg-white px-2 text-[13px]" />}
         bodyClassName="p-4"
       >
         {q.isLoading ? (
@@ -478,7 +478,7 @@ function EscalaAba({ g, dia, setDia, onLinha }: { g: string; dia: string; setDia
                   <button type="button" onClick={() => onLinha(l)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-secondary/40">
                     <span className="min-w-0 flex-1">
                       <span className="block text-[13px] font-medium">{capital(l.nome)}</span>
-                      <span className="block font-mono text-[11.5px] text-muted-foreground">
+                      <span className="block font-mono text-[12px] text-muted-foreground">
                         planejado {l.escala!.planejado ?? "—"} · realizado {l.jornada ? `${hm(l.jornada.inicio)}–${hm(l.jornada.fim)}` : "não dirigiu"}
                       </span>
                     </span>
@@ -501,7 +501,7 @@ function EscalaAba({ g, dia, setDia, onLinha }: { g: string; dia: string; setDia
           }}
         >
           <label className="block">
-            <span className="mb-1 block text-[12.5px] font-medium">Motorista</span>
+            <span className="mb-1 block text-[13px] font-medium">Motorista</span>
             <select value={driver} onChange={(e) => setDriver(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-white px-3 text-[13px]">
               <option value="">Escolha</option>
               {(mot.data ?? []).map((m) => (
@@ -511,16 +511,16 @@ function EscalaAba({ g, dia, setDia, onLinha }: { g: string; dia: string; setDia
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="mb-1 block text-[12.5px] font-medium">De</span>
+              <span className="mb-1 block text-[13px] font-medium">De</span>
               <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="h-9 w-full rounded-lg border border-border px-3 text-[13px]" />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[12.5px] font-medium">Até</span>
+              <span className="mb-1 block text-[13px] font-medium">Até</span>
               <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="h-9 w-full rounded-lg border border-border px-3 text-[13px]" />
             </label>
           </div>
           <div>
-            <span className="mb-1 block text-[12.5px] font-medium">Dias da semana</span>
+            <span className="mb-1 block text-[13px] font-medium">Dias da semana</span>
             <div className="flex gap-1">
               {DIA_SEMANA.map((n, i) => (
                 <button
@@ -543,22 +543,22 @@ function EscalaAba({ g, dia, setDia, onLinha }: { g: string; dia: string; setDia
           </div>
           <div className="grid grid-cols-3 gap-3">
             <label className="block">
-              <span className="mb-1 block text-[12.5px] font-medium">Entrada</span>
+              <span className="mb-1 block text-[13px] font-medium">Entrada</span>
               <input type="time" value={hIni} onChange={(e) => setHIni(e.target.value)} className="h-9 w-full rounded-lg border border-border px-2 text-[13px]" />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[12.5px] font-medium">Saída</span>
+              <span className="mb-1 block text-[13px] font-medium">Saída</span>
               <input type="time" value={hFim} onChange={(e) => setHFim(e.target.value)} className="h-9 w-full rounded-lg border border-border px-2 text-[13px]" />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[12.5px] font-medium">Linha (opcional)</span>
+              <span className="mb-1 block text-[13px] font-medium">Linha (opcional)</span>
               <input value={linha} onChange={(e) => setLinha(e.target.value)} className="h-9 w-full rounded-lg border border-border px-2 text-[13px]" />
             </label>
           </div>
           <button type="submit" disabled={!driver || !dias.length || salvar.isPending} className="w-full rounded-lg bg-brand-navy px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40">
             {salvar.isPending ? "Salvando…" : `Escalar em ${dias.length} dia${dias.length === 1 ? "" : "s"}`}
           </button>
-          <p className="text-[11.5px] text-muted-foreground">Saída antes da entrada = turno que vira a noite. Escalar de novo no mesmo dia substitui o horário.</p>
+          <p className="text-[12px] text-muted-foreground">Saída antes da entrada = turno que vira a noite. Escalar de novo no mesmo dia substitui o horário.</p>
         </form>
       </Card>
     </div>
@@ -617,7 +617,7 @@ function EspelhoAba({ g, motorista, setMotorista }: { g: string; motorista: numb
         </select>
         <input type="date" value={inicio} onChange={(ev) => setInicio(ev.target.value)} aria-label="De" className="h-9 rounded-lg border border-border bg-white px-3 text-[13px]" />
         <input type="date" value={fim} onChange={(ev) => setFim(ev.target.value)} aria-label="Até" className="h-9 rounded-lg border border-border bg-white px-3 text-[13px]" />
-        <button type="button" onClick={baixarCsv} disabled={!e} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-[12.5px] font-medium hover:bg-secondary disabled:opacity-40">
+        <button type="button" onClick={baixarCsv} disabled={!e} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-[13px] font-medium hover:bg-secondary disabled:opacity-40">
           <Download className="h-4 w-4" /> Baixar para a folha (CSV)
         </button>
       </div>
@@ -642,7 +642,7 @@ function EspelhoAba({ g, motorista, setMotorista }: { g: string; motorista: numb
           <Card title={`Espelho de ponto · ${e.nome ? capital(e.nome) : `motorista ${e.driver_id}`}`} icon={FileText} bodyClassName="p-0">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-[13px]">
-                <thead className="bg-secondary/60 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <thead className="bg-secondary/60 text-[12px] uppercase tracking-wide text-muted-foreground">
                   <tr>
                     {["Dia", "Entrada", "Saída", "Jornada", "Direção", "Extras", "Noturno", "Escala", "Situação"].map((h, i) => (
                       <th key={h} className={cn("px-3 py-2.5 font-semibold", i >= 3 && i <= 6 ? "text-right" : "text-left")}>{h}</th>

@@ -113,27 +113,27 @@ export default function SinaisCAN() {
         <span className="whitespace-nowrap font-mono text-[12px]">{r.local_time?.slice(11, 19)}</span>
       ),
     },
-    { key: "speed", header: "Velocidade", align: "right", render: (r) => <span className="font-mono text-[12.5px]">{r.speed ?? "—"}</span> },
-    { key: "can_rpm", header: "RPM", align: "right", render: (r) => <span className="font-mono text-[12.5px]">{r.can_rpm ?? "—"}</span> },
-    { key: "can_gear", header: "Marcha", align: "center", render: (r) => <span className="font-mono text-[12.5px]">{r.can_gear ?? "—"}</span> },
+    { key: "speed", header: "Velocidade", align: "right", render: (r) => <span className="font-mono text-[13px]">{r.speed ?? "—"}</span> },
+    { key: "can_rpm", header: "RPM", align: "right", render: (r) => <span className="font-mono text-[13px]">{r.can_rpm ?? "—"}</span> },
+    { key: "can_gear", header: "Marcha", align: "center", render: (r) => <span className="font-mono text-[13px]">{r.can_gear ?? "—"}</span> },
     {
       key: "can_accel_pedal_percent",
       header: "Acelerador",
       align: "right",
-      render: (r) => <span className="font-mono text-[12.5px]">{r.can_accel_pedal_percent != null ? `${r.can_accel_pedal_percent}%` : "—"}</span>,
+      render: (r) => <span className="font-mono text-[13px]">{r.can_accel_pedal_percent != null ? `${r.can_accel_pedal_percent}%` : "—"}</span>,
     },
     {
       key: "can_engine_torque_percent",
       header: "Torque",
       align: "right",
-      render: (r) => <span className="font-mono text-[12.5px]">{r.can_engine_torque_percent != null ? `${r.can_engine_torque_percent}%` : "—"}</span>,
+      render: (r) => <span className="font-mono text-[13px]">{r.can_engine_torque_percent != null ? `${r.can_engine_torque_percent}%` : "—"}</span>,
     },
     {
       key: "can_engine_coolant_temp",
       header: "Temp. líquido",
       align: "right",
       render: (r) => (
-        <span className={cn("font-mono text-[12.5px]", (r.can_engine_coolant_temp ?? 0) > LIMITES.tempAlta ? "font-semibold text-coral" : "")}>
+        <span className={cn("font-mono text-[13px]", (r.can_engine_coolant_temp ?? 0) > LIMITES.tempAlta ? "font-semibold text-coral" : "")}>
           {r.can_engine_coolant_temp != null ? `${r.can_engine_coolant_temp}°` : "—"}
         </span>
       ),
@@ -142,13 +142,13 @@ export default function SinaisCAN() {
       key: "can_turbo_charger_pressure",
       header: "Turbo",
       align: "right",
-      render: (r) => <span className="font-mono text-[12.5px]">{r.can_turbo_charger_pressure ?? "—"}</span>,
+      render: (r) => <span className="font-mono text-[13px]">{r.can_turbo_charger_pressure ?? "—"}</span>,
     },
     {
       key: "can_engine_oil_pressure",
       header: "Óleo",
       align: "right",
-      render: (r) => <span className="font-mono text-[12.5px]">{r.can_engine_oil_pressure ?? "—"}</span>,
+      render: (r) => <span className="font-mono text-[13px]">{r.can_engine_oil_pressure ?? "—"}</span>,
     },
     {
       key: "estados",
@@ -197,7 +197,7 @@ export default function SinaisCAN() {
         {usandoMock() ? (
           <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Esta tela lê direto do barramento CAN — não tem versão de exemplo. Alterne para{" "}
               <strong>API real</strong> em Console de gestão › Configurações.
             </p>
@@ -253,7 +253,7 @@ export default function SinaisCAN() {
                 </p>
                 <ul className="space-y-0.5">
                   {alertas.map((a, i) => (
-                    <li key={i} className="text-[12.5px] text-coral">
+                    <li key={i} className="text-[13px] text-coral">
                       · {a}
                     </li>
                   ))}
@@ -270,7 +270,7 @@ export default function SinaisCAN() {
                   return (
                     <div key={n} className="rounded-xl border border-border p-3">
                       <div className="flex items-baseline justify-between">
-                        <span className="text-[12.5px] text-muted-foreground">Circuito {n}</span>
+                        <span className="text-[13px] text-muted-foreground">Circuito {n}</span>
                         <span className={cn("font-mono text-[16px] font-bold", baixa ? "text-coral" : "text-foreground")}>
                           {v != null ? `${v} bar` : "—"}
                         </span>
@@ -285,7 +285,7 @@ export default function SinaisCAN() {
                   );
                 })}
               </div>
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Os dois circuitos são independentes por segurança: se um falha, o outro mantém o freio. Queda em
                 apenas um indica vazamento localizado; nos dois, problema no compressor.
               </p>
@@ -321,7 +321,7 @@ export default function SinaisCAN() {
                 </>
               )}
 
-              <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
                 <Info className="mt-0.5 h-3 w-3 shrink-0" />
                 São 22 sinais por posição, lidos do barramento CAN. Nem todo veículo publica todos — depende da
                 geração do motor e do que o fabricante expõe. Campo vazio significa sinal ausente, não valor zero.

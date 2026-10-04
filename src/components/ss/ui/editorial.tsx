@@ -25,7 +25,7 @@ export function Eyebrow({ tone = "navy", children }: { tone?: Tone; children: Re
   return (
     <p
       className={cn(
-        "mb-3 flex items-center gap-2 font-mono text-[11.5px] font-semibold uppercase tracking-[0.13em]",
+        "mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.13em]",
         TONE[tone].text,
       )}
     >
@@ -45,7 +45,7 @@ export function SectionTitle({ children, className }: { children: React.ReactNod
 
 export function SectionSub({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-7 max-w-[70ch] text-[15px] italic leading-[1.55] text-muted-foreground">
+    <p className="mb-7 max-w-[70ch] text-[16px] italic leading-[1.55] text-muted-foreground">
       {children}
     </p>
   );
@@ -89,11 +89,11 @@ export function StatCard({
         t.line,
       )}
     >
-      <div className={cn("font-display text-[27px] font-semibold leading-[1.1] tabular-nums", t.text)}>
+      <div className={cn("font-display text-[30px] font-semibold leading-[1.1] tabular-nums", t.text)}>
         {value}
       </div>
       <div className="mt-2 text-xs leading-[1.35] text-ink-soft">{label}</div>
-      {delta && <div className="mt-1.5 font-mono text-[10.5px] text-muted-foreground">{delta}</div>}
+      {delta && <div className="mt-1.5 font-mono text-[12px] text-muted-foreground">{delta}</div>}
     </div>
   );
 }
@@ -112,7 +112,7 @@ export function InfoCard({
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card px-6 py-5 shadow-[0_1px_2px_rgba(13,13,13,.05)] transition-all hover:-translate-y-0.5 hover:border-[#d7dee8] hover:shadow-card">
-      <h4 className={cn("mb-2 text-[16.5px] font-semibold", TONE[tone].text)}>{title}</h4>
+      <h4 className={cn("mb-2 text-[16px] font-semibold", TONE[tone].text)}>{title}</h4>
       <div className="text-sm leading-[1.58] text-ink-soft">{children}</div>
       {footer && <div className="mt-4 border-t border-border pt-3">{footer}</div>}
     </div>
@@ -132,12 +132,12 @@ export function Callout({
   return (
     <div className="my-6 rounded-2xl bg-deep px-8 py-7 text-[#e3eefa] shadow-card">
       {eyebrow && (
-        <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.06em] text-[#a9c4e3]">
+        <div className="mb-4 font-mono text-[12px] uppercase tracking-[0.06em] text-[#a9c4e3]">
           {eyebrow}
         </div>
       )}
-      <h4 className="mb-3 text-[18.5px] font-semibold text-white">{title}</h4>
-      <div className="text-[14.5px] leading-[1.62]">{children}</div>
+      <h4 className="mb-3 text-[20px] font-semibold text-white">{title}</h4>
+      <div className="text-[14px] leading-[1.62]">{children}</div>
     </div>
   );
 }
@@ -147,7 +147,7 @@ export function InsightBar({ tone = "navy", children }: { tone?: Tone; children:
   return (
     <p
       className={cn(
-        "my-6 border-l-[3px] py-4 pl-5 pr-4 text-[14.5px] font-semibold",
+        "my-6 border-l-[3px] py-4 pl-5 pr-4 text-[14px] font-semibold",
         TONE[tone].text,
         tone === "navy" ? "border-l-primary" : "border-l-current",
         TONE[tone].tint,
@@ -165,7 +165,7 @@ export function Tag({ tone = "navy", children }: { tone?: Tone; children: React.
   return (
     <span
       className={cn(
-        "inline-block whitespace-nowrap rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold",
+        "inline-block whitespace-nowrap rounded-md px-2 py-0.5 font-mono text-[12px] font-semibold",
         t.tint,
         t.text,
       )}

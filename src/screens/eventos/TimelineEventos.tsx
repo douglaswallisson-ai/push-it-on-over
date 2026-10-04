@@ -112,7 +112,7 @@ export default function TimelineEventos({ alternar }: { alternar: React.ReactNod
                 setSelecionado(null);
               }}
               aria-pressed={agrupar === id}
-              className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-medium", agrupar === id ? "bg-white shadow-sm" : "text-muted-foreground")}
+              className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium", agrupar === id ? "bg-white shadow-sm" : "text-muted-foreground")}
             >
               <Ic className="h-3.5 w-3.5" /> {rot}
             </button>
@@ -143,7 +143,7 @@ export default function TimelineEventos({ alternar }: { alternar: React.ReactNod
                 className="h-9 w-full rounded-lg border border-border bg-secondary/40 pl-8 pr-3 text-[13px]"
               />
             </label>
-            <p className="px-3 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="px-3 pt-2 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
               {nf(lista.length)} {agrupar === "veiculo" ? "veículos" : "motoristas"} · mais críticos primeiro
             </p>
             <ul className="flex-1 overflow-y-auto p-2">
@@ -156,11 +156,11 @@ export default function TimelineEventos({ alternar }: { alternar: React.ReactNod
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[13px] font-medium" title={l.titulo}>{capital(l.titulo)}</span>
-                      <span className="block text-[11px] text-muted-foreground">{duracao(l.minutos_em_viagem)} rodando</span>
+                      <span className="block text-[12px] text-muted-foreground">{duracao(l.minutos_em_viagem)} rodando</span>
                     </span>
                     <span className="text-right">
                       <span className={cn("block font-mono text-[13px] font-semibold", l.criticos ? "text-coral" : "text-foreground")}>{nf(l.criticos)}</span>
-                      <span className="block text-[10.5px] text-muted-foreground">críticos</span>
+                      <span className="block text-[12px] text-muted-foreground">críticos</span>
                     </span>
                   </button>
                 </li>
@@ -193,7 +193,7 @@ function Detalhe({ r, l, agrupar }: { r: Resposta; l: Linha; agrupar: "veiculo" 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[16px] font-semibold">{capital(l.titulo)}</p>
-          {l.sub && <p className="truncate text-[12.5px] text-muted-foreground">{agrupar === "veiculo" ? "Motoristas: " : "Veículos: "}{capital(l.sub)}</p>}
+          {l.sub && <p className="truncate text-[13px] text-muted-foreground">{agrupar === "veiculo" ? "Motoristas: " : "Veículos: "}{capital(l.sub)}</p>}
         </div>
         <div className="flex gap-4 text-right">
           {[
@@ -203,8 +203,8 @@ function Detalhe({ r, l, agrupar }: { r: Resposta; l: Linha; agrupar: "veiculo" 
             ["Por hora", l.eventos_por_hora != null ? nf(l.eventos_por_hora, 1) : "—"],
           ].map(([a, b]) => (
             <div key={a}>
-              <p className="text-[11px] text-muted-foreground">{a}</p>
-              <p className={cn("font-mono text-[15px] font-semibold", a === "Críticos" && l.criticos > 0 && "text-coral")}>{b}</p>
+              <p className="text-[12px] text-muted-foreground">{a}</p>
+              <p className={cn("font-mono text-[16px] font-semibold", a === "Críticos" && l.criticos > 0 && "text-coral")}>{b}</p>
             </div>
           ))}
         </div>
@@ -216,7 +216,7 @@ function Detalhe({ r, l, agrupar }: { r: Resposta; l: Linha; agrupar: "veiculo" 
             <span />
             <div className="relative mr-4 h-5">
               {marcas.map((m, i) => (
-                <span key={i} className="absolute -translate-x-1/2 font-mono text-[10.5px] text-muted-foreground" style={{ left: `${m.pct}%` }}>
+                <span key={i} className="absolute -translate-x-1/2 font-mono text-[12px] text-muted-foreground" style={{ left: `${m.pct}%` }}>
                   {m.rotulo}
                 </span>
               ))}
@@ -240,11 +240,11 @@ function Detalhe({ r, l, agrupar }: { r: Resposta; l: Linha; agrupar: "veiculo" 
         </div>
       </div>
       {l.eventos.length > 6 && (
-        <button type="button" onClick={() => setTodos(!todos)} className="mt-3 text-[12.5px] font-medium text-brand-navy hover:underline">
+        <button type="button" onClick={() => setTodos(!todos)} className="mt-3 text-[13px] font-medium text-brand-navy hover:underline">
           {todos ? "Mostrar só os 6 mais frequentes" : `Mostrar todos os ${l.eventos.length} tipos de evento`}
         </button>
       )}
-      <p className="mt-3 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 text-[12px] text-muted-foreground">
         Barras verdes: viagens. Marcas: eventos no minuto em que aconteceram (vermelho crítico, amarelo atenção, azul leve). Passe o mouse para ver a hora.
       </p>
     </div>

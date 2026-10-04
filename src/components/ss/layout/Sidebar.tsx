@@ -68,33 +68,14 @@ const isGroup = (e: Entry): e is Group => "items" in e;
  */
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
-  {
-    label: "Cadastros",
-    icon: ClipboardList,
-    items: [
-      { label: "Alarme", to: "/app/cadastros/alarme" },
-      { label: "Cerca", to: "/app/cadastros/cerca" },
-      { label: "Combustível", to: "/app/cadastros/combustivel" },
-      { label: "Dispositivos", to: "/app/cadastros/dispositivos" },
-      { label: "Equipamentos por veículo", to: "/app/cadastros/equipamentos" },
-      { label: "Garagens", to: "/app/cadastros/garagens" },
-      { label: "Grupos", to: "/app/cadastros/grupos" },
-      { label: "Linhas", to: "/app/cadastros/linhas" },
-      { label: "Pontos de parada", to: "/app/cadastros/pontos" },
-      { label: "Pontos e cercas", to: "/app/cadastros/pontos-interesse" },
-      { label: "Unidades", to: "/app/cadastros/unidades" },
-      { label: "Usuários", to: "/app/cadastros/usuarios" },
-    ],
-  },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
   {
     label: "Pessoas",
     icon: Users,
     items: [
       { label: "Motoristas", to: "/app/motoristas" },
-      { label: "Jornada de trabalho", to: "/app/pessoas/jornada" },
-      { label: "Controle de escala", to: "/app/fretamento/escala" },
-      { label: "Ponto", to: "/app/fretamento/ponto" },
+      // Jornada, escala e ponto são abas da mesma tela: uma entrada só.
+      { label: "Jornada, escala e ponto", to: "/app/pessoas/jornada" },
       { label: "Multas", to: "/app/pessoas/multas", beta: true },
     ],
   },
@@ -104,16 +85,32 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
-      { label: "Desempenho da frota", to: "/app/frota/desempenho" },
-      { label: "Videotelemetria", to: "/app/seguranca/video" },
       { label: "Percurso do dia", to: "/app/frota/tracking" },
-      { label: "Checklist", to: "/app/frota/checklist" },
-      { label: "Sinais do motor", to: "/app/frota/sinais" },
+      { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
+      { label: "Checklist", to: "/app/frota/checklist", beta: true },
     ],
   },
-  // Plano de viagem para a gerenciadora de risco (carga rodoviária).
-  { label: "Escala de viagem", icon: ClipboardCheck, to: "/app/escala-viagem" },
+  {
+    label: "Segurança",
+    icon: Siren,
+    items: [
+      { label: "Eventos", to: "/app/eventos" },
+      { label: "Videotelemetria", to: "/app/seguranca/video" },
+    ],
+  },
+  {
+    label: "Manutenção",
+    icon: Wrench,
+    items: [
+      // As ordens de serviço ficam dentro do painel (aba "Corretiva e ordens").
+      { label: "Painel de manutenção", to: "/app/manutencao" },
+      { label: "Sinais do motor", to: "/app/frota/sinais" },
+      { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
+      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
+      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
+    ],
+  },
   {
     label: "Transporte urbano",
     icon: Route,
@@ -121,6 +118,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
       { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
+      // Mesma tela atende urbano e fretamento: uma entrada só.
       { label: "Contagem de passageiros", to: "/app/urbano/passageiros" },
     ],
   },
@@ -128,29 +126,34 @@ const NAV_PRIMARY: Entry[] = [
     label: "Fretamento",
     icon: Bus,
     items: [
+      // "Nova viagem" é botão dentro de Viagens, não item de menu.
       { label: "Viagens", to: "/app/fretamento/viagens" },
-      { label: "Nova viagem", to: "/app/fretamento/viagens/nova" },
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
-      { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
-    ],
-  },
-  // Serve às duas modalidades, por isso não fica dentro de nenhuma.
-  { label: "Eventos", icon: Siren, to: "/app/eventos" },
-  {
-    label: "Manutenção",
-    icon: Wrench,
-    items: [
-      { label: "Manutenção", to: "/app/manutencao", beta: true },
-      { label: "Ordens de serviço", to: "/app/manutencao/ordens", beta: true },
-      { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
-      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
-      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
     ],
   },
   { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
   { label: "IA Ops Advisor", icon: Sparkles, to: "/app/estrategico" },
   { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
+  {
+    label: "Cadastros",
+    icon: ClipboardList,
+    items: [
+      { label: "Alarme", to: "/app/cadastros/alarme" },
+      { label: "Combustível", to: "/app/cadastros/combustivel" },
+      { label: "Dispositivos", to: "/app/cadastros/dispositivos" },
+      { label: "Equipamentos por veículo", to: "/app/cadastros/equipamentos" },
+      { label: "Garagens", to: "/app/cadastros/garagens" },
+      { label: "Grupos", to: "/app/cadastros/grupos" },
+      { label: "Linhas", to: "/app/cadastros/linhas" },
+      { label: "Pontos de parada", to: "/app/cadastros/pontos" },
+      { label: "Pontos e cercas", to: "/app/cadastros/pontos-interesse" },
+      { label: "Cercas com alerta", to: "/app/cadastros/cerca", beta: true },
+      { label: "Unidades", to: "/app/cadastros/unidades" },
+      { label: "Usuários", to: "/app/cadastros/usuarios" },
+    ],
+  },
   { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 
@@ -159,7 +162,7 @@ const NAV_SECONDARY: Entry[] = [
     label: "Premiação",
     icon: Award,
     items: [
-      { label: "Acompanhamento", to: "/app/premiacao", beta: true },
+      { label: "Acompanhamento", to: "/app/premiacao" },
       { label: "Metas e pesos", to: "/app/premiacao/metas" },
     ],
   },
@@ -263,7 +266,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           {/* Divisor entre o dia a dia e os itens de apoio. */}
           <div className="my-2.5 px-4">
             {expanded ? (
-              <span className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-white/35">
+              <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-white/35">
                 Gestão e configuração
               </span>
             ) : (
@@ -271,7 +274,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             )}
           </div>
 
-          {NAV_SECONDARY.map((entry) => (
+          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte")).map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}
@@ -300,8 +303,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               <ArrowLeftRight className="h-4 w-4 shrink-0" />
               {expanded && (
                 <span className="min-w-0 leading-tight">
-                  <span className="block truncate text-[12.5px] font-medium">Console de gestão</span>
-                  <span className="block truncate text-[10.5px] text-white/45">contratos, perfis e plataforma</span>
+                  <span className="block truncate text-[13px] font-medium">Console de gestão</span>
+                  <span className="block truncate text-[12px] text-white/45">contratos, perfis e plataforma</span>
                 </span>
               )}
             </NavLink>
@@ -316,7 +319,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             {expanded && (
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="truncate text-[13px] font-semibold text-white">{nomeUsuario}</div>
-                <div className="truncate text-[11px] text-white/55">{orgUsuario}</div>
+                <div className="truncate text-[12px] text-white/55">{orgUsuario}</div>
               </div>
             )}
             {expanded && !lerEmbutido() && (
@@ -394,10 +397,10 @@ function LeafRow({
     >
       <Icon className="h-[18px] w-[18px] shrink-0" />
       {expanded && (
-        <span className="whitespace-nowrap text-[13.5px] font-medium">{entry.label}</span>
+        <span className="whitespace-nowrap text-[14px] font-medium">{entry.label}</span>
       )}
       {expanded && entry.badge && (
-        <span className="ml-auto rounded-full bg-white/15 px-1.5 py-0.5 text-[10.5px] font-semibold">
+        <span className="ml-auto rounded-full bg-white/15 px-1.5 py-0.5 text-[12px] font-semibold">
           {entry.badge}
         </span>
       )}
@@ -432,7 +435,7 @@ function GroupRow({
         <Icon className="h-[18px] w-[18px] shrink-0" />
         {expanded && (
           <>
-            <span className="whitespace-nowrap text-[13.5px] font-medium">{entry.label}</span>
+            <span className="whitespace-nowrap text-[14px] font-medium">{entry.label}</span>
             <ChevronRight
               className={cn("ml-auto h-3.5 w-3.5 transition-transform", open && "rotate-90")}
             />
@@ -454,7 +457,7 @@ function GroupRow({
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
-                  "block whitespace-nowrap rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors",
+                  "block whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
                   isActive ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/[0.06] hover:text-white",
                 )
               }
@@ -464,7 +467,7 @@ function GroupRow({
                 {item.beta && (
                   <span
                     title="Ainda usa dados de exemplo — sem origem no backend"
-                    className="shrink-0 rounded bg-gold/25 px-1 py-px font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gold"
+                    className="shrink-0 rounded bg-gold/25 px-1 py-px font-mono text-[12px] font-bold uppercase tracking-[0.06em] text-gold"
                   >
                     beta
                   </span>

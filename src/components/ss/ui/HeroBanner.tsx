@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 
 /**
- * Faixa de abertura em gradiente da marca — o mesmo tratamento do hero do Início
- * e do login. Serve para dar às telas internas o peso visual da identidade em
- * vez de abrir direto numa tabela.
+ * Faixa de abertura das telas internas, no layout denso aprovado em 02/10/2026:
+ * uma linha clara com título à esquerda e os números à direita, em vez do
+ * banner em gradiente que ocupava meia tela antes do dado.
+ * O conteúdo antigo (texto branco sobre o gradiente) é reajustado pela classe
+ * `.hero-compacto` em styles.css, sem precisar mexer em cada tela.
  */
 export function HeroBanner({
   eyebrow,
@@ -20,26 +22,14 @@ export function HeroBanner({
   children?: ReactNode;
 }) {
   return (
-    <section data-tour="hero" className="relative overflow-hidden rounded-2xl bg-gradient-hero p-6 text-white shadow-elegant md:p-7">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full opacity-40"
-        style={{ background: "radial-gradient(circle, var(--brand-sky), transparent 68%)" }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 left-1/3 h-64 w-64 rounded-full opacity-25"
-        style={{ background: "radial-gradient(circle, var(--brand-green), transparent 70%)" }}
-      />
-      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-5">
-          {orb && <SSOrb size={64} halo className="text-brand-green" />}
-          <div>
-            {eyebrow && (
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/60">{eyebrow}</p>
-            )}
-            <h2 className="mt-1 text-2xl font-bold leading-tight md:text-[26px]">{title}</h2>
-            {subtitle && <p className="mt-1.5 max-w-xl text-sm text-white/70">{subtitle}</p>}
+    <section data-tour="hero" className="hero-compacto rounded-xl border border-border bg-card px-4 py-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          {orb && <SSOrb size={32} className="shrink-0 text-brand-green" />}
+          <div className="min-w-0">
+            {eyebrow && <p className="text-[12px] font-medium text-muted-foreground">{eyebrow}</p>}
+            <h2 className="text-[16px] font-semibold leading-tight text-foreground">{title}</h2>
+            {subtitle && <p className="mt-0.5 max-w-2xl text-[13px] text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
         {children && <div className="shrink-0">{children}</div>}
@@ -48,7 +38,7 @@ export function HeroBanner({
   );
 }
 
-/** Métrica clara sobre o gradiente do hero. */
+/** Número da faixa de abertura. */
 export function HeroMetric({
   value,
   unit,
@@ -60,11 +50,11 @@ export function HeroMetric({
 }) {
   return (
     <div>
-      <div className="font-display text-2xl font-bold tabular-nums md:text-[28px]">
+      <div className="text-[20px] font-semibold leading-tight tabular-nums text-foreground">
         {value}
-        {unit && <span className="ml-0.5 text-base font-medium text-white/70">{unit}</span>}
+        {unit && <span className="ml-0.5 text-[13px] font-medium text-muted-foreground">{unit}</span>}
       </div>
-      <div className="mt-1 text-[11.5px] font-medium text-white/60">{label}</div>
+      <div className="text-[12px] text-muted-foreground">{label}</div>
     </div>
   );
 }

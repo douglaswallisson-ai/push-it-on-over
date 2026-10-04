@@ -118,16 +118,16 @@ export function PopupVeiculo({
   }, [mock, trackingQ.data, daApi, veiculoId]);
 
   return (
-    <div className="w-[300px] text-[12.5px]">
+    <div className="w-[300px] text-[13px]">
       {/* Identificação. */}
       <div className="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
         <div>
-          <div className="font-mono text-[17px] font-bold leading-none text-slate-800">{rotulo}</div>
-          <div className="mt-0.5 font-mono text-[11px] text-slate-500">{placa}</div>
+          <div className="font-mono text-[16px] font-bold leading-none text-slate-800">{rotulo}</div>
+          <div className="mt-0.5 font-mono text-[12px] text-slate-500">{placa}</div>
         </div>
-        <span className={cn("text-right text-[11.5px] font-semibold", COR_ESTADO[estado] ?? "text-slate-500")}>
+        <span className={cn("text-right text-[12px] font-semibold", COR_ESTADO[estado] ?? "text-slate-500")}>
           {ESTADO_MAPA_LABEL[estado as EstadoMapa] ?? estado}
-          <span className="block font-mono text-[15px] font-bold text-slate-800">{velocidade} km/h</span>
+          <span className="block font-mono text-[16px] font-bold text-slate-800">{velocidade} km/h</span>
         </span>
       </div>
 
@@ -162,7 +162,7 @@ export function PopupVeiculo({
       {/* O dia do veículo. */}
       {resumo && (
         <div className="mt-2.5 rounded-lg bg-slate-50 p-2.5">
-          <div className="mb-1.5 flex items-center gap-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+          <div className="mb-1.5 flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">
             <Timer className="h-3 w-3" />
             Hoje
           </div>
@@ -179,7 +179,7 @@ export function PopupVeiculo({
             <Metrica rotulo="Vel. máxima" valor={`${resumo.velocidadeMaxima} km/h`} alerta={resumo.velocidadeMaxima > 70} />
           </div>
           {resumo.primeiraIgnicao && (
-            <p className="mt-1.5 border-t border-slate-200 pt-1.5 text-[11px] text-slate-500">
+            <p className="mt-1.5 border-t border-slate-200 pt-1.5 text-[12px] text-slate-500">
               Primeira ignição {hora(resumo.primeiraIgnicao)}
               {resumo.ultimaIgnicao ? ` · desligou ${hora(resumo.ultimaIgnicao)}` : " · ainda em operação"}
             </p>
@@ -190,16 +190,16 @@ export function PopupVeiculo({
       {/* Últimos eventos de percurso. */}
       {ultimos.length > 0 && (
         <div className="mt-2.5">
-          <div className="mb-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+          <div className="mb-1 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">
             Últimos eventos
           </div>
           <ul className="space-y-0.5">
             {ultimos.map((e) => (
               <li key={e.id} className="flex items-baseline gap-2">
-                <span className="w-9 shrink-0 font-mono text-[11px] text-slate-500">{hora(e.em)}</span>
+                <span className="w-9 shrink-0 font-mono text-[12px] text-slate-500">{hora(e.em)}</span>
                 <span
                   className={cn(
-                    "min-w-0 flex-1 truncate text-[11.5px]",
+                    "min-w-0 flex-1 truncate text-[12px]",
                     e.tipo === "excesso_velocidade" ? "font-semibold text-coral" : "text-slate-700",
                   )}
                 >
@@ -213,7 +213,7 @@ export function PopupVeiculo({
       )}
 
       {eventosAbertos > 0 && (
-        <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-coral-tint px-2.5 py-1.5 text-[11.5px] font-medium text-coral">
+        <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-coral-tint px-2.5 py-1.5 text-[12px] font-medium text-coral">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           {eventosAbertos} evento{eventosAbertos > 1 ? "s" : ""} aguardando tratativa
         </div>
@@ -234,7 +234,7 @@ export function PopupVeiculo({
 function Metrica({ rotulo, valor, alerta }: { rotulo: string; valor: string; alerta?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-1.5">
-      <span className="text-[11px] text-slate-500">{rotulo}</span>
+      <span className="text-[12px] text-slate-500">{rotulo}</span>
       <span className={cn("font-mono text-[12px] font-semibold", alerta ? "text-coral" : "text-slate-800")}>{valor}</span>
     </div>
   );
@@ -257,7 +257,7 @@ function Acao({
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-[11.5px] font-medium transition-colors",
+        "inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-[12px] font-medium transition-colors",
         destaque
           ? "border-coral bg-coral text-white hover:opacity-90"
           : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50",

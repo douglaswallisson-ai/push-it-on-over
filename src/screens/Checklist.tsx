@@ -110,7 +110,7 @@ export default function Checklist() {
     {
       key: "unit_id",
       header: "Veículo",
-      render: (r) => <span className="font-mono text-[12.5px] font-semibold">{r.unit_id ?? "—"}</span>,
+      render: (r) => <span className="font-mono text-[13px] font-semibold">{r.unit_id ?? "—"}</span>,
     },
     {
       key: "driver_id",
@@ -122,7 +122,7 @@ export default function Checklist() {
       header: "Item",
       render: (r) => {
         const p = perguntas.find((x) => x.id === r.question_id);
-        return <span className="max-w-[300px] truncate text-[12.5px]">{p?.text ?? `#${r.question_id}`}</span>;
+        return <span className="max-w-[300px] truncate text-[13px]">{p?.text ?? `#${r.question_id}`}</span>;
       },
     },
     {
@@ -134,7 +134,7 @@ export default function Checklist() {
         return (
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-semibold",
+              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold",
               ruim ? "bg-coral-tint text-coral" : "bg-leaf-tint text-leaf",
             )}
           >
@@ -153,7 +153,7 @@ export default function Checklist() {
         <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
           <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+            <p className="text-[13px] leading-relaxed text-muted-foreground">
               O checklist vem de uma <strong>API separada</strong>, no API Gateway — não é o mesmo backend das demais
               telas. Para consumi-la, defina <span className="font-mono">VITE_CHECKLIST_BASE</span> no ambiente e
               alterne para API real.
@@ -225,10 +225,10 @@ export default function Checklist() {
                       className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/40"
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13.5px] font-semibold text-foreground">
+                        <span className="block truncate text-[14px] font-semibold text-foreground">
                           {c.name ?? `Checklist #${c.id}`}
                         </span>
-                        <span className="block text-[11.5px] text-muted-foreground">
+                        <span className="block text-[12px] text-muted-foreground">
                           {itens.length} {itens.length === 1 ? "item" : "itens"}
                           {c.unit_category?.length
                             ? ` · ${c.unit_category.map((u) => u.name).filter(Boolean).join(", ")}`
@@ -242,7 +242,7 @@ export default function Checklist() {
                         {c.send_mail && (
                           <span
                             title={`Notifica ${c.list_mail?.length ?? 0} destinatário(s)`}
-                            className="inline-flex items-center gap-1 text-[11.5px] text-muted-foreground"
+                            className="inline-flex items-center gap-1 text-[12px] text-muted-foreground"
                           >
                             <Mail className="h-3 w-3" />
                             {c.list_mail?.length ?? 0}
@@ -254,7 +254,7 @@ export default function Checklist() {
                     {abertoAqui && (
                       <div className="border-t border-border bg-secondary/20 px-4 py-3">
                         {itens.length === 0 ? (
-                          <p className="text-[12.5px] text-gold">
+                          <p className="text-[13px] text-gold">
                             Este checklist não tem itens — quem responder não terá o que preencher.
                           </p>
                         ) : (
@@ -264,12 +264,12 @@ export default function Checklist() {
                                 key={p.id}
                                 className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-border bg-card px-3 py-2"
                               >
-                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-[10.5px] font-bold text-ink-soft">
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-[12px] font-bold text-ink-soft">
                                   {p.order ?? i + 1}
                                 </span>
-                                <span className="min-w-0 flex-1 text-[12.5px] text-foreground">{p.text}</span>
+                                <span className="min-w-0 flex-1 text-[13px] text-foreground">{p.text}</span>
                                 {p.options && (
-                                  <span className="font-mono text-[11px] text-muted-foreground">{p.options}</span>
+                                  <span className="font-mono text-[12px] text-muted-foreground">{p.options}</span>
                                 )}
                                 {p.type?.[0]?.name && <Pill tone="neutral">{p.type[0].name}</Pill>}
                                 {p.mandatory && <Pill tone="gold">obrigatório</Pill>}
@@ -279,7 +279,7 @@ export default function Checklist() {
                         )}
 
                         {c.list_mail && c.list_mail.length > 0 && (
-                          <p className="mt-2.5 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+                          <p className="mt-2.5 flex items-start gap-1.5 text-[12px] text-muted-foreground">
                             <Mail className="mt-0.5 h-3 w-3 shrink-0" />
                             Notifica: {c.list_mail.map((m) => m.email).filter(Boolean).join(", ")}
                           </p>
@@ -318,7 +318,7 @@ export default function Checklist() {
             />
           )}
 
-          <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
             <Info className="mt-0.5 h-3 w-3 shrink-0" />
             A reprovação é deduzida do texto da resposta, porque a API devolve valor livre. Resposta que não bate com
             nenhum padrão conhecido conta como informativa, não como falha — marcar o desconhecido como reprovado

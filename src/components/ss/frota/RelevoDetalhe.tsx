@@ -46,7 +46,7 @@ export function CelulaRelevo({
 }) {
   if (usandoMock()) return <span className="text-muted-foreground">—</span>;
   if (calculando && valor == null)
-    return <span className="whitespace-nowrap font-mono text-[11px] text-muted-foreground">calculando {nf(progresso * 100)}%</span>;
+    return <span className="whitespace-nowrap font-mono text-[12px] text-muted-foreground">calculando {nf(progresso * 100)}%</span>;
   if (valor == null) return <span className="text-muted-foreground">—</span>;
   const c = classeRelevo(valor);
   return (
@@ -131,8 +131,8 @@ export function RelevoDetalhe({
                   { r: "Km medidos", v: nf(t?.km) },
                 ].map((x) => (
                   <div key={x.r} className="rounded-xl border border-border bg-card px-3 py-2.5">
-                    <p className="text-[11px] text-muted-foreground">{x.r}</p>
-                    <p className="font-display text-[18px] font-bold tabular-nums" style={x.cor ? { color: x.cor } : undefined}>{x.v}</p>
+                    <p className="text-[12px] text-muted-foreground">{x.r}</p>
+                    <p className="font-display text-[20px] font-bold tabular-nums" style={x.cor ? { color: x.cor } : undefined}>{x.v}</p>
                   </div>
                 ))}
               </div>
@@ -148,7 +148,7 @@ export function RelevoDetalhe({
                       }}
                     >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+                      <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
                       <YAxis yAxisId="s" tick={{ fontSize: 11 }} unit=" m" width={60} />
                       <YAxis yAxisId="k" orientation="right" tick={{ fontSize: 11 }} width={50} />
                       <Tooltip formatter={(v: number, n: string) => (n === "Km" ? `${nf(v)} km` : `${nf(v)} m`)} />
@@ -157,11 +157,11 @@ export function RelevoDetalhe({
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
-                {tipo === "veiculo" && <p className="mt-1 text-[11px] text-muted-foreground">Clique numa barra para ver o perfil daquele dia abaixo.</p>}
+                {tipo === "veiculo" && <p className="mt-1 text-[12px] text-muted-foreground">Clique numa barra para ver o perfil daquele dia abaixo.</p>}
               </div>
               {tipo === "veiculo" && (
                 <>
-                  <div className="flex items-center justify-end gap-2 text-[12.5px]">
+                  <div className="flex items-center justify-end gap-2 text-[13px]">
                     Dia do perfil
                     <input type="date" value={dia} max={iso(ontem())} onChange={(e) => e.target.value && setDia(e.target.value)} className="h-8 rounded-lg border border-border bg-white px-2" />
                   </div>

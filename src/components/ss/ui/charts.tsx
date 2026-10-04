@@ -24,7 +24,7 @@ export function MonthlyBars({
         const last = i === data.length - 1;
         return (
           <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-            <span className="font-mono text-[9.5px] text-muted-foreground">
+            <span className="font-mono text-[12px] text-muted-foreground">
               {v}
               {unit}
             </span>
@@ -35,7 +35,7 @@ export function MonthlyBars({
                 background: last ? color : `color-mix(in oklab, ${color} 40%, white)`,
               }}
             />
-            <span className={cn("text-[9.5px]", last ? "font-semibold text-foreground" : "text-muted-foreground")}>
+            <span className={cn("text-[12px]", last ? "font-semibold text-foreground" : "text-muted-foreground")}>
               {labels[i]}
             </span>
           </div>

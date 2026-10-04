@@ -71,7 +71,7 @@ export default function OrdensServico() {
       render: (o) => (
         <div>
           <div className="font-mono text-[13px] font-bold text-foreground">{o.numero}</div>
-          <div className="text-[11px] text-muted-foreground">{new Date(o.abertaEm).toLocaleDateString("pt-BR")}</div>
+          <div className="text-[12px] text-muted-foreground">{new Date(o.abertaEm).toLocaleDateString("pt-BR")}</div>
         </div>
       ),
     },
@@ -80,7 +80,7 @@ export default function OrdensServico() {
       header: "Veículo",
       render: (o) => <span className="font-mono text-[13px] font-semibold">{prefixo.get(o.veiculoId) ?? "—"}</span>,
     },
-    { key: "descricao", header: "Serviço", render: (o) => <span className="text-[12.5px]">{o.descricao}</span> },
+    { key: "descricao", header: "Serviço", render: (o) => <span className="text-[13px]">{o.descricao}</span> },
     {
       key: "tipo",
       header: "Tipo",
@@ -92,9 +92,9 @@ export default function OrdensServico() {
       key: "oficina",
       header: "Oficina",
       render: (o) => (
-        <span className="whitespace-nowrap text-[12.5px] text-ink-soft">
+        <span className="whitespace-nowrap text-[13px] text-ink-soft">
           {o.oficina}
-          <span className={cn("ml-1.5 rounded px-1 text-[10px] font-semibold", o.interna ? "bg-navy-tint text-brand-navy" : "bg-gold-tint text-gold")}>
+          <span className={cn("ml-1.5 rounded px-1 text-[12px] font-semibold", o.interna ? "bg-navy-tint text-brand-navy" : "bg-gold-tint text-gold")}>
             {o.interna ? "interna" : "terceira"}
           </span>
         </span>
@@ -104,7 +104,7 @@ export default function OrdensServico() {
       key: "horasParado",
       header: "Parado",
       align: "right",
-      render: (o) => <span className="font-mono text-[12.5px]">{o.horasParado != null ? `${o.horasParado} h` : "—"}</span>,
+      render: (o) => <span className="font-mono text-[13px]">{o.horasParado != null ? `${o.horasParado} h` : "—"}</span>,
     },
     {
       key: "custo",
@@ -114,7 +114,7 @@ export default function OrdensServico() {
         const real = custoReal(o);
         const estourou = real > o.custoPrevisto && real > 0;
         return (
-          <span className="whitespace-nowrap font-mono text-[12.5px]">
+          <span className="whitespace-nowrap font-mono text-[13px]">
             <span className="text-muted-foreground">{brl(o.custoPrevisto)}</span>
             <span className="mx-1 text-muted-foreground/50">/</span>
             <span className={cn("font-semibold", estourou ? "text-coral" : "text-foreground")}>
@@ -212,7 +212,7 @@ export default function OrdensServico() {
               ) : (
                 <EmptyNote>Nenhuma ordem com esse filtro.</EmptyNote>
               )}
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 O custo real é a soma dos itens aplicados, não um campo digitado — a diferença contra o previsto fica
                 rastreável até a peça. Clique numa linha para ver a composição.
               </p>
@@ -223,7 +223,7 @@ export default function OrdensServico() {
                 title={`Composição — ${aberta.numero}`}
                 icon={Wrench}
                 action={
-                  <button onClick={() => setAberta(null)} className="text-[12.5px] text-muted-foreground underline">
+                  <button onClick={() => setAberta(null)} className="text-[13px] text-muted-foreground underline">
                     fechar
                   </button>
                 }
@@ -236,7 +236,7 @@ export default function OrdensServico() {
                         <li key={idx} className="flex items-center gap-3 text-[13px]">
                           <span
                             className={cn(
-                              "shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-semibold",
+                              "shrink-0 rounded px-1.5 py-0.5 text-[12px] font-semibold",
                               i.tipo === "peca" ? "bg-coral-tint text-coral" : "bg-navy-tint text-brand-navy",
                             )}
                           >
@@ -252,7 +252,7 @@ export default function OrdensServico() {
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-3 flex justify-between border-t border-border pt-3 text-[13.5px]">
+                    <div className="mt-3 flex justify-between border-t border-border pt-3 text-[14px]">
                       <span className="text-muted-foreground">
                         Previsto {brl(aberta.custoPrevisto)} · origem <strong>{aberta.origem}</strong>
                         {aberta.responsavel ? ` · ${aberta.responsavel}` : ""}

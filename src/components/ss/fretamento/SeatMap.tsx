@@ -45,11 +45,11 @@ export function SeatMap({
         <div className="mb-4">
           <div className="mx-auto mb-3 h-9 w-[62%] rounded-t-[40px] border-2 border-b-0 border-[#cbd5dd] bg-gradient-to-b from-[#d6e6f2] to-transparent" />
           <div className="flex items-center justify-between px-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-medium text-brand-navy shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[12px] font-medium text-brand-navy shadow-sm">
               <Wheel className="h-3.5 w-3.5" />
               Motorista
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[12px] font-medium text-muted-foreground shadow-sm">
               Porta
               <DoorOpen className="h-3.5 w-3.5" />
             </span>
@@ -62,7 +62,7 @@ export function SeatMap({
             <div key={row} className="flex items-center justify-center gap-2.5">
               <Seat n={seatAt(row, 0)} state={stateOf(seatAt(row, 0))} onToggle={onToggle} />
               <Seat n={seatAt(row, 1)} state={stateOf(seatAt(row, 1))} onToggle={onToggle} />
-              <span className="w-7 text-center font-mono text-[10px] text-muted-foreground/50">
+              <span className="w-7 text-center font-mono text-[12px] text-muted-foreground/50">
                 {String(row + 1).padStart(2, "0")}
               </span>
               <Seat n={seatAt(row, 2)} state={stateOf(seatAt(row, 2))} onToggle={onToggle} />
@@ -73,7 +73,7 @@ export function SeatMap({
 
         {/* Traseira. */}
         <div className="mt-4 flex justify-center">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50">
+          <span className="font-mono text-[12px] uppercase tracking-[0.2em] text-muted-foreground/50">
             fundo
           </span>
         </div>
@@ -130,7 +130,7 @@ function Seat({
       </svg>
 
       <span
-        className="pointer-events-none absolute inset-0 flex items-center justify-center pt-1 text-[11px] font-bold"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center pt-1 text-[12px] font-bold"
         style={{ color: p.num }}
       >
         {n}

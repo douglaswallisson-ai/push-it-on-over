@@ -101,7 +101,7 @@ function EmissaoCO2Exemplo() {
             </div>
 
             <div>
-              <div className="mb-1 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-leaf">
+              <div className="mb-1 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-leaf">
                 <Leaf className="h-3.5 w-3.5" />
                 Compensação ambiental
               </div>
@@ -186,7 +186,7 @@ function MiniStat({ value, unit, label }: { value: string; unit?: string; label:
         {value}
         {unit && <span className="ml-0.5 text-sm font-medium text-muted-foreground">{unit}</span>}
       </p>
-      <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-[12px] leading-tight text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -198,12 +198,12 @@ function Bars({ data, labels, suffix = "" }: { data: number[]; labels: string[];
     <div className="flex h-52 items-end gap-2">
       {data.map((v, i) => (
         <div key={i} className="flex flex-1 flex-col items-center gap-2">
-          <span className="font-mono text-[10px] text-muted-foreground">{v}{suffix}</span>
+          <span className="font-mono text-[12px] text-muted-foreground">{v}{suffix}</span>
           <div
             className="w-full rounded-t-md bg-gradient-to-t from-leaf to-brand-green transition-all hover:opacity-80"
             style={{ height: `${Math.max(4, (v / max) * 150)}px` }}
           />
-          <span className="text-[10.5px] text-muted-foreground">{labels[i]}</span>
+          <span className="text-[12px] text-muted-foreground">{labels[i]}</span>
         </div>
       ))}
     </div>

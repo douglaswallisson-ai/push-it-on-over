@@ -52,7 +52,7 @@ export function ModoDadosPainel() {
         >
           <span className="flex items-center gap-2">
             <Database className={cn("h-4 w-4", modo === "mock" ? "text-brand-navy" : "text-muted-foreground")} />
-            <span className="text-[13.5px] font-semibold text-foreground">Dados de exemplo</span>
+            <span className="text-[14px] font-semibold text-foreground">Dados de exemplo</span>
             {modo === "mock" && <Pill tone="sky">ativo</Pill>}
           </span>
           <p className="mt-1.5 text-[12px] text-muted-foreground">
@@ -60,7 +60,7 @@ export function ModoDadosPainel() {
             a API fora do ar.
           </p>
           {!import.meta.env.VITE_API_BASE && (
-            <p className="mt-1.5 text-[11.5px] font-medium text-gold">
+            <p className="mt-1.5 text-[12px] font-medium text-gold">
               Em uso por padrão: sem VITE_API_BASE configurado, não há para onde consultar.
             </p>
           )}
@@ -75,7 +75,7 @@ export function ModoDadosPainel() {
         >
           <span className="flex items-center gap-2">
             <Server className={cn("h-4 w-4", modo === "api" ? "text-brand-navy" : "text-muted-foreground")} />
-            <span className="text-[13.5px] font-semibold text-foreground">API real</span>
+            <span className="text-[14px] font-semibold text-foreground">API real</span>
             {modo === "api" && <Pill tone="green">ativo</Pill>}
           </span>
           <p className="mt-1.5 text-[12px] text-muted-foreground">
@@ -83,7 +83,7 @@ export function ModoDadosPainel() {
             telas, com opção de tentar de novo.
           </p>
           {import.meta.env.VITE_API_BASE && (
-            <p className="mt-1.5 text-[11.5px] font-medium text-leaf">
+            <p className="mt-1.5 text-[12px] font-medium text-leaf">
               Padrão do sistema — abre assim automaticamente.
             </p>
           )}
@@ -100,7 +100,7 @@ export function ModoDadosPainel() {
             <Server className="h-3.5 w-3.5 text-muted-foreground" />
             Diagnóstico
           </h4>
-          <ul className="space-y-1.5 text-[12.5px]">
+          <ul className="space-y-1.5 text-[13px]">
             <Verificacao
               ok={Boolean(import.meta.env.VITE_API_BASE)}
               rotulo="Endereço da API configurado"
@@ -126,7 +126,7 @@ export function ModoDadosPainel() {
               opcional
             />
           </ul>
-          <p className="mt-2.5 text-[11.5px] text-muted-foreground">
+          <p className="mt-2.5 text-[12px] text-muted-foreground">
             Telas marcadas como <strong>beta</strong> continuam com dados de exemplo mesmo aqui — elas não têm
             endpoint no backend, e tentar consultá-las devolveria erro.
           </p>
@@ -158,7 +158,7 @@ export function ModoDadosPainel() {
             ))}
           </div>
         </div>
-        <p className="mt-2 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+        <p className="mt-2 flex items-start gap-1.5 text-[12px] text-muted-foreground">
           <Info className="mt-0.5 h-3 w-3 shrink-0" />
           {modo === "mock"
             ? "Com dados de exemplo não há o que recarregar — o polling só gastaria ciclo."
@@ -186,7 +186,7 @@ function Verificacao({
     <li className="flex items-start gap-2">
       <span
         className={cn(
-          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white",
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white",
           ok ? "bg-leaf" : opcional ? "bg-muted-foreground" : "bg-coral",
         )}
       >
@@ -194,7 +194,7 @@ function Verificacao({
       </span>
       <span className="min-w-0">
         <span className="block text-foreground">{rotulo}</span>
-        <span className="block break-all font-mono text-[11px] text-muted-foreground">{detalhe}</span>
+        <span className="block break-all font-mono text-[12px] text-muted-foreground">{detalhe}</span>
       </span>
     </li>
   );

@@ -37,7 +37,7 @@ const COLS: Column<Dispositivo>[] = [
         </div>
         <div>
           <div className="font-mono font-semibold text-foreground">{d.serial}</div>
-          <div className="text-[11.5px] text-muted-foreground">{d.modelo}</div>
+          <div className="text-[12px] text-muted-foreground">{d.modelo}</div>
         </div>
       </div>
     ),

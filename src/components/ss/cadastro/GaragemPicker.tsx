@@ -69,7 +69,7 @@ export function GaragemPicker({
 
       <div className="max-h-64 space-y-3 overflow-y-auto rounded-lg border border-border bg-secondary/30 p-3">
         {porUnidade.size === 0 ? (
-          <p className="py-4 text-center text-[12.5px] text-muted-foreground">Nenhuma garagem encontrada.</p>
+          <p className="py-4 text-center text-[13px] text-muted-foreground">Nenhuma garagem encontrada.</p>
         ) : (
           [...porUnidade.entries()].map(([unidade, lista]) => {
             const ids = lista.map((g) => g.id);
@@ -82,10 +82,10 @@ export function GaragemPicker({
                   className="mb-1.5 flex w-full items-center gap-2 text-left"
                 >
                   <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate text-[11.5px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
+                  <span className="flex-1 truncate text-[12px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
                     {unidade}
                   </span>
-                  <span className="text-[11px] font-medium text-brand-navy underline">
+                  <span className="text-[12px] font-medium text-brand-navy underline">
                     {todas ? "desmarcar" : "marcar todas"}
                   </span>
                 </button>
@@ -114,12 +114,12 @@ export function GaragemPicker({
                         <Warehouse className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[13px] font-medium text-foreground">{g.nome}</span>
-                          <span className="block truncate text-[11px] text-muted-foreground">
+                          <span className="block truncate text-[12px] text-muted-foreground">
                             {g.cidade}/{g.uf} · {g.veiculos} veículos
                           </span>
                         </span>
                         {!g.ativa && (
-                          <span className="shrink-0 rounded bg-secondary px-1.5 text-[10px] text-muted-foreground">
+                          <span className="shrink-0 rounded bg-secondary px-1.5 text-[12px] text-muted-foreground">
                             inativa
                           </span>
                         )}
@@ -133,7 +133,7 @@ export function GaragemPicker({
         )}
       </div>
 
-      <p className="text-[11.5px] text-muted-foreground">
+      <p className="text-[12px] text-muted-foreground">
         {selecionadas.length === 0 ? (
           <span className="text-gold">
             Nenhuma garagem atribuída — o usuário não verá veículos nem motoristas.

@@ -66,18 +66,18 @@ const faixa = (
   render: (v) => {
     const pct = (v as Record<string, unknown>)[key] as number | null | undefined;
     if (pct == null) {
-      return <span className="text-[11px] text-muted-foreground">—</span>;
+      return <span className="text-[12px] text-muted-foreground">—</span>;
     }
     const bom = sentido === "maior_melhor" ? pct >= 50 : pct <= 20;
     return (
       <span
         className={cn(
-          "font-mono text-[12.5px] font-semibold",
+          "font-mono text-[13px] font-semibold",
           bom ? "text-leaf" : pct > 0 ? "text-gold" : "text-muted-foreground",
         )}
       >
         {nf(pct, 1)}
-        <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">%</span>
+        <span className="ml-0.5 text-[12px] font-normal text-muted-foreground">%</span>
       </span>
     );
   },
@@ -294,9 +294,9 @@ export default function Veiculos() {
                 documento e fica como apoio. */}
             <div className="flex items-baseline gap-2 whitespace-nowrap">
               <span className="font-mono text-[14px] font-bold text-foreground">{v.prefixo ?? "—"}</span>
-              <span className="font-mono text-[11.5px] text-muted-foreground">{v.placa}</span>
+              <span className="font-mono text-[12px] text-muted-foreground">{v.placa}</span>
             </div>
-            <div className="whitespace-nowrap text-[11.5px] text-muted-foreground">
+            <div className="whitespace-nowrap text-[12px] text-muted-foreground">
               {v.marca} {v.modelo}
               {v.ano ? ` · ${v.ano}` : ""}
             </div>
@@ -372,7 +372,7 @@ export default function Veiculos() {
           }}
           title="Ver distribuição por faixas de condução"
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-[11.5px] font-medium transition-colors",
+            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-[12px] font-medium transition-colors",
             faixasDe === v.id
               ? "border-brand-navy bg-navy-tint text-brand-navy"
               : "border-border text-muted-foreground hover:bg-secondary",
@@ -448,7 +448,7 @@ export default function Veiculos() {
             explicativo saiu a pedido do produto. */}
         {!usandoMock() && (indicadores.erro || indicadores.carregando || indicadores.linhasKm === 0) && (
           <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-            <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
+            <p className="flex items-start gap-2.5 text-[13px] leading-relaxed text-muted-foreground">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
               {indicadores.erro ? (
                 /* O erro precisa aparecer: sem ele, "não funciona" vira adivinhação.
@@ -604,7 +604,7 @@ export default function Veiculos() {
                 {filtrosAtivos > 0 && (
                   <button
                     onClick={limparFiltros}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-brand-navy hover:bg-secondary"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[13px] font-medium text-brand-navy hover:bg-secondary"
                   >
                     <X className="h-3.5 w-3.5" />
                     Limpar {filtrosAtivos} filtro{filtrosAtivos > 1 ? "s" : ""}
@@ -648,7 +648,7 @@ export default function Veiculos() {
                               <button
                                 onClick={() => setPagina(n)}
                                 className={cn(
-                                  "h-8 min-w-8 rounded-lg px-2 font-mono text-[12.5px] font-medium transition-colors",
+                                  "h-8 min-w-8 rounded-lg px-2 font-mono text-[13px] font-medium transition-colors",
                                   n === paginaAtual
                                     ? "bg-brand-navy text-white"
                                     : "border border-border text-muted-foreground hover:bg-secondary",
@@ -672,7 +672,7 @@ export default function Veiculos() {
               ) : (
                 <EmptyNote>Nenhum veículo encontrado com esse filtro.</EmptyNote>
               )}
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Faixas em percentual do tempo nos últimos 30 dias. Clique na linha para abrir o acompanhamento do
                 veículo; a coluna Manutenção leva à manutenção da placa.
               </p>

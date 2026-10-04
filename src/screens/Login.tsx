@@ -318,7 +318,7 @@ function BrandPanel() {
       </div>
 
       <div className="relative animate-rise-in py-12 lg:py-0">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-medium tracking-wide backdrop-blur">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[12px] font-medium tracking-wide backdrop-blur">
           <Sparkles className="h-3.5 w-3.5 text-brand-green" />
           DA TELEMETRIA À DECISÃO
         </span>
@@ -346,7 +346,7 @@ function BrandPanel() {
         {STATS.map((s) => (
           <div key={s.k}>
             <div className="font-display text-2xl font-bold text-brand-green xl:text-3xl">{s.k}</div>
-            <div className="mt-1 text-[11px] leading-snug text-white/60">{s.v}</div>
+            <div className="mt-1 text-[12px] leading-snug text-white/60">{s.v}</div>
           </div>
         ))}
       </div>

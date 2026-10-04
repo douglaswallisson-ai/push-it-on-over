@@ -241,7 +241,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
                 key={d}
                 onClick={() => setDias(d)}
                 className={cn(
-                  "rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+                  "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
                   dias === d
                     ? "bg-brand-navy text-white"
                     : "border border-border bg-white text-muted-foreground hover:bg-secondary",
@@ -344,14 +344,14 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
                   para quem já está em modo real manda procurar solução onde
                   não há problema. */}
               {usandoMock() ? (
-                <p className="text-[12.5px] text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                   Os indicadores consolidados vêm da API. Alterne para modo real em Console de gestão ›
                   Configurações para vê-los.
                 </p>
               ) : (
                 <div className="flex items-start gap-2.5">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <p className="text-[12.5px] leading-relaxed text-gold">
+                  <p className="text-[13px] leading-relaxed text-gold">
                     <strong>Endpoint ainda não publicado.</strong> O cálculo de indicadores consolidados
                     (<span className="font-mono">/api/v1/indicators</span>) existe no código mas não foi implantado no
                     servidor. Os cartões acima já usam dados reais; esta seção aparece assim que o endpoint subir.
@@ -412,7 +412,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
                     ]}
                     sufixo="h"
                   />
-                  <p className="mt-3 text-[11.5px] text-muted-foreground">
+                  <p className="mt-3 text-[12px] text-muted-foreground">
                     Ociosidade em <strong className="text-foreground">{ind.current.idle_pct ?? 0}%</strong> do tempo
                     ligado. É combustível consumido sem rodar — em frota de ônibus, cada ponto percentual costuma
                     valer mais que qualquer economia de condução.
@@ -436,7 +436,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
                   </div>
 
                   {(ind.current.rain_pct ?? 0) > 0 && (
-                    <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-navy-tint/50 px-3 py-2 text-[11.5px] text-brand-blue">
+                    <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-navy-tint/50 px-3 py-2 text-[12px] text-brand-blue">
                       <CloudRain className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       <span>
                         <strong>{ind.current.rain_pct}%</strong> do período sob chuva. Comparar consumo com um
@@ -483,7 +483,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
               {ind.unavailable && ind.unavailable.length > 0 && (
                 <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <p className="text-[12.5px] text-gold">
+                  <p className="text-[13px] text-gold">
                     <strong>{ind.unavailable.join(", ").toUpperCase()}</strong> não podem ser calculados.{" "}
                     {ind.unavailable_reason}
                   </p>
@@ -503,7 +503,7 @@ export default function DashboardOperacional({ embutido = false }: { embutido?: 
 
 function Rotulo({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+    <h2 className="flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
       <span className="h-px w-5 bg-border" />
       {children}
     </h2>
@@ -543,17 +543,17 @@ function Tile({
         >
           <Icone className="h-4 w-4" style={{ color: cor }} />
         </span>
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
           {rotulo}
         </span>
       </span>
       <span className="mt-2 flex items-baseline gap-1">
-        <span className="font-display text-[26px] font-bold leading-none" style={{ color: cor }}>
+        <span className="font-display text-[24px] font-bold leading-none" style={{ color: cor }}>
           {valor}
         </span>
         {unidade && <span className="text-[12px] text-muted-foreground">{unidade}</span>}
       </span>
-      {nota && <span className="mt-1 block text-[11px] leading-tight text-muted-foreground">{nota}</span>}
+      {nota && <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">{nota}</span>}
     </Tag>
   );
 }
@@ -589,13 +589,13 @@ function TileVariacao({
     <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
       <span className="flex items-center gap-2">
         <Icone className="h-4 w-4 text-muted-foreground" />
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
           {rotulo}
         </span>
       </span>
       <div className="mt-2 flex items-baseline justify-between gap-2">
         <span className="flex items-baseline gap-1">
-          <span className="font-display text-[26px] font-bold leading-none text-foreground">{valor}</span>
+          <span className="font-display text-[24px] font-bold leading-none text-foreground">{valor}</span>
           {unidade && <span className="text-[12px] text-muted-foreground">{unidade}</span>}
         </span>
         {variacao != null && (
@@ -605,7 +605,7 @@ function TileVariacao({
           </span>
         )}
       </div>
-      <span className="mt-1 block text-[11px] text-muted-foreground">
+      <span className="mt-1 block text-[12px] text-muted-foreground">
         {nota ?? (variacao != null ? "contra o período anterior" : "sem período anterior")}
       </span>
     </div>
@@ -646,7 +646,7 @@ function CardAcao({
           </span>
           <span className="text-[13px] font-semibold text-foreground">{titulo}</span>
         </span>
-        <span className="mt-0.5 block text-[11.5px] leading-tight text-muted-foreground">{descricao}</span>
+        <span className="mt-0.5 block text-[12px] leading-tight text-muted-foreground">{descricao}</span>
       </span>
       <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
     </button>
@@ -669,7 +669,7 @@ function Barra({ itens, sufixo }: { itens: { rotulo: string; valor: number; cor:
       </div>
       <ul className="mt-2.5 space-y-1">
         {itens.map((i) => (
-          <li key={i.rotulo} className="flex items-center justify-between gap-2 text-[12.5px]">
+          <li key={i.rotulo} className="flex items-center justify-between gap-2 text-[13px]">
             <span className="flex items-center gap-2 text-ink-soft">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: i.cor }} />
               {i.rotulo}
@@ -702,8 +702,8 @@ function Medidor({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[12.5px] text-ink-soft">{rotulo}</span>
-        <span className={cn("font-mono text-[15px] font-bold", atingiu ? "text-leaf" : "text-gold")}>
+        <span className="text-[13px] text-ink-soft">{rotulo}</span>
+        <span className={cn("font-mono text-[16px] font-bold", atingiu ? "text-leaf" : "text-gold")}>
           {valor}
           {sufixo}
         </span>
@@ -716,7 +716,7 @@ function Medidor({
         {/* Marca da meta, para o número ter referência. */}
         <span className="absolute top-0 h-2 w-px bg-foreground/40" style={{ left: `${meta}%` }} title={`Meta ${meta}${sufixo}`} />
       </div>
-      <p className="mt-1 text-[11px] text-muted-foreground">
+      <p className="mt-1 text-[12px] text-muted-foreground">
         {nota} · meta {meta}
         {sufixo}
       </p>
@@ -728,7 +728,7 @@ function Mini({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
     <div className="rounded-lg border border-border px-2.5 py-2">
       <div className="font-mono text-[16px] font-bold leading-none text-foreground">{valor}</div>
-      <div className="mt-1 text-[10.5px] leading-tight text-muted-foreground">{rotulo}</div>
+      <div className="mt-1 text-[12px] leading-tight text-muted-foreground">{rotulo}</div>
     </div>
   );
 }

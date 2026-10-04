@@ -59,7 +59,7 @@ export function VeiculoPicker({
               </button>
             </span>
           ))}
-          <button onClick={() => onChange([])} className="text-[11.5px] text-muted-foreground underline">
+          <button onClick={() => onChange([])} className="text-[12px] text-muted-foreground underline">
             limpar
           </button>
         </div>
@@ -69,7 +69,7 @@ export function VeiculoPicker({
         <button
           type="button"
           onClick={() => setAberto((o) => !o)}
-          className="flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 text-left text-[13.5px] transition-colors hover:border-[#c7d2df]"
+          className="flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 text-left text-[14px] transition-colors hover:border-[#c7d2df]"
         >
           <span className={cn(selecionadas.length ? "text-foreground" : "text-muted-foreground")}>
             {selecionadas.length
@@ -94,9 +94,9 @@ export function VeiculoPicker({
 
             <div className="max-h-60 overflow-y-auto py-1">
               {isPending ? (
-                <p className="px-3 py-4 text-center text-[12.5px] text-muted-foreground">Carregando frota…</p>
+                <p className="px-3 py-4 text-center text-[13px] text-muted-foreground">Carregando frota…</p>
               ) : filtrados.length === 0 ? (
-                <p className="px-3 py-4 text-center text-[12.5px] text-muted-foreground">
+                <p className="px-3 py-4 text-center text-[13px] text-muted-foreground">
                   Nenhum veículo encontrado.
                 </p>
               ) : (

@@ -47,7 +47,7 @@ const COLS: Column<Registro>[] = [
     header: "Motorista",
     render: (r) => (
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-tint text-[11px] font-semibold text-brand-navy">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-tint text-[12px] font-semibold text-brand-navy">
           {r.nome.split(" ").map((n) => n[0]).slice(0, 2).join("")}
         </div>
         <span className="font-semibold text-foreground">{r.nome}</span>

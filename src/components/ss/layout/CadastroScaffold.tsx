@@ -225,7 +225,7 @@ export function CadastroScaffold<T extends Record<string, unknown>>({
             empty={busca ? "Nenhum registro com esse filtro." : "Nada cadastrado ainda."}
           />
           {campos && (
-            <p className="mt-3 text-[11.5px] text-muted-foreground">
+            <p className="mt-3 text-[12px] text-muted-foreground">
               Clique em qualquer linha para ver e editar. Alterações valem para esta sessão enquanto a API de
               gravação não está ligada.
             </p>

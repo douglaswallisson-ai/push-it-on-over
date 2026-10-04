@@ -60,9 +60,11 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-dark: var(--sidebar-dark);
 
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+  /* Sem serifa em todo o sistema (decisão do PM, 02/10/2026): "mono" virou Inter
+     com números de largura igual, para placas e horários alinharem. */
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -150,7 +152,7 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.011em;
   }
 }
 
@@ -181,6 +183,7 @@
 
 @utility font-mono {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Barra de rolagem discreta, como no assessment. */
@@ -355,4 +358,21 @@
 .tema-denso .tabular-nums,
 .tema-denso td {
   font-variant-numeric: tabular-nums;
+}
+
+/* Faixa de abertura compacta (HeroBanner): o conteúdo das telas foi escrito
+   para texto branco sobre gradiente; aqui ele passa a ler sobre fundo claro. */
+.hero-compacto [class*="text-white"] {
+  color: var(--color-muted-foreground);
+}
+.hero-compacto .text-white,
+.hero-compacto [class*="font-semibold"][class*="text-white"],
+.hero-compacto [class*="font-bold"][class*="text-white"] {
+  color: var(--color-foreground);
+}
+.hero-compacto [class*="bg-white/"] {
+  background-color: var(--color-muted);
+}
+.hero-compacto [class*="border-white/"] {
+  border-color: var(--color-border);
 }

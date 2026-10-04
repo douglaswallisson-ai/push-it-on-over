@@ -66,7 +66,7 @@ export function DesempenhoPorContexto({ motorista }: { motorista: string }) {
       action={
         <span className="flex items-center gap-2">
           <Pill tone={notaTone(resultado.nota)}>Nota {resultado.nota}</Pill>
-          <span className="text-[11.5px] text-muted-foreground">{nf(Math.round(resultado.km))} km</span>
+          <span className="text-[12px] text-muted-foreground">{nf(Math.round(resultado.km))} km</span>
         </span>
       }
       bodyClassName="p-4"
@@ -103,11 +103,11 @@ export function DesempenhoPorContexto({ motorista }: { motorista: string }) {
                 <span className="font-mono text-[14px] font-bold text-foreground">
                   {codigoLinha.get(ctx.linhaId) ?? ctx.linhaId}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11.5px] text-ink-soft">
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[12px] text-ink-soft">
                   <Clock className="h-3 w-3" />
                   {ctx.faixaNome}
                 </span>
-                <span className="text-[11.5px] text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground">
                   {ctx.viagens} viagens · {nf(Math.round(ctx.km))} km
                 </span>
               </span>
@@ -123,7 +123,7 @@ export function DesempenhoPorContexto({ motorista }: { motorista: string }) {
         ))}
       </div>
 
-      <p className="mt-4 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-4 flex items-start gap-1.5 text-[12px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
         A nota de cada contexto compara o desempenho com o padrão cadastrado para aquela linha e faixa horária. A nota
         geral é a média dos contextos, ponderada pelo quilômetro rodado em cada um — viagem curta não pesa o mesmo que
@@ -136,7 +136,7 @@ export function DesempenhoPorContexto({ motorista }: { motorista: string }) {
 function LinhaResultado({ r }: { r: ResultadoIndicador }) {
   const sufixo = UNIDADE_SUFIXO[r.indicador.unidade];
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]">
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
       <span className="min-w-[150px] flex-1 truncate text-ink-soft">{r.indicador.label}</span>
 
       <span className="flex items-baseline gap-1.5 font-mono">
@@ -168,7 +168,7 @@ function LinhaResultado({ r }: { r: ResultadoIndicador }) {
 
       {/* De onde veio o padrão — o motorista precisa poder conferir. */}
       <span
-        className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground"
+        className="shrink-0 rounded px-1.5 py-0.5 text-[12px] text-muted-foreground"
         title={`Este valor de referência vem do ${ORIGEM_PADRAO_LABEL[r.origem].toLowerCase()}`}
       >
         {r.origem === "global" ? "global" : r.origem === "linha" ? "linha" : "faixa"}

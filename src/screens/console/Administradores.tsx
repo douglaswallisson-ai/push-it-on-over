@@ -102,7 +102,7 @@ export default function Administradores() {
 
         <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
             Administrador do console enxerga <strong className="text-foreground">todas as organizações</strong> e
             configura a plataforma inteira. Não confunda com o administrador da empresa cliente, que só administra a
             própria organização — esse é criado no contrato.
@@ -113,7 +113,7 @@ export default function Administradores() {
           <Card title="Novo administrador" icon={UserPlus} bodyClassName="p-4">
             <div className="flex flex-wrap items-end gap-2">
               <label className="flex flex-1 flex-col gap-1">
-                <span className="text-[11.5px] text-muted-foreground">Nome</span>
+                <span className="text-[12px] text-muted-foreground">Nome</span>
                 <input
                   autoFocus
                   value={nome}
@@ -123,7 +123,7 @@ export default function Administradores() {
                 />
               </label>
               <label className="flex flex-1 flex-col gap-1">
-                <span className="text-[11.5px] text-muted-foreground">E-mail corporativo</span>
+                <span className="text-[12px] text-muted-foreground">E-mail corporativo</span>
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -167,7 +167,7 @@ export default function Administradores() {
 
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[13.5px] font-semibold text-foreground">{a.nome}</span>
+                      <span className="text-[14px] font-semibold text-foreground">{a.nome}</span>
                       {a.fundador && (
                         <Pill tone="gold">
                           <Crown className="h-3 w-3" />
@@ -176,7 +176,7 @@ export default function Administradores() {
                       )}
                       {a.email === sessao?.email && <Pill tone="sky">você</Pill>}
                     </span>
-                    <span className="flex flex-wrap items-center gap-x-3 text-[11.5px] text-muted-foreground">
+                    <span className="flex flex-wrap items-center gap-x-3 text-[12px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
                         <Mail className="h-3 w-3" />
                         {a.email}
@@ -203,7 +203,7 @@ export default function Administradores() {
               ))}
             </ul>
           )}
-          <p className="mt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             Qualquer administrador pode adicionar outro — não há hierarquia entre eles. O fundador não pode ser
             desativado, para que o console nunca fique sem acesso.
           </p>

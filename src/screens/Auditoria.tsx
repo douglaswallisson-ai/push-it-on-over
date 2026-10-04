@@ -83,8 +83,8 @@ export default function Auditoria() {
         <PageHeader title="Auditoria" subtitle="Acesso restrito" />
         <div className="mx-auto max-w-[720px] px-6 py-16 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h2 className="mt-4 text-[17px] font-semibold text-foreground">Sem permissão</h2>
-          <p className="mx-auto mt-2 max-w-md text-[13.5px] text-muted-foreground">
+          <h2 className="mt-4 text-[16px] font-semibold text-foreground">Sem permissão</h2>
+          <p className="mx-auto mt-2 max-w-md text-[14px] text-muted-foreground">
             A trilha de auditoria é visível para administradores. Fale com o administrador da sua organização se
             precisar consultá-la.
           </p>
@@ -104,7 +104,7 @@ export default function Auditoria() {
       key: "em",
       header: "Quando",
       render: (r) => (
-        <span className="whitespace-nowrap font-mono text-[12.5px] text-ink-soft" title={dataHora(r.em)}>
+        <span className="whitespace-nowrap font-mono text-[13px] text-ink-soft" title={dataHora(r.em)}>
           {desde(r.em)}
         </span>
       ),
@@ -117,7 +117,7 @@ export default function Auditoria() {
           <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <div className="truncate text-[13px] font-medium text-foreground">{r.usuario}</div>
-            <div className="text-[11px] text-muted-foreground">{r.perfil}</div>
+            <div className="text-[12px] text-muted-foreground">{r.perfil}</div>
           </div>
         </div>
       ),
@@ -126,7 +126,7 @@ export default function Auditoria() {
       key: "organizacao",
       header: "Organização",
       render: (r) => (
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12.5px]">
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px]">
           <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
           {r.organizacao}
         </span>
@@ -223,7 +223,7 @@ export default function Auditoria() {
                 : "Nenhuma ação registrada nesta sessão ainda. A trilha começa a partir da entrada no sistema."}
             </EmptyNote>
           )}
-          <p className="mt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             {ehSuperAdmin(sessao?.perfil)
               ? "Como super admin, você vê a trilha de todas as organizações."
               : "Você vê as ações realizadas na sua organização, inclusive as feitas pela equipe da SS."}{" "}

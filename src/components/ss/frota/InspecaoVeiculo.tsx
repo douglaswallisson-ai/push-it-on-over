@@ -117,7 +117,7 @@ export function InspecaoVeiculo({
             title={`${p.rotulo}: ${a.valor}`}
             style={{ left: `${p.x}%`, top: `${p.y}%` }}
             className={cn(
-              "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold text-white shadow-card ring-4 ring-white/40 transition-transform hover:scale-110",
+              "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full px-2 py-1 text-[12px] font-bold text-white shadow-card ring-4 ring-white/40 transition-transform hover:scale-110",
               COR[a.tom],
               selecionado === p.id && "scale-[1.15] ring-8",
               a.tom === "critico" && "animate-pulse",

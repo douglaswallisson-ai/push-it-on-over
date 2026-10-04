@@ -139,8 +139,8 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
           className={cn("h-[17px] w-[17px] shrink-0", orgsQ.error ? "text-coral" : "text-white/60")}
         />
         <div className="min-w-0 flex-1 leading-tight">
-          <div className="truncate text-[12.5px] font-semibold text-white">{sessao?.organizacao}</div>
-          <div className="truncate text-[10.5px] text-white/45">{motivo}</div>
+          <div className="truncate text-[13px] font-semibold text-white">{sessao?.organizacao}</div>
+          <div className="truncate text-[12px] text-white/45">{motivo}</div>
         </div>
       </div>
     );
@@ -174,8 +174,8 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
         {expanded && (
           <>
             <div className="min-w-0 flex-1 text-left leading-tight">
-              <div className="truncate text-[12.5px] font-semibold text-white">{ativa.name}</div>
-              <div className="truncate text-[10.5px] text-white/45">Trocar unidade</div>
+              <div className="truncate text-[13px] font-semibold text-white">{ativa.name}</div>
+              <div className="truncate text-[12px] text-white/45">Trocar unidade</div>
             </div>
             <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
           </>
@@ -184,7 +184,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
 
       {open && expanded && (
         <div className="absolute bottom-full left-0 z-10 mb-2 w-[290px] overflow-hidden rounded-xl border border-white/10 bg-[#101a2e] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2 font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-white/35">
+          <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2 font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-white/35">
             <ShieldCheck className="h-3 w-3" />
             Acesso de super admin
           </div>
@@ -196,7 +196,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar unidade ou empresa…"
-              className="h-9 w-full bg-transparent pl-9 pr-3 text-[12.5px] text-white outline-none placeholder:text-white/30"
+              className="h-9 w-full bg-transparent pl-9 pr-3 text-[13px] text-white outline-none placeholder:text-white/30"
             />
           </div>
 
@@ -218,7 +218,7 @@ export function OrgSwitcher({ expanded }: { expanded: boolean }) {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13px] font-medium text-white">{org.name}</div>
-                    {org.plan && <div className="truncate text-[10.5px] text-white/40">{org.plan}</div>}
+                    {org.plan && <div className="truncate text-[12px] text-white/40">{org.plan}</div>}
                   </div>
                   {ativa.id === org.id && <Check className="h-4 w-4 shrink-0 text-brand-green" />}
                 </button>

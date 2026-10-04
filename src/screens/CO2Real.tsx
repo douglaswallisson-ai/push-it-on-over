@@ -90,7 +90,7 @@ export default function CO2Real() {
       />
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
         {!grupo && (
-          <div className="flex items-start gap-2 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[12.5px]">
+          <div className="flex items-start gap-2 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[13px]">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
             Os números abaixo somam todas as empresas do seu acesso. O certificado é por empresa: escolha uma no seletor de organização.
           </div>
@@ -110,7 +110,7 @@ export default function CO2Real() {
               <input type="date" value={livre.fim} max={fimPadrao} onChange={(e) => e.target.value && setLivre((x) => ({ ...x, fim: e.target.value }))} className={sel} />
             </>
           )}
-          <span className="ml-2 text-[12.5px] text-muted-foreground">comparado com</span>
+          <span className="ml-2 text-[13px] text-muted-foreground">comparado com</span>
           <select value={refModo} onChange={(e) => setRefModo(e.target.value as "ano_anterior" | "livre")} className={sel} aria-label="Referência">
             <option value="ano_anterior">o mesmo período do ano anterior</option>
             <option value="livre">outro período (ex.: início da operação)…</option>
@@ -134,7 +134,7 @@ export default function CO2Real() {
               <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[auto_1fr] lg:items-center">
                 <div className="flex justify-center"><SSGreenSeal size={190} /></div>
                 <div>
-                  <div className="mb-1 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-leaf">
+                  <div className="mb-1 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.14em] text-leaf">
                     <Leaf className="h-3.5 w-3.5" /> Redução medida por telemetria
                   </div>
                   {r.certificavel ? (
@@ -142,7 +142,7 @@ export default function CO2Real() {
                       A frota deixou de emitir <span className="text-leaf">{nf(r.co2_evitado_t, 1)} t de CO₂</span> no período.
                     </h2>
                   ) : (
-                    <h2 className="text-2xl font-bold leading-tight md:text-[28px]">Sem redução de CO₂ a certificar neste período.</h2>
+                    <h2 className="text-2xl font-bold leading-tight md:text-[30px]">Sem redução de CO₂ a certificar neste período.</h2>
                   )}
                   <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
                     {r.certificavel ? (
@@ -186,7 +186,7 @@ export default function CO2Real() {
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
-              <p className="mt-2 text-[11.5px] text-muted-foreground">Cada mês é comparado com o mesmo mês da referência. O total do período usa o km/l do período inteiro.</p>
+              <p className="mt-2 text-[12px] text-muted-foreground">Cada mês é comparado com o mesmo mês da referência. O total do período usa o km/l do período inteiro.</p>
             </Card>
 
             <Card title="Metodologia" icon={ShieldCheck} bodyClassName="p-5 text-[13px] leading-relaxed text-ink-soft">
@@ -229,15 +229,15 @@ function Certificado({ r, grupo, onClose }: { r: Co2Resultado; grupo: string; on
         <div className="relative flex h-full flex-col px-14 py-10">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "#2E86C8" }}>SS Telemática · SS Green</p>
+              <p className="font-mono text-[12px] font-semibold uppercase tracking-[0.2em]" style={{ color: "#2E86C8" }}>SS Telemática · SS Green</p>
               <h1 className="mt-2 font-display text-[34px] font-bold leading-tight" style={{ color: "#1B3A6B" }}>Certificado de Redução<br />de Emissões de CO₂</h1>
             </div>
             <SSGreenSeal size={150} />
           </div>
 
           <p className="mt-5 text-[14px] text-ink-soft">Certificamos que a frota de</p>
-          <p className="font-display text-[26px] font-bold" style={{ color: "#1B3A6B" }}>{nome}</p>
-          {r.empresa?.cnpj && <p className="text-[12.5px] text-muted-foreground">CNPJ {r.empresa.cnpj}</p>}
+          <p className="font-display text-[24px] font-bold" style={{ color: "#1B3A6B" }}>{nome}</p>
+          {r.empresa?.cnpj && <p className="text-[13px] text-muted-foreground">CNPJ {r.empresa.cnpj}</p>}
           <p className="mt-3 max-w-[760px] text-[14px] leading-relaxed text-ink-soft">
             deixou de emitir, entre <b>{dataBR(r.periodo.inicio)}</b> e <b>{dataBR(r.periodo.fim)}</b>, em comparação com o período de{" "}
             {dataBR(r.referencia.inicio)} a {dataBR(r.referencia.fim)}, a quantidade de
@@ -248,7 +248,7 @@ function Certificado({ r, grupo, onClose }: { r: Co2Resultado; grupo: string; on
               <p className="font-display text-[56px] font-bold leading-none" style={{ color: "#4E9A2C" }}>{nf(r.co2_evitado_t, 1)} t</p>
               <p className="mt-1 text-[13px] font-semibold uppercase tracking-wide text-ink-soft">de CO₂ evitadas</p>
             </div>
-            <div className="grid grid-cols-3 gap-6 pb-1 text-[12.5px]">
+            <div className="grid grid-cols-3 gap-6 pb-1 text-[13px]">
               {[
                 ["Diesel evitado", `${nf(r.litros_evitados)} L`],
                 ["Km/l", `${nf(r.kml_referencia, 2)} → ${nf(r.kml, 2)} (+${nf(r.melhora_pct, 1)}%)`],
@@ -262,7 +262,7 @@ function Certificado({ r, grupo, onClose }: { r: Co2Resultado; grupo: string; on
             </div>
           </div>
 
-          <p className="mt-5 max-w-[860px] text-[11px] leading-relaxed text-muted-foreground">
+          <p className="mt-5 max-w-[860px] text-[12px] leading-relaxed text-muted-foreground">
             Metodologia: combustível evitado = consumo do período × (km/l do período ÷ km/l da referência − 1), com km e litros medidos pela telemetria embarcada
             (km dos registros com combustível medido ÷ litros). CO₂ = litros × {nf(r.fator_kg_l, 2)} kg/L. Certifica redução medida, não neutralidade de carbono.
           </p>
@@ -270,12 +270,12 @@ function Certificado({ r, grupo, onClose }: { r: Co2Resultado; grupo: string; on
           <div className="mt-auto flex items-end justify-between pt-4">
             <div className="text-[12px] text-ink-soft">
               <p>Emitido em {emitidoEm}</p>
-              <p className="font-mono text-[11px] text-muted-foreground">Código de verificação: {cod}</p>
+              <p className="font-mono text-[12px] text-muted-foreground">Código de verificação: {cod}</p>
             </div>
             <div className="text-center">
               <div className="mb-1 h-px w-56 bg-ink-soft/40" />
               <p className="text-[12px] font-semibold text-foreground">SS Telemática</p>
-              <p className="text-[11px] text-muted-foreground">Telemetria verificada</p>
+              <p className="text-[12px] text-muted-foreground">Telemetria verificada</p>
             </div>
           </div>
         </div>

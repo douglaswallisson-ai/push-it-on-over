@@ -67,7 +67,7 @@ const COLS: Column<Veiculo>[] = [
     render: (v) => (
       <div>
         <div className="font-mono font-semibold text-foreground">{v.placa}</div>
-        <div className="text-[11.5px] text-muted-foreground">{v.modelo}</div>
+        <div className="text-[12px] text-muted-foreground">{v.modelo}</div>
       </div>
     ),
   },
@@ -85,7 +85,7 @@ const COLS: Column<Veiculo>[] = [
             style={{ width: `${v.fuligem}%` }}
           />
         </div>
-        <span className="font-mono text-[12.5px] font-semibold">{v.fuligem}%</span>
+        <span className="font-mono text-[13px] font-semibold">{v.fuligem}%</span>
       </div>
     ),
   },
@@ -145,14 +145,14 @@ function RegeneracaoExemplo() {
                     <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-brand-sky bg-navy-tint text-brand-blue">
                       <f.icon className="h-5 w-5" />
                     </div>
-                    <p className="mt-2 text-[12.5px] font-semibold">{f.label}</p>
-                    <p className="mt-0.5 max-w-[120px] text-[11px] leading-tight text-muted-foreground">{f.desc}</p>
+                    <p className="mt-2 text-[13px] font-semibold">{f.label}</p>
+                    <p className="mt-0.5 max-w-[120px] text-[12px] leading-tight text-muted-foreground">{f.desc}</p>
                   </div>
                   {i < FASES.length - 1 && <div className="mb-8 h-0.5 flex-1 bg-navy-line" />}
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-coral-tint px-4 py-3 text-[12.5px] text-ink-soft">
+            <div className="mt-4 flex items-start gap-2 rounded-lg bg-coral-tint px-4 py-3 text-[13px] text-ink-soft">
               <Ban className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
               <span>
                 <strong className="text-coral">Regeneração interrompida:</strong> quando o ciclo é
@@ -167,7 +167,7 @@ function RegeneracaoExemplo() {
               {TIPOS.map((t) => (
                 <div key={t.label} className="flex items-start gap-3 rounded-lg border border-border p-3">
                   <Pill tone={t.tone}>{t.label}</Pill>
-                  <p className="flex-1 text-[12.5px] leading-relaxed text-ink-soft">{t.desc}</p>
+                  <p className="flex-1 text-[13px] leading-relaxed text-ink-soft">{t.desc}</p>
                 </div>
               ))}
             </div>

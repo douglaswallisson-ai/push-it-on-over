@@ -112,13 +112,13 @@ export default function SinoticoUrbano({ linhas }: { linhas: Linha[] }) {
                 aria-pressed={linha === l.linha}
                 title={`${l.agora} ônibus agora · ${l.carros_3h} nas últimas 3 h`}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[12.5px] font-semibold transition",
+                  "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[13px] font-semibold transition",
                   linha === l.linha ? "border-brand-navy bg-brand-navy text-white" : "border-border bg-white hover:border-brand-sky",
                   l.agora === 0 && linha !== l.linha && "opacity-50",
                 )}
               >
                 {l.linha}
-                <span className={cn("rounded px-1 text-[10.5px]", linha === l.linha ? "bg-white/20" : "bg-secondary text-muted-foreground")}>{l.agora}</span>
+                <span className={cn("rounded px-1 text-[12px]", linha === l.linha ? "bg-white/20" : "bg-secondary text-muted-foreground")}>{l.agora}</span>
               </button>
             ))}
           </div>
@@ -195,7 +195,7 @@ function Regua({ s }: { s: Sentido }) {
                       {altura >= 0 && (
                         <span
                           className={cn(
-                            "absolute whitespace-nowrap text-[10.5px] text-muted-foreground",
+                            "absolute whitespace-nowrap text-[12px] text-muted-foreground",
                             // Perto das pontas o nome se alinha para dentro, para não sair da régua.
                             pct < 8 ? "translate-x-0" : pct > 92 ? "-translate-x-full" : "-translate-x-1/2",
                           )}
@@ -214,8 +214,8 @@ function Regua({ s }: { s: Sentido }) {
               })()}
               {/* Linha */}
               <div className="absolute left-0 right-0 h-2 rounded-full bg-brand-navy/15" style={{ top: 86 }} />
-              <span className="absolute text-[10.5px] font-semibold text-muted-foreground" style={{ left: 0, top: 100 }}>início</span>
-              <span className="absolute -translate-x-full text-[10.5px] font-semibold text-muted-foreground" style={{ left: "100%", top: 100 }}>fim</span>
+              <span className="absolute text-[12px] font-semibold text-muted-foreground" style={{ left: 0, top: 100 }}>início</span>
+              <span className="absolute -translate-x-full text-[12px] font-semibold text-muted-foreground" style={{ left: "100%", top: 100 }}>fim</span>
               {/* Ônibus */}
               {naRota.map((o) => {
                 const cor = o.espacamento ? COR[o.espacamento] : "var(--muted-foreground)";
@@ -227,11 +227,11 @@ function Regua({ s }: { s: Sentido }) {
                     >
                       <Bus className="h-[18px] w-[18px]" strokeWidth={2.2} />
                     </div>
-                    <span className="absolute left-0 top-10 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1.5 font-mono text-[11px] font-bold shadow-sm">
+                    <span className="absolute left-0 top-10 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1.5 font-mono text-[12px] font-bold shadow-sm">
                       {o.prefixo}
                     </span>
                     {o.frente_min != null && (
-                      <span className="absolute left-0 top-[60px] -translate-x-1/2 whitespace-nowrap text-[10.5px]" style={{ color: cor }}>
+                      <span className="absolute left-0 top-[60px] -translate-x-1/2 whitespace-nowrap text-[12px]" style={{ color: cor }}>
                         <ArrowRight className="mr-0.5 inline h-3 w-3" />
                         {nf(o.frente_min)} min
                       </span>
@@ -261,7 +261,7 @@ function Regua({ s }: { s: Sentido }) {
               ))}
             </p>
           )}
-          <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+          <p className="mt-2 flex items-center gap-1.5 text-[12px] text-muted-foreground">
             <Ruler className="h-3.5 w-3.5" /> Linha desenhada pelo trajeto real da viagem {rg.base.viagem} de{" "}
             {rg.base.dia.split("-").reverse().join("/")}, das {rg.base.inicio} às {rg.base.fim}.
           </p>

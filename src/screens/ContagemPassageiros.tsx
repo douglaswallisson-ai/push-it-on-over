@@ -167,7 +167,7 @@ function StopFlow() {
           <div key={p.nome} className="flex flex-1 flex-col items-center gap-2">
             {/* Barras: embarque para cima, desembarque para baixo. */}
             <div className="flex h-40 w-full flex-col items-center justify-end gap-1">
-              <span className="font-mono text-[10px] text-leaf">{p.sobe > 0 ? `↑${p.sobe}` : ""}</span>
+              <span className="font-mono text-[12px] text-leaf">{p.sobe > 0 ? `↑${p.sobe}` : ""}</span>
               <div
                 className="w-6 rounded-t bg-leaf"
                 style={{ height: `${(p.sobe / maxFlux) * 60}px` }}
@@ -177,17 +177,17 @@ function StopFlow() {
                 className="w-6 rounded-b bg-coral"
                 style={{ height: `${(p.desce / maxFlux) * 60}px` }}
               />
-              <span className="font-mono text-[10px] text-coral">{p.desce > 0 ? `↓${p.desce}` : ""}</span>
+              <span className="font-mono text-[12px] text-coral">{p.desce > 0 ? `↓${p.desce}` : ""}</span>
             </div>
             <div
               className={cn(
-                "w-full rounded-md py-1 text-center font-mono text-[11px] font-semibold",
+                "w-full rounded-md py-1 text-center font-mono text-[12px] font-semibold",
                 p.onboard >= CAP * 0.9 ? "bg-coral-tint text-coral" : "bg-navy-tint text-brand-blue",
               )}
             >
               {p.onboard}
             </div>
-            <span className="text-center text-[10.5px] leading-tight text-muted-foreground">{p.nome}</span>
+            <span className="text-center text-[12px] leading-tight text-muted-foreground">{p.nome}</span>
           </div>
         ))}
       </div>

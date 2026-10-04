@@ -159,7 +159,7 @@ export function BuscaGlobal() {
       >
         <Search className="h-4 w-4" />
         <span className="hidden text-[13px] font-medium lg:inline">Buscar</span>
-        <kbd className="hidden rounded border border-border bg-secondary px-1.5 font-mono text-[10.5px] text-muted-foreground lg:inline">
+        <kbd className="hidden rounded border border-border bg-secondary px-1.5 font-mono text-[12px] text-muted-foreground lg:inline">
           ⌘K
         </kbd>
       </button>
@@ -183,7 +183,7 @@ export function BuscaGlobal() {
               setCursor(0);
             }}
             placeholder="Prefixo, placa, motorista, linha, ponto ou tela…"
-            className="h-14 w-full bg-transparent pl-11 pr-4 text-[15px] outline-none placeholder:text-muted-foreground"
+            className="h-14 w-full bg-transparent pl-11 pr-4 text-[16px] outline-none placeholder:text-muted-foreground"
           />
         </div>
 
@@ -203,7 +203,7 @@ export function BuscaGlobal() {
               return (
                 <div key={r.id}>
                   {novoGrupo && (
-                    <div className="px-4 pb-1 pt-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                    <div className="px-4 pb-1 pt-2.5 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                       {r.grupo}
                     </div>
                   )}
@@ -217,8 +217,8 @@ export function BuscaGlobal() {
                   >
                     <r.icone className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13.5px] font-medium text-foreground">{r.titulo}</span>
-                      <span className="block truncate text-[11.5px] text-muted-foreground">{r.subtitulo}</span>
+                      <span className="block truncate text-[14px] font-medium text-foreground">{r.titulo}</span>
+                      <span className="block truncate text-[12px] text-muted-foreground">{r.subtitulo}</span>
                     </span>
                     {cursor === i && <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
                   </button>
@@ -228,7 +228,7 @@ export function BuscaGlobal() {
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[12px] text-muted-foreground">
           <span>↑ ↓ navegar · Enter abrir · Esc fechar</span>
           <span>{resultados.length} resultados</span>
         </div>

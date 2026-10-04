@@ -98,7 +98,7 @@ export function FaixasConducao({
       </div>
 
       {/* Régua dos grupos, para a barra ser legível sem passar o mouse. */}
-      <div className="mt-1.5 flex w-full text-[10px] uppercase tracking-[0.06em] text-muted-foreground">
+      <div className="mt-1.5 flex w-full text-[12px] uppercase tracking-[0.06em] text-muted-foreground">
         {ORDEM_GRUPOS.map((g) => {
           const w = FAIXAS.filter((f) => f.grupo === g).reduce((a, f) => a + larguraDe(f.id), 0);
           if (w <= 0) return null;
@@ -117,7 +117,7 @@ export function FaixasConducao({
       {/* Detalhe da faixa em foco. */}
       <div
         className={cn(
-          "mt-3 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[12.5px] transition-colors",
+          "mt-3 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[13px] transition-colors",
           faixaAtiva ? "border-border bg-secondary/50" : "border-dashed border-border bg-transparent",
         )}
       >
@@ -156,11 +156,11 @@ export function FaixasConducao({
                 )}
               >
                 <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: faixa.cor }} />
-                <span className="flex-1 truncate text-[12.5px] text-ink-soft">{faixa.label}</span>
+                <span className="flex-1 truncate text-[13px] text-ink-soft">{faixa.label}</span>
                 {faixa.desejavel && (
-                  <span className="shrink-0 rounded bg-leaf-tint px-1.5 text-[10px] font-semibold text-leaf">alvo</span>
+                  <span className="shrink-0 rounded bg-leaf-tint px-1.5 text-[12px] font-semibold text-leaf">alvo</span>
                 )}
-                <span className="shrink-0 font-mono text-[12.5px] font-semibold text-foreground">{fmt(pct)}%</span>
+                <span className="shrink-0 font-mono text-[13px] font-semibold text-foreground">{fmt(pct)}%</span>
               </button>
             </li>
           ))}

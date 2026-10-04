@@ -38,7 +38,7 @@ export function PaginaEventos({ f }: Ctx) {
               title={`Clique para ${ativo ? "tirar" : "incluir"} ${ROTULO_EVENTO[t]} nos gráficos`}
               className={cn("rounded-2xl border p-3 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5", ativo ? "border-border bg-card" : "border-dashed border-border bg-secondary/40 opacity-60")}
             >
-              <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: COR_EVENTO[t] }} />
                 <span className="truncate">{ROTULO_EVENTO[t]}</span>
               </div>
@@ -56,7 +56,7 @@ export function PaginaEventos({ f }: Ctx) {
         <Grafico titulo="Eventos por dia" icon={CalendarDays} dica="Evolução diária, empilhada por tipo.">
           <AreaChart data={porDia}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip content={<DicaGrafico fmt={(v) => nf(v)} />} />
             {tipos.map((t) => <Area key={t} dataKey={ROTULO_EVENTO[t]} stackId="d" stroke={COR_EVENTO[t]} fill={COR_EVENTO[t]} fillOpacity={0.55} {...ANIM} />)}
@@ -151,7 +151,7 @@ export function PaginaSeguranca({ f, ant }: Ctx) {
       <Grafico titulo="Eventos de segurança por dia" icon={ShieldAlert} dica="Totais diários consolidados (inclui o dia de ontem). Comparação: mesmos dias do mês anterior." altura={300}>
         <BarChart data={dados}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+          <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} />
           <Tooltip content={<DicaGrafico fmt={(v) => nf(v)} />} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -200,7 +200,7 @@ export function ListaDoDia({ f, inicial, tiposIniciais = EVENTOS_SEGURANCA }: { 
       icon={ListChecks}
       action={
         <div className="flex flex-wrap items-center gap-2">
-          <input type="date" value={dia} max={iso(new Date())} onChange={(e) => e.target.value && setDia(e.target.value)} className="h-8 rounded-lg border border-border bg-white px-2 text-[12.5px]" />
+          <input type="date" value={dia} max={iso(new Date())} onChange={(e) => e.target.value && setDia(e.target.value)} className="h-8 rounded-lg border border-border bg-white px-2 text-[13px]" />
           <Info texto="Cada evento com hora, placa, condutor e endereço. Vem da tabela de eventos com localização, que é carregada com atraso de até um dia." />
         </div>
       }
@@ -211,7 +211,7 @@ export function ListaDoDia({ f, inicial, tiposIniciais = EVENTOS_SEGURANCA }: { 
           <button
             key={t}
             onClick={() => setTipos((x) => (x.includes(t) ? x.filter((y) => y !== t) : [...x, t]))}
-            className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11.5px] transition-all", tipos.includes(t) ? "border-brand-navy bg-navy-tint text-foreground" : "border-border text-muted-foreground")}
+            className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[12px] transition-all", tipos.includes(t) ? "border-brand-navy bg-navy-tint text-foreground" : "border-border text-muted-foreground")}
           >
             <span className="h-2 w-2 rounded-full" style={{ background: COR_EVENTO[t] }} />
             {ROTULO_EVENTO[t]}
@@ -228,8 +228,8 @@ export function ListaDoDia({ f, inicial, tiposIniciais = EVENTOS_SEGURANCA }: { 
       )}
       <Carregando q={q}>
         <DataTable columns={cols as unknown as Column<Record<string, unknown>>[]} rows={itens.slice(0, 300) as unknown as Record<string, unknown>[]} empty={semCarga ? "Aguardando a carga deste dia." : "Nenhum evento dos tipos escolhidos neste dia."} />
-        {itens.length > 300 && <p className="mt-2 text-[11px] text-muted-foreground">Mostrando 300 de {nf(itens.length)}. Use os filtros de placa ou condutor para recortar.</p>}
-        <p className="mt-2 text-[11px] text-muted-foreground"><MapPin className="mr-1 inline h-3 w-3" />Passe o mouse sobre o local para ver o endereço completo.</p>
+        {itens.length > 300 && <p className="mt-2 text-[12px] text-muted-foreground">Mostrando 300 de {nf(itens.length)}. Use os filtros de placa ou condutor para recortar.</p>}
+        <p className="mt-2 text-[12px] text-muted-foreground"><MapPin className="mr-1 inline h-3 w-3" />Passe o mouse sobre o local para ver o endereço completo.</p>
       </Carregando>
     </Card>
   );

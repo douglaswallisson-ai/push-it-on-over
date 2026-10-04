@@ -98,7 +98,7 @@ export function FleetFilters({
 
       <button
         onClick={() => onChange({ veiculo: "Todos", motorista: "Todos", data: value.data })}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <X className="h-3.5 w-3.5" />
         Limpar

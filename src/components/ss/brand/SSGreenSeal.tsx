@@ -151,7 +151,7 @@ export function SSGreenBadge() {
         </svg>
       </div>
       <div>
-        <p className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           Frota certificada
         </p>
         <p className="font-display text-lg font-bold text-leaf">SS GREEN · 2026</p>

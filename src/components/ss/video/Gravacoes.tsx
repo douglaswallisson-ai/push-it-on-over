@@ -118,18 +118,18 @@ export function Gravacoes() {
       header: "Veículo",
       render: (s) => <span className="font-mono text-[13px] font-semibold">{prefixo.get(s.veiculoId) ?? "—"}</span>,
     },
-    { key: "canal", header: "Canal", align: "center", render: (s) => <span className="font-mono text-[12.5px]">CAM {s.canal}</span> },
+    { key: "canal", header: "Canal", align: "center", render: (s) => <span className="font-mono text-[13px]">CAM {s.canal}</span> },
     {
       key: "janela",
       header: "Janela",
       render: (s) => (
-        <span className="whitespace-nowrap font-mono text-[12.5px] text-ink-soft">
+        <span className="whitespace-nowrap font-mono text-[13px] text-ink-soft">
           {dataHora(s.inicio)} — {hora(s.fim)}
         </span>
       ),
     },
-    { key: "motivo", header: "Motivo", render: (s) => <span className="text-[12.5px]">{s.motivo ?? "—"}</span> },
-    { key: "solicitadoPor", header: "Solicitante", render: (s) => <span className="text-[12.5px] text-muted-foreground">{s.solicitadoPor}</span> },
+    { key: "motivo", header: "Motivo", render: (s) => <span className="text-[13px]">{s.motivo ?? "—"}</span> },
+    { key: "solicitadoPor", header: "Solicitante", render: (s) => <span className="text-[13px] text-muted-foreground">{s.solicitadoPor}</span> },
     {
       key: "status",
       header: "Status",
@@ -137,7 +137,7 @@ export function Gravacoes() {
       render: (s) =>
         s.status === "baixando" ? (
           <span className="inline-flex w-28 flex-col items-center gap-1">
-            <span className="font-mono text-[11.5px] text-brand-sky">{s.progressoPct}%</span>
+            <span className="font-mono text-[12px] text-brand-sky">{s.progressoPct}%</span>
             <span className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <span className="block h-1.5 rounded-full bg-brand-sky" style={{ width: `${s.progressoPct}%` }} />
             </span>
@@ -243,13 +243,13 @@ export function Gravacoes() {
                 );
               })}
             </div>
-            <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
+            <div className="flex justify-between font-mono text-[12px] text-muted-foreground">
               {[0, 6, 12, 18, 23].map((h) => (
                 <span key={h}>{String(h).padStart(2, "0")}h</span>
               ))}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-4 text-[11.5px]">
+            <div className="mt-3 flex flex-wrap gap-4 text-[12px]">
               <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-leaf" /> Já no servidor
               </span>
@@ -261,7 +261,7 @@ export function Gravacoes() {
               </span>
             </div>
 
-            <p className="mt-3 text-[11.5px] text-muted-foreground">
+            <p className="mt-3 text-[12px] text-muted-foreground">
               Clique numa faixa para solicitar o trecho. As lacunas costumam ser queda de energia do equipamento ou
               falha de cartão — vale investigar quando se repetem no mesmo veículo.
             </p>
@@ -280,7 +280,7 @@ export function Gravacoes() {
         ) : (
           <EmptyNote>Nenhuma solicitação de gravação.</EmptyNote>
         )}
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           O download compete com o dado móvel do veículo em operação, por isso entra em fila e não é imediato. Toda
           solicitação fica registrada em auditoria com o solicitante.
         </p>

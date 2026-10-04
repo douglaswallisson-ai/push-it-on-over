@@ -61,7 +61,7 @@ export function PaginaGeral({ f, ant, preco }: Ctx) {
               {fatias.map((x) => <Cell key={x.nome} fill={x.cor} />)}
             </Pie>
             <Tooltip content={<DicaGrafico fmt={(v) => `${nf(v, 1)}%`} />} />
-            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 11.5 }} />
+            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 11 }} />
           </PieChart>
         </Grafico>
         <Card title="Lado bom × lado ruim" icon={Activity} action={<Info texto="Lado bom: inércia, extra econômica, verde, baixa velocidade, eco-roll. Lado ruim: amarela, vermelha, parado acelerando, batendo transmissão, sem tração, tolerância e parado ligado (com produtivo)." />} bodyClassName="p-4">
@@ -99,14 +99,14 @@ export function PaginaGeral({ f, ant, preco }: Ctx) {
             ].map((c) => (
               <div key={c.t} className={cn("flex items-center gap-4 rounded-xl border p-3", c.base > c.lim ? "border-coral-line bg-coral-tint/30" : "border-border")}>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12.5px] font-semibold">{c.t} <span className="font-normal text-muted-foreground">· {pct(c.base)} do tempo</span></p>
+                  <p className="text-[13px] font-semibold">{c.t} <span className="font-normal text-muted-foreground">· {pct(c.base)} do tempo</span></p>
                   <p className="text-[12px] text-muted-foreground">{c.acao}</p>
                 </div>
                 <p className="font-display text-lg font-bold">{brl(c.v)}</p>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[11.5px] text-muted-foreground">Custo do período {brl(eco.custo)} · economia potencial {brl(eco.total)} ({pct(eco.pct)}).</p>
+          <p className="mt-3 text-[12px] text-muted-foreground">Custo do período {brl(eco.custo)} · economia potencial {brl(eco.total)} ({pct(eco.pct)}).</p>
         </Card>
       </div>
     </>
@@ -117,7 +117,7 @@ function AreaChartBomRuim({ dados }: { dados: { rotulo: string; bom: number; rui
   return (
     <ResponsiveContainer>
       <AreaChart data={dados} stackOffset="expand">
-        <XAxis dataKey="rotulo" tick={{ fontSize: 10 }} />
+        <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
         <YAxis hide />
         <Tooltip content={<DicaGrafico fmt={(v) => `${nf(v, 1)}%`} />} />
         <Area dataKey="bom" name="Lado bom" stackId="1" stroke="var(--leaf)" fill="var(--leaf)" fillOpacity={0.55} {...ANIM} />
@@ -194,7 +194,7 @@ export function PaginaParado({ f, ant, preco }: Ctx) {
         <Grafico titulo="Por hora do dia" icon={Clock} dica="Em que horário as paradas com motor ligado começam.">
           <BarChart data={(p?.por_hora ?? []).map((x) => ({ rotulo: `${String(x.hora).padStart(2, "0")}h`, Horas: x.horas }))}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip content={<DicaGrafico fmt={(v) => hm(v)} />} />
             <Bar dataKey="Horas" fill="var(--gold)" radius={[4, 4, 0, 0]} {...ANIM} />
@@ -203,7 +203,7 @@ export function PaginaParado({ f, ant, preco }: Ctx) {
         <Grafico titulo="Por dia do mês" icon={CalendarDays} dica="Tempo parado com motor ligado em cada dia do mês.">
           <BarChart data={(p?.por_dia_mes ?? []).map((x) => ({ rotulo: String(x.dia), Horas: x.horas }))}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip content={<DicaGrafico fmt={(v) => hm(v)} />} />
             {p && p.paradas > 0 && <ReferenceLine y={p.horas / Math.max(1, p.por_dia_mes.filter((x) => x.horas > 0).length)} stroke="var(--coral)" strokeDasharray="4 4" />}
@@ -275,7 +275,7 @@ export function PaginaCombustivel({ f, ant, preco }: Ctx) {
           </Carregando>
         </Card>
       </div>
-      <p className="text-[11.5px] text-muted-foreground">
+      <p className="text-[12px] text-muted-foreground">
         As páginas “Gestão de Combustível Cliente” do Power BI usam os abastecimentos manuais (tela Combustível). Aqui a fonte é a telemetria; os abastecimentos manuais entram quando o módulo de combustível estiver no sistema novo.
       </p>
     </Carregando>

@@ -236,7 +236,7 @@ function CentralRelatorios() {
 
         {CATALOGO.map((cat) => (
           <section key={cat.grupo}>
-            <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               <span className="inline-block h-px w-4 bg-current opacity-50" />
               {cat.grupo}
             </p>
@@ -263,15 +263,15 @@ function CentralRelatorios() {
                   >
                     <r.icon className="h-5 w-5" style={{ color: r.color }} />
                   </div>
-                  <h3 className="text-[14.5px] font-semibold text-foreground">{r.title}</h3>
-                  <p className="mt-1 flex-1 text-[12.5px] leading-relaxed text-muted-foreground">{r.desc}</p>
+                  <h3 className="text-[14px] font-semibold text-foreground">{r.title}</h3>
+                  <p className="mt-1 flex-1 text-[13px] leading-relaxed text-muted-foreground">{r.desc}</p>
                   {semDestino && (
-                    <span className="mt-1.5 inline-block w-fit rounded bg-secondary px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    <span className="mt-1.5 inline-block w-fit rounded bg-secondary px-1.5 py-0.5 font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                       em breve
                     </span>
                   )}
                   {!(real && semDestino) && (
-                    <span className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-navy">
+                    <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-navy">
                       <FileText className="h-3.5 w-3.5" />
                       {r.embutido ? "Abrir relatório" : r.rota ? "Ir para a tela" : "Gerar relatório"}
                     </span>

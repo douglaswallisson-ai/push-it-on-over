@@ -159,10 +159,10 @@ export function EscalaPorLinha() {
                   {DIAS.map((d) => (
                     <th
                       key={d.n}
-                      className="border-b border-border px-2 py-3 text-center font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
+                      className="border-b border-border px-2 py-3 text-center font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
                     >
                       {d.curto}
-                      <span className="ml-1.5 rounded-full bg-secondary px-1.5 font-sans text-[10px] normal-case tracking-normal">
+                      <span className="ml-1.5 rounded-full bg-secondary px-1.5 font-sans text-[12px] normal-case tracking-normal">
                         {porDia.get(d.n)?.length ?? 0}
                       </span>
                     </th>
@@ -183,16 +183,16 @@ export function EscalaPorLinha() {
                               className={cn("rounded-lg border px-2 py-1.5", faixa.cls)}
                             >
                               <div className="flex items-center justify-between gap-1">
-                                <span className="truncate font-mono text-[11px] font-bold">
+                                <span className="truncate font-mono text-[12px] font-bold">
                                   {hhmm(t.hour)}
                                 </span>
                                 <ArrowLeftRight className="h-3 w-3 shrink-0 opacity-60" />
                               </div>
-                              <div className="truncate text-[10.5px] opacity-80">
+                              <div className="truncate text-[12px] opacity-80">
                                 {t.tag || (t.direction === 1 ? "Volta" : "Ida")}
                               </div>
                               {t.driver_id && (
-                                <div className="mt-0.5 flex items-center gap-1 text-[10px] opacity-70">
+                                <div className="mt-0.5 flex items-center gap-1 text-[12px] opacity-70">
                                   <User className="h-2.5 w-2.5" />
                                   fixo
                                 </div>
@@ -201,7 +201,7 @@ export function EscalaPorLinha() {
                           );
                         })}
                         {(porDia.get(d.n) ?? []).length === 0 && (
-                          <div className="rounded-lg border border-dashed border-border px-2 py-3 text-center text-[10.5px] text-muted-foreground">
+                          <div className="rounded-lg border border-dashed border-border px-2 py-3 text-center text-[12px] text-muted-foreground">
                             sem operação
                           </div>
                         )}
@@ -214,7 +214,7 @@ export function EscalaPorLinha() {
           </div>
         )}
 
-        <p className="border-t border-border px-4 py-3 text-[11.5px] text-muted-foreground">
+        <p className="border-t border-border px-4 py-3 text-[12px] text-muted-foreground">
           A escala vem de <span className="font-mono">buss_line_shift</span>, onde o turno guarda os dias em que opera.
           Turno com motorista fixo aparece marcado; os demais são alocados no dia. O horário de trabalho do turno
           (<span className="font-mono">hour_work_initial</span>) é diferente do horário da viagem — o primeiro inclui
@@ -229,22 +229,22 @@ export function EscalaPorLinha() {
             <li key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-3 py-2">
               <span className="font-mono text-[13px] font-bold text-foreground">{t.tag || `#${t.id}`}</span>
               <Pill tone={t.direction === 1 ? "neutral" : "sky"}>{t.direction === 1 ? "Volta" : "Ida"}</Pill>
-              <span className="font-mono text-[12.5px] text-ink-soft">
+              <span className="font-mono text-[13px] text-ink-soft">
                 {hhmm(t.hour)} – {hhmm(t.hour_end)}
               </span>
               {t.hour_work_initial && (
-                <span className="text-[11.5px] text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground">
                   jornada {hhmm(t.hour_work_initial)} – {hhmm(t.hour_work_final)}
                 </span>
               )}
               <span className="ml-auto flex items-center gap-1.5">
                 {t.circular && <Pill tone="gold">circular</Pill>}
                 {t.cerca_id && (
-                  <span title="Cerca de abertura definida" className="text-[11px] text-brand-sky">
+                  <span title="Cerca de abertura definida" className="text-[12px] text-brand-sky">
                     <MapPin className="inline h-3 w-3" /> PC
                   </span>
                 )}
-                <span className="font-mono text-[11px] text-muted-foreground">
+                <span className="font-mono text-[12px] text-muted-foreground">
                   {(t.weekday ?? []).map((d) => DIAS[d]?.curto).join(" ")}
                 </span>
               </span>

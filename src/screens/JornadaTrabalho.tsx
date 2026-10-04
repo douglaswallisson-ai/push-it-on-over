@@ -56,8 +56,8 @@ function JornadaTrabalhoExemplo() {
       header: "Funcionário",
       render: (j) => (
         <div>
-          <div className="font-mono text-[12.5px] font-semibold text-foreground">{j.matricula}</div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="font-mono text-[13px] font-semibold text-foreground">{j.matricula}</div>
+          <div className="text-[12px] text-muted-foreground">
             {j.linhaId ? `Linha ${codigoLinha.get(j.linhaId) ?? "—"}` : "sem linha"}
             {j.tabela ? ` · tabela ${j.tabela}` : ""}
           </div>
@@ -71,7 +71,7 @@ function JornadaTrabalhoExemplo() {
         const ini = j.marcacoes.find((m) => m.tipo === "inicio_jornada");
         const fim = j.marcacoes.find((m) => m.tipo === "fim_jornada");
         return (
-          <span className="whitespace-nowrap font-mono text-[12.5px]">
+          <span className="whitespace-nowrap font-mono text-[13px]">
             {ini ? hora(ini.em) : "—"}
             <span className="mx-1 text-muted-foreground/50">/</span>
             <span className={fim ? "text-foreground" : "text-muted-foreground"}>{fim ? hora(fim.em) : "em curso"}</span>
@@ -79,9 +79,9 @@ function JornadaTrabalhoExemplo() {
         );
       },
     },
-    { key: "minutosTrabalhados", header: "Trabalhado", align: "right", render: (j) => <span className="font-mono text-[12.5px] font-semibold">{hhmm(j.minutosTrabalhados)}</span> },
-    { key: "minutosDirecao", header: "Direção", align: "right", render: (j) => <span className="font-mono text-[12.5px]">{hhmm(j.minutosDirecao)}</span> },
-    { key: "minutosRefeicao", header: "Refeição", align: "right", render: (j) => <span className={cn("font-mono text-[12.5px]", j.minutosRefeicao === 0 ? "text-coral font-semibold" : "")}>{hhmm(j.minutosRefeicao)}</span> },
+    { key: "minutosTrabalhados", header: "Trabalhado", align: "right", render: (j) => <span className="font-mono text-[13px] font-semibold">{hhmm(j.minutosTrabalhados)}</span> },
+    { key: "minutosDirecao", header: "Direção", align: "right", render: (j) => <span className="font-mono text-[13px]">{hhmm(j.minutosDirecao)}</span> },
+    { key: "minutosRefeicao", header: "Refeição", align: "right", render: (j) => <span className={cn("font-mono text-[13px]", j.minutosRefeicao === 0 ? "text-coral font-semibold" : "")}>{hhmm(j.minutosRefeicao)}</span> },
     {
       key: "minutosExtras",
       header: "Extras",
@@ -90,7 +90,7 @@ function JornadaTrabalhoExemplo() {
         const pct = j.limiteExtrasMin ? (j.minutosExtras / j.limiteExtrasMin) * 100 : 0;
         return (
           <div className="ml-auto w-24">
-            <div className="text-right font-mono text-[12.5px] font-semibold text-foreground">{hhmm(j.minutosExtras)}</div>
+            <div className="text-right font-mono text-[13px] font-semibold text-foreground">{hhmm(j.minutosExtras)}</div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary" title={`Limite ${hhmm(j.limiteExtrasMin)}`}>
               <div
                 className={cn("h-1.5 rounded-full", pct >= 100 ? "bg-coral" : pct >= 80 ? "bg-gold" : "bg-leaf")}
@@ -177,7 +177,7 @@ function JornadaTrabalhoExemplo() {
 
             {/* O ponto do produto: o que muda ao sair do papel. */}
             <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 <strong className="text-foreground">Do manual ao eletrônico.</strong> Na ficha de papel o motorista
                 escreve, alguém interpreta e um terceiro redigita — três chances de erro antes do dado entrar no
                 sistema. Aqui as marcações vêm da operação; o ajuste manual continua possível, mas fica identificado
@@ -212,7 +212,7 @@ function JornadaTrabalhoExemplo() {
               ) : (
                 <EmptyNote>Nenhuma jornada com esse filtro.</EmptyNote>
               )}
-              <p className="mt-3 text-[11.5px] text-muted-foreground">Clique numa linha para ver as marcações e as infrações apuradas.</p>
+              <p className="mt-3 text-[12px] text-muted-foreground">Clique numa linha para ver as marcações e as infrações apuradas.</p>
             </Card>
 
             {aberta && (
@@ -221,7 +221,7 @@ function JornadaTrabalhoExemplo() {
                   title={`Marcações — matrícula ${aberta.matricula}`}
                   icon={Clock}
                   action={
-                    <button onClick={() => setAberta(null)} className="text-[12.5px] text-muted-foreground underline">
+                    <button onClick={() => setAberta(null)} className="text-[13px] text-muted-foreground underline">
                       fechar
                     </button>
                   }
@@ -233,10 +233,10 @@ function JornadaTrabalhoExemplo() {
                         <span className="w-14 shrink-0 font-mono font-semibold text-foreground">{hora(m.em)}</span>
                         <span className="h-2 w-2 shrink-0 rounded-full bg-brand-navy" />
                         <span className="flex-1 text-ink-soft">{MARCACAO_LABEL[m.tipo]}</span>
-                        {m.local && <span className="shrink-0 text-[11.5px] text-muted-foreground">{m.local}</span>}
+                        {m.local && <span className="shrink-0 text-[12px] text-muted-foreground">{m.local}</span>}
                         <span
                           className={cn(
-                            "shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-semibold",
+                            "shrink-0 rounded px-1.5 py-0.5 text-[12px] font-semibold",
                             m.origem === "automatica" ? "bg-leaf-tint text-leaf" : "bg-gold-tint text-gold",
                           )}
                         >
@@ -258,7 +258,7 @@ function JornadaTrabalhoExemplo() {
                           </div>
                         </div>
                       ))}
-                      <p className="text-[11.5px] text-muted-foreground">
+                      <p className="text-[12px] text-muted-foreground">
                         Infrações apuradas contra a Lei 13.103. Corrigir a escala evita autuação e passivo.
                       </p>
                     </div>

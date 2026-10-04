@@ -153,7 +153,7 @@ function PainelAcessos() {
         ),
     },
     { key: "freq", header: "Dias por pessoa", align: "right", render: (e) => <span className="font-mono">{nf(e.dias_por_pessoa, 1)}</span> },
-    { key: "ultimo", header: "Último acesso", align: "right", render: (e) => <span className="text-[12.5px] text-muted-foreground">{dataHora(e.ultimo)}</span> },
+    { key: "ultimo", header: "Último acesso", align: "right", render: (e) => <span className="text-[13px] text-muted-foreground">{dataHora(e.ultimo)}</span> },
   ];
 
   const colsPessoa: Column<PessoaAcesso>[] = [
@@ -163,7 +163,7 @@ function PainelAcessos() {
       render: (p) => (
         <span className="block min-w-0">
           <span className="block truncate font-semibold">{p.nome}</span>
-          <span className="block truncate text-[11.5px] text-muted-foreground">{p.empresa}</span>
+          <span className="block truncate text-[12px] text-muted-foreground">{p.empresa}</span>
         </span>
       ),
     },
@@ -174,13 +174,13 @@ function PainelAcessos() {
       key: "disp",
       header: "Aparelho",
       render: (p) => (
-        <span className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground">
           {p.dispositivo === "computador" ? <Laptop className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
           {p.navegador}
         </span>
       ),
     },
-    { key: "ultimo", header: "Último acesso", align: "right", render: (p) => <span className="text-[12.5px] text-muted-foreground">{dataHora(p.ultimo)}</span> },
+    { key: "ultimo", header: "Último acesso", align: "right", render: (p) => <span className="text-[13px] text-muted-foreground">{dataHora(p.ultimo)}</span> },
   ];
 
   if (usandoMock()) {
@@ -284,7 +284,7 @@ function PainelAcessos() {
               <Grafico titulo="Uso por dia" icon={Activity} altura={260} dica="Pessoas diferentes que entraram em cada dia.">
                 <AreaChart data={serie}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+                  <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="p" tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip content={<DicaGrafico fmt={(v) => nf(v)} />} />
                   <Area yAxisId="p" dataKey="Pessoas" stroke="var(--brand-navy)" fill="var(--brand-navy)" fillOpacity={0.15} strokeWidth={2} />
@@ -301,7 +301,7 @@ function PainelAcessos() {
                           <span className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
                             <span className="block h-full rounded-full bg-brand-navy/70" style={{ width: `${x.pct}%` }} />
                           </span>
-                          <span className="w-12 text-right font-mono text-[12.5px]">{nf(x.pct, 0)}%</span>
+                          <span className="w-12 text-right font-mono text-[13px]">{nf(x.pct, 0)}%</span>
                         </div>
                       ))}
                     </div>
@@ -331,7 +331,7 @@ function PainelAcessos() {
                     onChange={(e) => setBusca(e.target.value)}
                     placeholder="Buscar pessoa ou cliente"
                     aria-label="Buscar pessoa ou cliente"
-                    className="h-8 w-56 rounded-lg border border-border bg-white pl-8 pr-3 text-[12.5px]"
+                    className="h-8 w-56 rounded-lg border border-border bg-white pl-8 pr-3 text-[13px]"
                   />
                 </label>
               }
@@ -343,7 +343,7 @@ function PainelAcessos() {
                 onRowClick={(p) => setPessoaId((p as unknown as PessoaAcesso).user_id)}
                 empty="Ninguém com esse nome no período."
               />
-              <p className="mt-2 text-[11.5px] text-muted-foreground">Clique numa pessoa para ver o mapa de calor dela e as últimas entradas.</p>
+              <p className="mt-2 text-[12px] text-muted-foreground">Clique numa pessoa para ver o mapa de calor dela e as últimas entradas.</p>
             </Card>
 
             <PaginasMaisAcessadas janela={janela} grupo={grupo || undefined} incluirSS={incluirSS} onPessoa={setPessoaId} />
@@ -357,7 +357,7 @@ function PainelAcessos() {
                         <button type="button" onClick={() => setPessoaId(s.user_id)} className="flex w-full items-center gap-3 py-2 text-left hover:bg-secondary/40">
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-[13px] font-medium">{s.nome}</span>
-                            <span className="block truncate text-[11.5px] text-muted-foreground">{s.empresa}</span>
+                            <span className="block truncate text-[12px] text-muted-foreground">{s.empresa}</span>
                           </span>
                           <span className="text-right text-[12px] text-muted-foreground">
                             última entrada há <b className="text-foreground">{haDias(s.ultimo)} dias</b>
@@ -382,10 +382,10 @@ function PainelAcessos() {
                     <li key={`${i.user_id}-${i.tipo}`} className="flex items-center gap-3 py-2 text-[13px]">
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">{i.nome}</span>
-                        <span className="block truncate text-[11.5px] text-muted-foreground">{i.empresa}</span>
+                        <span className="block truncate text-[12px] text-muted-foreground">{i.empresa}</span>
                       </span>
                       <Pill tone="neutral">{i.tipo}</Pill>
-                      <span className="w-20 text-right font-mono text-[12.5px]">{nf(i.acessos)}</span>
+                      <span className="w-20 text-right font-mono text-[13px]">{nf(i.acessos)}</span>
                     </li>
                   ))}
                   {!r.integracoes.length && <li className="py-2 text-[13px] text-muted-foreground">Nenhuma integração no período.</li>}
@@ -434,7 +434,7 @@ function DetalhePessoa({ id, janela, onClose }: { id: number | null; janela: { i
               </div>
               <div className="rounded-xl border border-border px-4 py-3">
                 <p className="text-[12px] text-muted-foreground">Última entrada</p>
-                <p className="font-mono text-[15px] font-semibold">{dataHora(d.ultimos[0]?.em)}</p>
+                <p className="font-mono text-[16px] font-semibold">{dataHora(d.ultimos[0]?.em)}</p>
               </div>
             </div>
             <div>
@@ -519,7 +519,7 @@ function PaginasMaisAcessadas({
         <>
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full min-w-[720px] text-[13px]">
-              <thead className="bg-secondary/60 text-[11.5px] uppercase tracking-wide text-muted-foreground">
+              <thead className="bg-secondary/60 text-[12px] uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2.5 text-left font-semibold">Página</th>
                   <th className="px-3 py-2.5 text-left font-semibold">Visitas</th>
@@ -534,7 +534,7 @@ function PaginasMaisAcessadas({
                     <tr className="cursor-pointer hover:bg-secondary/40" onClick={() => setAberta(aberta === p.caminho ? null : p.caminho)}>
                       <td className="px-4 py-2.5">
                         <span className="block font-medium">{p.titulo}</span>
-                        <span className="block font-mono text-[11px] text-muted-foreground">{p.caminho}</span>
+                        <span className="block font-mono text-[12px] text-muted-foreground">{p.caminho}</span>
                       </td>
                       <td className="px-3 py-2.5">
                         <span className="flex items-center gap-2">
@@ -546,7 +546,7 @@ function PaginasMaisAcessadas({
                       </td>
                       <td className="px-3 py-2.5 text-right font-mono">{nf(p.pessoas)}</td>
                       <td className="px-3 py-2.5 text-right">{duracao(p.tempo_medio_s)}</td>
-                      <td className="px-4 py-2.5 text-right text-[12.5px] text-muted-foreground">{dataHora(p.ultimo)}</td>
+                      <td className="px-4 py-2.5 text-right text-[13px] text-muted-foreground">{dataHora(p.ultimo)}</td>
                     </tr>
                     {aberta === p.caminho && (
                       <tr className="bg-secondary/30">
@@ -558,7 +558,7 @@ function PaginasMaisAcessadas({
                                 key={u.user_id}
                                 type="button"
                                 onClick={() => onPessoa(u.user_id)}
-                                className="rounded-lg border border-border bg-white px-3 py-1.5 text-left text-[12.5px] hover:border-brand-sky"
+                                className="rounded-lg border border-border bg-white px-3 py-1.5 text-left text-[13px] hover:border-brand-sky"
                               >
                                 <span className="font-medium">{u.nome}</span>
                                 <span className="text-muted-foreground">
@@ -576,7 +576,7 @@ function PaginasMaisAcessadas({
               </tbody>
             </table>
           </div>
-          {desde && <p className="mt-2 text-[11.5px] text-muted-foreground">Registro de páginas desde {desde}.</p>}
+          {desde && <p className="mt-2 text-[12px] text-muted-foreground">Registro de páginas desde {desde}.</p>}
         </>
       )}
     </Card>

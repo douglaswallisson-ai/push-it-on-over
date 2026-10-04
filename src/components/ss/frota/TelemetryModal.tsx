@@ -44,7 +44,7 @@ export function TelemetryModal({
         <div className="flex-1 overflow-y-auto p-6">
           <TelemetryChart series={series} labels={labels} />
 
-          <p className="mb-2 mt-6 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          <p className="mb-2 mt-6 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             Amostra dos dados
           </p>
           <div className="overflow-x-auto rounded-xl border border-border">
@@ -52,7 +52,7 @@ export function TelemetryModal({
               <thead>
                 <tr className="bg-secondary">
                   {["Horário", "RPM", "Altitude", "Combustível", "Velocidade", "Pressão acel."].map((h) => (
-                    <th key={h} className="whitespace-nowrap px-4 py-2.5 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    <th key={h} className="whitespace-nowrap px-4 py-2.5 text-left font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                       {h}
                     </th>
                   ))}
@@ -72,7 +72,7 @@ export function TelemetryModal({
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-center text-[11px] text-muted-foreground">
+          <p className="mt-3 text-center text-[12px] text-muted-foreground">
             Clique nas legendas do gráfico para ligar/desligar cada série. Dados de exemplo.
           </p>
         </div>

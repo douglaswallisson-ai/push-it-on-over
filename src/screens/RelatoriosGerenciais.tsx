@@ -10,7 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Link } from "@/lib/router-compat";
 import { garagensBIQuery, rankingBIQuery, type FiltrosBI } from "@/lib/bi-api";
 import { veiculosApiQuery } from "@/lib/queries";
-import { datasDoPeriodo, periodoAnterior, PRECO_DIESEL_PADRAO, ROTULO_PERIODO, type Periodo } from "@/lib/gerencial-api";
+import { datasDoPeriodo, periodoAnterior, periodoPadrao, PRECO_DIESEL_PADRAO, ROTULO_PERIODO, type Periodo } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 import { Info, dataBR } from "./gerencial/pecas";
 import { PaginaAnalise, PaginaEvolucao, PaginaPontuacao, PaginaRanking, type Ctx } from "./gerencial/Conducao";
@@ -101,8 +101,8 @@ const sel = "h-9 rounded-lg border border-border bg-white px-2.5 text-[13px] out
 
 export default function RelatoriosGerenciais() {
   const [pagina, setPagina] = useState<PaginaId>(lerHash);
-  const [periodo, setPeriodo] = useState<PeriodoTela>("mes");
-  const padrao = datasDoPeriodo("mes");
+  const [periodo, setPeriodo] = useState<PeriodoTela>(periodoPadrao());
+  const padrao = datasDoPeriodo(periodoPadrao());
   const [livre, setLivre] = useState(padrao);
   const [garagem, setGaragem] = useState("");
   const [placa, setPlaca] = useState("");
@@ -153,14 +153,14 @@ export default function RelatoriosGerenciais() {
             <div className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-3 lg:overflow-visible">
               {GRUPOS.map((g, gi) => (
                 <div key={g.titulo} className={cn("flex shrink-0 items-center gap-1 lg:flex-col lg:items-stretch lg:gap-0.5", gi > 0 && "border-l border-border pl-1 lg:border-l-0 lg:border-t lg:pl-0 lg:pt-2")}>
-                  <span className="px-1.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground lg:px-2.5 lg:pb-1 lg:pt-0.5">{g.titulo}</span>
+                  <span className="px-1.5 font-mono text-[12px] uppercase tracking-[0.08em] text-muted-foreground lg:px-2.5 lg:pb-1 lg:pt-0.5">{g.titulo}</span>
                   {g.paginas.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => ir(p.id)}
                       title={p.dica}
                       className={cn(
-                        "inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-[12.5px] font-medium transition-all duration-200 lg:w-full",
+                        "inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition-all duration-200 lg:w-full",
                         pagina === p.id ? "bg-brand-navy text-white shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                       )}
                     >
@@ -215,23 +215,23 @@ export default function RelatoriosGerenciais() {
               {condutores.map((m) => <option key={m.driver_id} value={m.driver_id}>{m.nome ?? m.driver_id}</option>)}
             </select>
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+          <label className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground">
             Diesel R$/L
             <input type="number" step="0.01" min="0" value={preco} onChange={(e) => setPreco(Number(e.target.value) || 0)} className={cn(sel, "w-20")} />
             <Info texto="Usado nos valores em reais (custo, economia potencial, custo evitável). O Dashboard Start usa R$ 6,00 quando não encontra o preço." />
           </label>
-          <span className="ml-auto inline-flex items-center gap-1 text-[11.5px] text-muted-foreground">
+          <span className="ml-auto inline-flex items-center gap-1 text-[12px] text-muted-foreground">
             Comparação: {dataBR(ant.inicio)} a {dataBR(ant.fim)}
             <Info texto="As setas de variação comparam com os mesmos dias do mês anterior (regra do Dashboard Start). Instrutor e função, filtros do Power BI, ainda não existem no sistema novo." />
           </span>
           {ativos.length > 0 && (
             <div className="flex w-full flex-wrap items-center gap-1.5 border-t border-border pt-2">
               {ativos.map((a) => (
-                <button key={a.k} onClick={a.limpar} className="inline-flex items-center gap-1 rounded-full bg-navy-tint px-2.5 py-0.5 text-[11.5px] font-medium text-brand-navy hover:bg-secondary">
+                <button key={a.k} onClick={a.limpar} className="inline-flex items-center gap-1 rounded-full bg-navy-tint px-2.5 py-0.5 text-[12px] font-medium text-brand-navy hover:bg-secondary">
                   {a.r} <X className="h-3 w-3" />
                 </button>
               ))}
-              <button onClick={() => { setGaragem(""); setPlaca(""); setCondutor(""); }} className="text-[11.5px] text-muted-foreground underline-offset-2 hover:underline">limpar filtros</button>
+              <button onClick={() => { setGaragem(""); setPlaca(""); setCondutor(""); }} className="text-[12px] text-muted-foreground underline-offset-2 hover:underline">limpar filtros</button>
             </div>
           )}
         </div>
@@ -240,7 +240,7 @@ export default function RelatoriosGerenciais() {
           <Comp f={f} ant={ant} preco={preco} />
         </div>
 
-        <p className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+        <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
           <ClipboardList className="h-3.5 w-3.5" />
           O Controle Diário do Power BI está em <Link to="/app/motoristas" className="font-medium text-brand-navy hover:underline">Motoristas</Link>, no acompanhamento de cada motorista.
         </p>

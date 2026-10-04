@@ -142,7 +142,7 @@ export default function Eventos() {
           type="button"
           onClick={() => trocar(id)}
           aria-pressed={visao === id}
-          className={cn("rounded-md px-3 py-1.5 text-[12.5px] font-medium", visao === id ? "bg-white shadow-sm" : "text-muted-foreground")}
+          className={cn("rounded-md px-3 py-1.5 text-[13px] font-medium", visao === id ? "bg-white shadow-sm" : "text-muted-foreground")}
         >
           {rot}
         </button>
@@ -392,7 +392,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
                 ] as const
               ).map(([rot, val, cor]) => (
                 <div key={rot} className="px-4 py-2.5">
-                  <p className="truncate text-[11.5px] text-muted-foreground">{rot}</p>
+                  <p className="truncate text-[12px] text-muted-foreground">{rot}</p>
                   <p className={cn("text-[20px] font-semibold leading-tight tabular-nums", cor)}>{Number(val).toLocaleString("pt-BR")}</p>
                 </div>
               ))}
@@ -420,7 +420,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
                     <button
                       key={v}
                       onClick={() => setOrigem(v)}
-                      className={cn("rounded-md px-2.5 py-1.5 text-[12.5px] font-medium", origem === v ? "bg-white shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md px-2.5 py-1.5 text-[13px] font-medium", origem === v ? "bg-white shadow-sm" : "text-muted-foreground")}
                     >
                       {r}
                     </button>
@@ -432,7 +432,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
                   key={g}
                   onClick={() => setGravFiltro(g)}
                   className={cn(
-                    "rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors",
+                    "rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
                     gravFiltro === g ? "bg-brand-navy text-white" : "text-muted-foreground hover:bg-secondary",
                   )}
                 >
@@ -536,20 +536,20 @@ function EventoRow({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[14px] font-semibold text-foreground">{evento.tipo}</span>
             {evento.video && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-navy-tint px-2 py-0.5 text-[10px] font-semibold text-brand-blue">
+              <span className="inline-flex items-center gap-1 rounded-full bg-navy-tint px-2 py-0.5 text-[12px] font-semibold text-brand-blue">
                 <Video className="h-3 w-3" />
                 Vídeo
               </span>
             )}
             <Pill tone={t}>{GRAV[evento.gravidade].label}</Pill>
             {validacao && (
-              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold", validacao === "correto" ? "bg-leaf-tint text-leaf" : "bg-secondary text-muted-foreground")}>
+              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold", validacao === "correto" ? "bg-leaf-tint text-leaf" : "bg-secondary text-muted-foreground")}>
                 {validacao === "correto" ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
                 {validacao === "correto" ? "Correto" : "Falso positivo"}
               </span>
             )}
           </div>
-          <p className="mt-0.5 truncate text-[12.5px] text-muted-foreground">
+          <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
             {evento.motorista} · <span className="font-mono">{evento.veiculo}</span> · {evento.local}
           </p>
         </div>
@@ -601,7 +601,7 @@ function EventoDrawer({
                 <h2 className="text-[16px] font-bold text-foreground">{evento.tipo}</h2>
                 <Pill tone={t}>{GRAV[evento.gravidade].label}</Pill>
               </div>
-              <p className="text-[12.5px] text-muted-foreground">{evento.hora} · {evento.dur}</p>
+              <p className="text-[13px] text-muted-foreground">{evento.hora} · {evento.dur}</p>
             </div>
           </div>
           <button onClick={onClose} aria-label="Fechar" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary">
@@ -626,18 +626,18 @@ function EventoDrawer({
                 >
                   <Play className="h-6 w-6" fill="currentColor" />
                 </button>
-                <span className="absolute bottom-2 left-3 font-mono text-[11px] text-white/70">Gravação · {evento.dur}</span>
-                <span className="absolute right-3 top-3 rounded-full bg-black/40 px-2 py-0.5 font-mono text-[10px] text-white">CAM 1 · frontal</span>
+                <span className="absolute bottom-2 left-3 font-mono text-[12px] text-white/70">Gravação · {evento.dur}</span>
+                <span className="absolute right-3 top-3 rounded-full bg-black/40 px-2 py-0.5 font-mono text-[12px] text-white">CAM 1 · frontal</span>
               </div>
 
               {/* Validação da IA. */}
               <div className="mt-3 rounded-xl border border-border bg-card p-3.5">
-                <p className="mb-2 text-[12.5px] text-ink-soft">
+                <p className="mb-2 text-[13px] text-ink-soft">
                   A IA classificou como <strong className="text-foreground">{evento.tipo.toLowerCase()}</strong>. A IA pode se enganar — confirme ou marque como falso positivo.
                 </p>
                 {validacao ? (
                   <div className="flex items-center justify-between">
-                    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.5px] font-semibold", validacao === "correto" ? "bg-leaf-tint text-leaf" : "bg-secondary text-muted-foreground")}>
+                    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold", validacao === "correto" ? "bg-leaf-tint text-leaf" : "bg-secondary text-muted-foreground")}>
                       {validacao === "correto" ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
                       {validacao === "correto" ? "Confirmado como correto" : "Marcado como falso positivo"}
                     </span>
@@ -671,7 +671,7 @@ function EventoDrawer({
 
           {/* Telemetria do momento. */}
           <div className="rounded-xl border border-border bg-card p-4">
-            <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            <p className="mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
               <Gauge className="h-3.5 w-3.5" />
               Telemetria no momento
             </p>
@@ -705,7 +705,7 @@ function EventoDrawer({
                   <div className="border-t border-border px-4 py-2.5">
                     <Link
                       to={`/app/frota/tracking?veiculo=${encodeURIComponent(String(evento.unitId))}&dia=${dia}&foco=${evento.lat},${evento.lng}&focoTitulo=${encodeURIComponent(`${evento.tipo} · ${evento.hora}`)}`}
-                      className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-navy hover:underline"
+                      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-navy hover:underline"
                     >
                       <MapPin className="h-3.5 w-3.5" /> Ver no percurso do dia
                     </Link>
@@ -713,7 +713,7 @@ function EventoDrawer({
                 )}
               </>
             ) : (
-              <p className="px-4 py-6 text-center text-[12.5px] text-muted-foreground">A origem deste evento não informou a posição.</p>
+              <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">A origem deste evento não informou a posição.</p>
             )}
           </div>
         </div>
@@ -753,7 +753,7 @@ function EventoDrawer({
 function InfoBox({ icon: Icon, label, value, mono }: { icon: LucideIcon; label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
         {label}
       </p>

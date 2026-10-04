@@ -247,10 +247,10 @@ function TabelaMotoristas({ dados }: { dados: MotoristaKmApi[] }) {
 
   const COLS: Column<MotoristaKmApi & Record<string, unknown>>[] = [
     { key: "driver_name", header: "Motorista", render: (d) => <span className="text-[13px] font-medium">{d.driver_name ?? `#${d.driver_id}`}</span> },
-    { key: "trips", header: "Viagens", align: "right", render: (d) => <span className="font-mono text-[12.5px]">{nf(d.trips ?? 0)}</span> },
-    { key: "total_km", header: "Distância", align: "right", render: (d) => <span className="font-mono text-[12.5px]">{nf(Math.round(d.total_km ?? 0))} km</span> },
-    { key: "total_fuel", header: "Combustível", align: "right", render: (d) => <span className="font-mono text-[12.5px]">{nf(Math.round(d.total_fuel ?? 0))} L</span> },
-    { key: "total_hours", header: "Horas", align: "right", render: (d) => <span className="font-mono text-[12.5px]">{hhmm((d.total_hours ?? 0) * 3600)}</span> },
+    { key: "trips", header: "Viagens", align: "right", render: (d) => <span className="font-mono text-[13px]">{nf(d.trips ?? 0)}</span> },
+    { key: "total_km", header: "Distância", align: "right", render: (d) => <span className="font-mono text-[13px]">{nf(Math.round(d.total_km ?? 0))} km</span> },
+    { key: "total_fuel", header: "Combustível", align: "right", render: (d) => <span className="font-mono text-[13px]">{nf(Math.round(d.total_fuel ?? 0))} L</span> },
+    { key: "total_hours", header: "Horas", align: "right", render: (d) => <span className="font-mono text-[13px]">{hhmm((d.total_hours ?? 0) * 3600)}</span> },
     {
       key: "efficiency_kml",
       header: "Consumo",
@@ -259,7 +259,7 @@ function TabelaMotoristas({ dados }: { dados: MotoristaKmApi[] }) {
         const v = d.efficiency_kml ?? 0;
         const media = totalL ? totalKm / totalL : 0;
         return (
-          <span className={cn("font-mono text-[12.5px] font-semibold", v > media ? "text-leaf" : v ? "text-coral" : "")}>
+          <span className={cn("font-mono text-[13px] font-semibold", v > media ? "text-leaf" : v ? "text-coral" : "")}>
             {v ? `${v.toFixed(2)} km/l` : "—"}
           </span>
         );
@@ -281,7 +281,7 @@ function TabelaMotoristas({ dados }: { dados: MotoristaKmApi[] }) {
         />
       </div>
       <DataTable columns={COLS} rows={dados as (MotoristaKmApi & Record<string, unknown>)[]} />
-      <p className="mt-3 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 text-[12px] text-muted-foreground">
         O consumo é comparado com a média do período, não com uma meta fixa. Meta única para frota inteira ignora que
         um carro urbano e um rodoviário nunca terão o mesmo número.
       </p>
@@ -291,8 +291,8 @@ function TabelaMotoristas({ dados }: { dados: MotoristaKmApi[] }) {
 
 function TabelaRpm({ dados }: { dados: FaixaRpmApi[] }) {
   const COLS: Column<FaixaRpmApi & Record<string, unknown>>[] = [
-    { key: "unit_label", header: "Veículo", render: (d) => <span className="font-mono text-[12.5px] font-bold">{d.unit_label ?? `#${d.unit_id}`}</span> },
-    { key: "driver_name", header: "Motorista", render: (d) => <span className="text-[12.5px]">{d.driver_name ?? "—"}</span> },
+    { key: "unit_label", header: "Veículo", render: (d) => <span className="font-mono text-[13px] font-bold">{d.unit_label ?? `#${d.unit_id}`}</span> },
+    { key: "driver_name", header: "Motorista", render: (d) => <span className="text-[13px]">{d.driver_name ?? "—"}</span> },
     {
       key: "faixas",
       header: "Distribuição por faixa",
@@ -315,7 +315,7 @@ function TabelaRpm({ dados }: { dados: FaixaRpmApi[] }) {
                 />
               ))}
             </div>
-            <div className="mt-1 flex gap-3 text-[10.5px] text-muted-foreground">
+            <div className="mt-1 flex gap-3 text-[12px] text-muted-foreground">
               {faixas.map((f) => (
                 <span key={f.n}>
                   {f.n} {Math.round((f.v / total) * 100)}%
@@ -331,7 +331,7 @@ function TabelaRpm({ dados }: { dados: FaixaRpmApi[] }) {
   return (
     <>
       <DataTable columns={COLS} rows={dados as (FaixaRpmApi & Record<string, unknown>)[]} />
-      <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
         Este relatório traz quatro faixas. A telemetria por viagem guarda catorze, incluindo extra econômica,
         inércia, eco-roll e retarder — use aquela tela para a análise completa.
@@ -379,17 +379,17 @@ function MapaCalor({ dados }: { dados: PontoCalorApi[] }) {
   }, [dados]);
   type L = Record<string, number | string>;
   const COLS: Column<L>[] = [
-    { key: "placa", header: "Veículo", render: (d) => <span className="font-mono text-[12.5px] font-bold">{d.placa}</span> },
-    ...TIPOS_CALOR.map((t) => ({ key: t.k, header: t.n, align: "right" as const, render: (d: L) => <span className="font-mono text-[12.5px]">{nf(d[t.k] as number)}</span> })),
-    { key: "total", header: "Total", align: "right", render: (d) => <span className="font-mono text-[12.5px] font-semibold">{nf(d.total as number)}</span> },
+    { key: "placa", header: "Veículo", render: (d) => <span className="font-mono text-[13px] font-bold">{d.placa}</span> },
+    ...TIPOS_CALOR.map((t) => ({ key: t.k, header: t.n, align: "right" as const, render: (d: L) => <span className="font-mono text-[13px]">{nf(d[t.k] as number)}</span> })),
+    { key: "total", header: "Total", align: "right", render: (d) => <span className="font-mono text-[13px] font-semibold">{nf(d.total as number)}</span> },
   ];
   return (
     <>
-      <p className="mb-2 text-[12.5px] font-semibold">Eventos por dia da semana × hora</p>
+      <p className="mb-2 text-[13px] font-semibold">Eventos por dia da semana × hora</p>
       <MatrizCalor celulas={celulas} />
-      <p className="mb-2 mt-5 text-[12.5px] font-semibold">Por veículo</p>
+      <p className="mb-2 mt-5 text-[13px] font-semibold">Por veículo</p>
       <DataTable columns={COLS} rows={porVeiculo} />
-      <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
         Contagem de eventos de condução por hora, das linhas carregadas. Use "Carregar mais" para incluir o período inteiro. A análise completa está em Gerencial › Gestão de eventos.
       </p>
@@ -399,27 +399,27 @@ function MapaCalor({ dados }: { dados: PontoCalorApi[] }) {
 
 function TabelaMetas({ dados }: { dados: MetaPesoApi[] }) {
   const COLS: Column<MetaPesoApi & Record<string, unknown>>[] = [
-    { key: "range_id", header: "Faixa", render: (d) => <span className="font-mono text-[12.5px] font-bold">#{d.range_id}</span> },
+    { key: "range_id", header: "Faixa", render: (d) => <span className="font-mono text-[13px] font-bold">#{d.range_id}</span> },
     { key: "group_id", header: "Grupo", align: "center", render: (d) => <span className="font-mono text-[12px]">{d.group_id ?? "—"}</span> },
     { key: "subgroup_id", header: "Subgrupo", align: "center", render: (d) => <span className="font-mono text-[12px]">{d.subgroup_id ?? "—"}</span> },
     {
       key: "goal",
       header: "Meta",
       align: "right",
-      render: (d) => <span className="font-mono text-[12.5px] font-semibold">{d.goal != null ? d.goal.toFixed(2) : "—"}</span>,
+      render: (d) => <span className="font-mono text-[13px] font-semibold">{d.goal != null ? d.goal.toFixed(2) : "—"}</span>,
     },
     {
       key: "weight",
       header: "Peso",
       align: "right",
-      render: (d) => <span className="font-mono text-[12.5px]">{d.weight != null ? d.weight.toFixed(2) : "—"}</span>,
+      render: (d) => <span className="font-mono text-[13px]">{d.weight != null ? d.weight.toFixed(2) : "—"}</span>,
     },
   ];
 
   return (
     <>
       <DataTable columns={COLS} rows={dados as (MetaPesoApi & Record<string, unknown>)[]} />
-      <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
         Estes são os valores gravados em <span className="font-mono">mova.weight_range</span>, por grupo e subgrupo.
         A tela de Metas e Pesos configura os critérios localmente — enquanto as duas não escreverem no mesmo lugar,
@@ -432,10 +432,10 @@ function TabelaMetas({ dados }: { dados: MetaPesoApi[] }) {
 function TabelaHistorico({ dados }: { dados: PosicaoHistoricoApi[] }) {
   const COLS: Column<PosicaoHistoricoApi & Record<string, unknown>>[] = [
     { key: "local_time", header: "Hora", render: (d) => <span className="whitespace-nowrap font-mono text-[12px]">{d.local_time?.slice(0, 16)}</span> },
-    { key: "speed", header: "Vel.", align: "right", render: (d) => <span className={cn("font-mono text-[12.5px]", (d.speed ?? 0) > 80 && "font-semibold text-coral")}>{d.speed ?? "—"}</span> },
+    { key: "speed", header: "Vel.", align: "right", render: (d) => <span className={cn("font-mono text-[13px]", (d.speed ?? 0) > 80 && "font-semibold text-coral")}>{d.speed ?? "—"}</span> },
     { key: "ign", header: "Ignição", align: "center", render: (d) => (d.ign == null ? "—" : <Pill tone={d.ign ? "green" : "neutral"}>{d.ign ? "ligada" : "desligada"}</Pill>) },
-    { key: "event", header: "Evento", render: (d) => <span className="text-[12.5px]">{d.event?.name ?? "—"}</span> },
-    { key: "driver", header: "Motorista", render: (d) => <span className="text-[12.5px]">{d.driver?.name ?? "—"}</span> },
+    { key: "event", header: "Evento", render: (d) => <span className="text-[13px]">{d.event?.name ?? "—"}</span> },
+    { key: "driver", header: "Motorista", render: (d) => <span className="text-[13px]">{d.driver?.name ?? "—"}</span> },
     {
       key: "address",
       header: "Local",
@@ -451,7 +451,7 @@ function TabelaHistorico({ dados }: { dados: PosicaoHistoricoApi[] }) {
   return (
     <>
       <DataTable columns={COLS} rows={dados as (PosicaoHistoricoApi & Record<string, unknown>)[]} />
-      <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
         Cada linha é uma posição enviada pelo equipamento. O CSV traz todos os campos, inclusive os sinais do motor (CAN). Até 31 dias por consulta.
       </p>

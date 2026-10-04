@@ -174,7 +174,7 @@ export default function Videotelemetria() {
       render: (o) => (
         <div>
           <div className="text-[13px] font-medium text-foreground">{ALARME_VIDEO_LABEL[o.tipo]}</div>
-          <div className="text-[11px] text-muted-foreground">{CLASSE_LABEL[ALARME_VIDEO_CLASSE[o.tipo]]}</div>
+          <div className="text-[12px] text-muted-foreground">{CLASSE_LABEL[ALARME_VIDEO_CLASSE[o.tipo]]}</div>
         </div>
       ),
     },
@@ -191,7 +191,7 @@ export default function Videotelemetria() {
       key: "em",
       header: "Quando",
       render: (o) => (
-        <span className="whitespace-nowrap font-mono text-[12.5px] text-ink-soft" title={new Date(o.em).toLocaleString("pt-BR")}>
+        <span className="whitespace-nowrap font-mono text-[13px] text-ink-soft" title={new Date(o.em).toLocaleString("pt-BR")}>
           {desde(o.em)}
         </span>
       ),
@@ -200,7 +200,7 @@ export default function Videotelemetria() {
       key: "velocidadeKmh",
       header: "Velocidade",
       align: "right",
-      render: (o) => <span className="font-mono text-[12.5px]">{o.velocidadeKmh ?? "—"} km/h</span>,
+      render: (o) => <span className="font-mono text-[13px]">{o.velocidadeKmh ?? "—"} km/h</span>,
     },
     {
       key: "clipeDisponivel",
@@ -221,7 +221,7 @@ export default function Videotelemetria() {
             <Play className="h-3.5 w-3.5" />
           </button>
         ) : (
-          <span className="text-[11.5px] text-muted-foreground">sem vídeo</span>
+          <span className="text-[12px] text-muted-foreground">sem vídeo</span>
         ),
     },
     {
@@ -235,7 +235,7 @@ export default function Videotelemetria() {
       align: "right",
       render: (o) =>
         o.status === "tratado" || o.status === "descartado" ? (
-          <span className="text-[11.5px] text-muted-foreground">{o.tratadoPor ?? "—"}</span>
+          <span className="text-[12px] text-muted-foreground">{o.tratadoPor ?? "—"}</span>
         ) : (
           <span className="flex justify-end gap-1.5">
             {o.status === "aguardando" && (
@@ -244,7 +244,7 @@ export default function Videotelemetria() {
                   e.stopPropagation();
                   mudar(o, "em_analise");
                 }}
-                className="rounded-lg border border-border bg-white px-2 py-1 text-[11.5px] font-medium text-brand-navy hover:bg-secondary"
+                className="rounded-lg border border-border bg-white px-2 py-1 text-[12px] font-medium text-brand-navy hover:bg-secondary"
               >
                 Analisar
               </button>
@@ -254,7 +254,7 @@ export default function Videotelemetria() {
                 e.stopPropagation();
                 mudar(o, "tratado");
               }}
-              className="rounded-lg bg-brand-navy px-2 py-1 text-[11.5px] font-semibold text-white"
+              className="rounded-lg bg-brand-navy px-2 py-1 text-[12px] font-semibold text-white"
             >
               Tratar
             </button>
@@ -299,7 +299,7 @@ export default function Videotelemetria() {
               <t.icon className="h-4 w-4" />
               {t.label}
               {t.id === "ocorrencias" && aguardando.length > 0 && (
-                <span className={cn("rounded-full px-1.5 font-mono text-[10.5px] font-bold", aba === t.id ? "bg-white/20" : "bg-coral text-white")}>
+                <span className={cn("rounded-full px-1.5 font-mono text-[12px] font-bold", aba === t.id ? "bg-white/20" : "bg-coral text-white")}>
                   {aguardando.length}
                 </span>
               )}
@@ -343,7 +343,7 @@ export default function Videotelemetria() {
               </div>
               <div className="mt-3 flex flex-wrap gap-x-8 gap-y-2">
                 {distRisco.map((d) => (
-                  <span key={d.risco} className="flex items-center gap-2 text-[12.5px]">
+                  <span key={d.risco} className="flex items-center gap-2 text-[13px]">
                     <span
                       className="h-2.5 w-2.5 rounded-full"
                       style={{ background: d.risco === "alto" ? "var(--coral)" : d.risco === "medio" ? "var(--gold)" : "var(--brand-sky)" }}
@@ -423,7 +423,7 @@ export default function Videotelemetria() {
                 <EmptyNote>Nenhuma ocorrência com esse filtro.</EmptyNote>
               )}
 
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Descartar registra o evento como falso positivo — é o dado que permite calibrar a detecção em vez de
                 simplesmente ignorar o alarme.
               </p>
@@ -443,7 +443,7 @@ export default function Videotelemetria() {
                     classe === "equipamento" ? "var(--brand-sky)" : classe === "seguranca" ? "var(--gold)" : "var(--coral)";
                   return (
                     <li key={tipo} className="flex items-center gap-3">
-                      <span className="w-56 shrink-0 truncate text-[12.5px] text-ink-soft">
+                      <span className="w-56 shrink-0 truncate text-[13px] text-ink-soft">
                         {ALARME_VIDEO_LABEL[tipo]}
                         {classe === "equipamento" && (
                           <Cpu className="ml-1.5 inline h-3 w-3 text-brand-sky" aria-label="Saúde do equipamento" />
@@ -455,14 +455,14 @@ export default function Videotelemetria() {
                           style={{ width: `${(n / maiorVolume) * 100}%`, background: cor }}
                         />
                       </span>
-                      <span className="w-14 shrink-0 text-right font-mono text-[12.5px] font-semibold text-foreground">
+                      <span className="w-14 shrink-0 text-right font-mono text-[13px] font-semibold text-foreground">
                         {nf(n)}
                       </span>
                     </li>
                   );
                 })}
               </ul>
-              <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
                 <Cpu className="h-3 w-3 text-brand-sky" />
                 Marcados assim são alarmes do próprio equipamento, não do motorista.
               </p>
@@ -476,7 +476,7 @@ export default function Videotelemetria() {
                 <StatTile icon={CheckCircle2} label="Faixa verde mantida" value={ex("71%")} color="var(--leaf)" />
                 <StatTile icon={CheckCircle2} label="Condução sem evento" value={ex("62%")} color="var(--leaf)" foot="motoristas no período" />
               </div>
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 Programa de segurança só com punição desgasta. O reconhecimento do que foi bem feito é o que sustenta a
                 adesão do motorista ao longo do tempo.
               </p>

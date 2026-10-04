@@ -82,7 +82,7 @@ export function ManutencaoKanban({
               <span
                 className={cn(
                   "rounded-full bg-card px-2 py-0.5 font-mono font-bold text-muted-foreground",
-                  modoTV ? "text-[15px]" : "text-[11px]",
+                  modoTV ? "text-[16px]" : "text-[12px]",
                 )}
                 title={`${Math.min(lista.length, LIMITE_COLUNA)} de ${lista.length} exibidos`}
               >
@@ -115,7 +115,7 @@ export function ManutencaoKanban({
                     />
                   ))}
                   {lista.length > LIMITE_COLUNA && (
-                    <p className="px-1 py-2 text-center text-[11.5px] text-muted-foreground">
+                    <p className="px-1 py-2 text-center text-[12px] text-muted-foreground">
                       +{lista.length - LIMITE_COLUNA} veículo{lista.length - LIMITE_COLUNA > 1 ? "s" : ""} nesta
                       coluna — use a tabela para ver todos.
                     </p>
@@ -175,17 +175,17 @@ function CardVeiculo({
               titulo={`${TIPO_VEICULO_LABEL[tipo]} — ${card.marca} ${card.modelo}`}
             />
             <div className="min-w-0">
-              <p className={cn("font-mono font-bold leading-tight text-foreground", modoTV ? "text-[19px]" : "text-[14px]")}>
+              <p className={cn("font-mono font-bold leading-tight text-foreground", modoTV ? "text-[20px]" : "text-[14px]")}>
                 {card.placa}
               </p>
-              <p className={cn("truncate text-muted-foreground", modoTV ? "text-[13px]" : "text-[11.5px]")}>
+              <p className={cn("truncate text-muted-foreground", modoTV ? "text-[13px]" : "text-[12px]")}>
                 {card.marca} {card.modelo}
               </p>
             </div>
           </div>
           {card.indiceSaude != null && (
           <span
-            className="shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold"
+            className="shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[12px] font-bold"
             style={{
               background: `color-mix(in oklab, ${cor} 14%, white)`,
               color: `color-mix(in oklab, ${cor} 82%, black)`,
@@ -197,9 +197,9 @@ function CardVeiculo({
           )}
         </div>
 
-        <p className="mt-2.5 line-clamp-2 text-[12.5px] leading-snug text-ink-soft">{card.servico}</p>
+        <p className="mt-2.5 line-clamp-2 text-[13px] leading-snug text-ink-soft">{card.servico}</p>
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
           {prazo && (
             <span className={cn("inline-flex items-center gap-1", atrasado ? "font-semibold text-coral" : "text-muted-foreground")}>
               {atrasado ? <AlertTriangle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
@@ -215,7 +215,7 @@ function CardVeiculo({
         </div>
 
         {card.pendencias > 1 && (
-          <p className="mt-2 border-t border-border pt-2 text-[11px] text-muted-foreground">
+          <p className="mt-2 border-t border-border pt-2 text-[12px] text-muted-foreground">
             +{card.pendencias - 1} outra{card.pendencias - 1 > 1 ? "s" : ""} pendência
             {card.pendencias - 1 > 1 ? "s" : ""} aberta{card.pendencias - 1 > 1 ? "s" : ""}
           </p>

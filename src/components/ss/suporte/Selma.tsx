@@ -68,7 +68,7 @@ export function BalaoSelma({ children, className }: { children: React.ReactNode;
       role="status"
       aria-live="polite"
       className={cn(
-        "relative rounded-2xl border border-brand-sky/30 bg-white px-4 py-3 text-[13.5px] leading-snug text-foreground shadow-sm",
+        "relative rounded-2xl border border-brand-sky/30 bg-white px-4 py-3 text-[14px] leading-snug text-foreground shadow-sm",
         "before:absolute before:-left-2 before:top-6 before:h-4 before:w-4 before:rotate-45 before:border-b before:border-l before:border-brand-sky/30 before:bg-white",
         className,
       )}

@@ -35,7 +35,7 @@ function Busca({ valor, onChange }: { valor: string; onChange: (v: string) => vo
   return (
     <label className="inline-flex h-8 items-center gap-2 rounded-lg border border-border bg-white px-2.5">
       <Search className="h-3.5 w-3.5 text-muted-foreground" />
-      <input value={valor} onChange={(e) => onChange(e.target.value)} placeholder="Buscar" className="w-36 bg-transparent text-[12.5px] outline-none" />
+      <input value={valor} onChange={(e) => onChange(e.target.value)} placeholder="Buscar" className="w-36 bg-transparent text-[13px] outline-none" />
     </label>
   );
 }
@@ -108,10 +108,10 @@ export function PaginaRanking({ f }: Ctx) {
             <Velocimetro rotulo="Nota" valor={nota?.total ?? null} meta={90} max={Math.max(100, nota?.total ?? 0)} fmt={(n) => nf(n, 1)} dica="Meta 90 = 5 estrelas." />
             <div className="mt-3"><StarRating value={nota?.total == null ? null : estrelasDe(nota.total)} /></div>
             <div className="mt-4 grid w-full grid-cols-2 gap-2 text-center">
-              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[11px] text-muted-foreground">{por === "veiculo" ? "Placas" : "Motoristas"}</p><p className="font-display text-lg font-bold">{nf(resumo?.motoristas)}</p></div>
-              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[11px] text-muted-foreground">Nota média</p><p className="font-display text-lg font-bold">{nf(resumo?.nota_media, 1)}</p></div>
-              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[11px] text-muted-foreground">Km</p><p className="font-display text-lg font-bold">{nf(tot?.km)}</p></div>
-              <div className="rounded-xl bg-secondary/70 p-2" title="Horas sem motorista identificado ÷ horas trabalhadas"><p className="text-[11px] text-muted-foreground">Não identificado</p><p className={cn("font-display text-lg font-bold", tot && tot.horas > 0 && tot.horas_sem_condutor / tot.horas > 0.6 && "text-coral")}>{tot && tot.horas > 0 ? pct(tot.horas_sem_condutor / tot.horas) : "—"}</p></div>
+              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[12px] text-muted-foreground">{por === "veiculo" ? "Placas" : "Motoristas"}</p><p className="font-display text-lg font-bold">{nf(resumo?.motoristas)}</p></div>
+              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[12px] text-muted-foreground">Nota média</p><p className="font-display text-lg font-bold">{nf(resumo?.nota_media, 1)}</p></div>
+              <div className="rounded-xl bg-secondary/70 p-2"><p className="text-[12px] text-muted-foreground">Km</p><p className="font-display text-lg font-bold">{nf(tot?.km)}</p></div>
+              <div className="rounded-xl bg-secondary/70 p-2" title="Horas sem motorista identificado ÷ horas trabalhadas"><p className="text-[12px] text-muted-foreground">Não identificado</p><p className={cn("font-display text-lg font-bold", tot && tot.horas > 0 && tot.horas_sem_condutor / tot.horas > 0.6 && "text-coral")}>{tot && tot.horas > 0 ? pct(tot.horas_sem_condutor / tot.horas) : "—"}</p></div>
             </div>
           </div>
         </Card>
@@ -130,13 +130,13 @@ export function PaginaRanking({ f }: Ctx) {
           {podio.map((m, i) => (
             <div key={m.driver_id} className={cn("relative overflow-hidden rounded-2xl border p-4 shadow-card animate-in fade-in slide-in-from-bottom-3", i === 0 ? "border-gold-line bg-gold-tint" : "border-border bg-card")} style={{ animationDelay: `${i * 90}ms`, animationFillMode: "both" }}>
               <Award className={cn("absolute right-3 top-3 h-8 w-8", i === 0 ? "text-gold" : "text-muted-foreground/40")} />
-              <p className="font-mono text-[11px] text-muted-foreground">{i + 1}º lugar</p>
+              <p className="font-mono text-[12px] text-muted-foreground">{i + 1}º lugar</p>
               <p className="mt-1 truncate pr-10 text-[14px] font-semibold">{m.nome ?? m.driver_id}</p>
               <div className="mt-2 flex items-center gap-3">
                 <span className="font-display text-2xl font-bold">{nf(m.pontuacao, 2)}</span>
                 <StarRating value={m.estrelas} />
               </div>
-              <p className="mt-1 text-[11.5px] text-muted-foreground">{nf(m.km)} km · {nf(m.horas, 1)} h · {nf(m.kml, 2)} km/l</p>
+              <p className="mt-1 text-[12px] text-muted-foreground">{nf(m.km)} km · {nf(m.horas, 1)} h · {nf(m.kml, 2)} km/l</p>
             </div>
           ))}
         </div>
@@ -150,7 +150,7 @@ export function PaginaRanking({ f }: Ctx) {
       >
         <Carregando q={rankQ}>
           <DataTable columns={cols as unknown as Column<Record<string, unknown>>[]} rows={lista as unknown as Record<string, unknown>[]} empty="Ninguém com dados no período." />
-          <p className="mt-2 text-[11px] text-muted-foreground">
+          <p className="mt-2 text-[12px] text-muted-foreground">
             Posição densa pela pontuação (empate divide a posição). O motorista não identificado fica fora do ranking. O Power BI também ranqueia por instrutor — esse vínculo ainda não existe no sistema novo.
           </p>
         </Carregando>
@@ -195,7 +195,7 @@ export function PaginaAnalise({ f }: Ctx) {
         <BarChart data={top} layout="vertical" margin={{ left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" tick={{ fontSize: 11 }} />
-          <YAxis type="category" dataKey="nome" width={200} tick={{ fontSize: 10.5 }} />
+          <YAxis type="category" dataKey="nome" width={200} tick={{ fontSize: 11 }} />
           <Tooltip content={<DicaGrafico fmt={(v) => nf(v)} />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
           {TIPOS_EVENTO.map((t) => <Bar key={t} dataKey={ROTULO_EVENTO[t]} stackId="e" fill={COR_EVENTO[t]} {...ANIM} />)}
@@ -203,7 +203,7 @@ export function PaginaAnalise({ f }: Ctx) {
       </Grafico>
       <Card title="Quantidade por tipo de evento" icon={BarChart3} action={<Busca valor={busca} onChange={setBusca} />} bodyClassName="p-4">
         <DataTable columns={cols as unknown as Column<Record<string, unknown>>[]} rows={linhas as unknown as Record<string, unknown>[]} />
-        <p className="mt-2 text-[11px] text-muted-foreground">Os 50 com mais eventos. Velocidade no seco soma os níveis 1 a 3; chuva é o evento com sensor de chuva ativo.</p>
+        <p className="mt-2 text-[12px] text-muted-foreground">Os 50 com mais eventos. Velocidade no seco soma os níveis 1 a 3; chuva é o evento com sensor de chuva ativo.</p>
       </Card>
     </Carregando>
   );
@@ -215,7 +215,7 @@ export function AvisoCarga({ ultimo, fim }: { ultimo: string | null; fim: string
   const f = new Date(fim + "T23:59:59");
   if (u >= new Date(f.getTime() - 3 * 3600_000)) return null;
   return (
-    <div className="flex items-start gap-2 rounded-xl border border-gold-line bg-gold-tint px-3.5 py-2.5 text-[12.5px]">
+    <div className="flex items-start gap-2 rounded-xl border border-gold-line bg-gold-tint px-3.5 py-2.5 text-[13px]">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
       <span>
         Os eventos com localização estão carregados até <b>{u.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</b>. A carga dessa tabela chega com atraso; os totais diários da Central de segurança já incluem os dias seguintes.
@@ -276,7 +276,7 @@ export function PaginaPontuacao({ f }: Ctx) {
               const max = Math.max(...comps.map((x) => Math.abs(x.pontos)), 1);
               const w = (Math.abs(c.pontos) / max) * 50;
               return (
-                <li key={c.id} className="grid grid-cols-[150px_minmax(0,1fr)_64px] items-center gap-2 text-[12.5px]" title={`${c.nome}: ${c.tipo === "faixa" ? pct(c.valor) : nf(c.valor, 2) + "/h"} × peso ${nf(c.peso)} = ${nf(c.pontos, 2)}`}>
+                <li key={c.id} className="grid grid-cols-[150px_minmax(0,1fr)_64px] items-center gap-2 text-[13px]" title={`${c.nome}: ${c.tipo === "faixa" ? pct(c.valor) : nf(c.valor, 2) + "/h"} × peso ${nf(c.peso)} = ${nf(c.pontos, 2)}`}>
                   <span className="truncate">{c.nome}</span>
                   <div className="relative h-3 rounded-full bg-secondary">
                     <div className="absolute top-0 h-3 w-px bg-border" style={{ left: "50%" }} />
@@ -316,7 +316,7 @@ export function PaginaPontuacao({ f }: Ctx) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="p" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="n" orientation="right" tick={{ fontSize: 11 }} />
             <Tooltip content={<DicaGrafico fmt={(v) => nf(v, 2)} />} />
@@ -401,7 +401,7 @@ export function PaginaEvolucao({ f }: Ctx) {
                 {ind.nome}
               </div>
               <p className="mt-1 font-display text-xl font-bold">{b == null ? "—" : ind.fmt(b)}</p>
-              <p className="text-[11px] text-muted-foreground">início {a == null ? "—" : ind.fmt(a)}</p>
+              <p className="text-[12px] text-muted-foreground">início {a == null ? "—" : ind.fmt(a)}</p>
             </button>
           );
         })}
@@ -413,7 +413,7 @@ export function PaginaEvolucao({ f }: Ctx) {
             <Grafico key={ind.id} titulo={`Evolução — ${ind.nome}`} icon={ind.id === "km" ? Route : ind.id === "nota" ? Trophy : ind.id === "eventos" ? AlertTriangle : ind.id === "ni" ? IdCard : ind.id === "kml" ? Gauge : Activity} altura={220} dica={ind.dica}>
               <LineChart data={dados}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+                <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} />
                 <Tooltip content={<DicaGrafico fmt={(v) => ind.fmt(v)} />} />
                 <Line dataKey={ind.id} name={ind.nome} stroke={cores[i]} strokeWidth={2.5} dot={{ r: 2 }} activeDot={{ r: 5 }} connectNulls {...ANIM} />
@@ -422,7 +422,7 @@ export function PaginaEvolucao({ f }: Ctx) {
           );
         })}
       </div>
-      <p className="text-[11.5px] text-muted-foreground">
+      <p className="text-[12px] text-muted-foreground">
         <Timer className="mr-1 inline h-3.5 w-3.5" />Até 45 dias o gráfico mostra cada dia; até 180, cada mês; acima, cada trimestre. Clique nos cartões para mostrar ou esconder indicadores.
       </p>
     </Carregando>

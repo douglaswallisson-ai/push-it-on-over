@@ -80,7 +80,7 @@ function RoteirizacaoExemplo() {
           <Card title="Paradas" icon={Route} action={
               <button
                 onClick={() => navigate("/app/fretamento/viagens/nova")}
-                className="text-[12.5px] font-semibold text-brand-navy hover:text-brand-blue"
+                className="text-[13px] font-semibold text-brand-navy hover:text-brand-blue"
               >
                 + Adicionar
               </button>
@@ -89,7 +89,7 @@ function RoteirizacaoExemplo() {
               {PARADAS.map((p, i) => (
                 <li key={p.nome}>
                   {p.trecho && (
-                    <div className="flex items-center gap-2 py-1 pl-[26px] text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-2 py-1 pl-[26px] text-[12px] text-muted-foreground">
                       <span className="font-mono">{p.trecho}</span>
                     </div>
                   )}
@@ -98,14 +98,14 @@ function RoteirizacaoExemplo() {
                     <StopDot tipo={p.tipo} n={i + 1} />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[13px] font-semibold text-foreground">{p.nome}</div>
-                      <div className="font-mono text-[11px] text-muted-foreground">{p.horario}</div>
+                      <div className="font-mono text-[12px] text-muted-foreground">{p.horario}</div>
                     </div>
                   </div>
                 </li>
               ))}
             </ol>
 
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-navy-tint px-4 py-3 text-[12.5px] text-brand-navy">
+            <div className="mt-4 flex items-start gap-2 rounded-lg bg-navy-tint px-4 py-3 text-[13px] text-brand-navy">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
               <span>
                 <strong>Sugestão:</strong> inverter Osasco e Barra Funda economiza ~12 min e 6 km no
@@ -129,7 +129,7 @@ function RoteirizacaoExemplo() {
           {/* Prévia no mapa. */}
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-card">
             <RouteCanvas />
-            <div className="absolute bottom-4 right-4 rounded-lg border border-border bg-white/90 px-3 py-2 text-[11px] text-muted-foreground shadow-card backdrop-blur">
+            <div className="absolute bottom-4 right-4 rounded-lg border border-border bg-white/90 px-3 py-2 text-[12px] text-muted-foreground shadow-card backdrop-blur">
               Representação ilustrativa · integração de mapa real no lugar deste canvas
             </div>
           </div>
@@ -157,7 +157,7 @@ function StopDot({ tipo, n }: { tipo: Parada["tipo"]; n: number }) {
       </span>
     );
   return (
-    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-brand-sky bg-white font-mono text-[11px] font-bold text-brand-blue">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-brand-sky bg-white font-mono text-[12px] font-bold text-brand-blue">
       {n}
     </span>
   );
@@ -194,13 +194,13 @@ function RouteCanvas() {
         >
           <div
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow-card",
+              "flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[12px] font-bold text-white shadow-card",
               p.tipo === "origem" ? "bg-leaf" : p.tipo === "destino" ? "bg-brand-navy" : "bg-brand-sky",
             )}
           >
             {p.tipo === "origem" ? "A" : p.tipo === "destino" ? "B" : i}
           </div>
-          <div className="mt-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-medium shadow-card backdrop-blur">
+          <div className="mt-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[12px] font-medium shadow-card backdrop-blur">
             {p.nome.split(" — ")[0]}
           </div>
         </div>

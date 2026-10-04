@@ -104,7 +104,7 @@ export default function Equipamentos() {
       render: (l) => (
         <div>
           <div className="font-mono text-[13px] font-bold text-foreground">{l.prefixo}</div>
-          <div className="font-mono text-[11px] text-muted-foreground">{l.placa}</div>
+          <div className="font-mono text-[12px] text-muted-foreground">{l.placa}</div>
         </div>
       ),
     },
@@ -120,7 +120,7 @@ export default function Equipamentos() {
                 equipamento #{l.rastreador.device_id}
               </div>
               {l.rastreador.device_primary && (
-                <div className="text-[10.5px] text-muted-foreground">principal</div>
+                <div className="text-[12px] text-muted-foreground">principal</div>
               )}
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function Equipamentos() {
       header: "Instalado em",
       align: "right",
       render: (l) => (
-        <span className="whitespace-nowrap font-mono text-[11.5px] text-muted-foreground">
+        <span className="whitespace-nowrap font-mono text-[12px] text-muted-foreground">
           {dataBR(l.rastreador?.association_date)}
         </span>
       ),
@@ -178,7 +178,7 @@ export default function Equipamentos() {
         <div className="mx-auto max-w-[1360px] px-6 py-6 md:px-8">
           <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Esta tela lê direto da API — não tem versão de exemplo. Alterne para <strong>API real</strong> em
               Console de gestão › Configurações.
             </p>
@@ -228,7 +228,7 @@ export default function Equipamentos() {
         {semRastreador > 0 && (
           <div className="flex items-start gap-2.5 rounded-xl border border-coral-line bg-coral-tint/40 px-4 py-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
-            <p className="text-[12.5px] text-coral">
+            <p className="text-[13px] text-coral">
               <strong>
                 {semRastreador} veículo{semRastreador > 1 ? "s" : ""} sem rastreador vinculado.
               </strong>{" "}
@@ -278,7 +278,7 @@ export default function Equipamentos() {
             <DataTable columns={COLS} rows={linhas as ((typeof linhas)[number] & Record<string, unknown>)[]} />
           )}
 
-          <p className="mt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             Só vínculos ativos aparecem. Um veículo pode ter histórico de equipamentos trocados, e contar os
             liberados faria parecer que tem três rastreadores instalados.
           </p>

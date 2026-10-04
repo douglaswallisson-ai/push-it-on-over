@@ -63,7 +63,7 @@ export function ContextoOrganizacao() {
       <span className="flex items-center gap-2">
         <button
           onClick={voltar}
-          className="rounded-full bg-white/20 px-3 py-1 text-[12.5px] font-semibold transition-colors hover:bg-white/30"
+          className="rounded-full bg-white/20 px-3 py-1 text-[13px] font-semibold transition-colors hover:bg-white/30"
         >
           Voltar para {sessao.organizacao}
         </button>

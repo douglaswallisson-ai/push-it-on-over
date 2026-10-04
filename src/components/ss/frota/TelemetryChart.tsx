@@ -87,7 +87,7 @@ export function TelemetryChart({ series, labels }: { series: Serie[]; labels: st
             <button
               key={s.key}
               onClick={() => toggle(s.key)}
-              className={cn("inline-flex items-center gap-2 text-[12.5px] transition-opacity", off && "opacity-40")}
+              className={cn("inline-flex items-center gap-2 text-[13px] transition-opacity", off && "opacity-40")}
             >
               <span className="h-3 w-3 rounded-sm" style={{ background: s.color }} />
               <span className={off ? "line-through" : "font-medium text-foreground"}>{s.label}</span>

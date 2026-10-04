@@ -23,7 +23,7 @@ function Esqueleto({ altura }: { altura: string }) {
     <div className={`flex w-full items-center justify-center rounded-xl bg-secondary/60 ${altura}`}>
       <span className="flex flex-col items-center gap-2 text-muted-foreground">
         <MapPin className="h-6 w-6 animate-pulse" />
-        <span className="text-[12.5px]">Carregando mapa…</span>
+        <span className="text-[13px]">Carregando mapa…</span>
       </span>
     </div>
   );

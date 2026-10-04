@@ -102,7 +102,7 @@ export default function OperacaoLinhas({ titulo = "Viagens", subtitulo = "Opera�
             >
               <Icone className="h-4 w-4" />
               {rotulo}
-              <span className="font-mono text-[11px] opacity-70">{n == null ? "…" : nf(n)}</span>
+              <span className="font-mono text-[12px] opacity-70">{n == null ? "…" : nf(n)}</span>
             </button>
           ))}
         </div>
@@ -139,26 +139,26 @@ function AbaMonitor({
 
   const cols: Column<ViagemMonitor & Record<string, unknown>>[] = [
     { key: "sit", header: "", align: "center", render: (v) => { const s = SIT[v.situacao]; return <s.icone className={cn("h-4 w-4", s.cor)} aria-label={s.rotulo} />; } },
-    { key: "linha", header: "Linha", render: (v) => <div><div className="font-semibold">{v.linha ?? v.linhaId}</div>{v.tabela && <div className="font-mono text-[11px] text-muted-foreground">{v.tabela}</div>}</div> },
-    { key: "sentido", header: "Sentido", align: "center", render: (v) => <span className={cn("rounded px-1.5 py-0.5 text-[11.5px] font-semibold", v.sentido === "ida" ? "bg-navy-tint text-brand-navy" : "bg-secondary text-ink-soft")}>{v.sentido === "ida" ? "Ida" : "Volta"}</span> },
-    { key: "ini", header: "Início progr / realiz", render: (v) => <span className="whitespace-nowrap font-mono text-[12.5px]"><span className="text-muted-foreground">{v.partidaProgramada ?? "—"}</span> / <b>{v.partidaRealizada ?? "—"}</b></span> },
+    { key: "linha", header: "Linha", render: (v) => <div><div className="font-semibold">{v.linha ?? v.linhaId}</div>{v.tabela && <div className="font-mono text-[12px] text-muted-foreground">{v.tabela}</div>}</div> },
+    { key: "sentido", header: "Sentido", align: "center", render: (v) => <span className={cn("rounded px-1.5 py-0.5 text-[12px] font-semibold", v.sentido === "ida" ? "bg-navy-tint text-brand-navy" : "bg-secondary text-ink-soft")}>{v.sentido === "ida" ? "Ida" : "Volta"}</span> },
+    { key: "ini", header: "Início progr / realiz", render: (v) => <span className="whitespace-nowrap font-mono text-[13px]"><span className="text-muted-foreground">{v.partidaProgramada ?? "—"}</span> / <b>{v.partidaRealizada ?? "—"}</b></span> },
     {
       key: "desvio", header: "Desvio", align: "right", render: (v) => {
         const d = desvio(v.partidaProgramada, v.partidaRealizada);
-        return d == null ? <span className="text-muted-foreground">—</span> : <span className={cn("font-mono text-[12.5px] font-semibold", d > tol.depois || d < -tol.antes ? "text-gold" : "text-leaf")}>{d > 0 ? "+" : ""}{d} min</span>;
+        return d == null ? <span className="text-muted-foreground">—</span> : <span className={cn("font-mono text-[13px] font-semibold", d > tol.depois || d < -tol.antes ? "text-gold" : "text-leaf")}>{d > 0 ? "+" : ""}{d} min</span>;
       },
     },
-    { key: "fim", header: "Término progr / realiz", render: (v) => <span className="whitespace-nowrap font-mono text-[12.5px]"><span className="text-muted-foreground">{v.chegadaProgramada ?? "—"}</span> / <b>{v.chegadaRealizada ?? "—"}</b></span> },
+    { key: "fim", header: "Término progr / realiz", render: (v) => <span className="whitespace-nowrap font-mono text-[13px]"><span className="text-muted-foreground">{v.chegadaProgramada ?? "—"}</span> / <b>{v.chegadaRealizada ?? "—"}</b></span> },
     {
       key: "veic", header: "Veículo progr / realiz", render: (v) => {
         const trocou = v.veiculoProgramadoId && v.veiculoRealizadoId && v.veiculoProgramadoId !== v.veiculoRealizadoId;
-        return <span className="whitespace-nowrap text-[12.5px]" title={v.placaRealizada ? `Placa ${v.placaRealizada}` : undefined}><span className="text-muted-foreground">{v.veiculoProgramado ?? "—"}</span> / <span className={cn("font-semibold", trocou && "text-gold")}>{v.veiculoRealizado ?? "—"}</span></span>;
+        return <span className="whitespace-nowrap text-[13px]" title={v.placaRealizada ? `Placa ${v.placaRealizada}` : undefined}><span className="text-muted-foreground">{v.veiculoProgramado ?? "—"}</span> / <span className={cn("font-semibold", trocou && "text-gold")}>{v.veiculoRealizado ?? "—"}</span></span>;
       },
     },
-    { key: "mot", header: "Motorista", render: (v) => <span className="text-[12.5px]">{v.motoristaRealizado ?? "—"}</span> },
-    { key: "pas", header: "Passageiros", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{v.passageiros == null ? "—" : v.lotacao ? `${v.passageiros}/${v.lotacao}` : v.passageiros}</span> },
-    { key: "perc", header: "Paradas", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{v.percursoPct == null ? "—" : `${v.percursoPct}%`}</span> },
-    { key: "km", header: "Km", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{nf(v.kmRodado, 1)}</span> },
+    { key: "mot", header: "Motorista", render: (v) => <span className="text-[13px]">{v.motoristaRealizado ?? "—"}</span> },
+    { key: "pas", header: "Passageiros", align: "right", render: (v) => <span className="font-mono text-[13px]">{v.passageiros == null ? "—" : v.lotacao ? `${v.passageiros}/${v.lotacao}` : v.passageiros}</span> },
+    { key: "perc", header: "Paradas", align: "right", render: (v) => <span className="font-mono text-[13px]">{v.percursoPct == null ? "—" : `${v.percursoPct}%`}</span> },
+    { key: "km", header: "Km", align: "right", render: (v) => <span className="font-mono text-[13px]">{nf(v.kmRodado, 1)}</span> },
   ];
 
   if (q.error) return <p className="py-10 text-center text-sm text-coral">Não foi possível carregar: {(q.error as Error).message}</p>;
@@ -167,7 +167,7 @@ function AbaMonitor({
     return (
       <Card bodyClassName="p-8 text-center">
         <p className="text-[14px] font-semibold">Sem horários programados para esta empresa neste dia.</p>
-        <p className="mt-1 text-[12.5px] text-muted-foreground">
+        <p className="mt-1 text-[13px] text-muted-foreground">
           O confronto usa os horários cadastrados nas linhas e as viagens abertas e fechadas no sistema. Clientes urbanos que operam pela telemetria aparecem em "Viagens produtivas".
         </p>
       </Card>
@@ -177,7 +177,7 @@ function AbaMonitor({
   return (
     <>
       {programadas > 0 && realizadas === 0 && !viagens.some((v) => v.situacao === "reforco") && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[12.5px]">
+        <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint px-4 py-3 text-[13px]">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
           <span>
             <b>Nenhuma das {nf(programadas)} viagens programadas foi registrada como executada neste dia.</b> A empresa provavelmente não abre e
@@ -198,7 +198,7 @@ function AbaMonitor({
         icon={Route}
         action={
           <div className="flex flex-wrap items-center gap-2 text-[12px]">
-            <select value={linhaId} onChange={(e) => setLinhaId(e.target.value)} className="h-8 max-w-[260px] rounded-lg border border-border bg-white px-2 text-[12.5px]">
+            <select value={linhaId} onChange={(e) => setLinhaId(e.target.value)} className="h-8 max-w-[260px] rounded-lg border border-border bg-white px-2 text-[13px]">
               <option value="">Todas as linhas</option>
               {(q.data?.linhas ?? []).map((l) => <option key={l.id} value={l.id}>{l.codigo}</option>)}
             </select>
@@ -226,7 +226,7 @@ function AbaMonitor({
           })}
         </div>
         <DataTable columns={cols} rows={lista as (ViagemMonitor & Record<string, unknown>)[]} empty="Nenhuma viagem com esse filtro." />
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           Regras do Monitor de Viagens: partida mais de {tol.depois} min depois do horário = atrasada; mais de {tol.antes} min antes = adiantada; sem partida {q.data?.tolerancias.sem_inicio} min depois do horário = atrasada; dia passado sem viagem = não realizada. Feriados ainda não são considerados. Veículo em amarelo: trocado em relação ao escalado.
         </p>
       </Card>
@@ -250,7 +250,7 @@ function AbaProdutivas({
     { v: 0, km: 0, h: 0 },
   );
   const colsL: Column<LinhaProdutiva & Record<string, unknown>>[] = [
-    { key: "linha", header: "Linha", render: (l) => <div><span className="font-mono font-bold">{l.linha}</span>{l.descricao && <span className="ml-1.5 text-[11.5px] text-muted-foreground">{l.descricao}</span>}</div> },
+    { key: "linha", header: "Linha", render: (l) => <div><span className="font-mono font-bold">{l.linha}</span>{l.descricao && <span className="ml-1.5 text-[12px] text-muted-foreground">{l.descricao}</span>}</div> },
     { key: "viagens", header: "Viagens", align: "right", render: (l) => <span className="font-mono font-semibold">{nf(l.viagens)}</span> },
     { key: "iv", header: "Ida / volta", align: "right", render: (l) => <span className="font-mono">{nf(l.ida)} / {nf(l.volta)}</span> },
     { key: "min", header: "Duração média", align: "right", render: (l) => <span className="font-mono">{nf(l.minutos_medio, 1)} min</span> },
@@ -261,16 +261,16 @@ function AbaProdutivas({
     { key: "ev", header: "Eventos", align: "right", render: (l) => <span className="font-mono">{nf(l.eventos)}</span> },
   ];
   const colsV: Column<ViagemProdutiva & Record<string, unknown>>[] = [
-    { key: "ini", header: "Início / fim", render: (v) => <span className="whitespace-nowrap font-mono text-[12.5px]">{v.inicio.slice(11, 16)} → {v.fim ? v.fim.slice(11, 16) : "—"}</span> },
+    { key: "ini", header: "Início / fim", render: (v) => <span className="whitespace-nowrap font-mono text-[13px]">{v.inicio.slice(11, 16)} → {v.fim ? v.fim.slice(11, 16) : "—"}</span> },
     { key: "linha", header: "Linha", render: (v) => <span className="font-mono font-semibold">{v.linha ?? "—"}</span> },
     { key: "sent", header: "Sentido / nº", align: "center", render: (v) => <span className="text-[12px]">{v.sentido ? (v.sentido === "ida" ? "Ida" : "Volta") : "—"}{v.numero ? ` · ${v.numero}ª` : ""}</span> },
-    { key: "veic", header: "Veículo", render: (v) => <span className="text-[12.5px]" title={v.placa ?? ""}>{v.veiculo}</span> },
-    { key: "mot", header: "Motorista", render: (v) => <span className="text-[12.5px]">{v.motorista ?? "—"}</span> },
-    { key: "min", header: "Min", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{nf(v.minutos, 0)}</span> },
-    { key: "km", header: "Km", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{nf(v.km, 1)}</span> },
-    { key: "kml", header: "Km/l", align: "right", render: (v) => <span className="font-mono text-[12.5px]">{nf(v.kml, 2)}</span> },
-    { key: "od", header: "Origem → destino", render: (v) => <span className="line-clamp-1 max-w-[260px] text-[11.5px] text-muted-foreground">{v.origem ?? "—"} → {v.destino ?? "—"}</span> },
-    { key: "ev", header: "Eventos", align: "right", render: (v) => <span className={cn("font-mono text-[12.5px]", v.eventos > 0 && "font-semibold text-gold")}>{v.eventos}</span> },
+    { key: "veic", header: "Veículo", render: (v) => <span className="text-[13px]" title={v.placa ?? ""}>{v.veiculo}</span> },
+    { key: "mot", header: "Motorista", render: (v) => <span className="text-[13px]">{v.motorista ?? "—"}</span> },
+    { key: "min", header: "Min", align: "right", render: (v) => <span className="font-mono text-[13px]">{nf(v.minutos, 0)}</span> },
+    { key: "km", header: "Km", align: "right", render: (v) => <span className="font-mono text-[13px]">{nf(v.km, 1)}</span> },
+    { key: "kml", header: "Km/l", align: "right", render: (v) => <span className="font-mono text-[13px]">{nf(v.kml, 2)}</span> },
+    { key: "od", header: "Origem → destino", render: (v) => <span className="line-clamp-1 max-w-[260px] text-[12px] text-muted-foreground">{v.origem ?? "—"} → {v.destino ?? "—"}</span> },
+    { key: "ev", header: "Eventos", align: "right", render: (v) => <span className={cn("font-mono text-[13px]", v.eventos > 0 && "font-semibold text-gold")}>{v.eventos}</span> },
     ...(todas ? [{ key: "prod", header: "Produtiva", align: "center" as const, render: (v: ViagemProdutiva) => <Pill tone={v.produtiva ? "green" : "neutral"}>{v.produtiva ? "sim" : "não"}</Pill> }] : []),
   ];
 
@@ -281,7 +281,7 @@ function AbaProdutivas({
       {d && d.total === 0 && !todas ? (
         <Card bodyClassName="p-8 text-center">
           <p className="text-[14px] font-semibold">Nenhuma viagem produtiva registrada para esta empresa neste dia.</p>
-          <p className="mt-1 text-[12.5px] text-muted-foreground">
+          <p className="mt-1 text-[13px] text-muted-foreground">
             Viagem produtiva é a que o equipamento marca com linha e sentido. Sem essa marcação, é possível ver as viagens da telemetria mesmo assim.
           </p>
           <button onClick={() => setTodas(true)} className="mt-3 rounded-full bg-brand-navy px-4 py-2 text-[13px] font-semibold text-white">Ver todas as viagens do dia</button>
@@ -297,7 +297,7 @@ function AbaProdutivas({
           {pl.length > 0 && (
             <Card title="Por linha" icon={Bus} action={<label className="inline-flex items-center gap-1.5 text-[12px]"><input type="checkbox" checked={todas} onChange={(e) => setTodas(e.target.checked)} /> incluir não produtivas</label>} bodyClassName="p-4">
               <DataTable columns={colsL} rows={pl as (LinhaProdutiva & Record<string, unknown>)[]} onRowClick={(l) => setLinha(linha === String(l.linha) ? "" : String(l.linha))} />
-              <p className="mt-2 text-[11.5px] text-muted-foreground">Clique numa linha para ver as viagens dela abaixo.</p>
+              <p className="mt-2 text-[12px] text-muted-foreground">Clique numa linha para ver as viagens dela abaixo.</p>
             </Card>
           )}
           <Card
@@ -312,7 +312,7 @@ function AbaProdutivas({
             bodyClassName="p-4"
           >
             <DataTable columns={colsV} rows={(d?.viagens ?? []).slice(0, 500) as (ViagemProdutiva & Record<string, unknown>)[]} empty="Nenhuma viagem." />
-            {(d?.viagens.length ?? 0) > 500 && <p className="mt-2 text-[11.5px] text-muted-foreground">Mostrando as 500 mais recentes. Escolha uma linha para ver todas as dela.</p>}
+            {(d?.viagens.length ?? 0) > 500 && <p className="mt-2 text-[12px] text-muted-foreground">Mostrando as 500 mais recentes. Escolha uma linha para ver todas as dela.</p>}
           </Card>
         </>
       )}

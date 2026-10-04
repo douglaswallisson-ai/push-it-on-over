@@ -44,7 +44,7 @@ export function HistoricoConducao({
           header: "Motorista",
           render: (c) => (
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-tint text-[11px] font-semibold text-brand-navy">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-tint text-[12px] font-semibold text-brand-navy">
                 {c.motorista.split(" ").map((n) => n[0]).slice(0, 2).join("")}
               </div>
               <span className="whitespace-nowrap font-semibold text-foreground">{c.motorista}</span>
@@ -70,7 +70,7 @@ export function HistoricoConducao({
         <span className="whitespace-nowrap text-ink-soft">
           {periodo(c)}
           {!c.fim && (
-            <span className="ml-2 rounded-full bg-leaf-tint px-2 py-0.5 text-[11px] font-semibold text-leaf">
+            <span className="ml-2 rounded-full bg-leaf-tint px-2 py-0.5 text-[12px] font-semibold text-leaf">
               em curso
             </span>
           )}
@@ -91,7 +91,7 @@ export function HistoricoConducao({
       title={porVeiculo ? "Motoristas que dirigiram este veículo" : "Veículos dirigidos por este motorista"}
       icon={porVeiculo ? User : Truck}
       action={
-        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
           <History className="h-3.5 w-3.5" />
           clique para abrir
         </span>

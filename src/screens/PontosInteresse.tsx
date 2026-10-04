@@ -65,7 +65,7 @@ export default function PontosInteresse() {
           </span>
           <div className="min-w-0">
             <div className="truncate text-[13px] font-medium text-foreground">{p.name}</div>
-            {p.id != null && <div className="font-mono text-[11px] text-muted-foreground">#{p.id}</div>}
+            {p.id != null && <div className="font-mono text-[12px] text-muted-foreground">#{p.id}</div>}
           </div>
         </div>
       ),
@@ -86,7 +86,7 @@ export default function PontosInteresse() {
         const maior = Math.max(1, ...todos.map((x) => x.visits));
         return (
           <div className="ml-auto w-32">
-            <div className="text-right font-mono text-[12.5px] font-semibold text-foreground">{nf(p.visits)}</div>
+            <div className="text-right font-mono text-[13px] font-semibold text-foreground">{nf(p.visits)}</div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
               <div className="h-1.5 rounded-full bg-brand-navy" style={{ width: `${(p.visits / maior) * 100}%` }} />
             </div>
@@ -100,11 +100,11 @@ export default function PontosInteresse() {
       align: "right",
       render: (p) =>
         p.latitude != null ? (
-          <span className="font-mono text-[11.5px] text-muted-foreground">
+          <span className="font-mono text-[12px] text-muted-foreground">
             {p.latitude.toFixed(4)}, {p.longitude?.toFixed(4)}
           </span>
         ) : (
-          <span className="text-[11.5px] text-muted-foreground">—</span>
+          <span className="text-[12px] text-muted-foreground">—</span>
         ),
     },
   ];
@@ -144,7 +144,7 @@ export default function PontosInteresse() {
         {usandoMock() ? (
           <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Esta tela lê direto da API — não tem versão de exemplo. Alterne para <strong>API real</strong> em
               Console de gestão › Configurações.
             </p>
@@ -165,7 +165,7 @@ export default function PontosInteresse() {
 
             <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-              <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
                 A lista vem do <strong className="text-foreground">uso real</strong>: são os pontos e cercas que
                 apareceram nas viagens do período. Um ponto cadastrado e nunca visitado não aparece, e a coordenada é
                 a média das passagens — o valor exato está no cadastro, que ainda não foi mapeado.

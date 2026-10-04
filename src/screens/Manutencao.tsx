@@ -246,7 +246,7 @@ function ManutencaoExemplo() {
         <div className="fixed inset-0 z-[200] flex flex-col bg-canvas">
           <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-8 py-4">
             <div>
-              <h1 className="font-display text-[26px] font-bold leading-none text-foreground">
+              <h1 className="font-display text-[24px] font-bold leading-none text-foreground">
                 Torre de controle · Manutenção
               </h1>
               <p className="mt-1.5 text-[13px] text-muted-foreground">
@@ -266,7 +266,7 @@ function ManutencaoExemplo() {
                       <div className="font-display text-[30px] font-bold leading-none" style={{ color: col.cor }}>
                         {n}
                       </div>
-                      <div className="mt-1 text-[11.5px] text-muted-foreground">{col.label}</div>
+                      <div className="mt-1 text-[12px] text-muted-foreground">{col.label}</div>
                     </div>
                   );
                 })}
@@ -410,7 +410,7 @@ function VisaoGeral({
       ) : (
         <>
           <ManutencaoKanban cards={cards} onSelect={onSelect} />
-          <p className="text-[11.5px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             Um card por placa. Veículo com mais de uma pendência aparece na coluna mais grave (corretiva &gt;
             preventiva &gt; preditiva) e informa as demais no rodapé do card. Clique para abrir a inspeção visual.
           </p>
@@ -450,7 +450,7 @@ function DetalheVeiculo({
               <span className="font-mono text-[20px] font-bold leading-none text-foreground">{card.placa}</span>
               {coluna && (
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold"
+                  className="rounded-full px-2.5 py-0.5 text-[12px] font-semibold"
                   style={{
                     background: `color-mix(in oklab, ${coluna.cor} 14%, white)`,
                     color: `color-mix(in oklab, ${coluna.cor} 82%, black)`,
@@ -460,7 +460,7 @@ function DetalheVeiculo({
                 </span>
               )}
             </div>
-            <p className="mt-1 text-[12.5px] text-muted-foreground">
+            <p className="mt-1 text-[13px] text-muted-foreground">
               {card.marca} {card.modelo}
               {card.garagem ? ` · ${card.garagem}` : ""}
             </p>
@@ -468,8 +468,8 @@ function DetalheVeiculo({
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="text-right">
-            <p className="text-[11.5px] text-muted-foreground">Serviço a executar</p>
-            <p className="max-w-[380px] text-[13.5px] font-medium text-foreground">{card.servico}</p>
+            <p className="text-[12px] text-muted-foreground">Serviço a executar</p>
+            <p className="max-w-[380px] text-[14px] font-medium text-foreground">{card.servico}</p>
           </div>
           {card.status !== "liberado" && (
             <button
@@ -503,7 +503,7 @@ function DetalheVeiculo({
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-[13.5px] font-semibold text-foreground">{p.titulo}</p>
+                        <p className="text-[14px] font-semibold text-foreground">{p.titulo}</p>
                         <span
                           className={cn("shrink-0 font-mono text-[12px] font-bold", crit ? "text-coral" : "text-gold")}
                         >
@@ -524,7 +524,7 @@ function DetalheVeiculo({
                           <Wrench className="h-3.5 w-3.5" />
                           Agendar manutenção
                         </button>
-                        <span className="font-mono text-[12.5px] font-semibold text-foreground">R$ {nf(p.custo)}</span>
+                        <span className="font-mono text-[13px] font-semibold text-foreground">R$ {nf(p.custo)}</span>
                       </div>
                     </div>
                   );
@@ -545,7 +545,7 @@ function DetalheVeiculo({
                   const atencao = c.severidade === "atencao";
                   return (
                     <div key={c.id} className="flex items-center justify-between gap-3">
-                      <span className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+                      <span className="flex items-center gap-2 text-[13px] text-ink-soft">
                         <span
                           className={cn(
                             "inline-block h-2 w-2 rounded-full",
@@ -556,7 +556,7 @@ function DetalheVeiculo({
                       </span>
                       <span
                         className={cn(
-                          "shrink-0 text-[12.5px] font-semibold",
+                          "shrink-0 text-[13px] font-semibold",
                           critico ? "text-coral" : atencao ? "text-gold" : "text-leaf",
                         )}
                       >
@@ -673,7 +673,7 @@ function Consumiveis({ card }: { card: CardManutencao | null }) {
           <div className="flex items-center justify-end gap-2">
             <span
               className={cn(
-                "font-mono text-[12.5px] font-semibold",
+                "font-mono text-[13px] font-semibold",
                 r.vidaUtil < 25 ? "text-coral" : r.vidaUtil < 50 ? "text-gold" : "text-leaf",
               )}
             >
@@ -702,7 +702,7 @@ function Consumiveis({ card }: { card: CardManutencao | null }) {
       bodyClassName="p-4"
     >
       <DataTable columns={cols} rows={CONSUMIVEIS as (ConsumivelRow & Record<string, unknown>)[]} />
-      <p className="mt-3 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 text-[12px] text-muted-foreground">
         Intervalos do plano de manutenção do fabricante, confrontados com o odômetro de telemetria.
       </p>
     </Card>
@@ -723,7 +723,7 @@ function PredicoesFrota({ cards, onSelect }: { cards: CardManutencao[]; onSelect
       render: (c) => (
         <div>
           <div className="font-mono font-semibold text-foreground">{c.placa}</div>
-          <div className="text-[11.5px] text-muted-foreground">
+          <div className="text-[12px] text-muted-foreground">
             {c.marca} {c.modelo}
           </div>
         </div>
@@ -839,7 +839,7 @@ function HistoricoManutencao({ cards }: { cards: CardManutencao[] }) {
 
       <Card title="Histórico de manutenções" icon={History} bodyClassName="p-4">
         <DataTable columns={cols} rows={HISTORICO as (HistRow & Record<string, unknown>)[]} />
-        <p className="mt-3 text-[11.5px] text-muted-foreground">{cards.length} placas na frota · últimos 60 dias.</p>
+        <p className="mt-3 text-[12px] text-muted-foreground">{cards.length} placas na frota · últimos 60 dias.</p>
       </Card>
     </div>
   );

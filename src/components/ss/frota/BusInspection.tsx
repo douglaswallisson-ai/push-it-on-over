@@ -86,7 +86,7 @@ export function BusInspection({
             title={h.label}
             style={{ left: `${h.x}%`, top: `${h.y}%` }}
             className={cn(
-              "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold text-white shadow-card ring-4 transition-transform hover:scale-110",
+              "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full px-2 py-1 text-[12px] font-bold text-white shadow-card ring-4 transition-transform hover:scale-110",
               t.badge,
               t.ring,
               active && "scale-[1.18] ring-8",

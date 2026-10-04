@@ -19,7 +19,7 @@ export function FormSection({
   return (
     <section className="grid gap-6 border-b border-border py-7 last:border-b-0 lg:grid-cols-[260px_1fr]">
       <div>
-        <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
+        <h3 className="text-[16px] font-semibold text-foreground">{title}</h3>
         {description && <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{description}</p>}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
@@ -28,7 +28,7 @@ export function FormSection({
 }
 
 const baseInput =
-  "h-10 w-full rounded-lg border border-border bg-white px-3 text-[13.5px] text-foreground outline-none transition-colors focus:border-accent focus:ring-4 focus:ring-accent/12";
+  "h-10 w-full rounded-lg border border-border bg-white px-3 text-[14px] text-foreground outline-none transition-colors focus:border-accent focus:ring-4 focus:ring-accent/12";
 
 export function Field({
   label,
@@ -45,7 +45,7 @@ export function Field({
     <label className={cn("block space-y-1.5", full && "sm:col-span-2")}>
       <span className="block text-[12px] font-medium text-ink-soft">{label}</span>
       {children}
-      {hint && <span className="block text-[11px] text-muted-foreground">{hint}</span>}
+      {hint && <span className="block text-[12px] text-muted-foreground">{hint}</span>}
     </label>
   );
 }

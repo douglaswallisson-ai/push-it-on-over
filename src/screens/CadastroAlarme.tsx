@@ -60,7 +60,7 @@ const TIPOS = [
 const COLS: Column<Alarme>[] = [
   { key: "nome", header: "Alarme", render: (a) => <span className="font-semibold text-foreground">{a.nome}</span> },
   { key: "tipo", header: "Tipo", render: (a) => <Pill tone="sky">{TIPO_LABEL[a.tipo] ?? a.tipo}</Pill> },
-  { key: "condicao", header: "Condição", render: (a) => <span className="font-mono text-[12.5px]">{a.condicao}</span> },
+  { key: "condicao", header: "Condição", render: (a) => <span className="font-mono text-[13px]">{a.condicao}</span> },
   {
     key: "severidade",
     header: "Severidade",
@@ -83,7 +83,7 @@ const COLS: Column<Alarme>[] = [
           {a.veiculos.length} veículo{a.veiculos.length > 1 ? "s" : ""}
         </span>
       ) : (
-        <span className="text-[12.5px] text-muted-foreground">Toda a frota</span>
+        <span className="text-[13px] text-muted-foreground">Toda a frota</span>
       ),
   },
 ];
@@ -154,7 +154,7 @@ export default function CadastroAlarme() {
       <div className="mx-auto max-w-[1360px] space-y-6 px-6 py-6 md:px-8">
         <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
           <div className="border-b border-border bg-secondary/40 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-[15px] font-semibold">
+            <h2 className="flex items-center gap-2 text-[16px] font-semibold">
               <Bell className="h-4 w-4 text-brand-navy" />
               Nova regra de alarme
             </h2>
@@ -178,7 +178,7 @@ export default function CadastroAlarme() {
                       )}
                     >
                       <t.icon className="h-5 w-5" />
-                      <span className="text-[12.5px] font-medium">{t.label}</span>
+                      <span className="text-[13px] font-medium">{t.label}</span>
                     </button>
                   );
                 })}

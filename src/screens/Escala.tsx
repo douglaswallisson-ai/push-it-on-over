@@ -117,13 +117,13 @@ function EscalaExemplo() {
             <table className="w-full min-w-[820px] border-collapse text-[13px]">
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                  <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                     Motorista
                   </th>
                   {DIAS.map((d) => (
                     <th
                       key={d}
-                      className="border-l border-border px-3 py-3 text-center font-mono text-[10.5px] font-semibold uppercase tracking-[0.05em] text-muted-foreground"
+                      className="border-l border-border px-3 py-3 text-center font-mono text-[12px] font-semibold uppercase tracking-[0.05em] text-muted-foreground"
                     >
                       {d}
                     </th>
@@ -135,7 +135,7 @@ function EscalaExemplo() {
                   <tr key={row.nome} className={cn("border-t border-border", i % 2 && "bg-[#FafbfC]")}>
                     <td className="sticky left-0 z-10 whitespace-nowrap bg-inherit px-4 py-2.5 font-medium text-foreground">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-tint text-[10px] font-semibold text-brand-navy">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-tint text-[12px] font-semibold text-brand-navy">
                           {row.nome.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                         </div>
                         {row.nome}
@@ -146,7 +146,7 @@ function EscalaExemplo() {
                         {t ? (
                           <span
                             className={cn(
-                              "inline-block w-full rounded-md border px-1.5 py-1.5 text-[11px] font-semibold",
+                              "inline-block w-full rounded-md border px-1.5 py-1.5 text-[12px] font-semibold",
                               TURNOS[t].cls,
                             )}
                           >

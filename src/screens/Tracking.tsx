@@ -300,7 +300,7 @@ export default function Tracking() {
                     ))}
                   </ol>
                 )}
-                <p className="mt-2 px-1 text-[11px] text-muted-foreground">
+                <p className="mt-2 px-1 text-[12px] text-muted-foreground">
                   Clique num evento para centralizar o mapa nele.
                 </p>
               </Card>
@@ -321,14 +321,14 @@ export default function Tracking() {
                 {contagemEventos.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {contagemEventos.map(([nome, c]) => (
-                      <span key={nome} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-0.5 text-[11.5px]">
+                      <span key={nome} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-0.5 text-[12px]">
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.cor }} />
                         {nome} <b>{c.n}</b>
                       </span>
                     ))}
                   </div>
                 )}
-                <p className="mt-2 text-[11px] text-muted-foreground">
+                <p className="mt-2 text-[12px] text-muted-foreground">
                   {(relevoQ.data?.pontos.length ?? 0) > 1
                     ? "Traçado pelas posições registradas com o veículo andando."
                     : "A linha liga os eventos na ordem em que aconteceram — não é o traçado exato da rua."}
@@ -381,7 +381,7 @@ function ItemEvento({
           focado ? "bg-navy-tint" : "hover:bg-secondary",
         )}
       >
-        <span className="w-10 shrink-0 pt-0.5 text-right font-mono text-[11.5px] font-semibold text-muted-foreground">
+        <span className="w-10 shrink-0 pt-0.5 text-right font-mono text-[12px] font-semibold text-muted-foreground">
           {hora(e.em)}
         </span>
 
@@ -406,12 +406,12 @@ function ItemEvento({
             </span>
             {e.duracaoMin ? <Pill tone={TOM[e.tipo]}>{e.duracaoMin} min</Pill> : null}
             {e.velocidade ? (
-              <span className={cn("font-mono text-[11.5px]", critico ? "font-semibold text-coral" : "text-muted-foreground")}>
+              <span className={cn("font-mono text-[12px]", critico ? "font-semibold text-coral" : "text-muted-foreground")}>
                 {e.velocidade} km/h
               </span>
             ) : null}
           </span>
-          {e.endereco && <span className="block truncate text-[11.5px] text-muted-foreground">{e.endereco}</span>}
+          {e.endereco && <span className="block truncate text-[12px] text-muted-foreground">{e.endereco}</span>}
         </span>
       </button>
     </li>

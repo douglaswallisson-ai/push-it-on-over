@@ -211,7 +211,7 @@ function TourOverlay({
         style={{ left, top }}
       >
         <div className="flex items-start justify-between gap-3">
-          <h4 className="font-display text-[15px] font-bold text-foreground">{title}</h4>
+          <h4 className="font-display text-[16px] font-bold text-foreground">{title}</h4>
           <button
             onClick={onClose}
             aria-label="Fechar tour"
@@ -220,7 +220,7 @@ function TourOverlay({
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className={cn("mt-2 leading-relaxed text-ink-soft", amplo ? "text-[13.5px]" : "text-[13px]")}>{body}</p>
+        <p className={cn("mt-2 leading-relaxed text-ink-soft", amplo ? "text-[14px]" : "text-[13px]")}>{body}</p>
 
         {detalhes?.map((d, k) => (
           <p key={k} className="mt-2.5 text-[13px] leading-relaxed text-ink-soft">
@@ -230,10 +230,10 @@ function TourOverlay({
 
         {exemplo && (
           <div className="mt-3 rounded-lg border border-border bg-secondary/50 px-3 py-2.5">
-            <span className="mb-1 block font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            <span className="mb-1 block font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
               Exemplo
             </span>
-            <p className="whitespace-pre-line text-[12.5px] leading-relaxed text-ink-soft">{exemplo}</p>
+            <p className="whitespace-pre-line text-[13px] leading-relaxed text-ink-soft">{exemplo}</p>
           </div>
         )}
 

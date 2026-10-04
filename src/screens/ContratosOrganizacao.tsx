@@ -198,7 +198,7 @@ export default function ContratosOrganizacao() {
         {/* A regra que dá sentido à tela. */}
         <div data-tour="regra" className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
           <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
             <strong className="text-foreground">O contrato libera a organização.</strong> Enquanto está em rascunho, a
             empresa não opera no sistema — nenhum usuário entra e nenhum veículo é cadastrado. É o que impede
             organizações criadas para teste ficarem ligadas e esquecidas, sem ninguém saber se estão sendo faturadas.
@@ -249,9 +249,9 @@ export default function ContratosOrganizacao() {
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-baseline gap-2">
                           <span className="font-mono text-[13px] font-bold text-foreground">{c.numero}</span>
-                          <span className="truncate text-[13.5px] text-foreground">{c.nomeFantasia ?? c.razaoSocial}</span>
+                          <span className="truncate text-[14px] text-foreground">{c.nomeFantasia ?? c.razaoSocial}</span>
                         </span>
-                        <span className="block truncate font-mono text-[11.5px] text-muted-foreground">{c.cnpj}</span>
+                        <span className="block truncate font-mono text-[12px] text-muted-foreground">{c.cnpj}</span>
                       </span>
 
                       {/* Divisão por modalidade — o dado que mais importa aqui. */}
@@ -261,7 +261,7 @@ export default function ContratosOrganizacao() {
                           .map(([mod, v]) => (
                             <span
                               key={mod}
-                              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium"
+                              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium"
                               style={{
                                 background: `color-mix(in oklab, ${MODALIDADE_COR[mod]} 14%, white)`,
                                 color: `color-mix(in oklab, ${MODALIDADE_COR[mod]} 82%, black)`,
@@ -341,7 +341,7 @@ export default function ContratosOrganizacao() {
                                   setAditivando(c);
                                   setNovoTermino("");
                                 }}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[11.5px] font-medium text-brand-navy hover:bg-secondary"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[12px] font-medium text-brand-navy hover:bg-secondary"
                               >
                                 <CalendarPlus className="h-3 w-3" />
                                 Registrar aditivo
@@ -349,7 +349,7 @@ export default function ContratosOrganizacao() {
                             )}
                           </h4>
 
-                          <p className="text-[12.5px] text-ink-soft">
+                          <p className="text-[13px] text-ink-soft">
                             Ativação em <strong>{dataBR(c.ativacao)}</strong> · término original{" "}
                             <span className={c.terminoVigente ? "line-through text-muted-foreground" : ""}>
                               {dataBR(c.termino)}
@@ -369,7 +369,7 @@ export default function ContratosOrganizacao() {
                                   <span className="font-semibold text-foreground">{a.numero}</span>
                                   <Pill tone="sky">{a.tipo}</Pill>
                                   <span className="text-ink-soft">{a.descricao}</span>
-                                  <span className="text-[11px] text-muted-foreground">
+                                  <span className="text-[12px] text-muted-foreground">
                                     · {dataBR(a.assinadoEm)} por {a.registradoPor}
                                   </span>
                                 </li>
@@ -385,7 +385,7 @@ export default function ContratosOrganizacao() {
                               </p>
                               <div className="flex flex-wrap items-end gap-2">
                                 <label className="flex flex-col gap-1">
-                                  <span className="text-[11px] text-muted-foreground">Novo término</span>
+                                  <span className="text-[12px] text-muted-foreground">Novo término</span>
                                   <input
                                     type="date"
                                     value={novoTermino}
@@ -394,7 +394,7 @@ export default function ContratosOrganizacao() {
                                   />
                                 </label>
                                 <label className="flex flex-1 flex-col gap-1">
-                                  <span className="text-[11px] text-muted-foreground">Descrição</span>
+                                  <span className="text-[12px] text-muted-foreground">Descrição</span>
                                   <input
                                     value={descAditivo}
                                     onChange={(e) => setDescAditivo(e.target.value)}
@@ -405,13 +405,13 @@ export default function ContratosOrganizacao() {
                                 <button
                                   onClick={aplicarAditivo}
                                   disabled={!novoTermino}
-                                  className="h-9 rounded-lg bg-brand-navy px-3 text-[12.5px] font-semibold text-white disabled:opacity-50"
+                                  className="h-9 rounded-lg bg-brand-navy px-3 text-[13px] font-semibold text-white disabled:opacity-50"
                                 >
                                   Registrar
                                 </button>
                                 <button
                                   onClick={() => setAditivando(null)}
-                                  className="h-9 rounded-lg border border-border px-3 text-[12.5px] text-muted-foreground hover:bg-secondary"
+                                  className="h-9 rounded-lg border border-border px-3 text-[13px] text-muted-foreground hover:bg-secondary"
                                 >
                                   Cancelar
                                 </button>
@@ -425,7 +425,7 @@ export default function ContratosOrganizacao() {
                           <h4 className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
                             <Users className="h-3.5 w-3.5 text-muted-foreground" />
                             Usuários liberados pelo contrato
-                            <span className="font-mono text-[11px] text-muted-foreground">({c.usuarios.length})</span>
+                            <span className="font-mono text-[12px] text-muted-foreground">({c.usuarios.length})</span>
                           </h4>
                           {c.usuarios.length === 0 ? (
                             <p className="text-[12px] text-gold">
@@ -438,7 +438,7 @@ export default function ContratosOrganizacao() {
                                   <span className="font-medium text-foreground">{u.nome}</span>
                                   <span className="text-muted-foreground">{u.email}</span>
                                   <Pill tone={u.perfil === "admin_empresa" ? "sky" : "neutral"}>{u.perfil.replace("_", " ")}</Pill>
-                                  {!u.ativo && <span className="text-[11px] text-muted-foreground">inativo</span>}
+                                  {!u.ativo && <span className="text-[12px] text-muted-foreground">inativo</span>}
                                 </li>
                               ))}
                             </ul>

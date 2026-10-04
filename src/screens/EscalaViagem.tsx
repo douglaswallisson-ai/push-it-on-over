@@ -111,9 +111,9 @@ export default function EscalaViagem() {
                 },
               ].map((k) => (
                 <div key={k.r} className="rounded-2xl border border-border bg-card p-4 shadow-card">
-                  <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">{k.r}</p>
+                  <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted-foreground">{k.r}</p>
                   <p className={cn("mt-1 font-display text-3xl font-bold tabular-nums", k.cor)}>{k.v}</p>
-                  <p className="text-[11.5px] text-muted-foreground">{k.s}</p>
+                  <p className="text-[12px] text-muted-foreground">{k.s}</p>
                 </div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export default function EscalaViagem() {
                       <thead className="bg-secondary">
                         <tr>
                           {["Viagem", "Veículo / motorista", "Rota", "Carga", "Paradas", "Status"].map((h) => (
-                            <th key={h} className="px-4 py-2.5 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{h}</th>
+                            <th key={h} className="px-4 py-2.5 text-left font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -157,10 +157,10 @@ export default function EscalaViagem() {
                           const destino = v.pontos.find((p) => p.tipo === "destino")?.nome;
                           return (
                             <tr key={v.id} onClick={() => setSel(v.id)} className={cn("cursor-pointer border-t border-border hover:bg-secondary/60", atual?.id === v.id && "bg-navy-tint/40", v.realizado.com_desvio && "bg-coral-tint/30")}>
-                              <td className="px-4 py-3"><div className="font-semibold">{v.codigo}</div><div className="text-[11.5px] text-muted-foreground">{hora(v.saida_prevista)} saída</div></td>
-                              <td className="px-4 py-3"><div className="font-medium">{v.veiculo?.label ?? v.unit_id}{v.veiculo?.label2 ? ` · ${v.veiculo.label2}` : ""}</div><div className="text-[11.5px] text-muted-foreground">{v.motorista ?? "motorista não informado"}</div></td>
-                              <td className="px-4 py-3"><div className="font-medium">{origem ?? "—"} → {destino ?? "—"}</div><div className="text-[11.5px] text-muted-foreground">{v.rodovia ?? v.rota_nome ?? ""}{v.realizado.km ? ` · ${nf(v.realizado.km)} km rodados` : ""}</div></td>
-                              <td className="px-4 py-3"><div>{v.carga_cliente ?? "—"}{v.carga_descricao ? ` · ${v.carga_descricao}` : ""}</div><div className="text-[11.5px] text-muted-foreground">{brl(v.carga_valor)}</div></td>
+                              <td className="px-4 py-3"><div className="font-semibold">{v.codigo}</div><div className="text-[12px] text-muted-foreground">{hora(v.saida_prevista)} saída</div></td>
+                              <td className="px-4 py-3"><div className="font-medium">{v.veiculo?.label ?? v.unit_id}{v.veiculo?.label2 ? ` · ${v.veiculo.label2}` : ""}</div><div className="text-[12px] text-muted-foreground">{v.motorista ?? "motorista não informado"}</div></td>
+                              <td className="px-4 py-3"><div className="font-medium">{origem ?? "—"} → {destino ?? "—"}</div><div className="text-[12px] text-muted-foreground">{v.rodovia ?? v.rota_nome ?? ""}{v.realizado.km ? ` · ${nf(v.realizado.km)} km rodados` : ""}</div></td>
+                              <td className="px-4 py-3"><div>{v.carga_cliente ?? "—"}{v.carga_descricao ? ` · ${v.carga_descricao}` : ""}</div><div className="text-[12px] text-muted-foreground">{brl(v.carga_valor)}</div></td>
                               <td className="px-4 py-3 font-mono">{v.realizado.paradas_cumpridas} de {v.realizado.paradas_previstas}</td>
                               <td className="px-4 py-3"><Pill tone={st.tom}>{st.rotulo}</Pill></td>
                             </tr>
@@ -243,12 +243,12 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
         </div>
         <div className="space-y-4 p-5">
           {aberta && (
-            <div className="rounded-xl border border-coral-line bg-coral-tint/40 p-3 text-[12.5px]">
+            <div className="rounded-xl border border-coral-line bg-coral-tint/40 p-3 text-[13px]">
               <p className="flex items-center gap-1.5 font-semibold text-coral"><AlertTriangle className="h-4 w-4" /> Parada fora de ponto autorizado</p>
               <p className="mt-1 text-ink-soft">
                 Veículo parado há {aberta.minutos} min{aberta.endereco ? ` em ${aberta.endereco}` : ""}. Ponto autorizado mais próximo: {aberta.ponto_mais_proximo ?? "—"} a {nf((aberta.distancia_ponto_m ?? 0) / 1000, 1)} km.
               </p>
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">Ocorrência {aberta.id} aberta automaticamente · aviso aos destinatários: {aberta.notificacao}</p>
+              <p className="mt-1.5 text-[12px] text-muted-foreground">Ocorrência {aberta.id} aberta automaticamente · aviso aos destinatários: {aberta.notificacao}</p>
             </div>
           )}
           <div className="flex flex-wrap items-center gap-2 text-[12px]">
@@ -260,13 +260,13 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
             ))}
           </div>
           <div>
-            <p className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">Plano de viagem</p>
+            <p className="mb-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted-foreground">Plano de viagem</p>
             <ol className="relative space-y-3 border-l border-border pl-4">
               {linha.map((i, k) => (
                 <li key={k} className="relative">
                   <span className={cn("absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full ring-2 ring-white", i.tom === "ok" ? "bg-leaf" : i.tom === "desvio" ? "bg-coral" : "bg-muted-foreground/40")} />
                   <p className={cn("text-[13px] font-semibold", i.tom === "desvio" && "text-coral")}>{i.titulo}</p>
-                  <p className="text-[11.5px] text-muted-foreground">{i.detalhe}</p>
+                  <p className="text-[12px] text-muted-foreground">{i.detalhe}</p>
                 </li>
               ))}
             </ol>
@@ -285,10 +285,10 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
             ...r.paradas.filter((p) => !p.conforme).map((p) => ({ lat: p.latitude, lng: p.longitude, cor: "#D2352A", titulo: "Parada não autorizada", hora: hora(p.inicio), detalhe: `${p.minutos} min` })),
           ]}
         />
-        <p className="mt-1.5 text-[11px] text-muted-foreground">Azul: origem/destino · verde: pontos autorizados · vermelho: paradas fora do plano.</p>
+        <p className="mt-1.5 text-[12px] text-muted-foreground">Azul: origem/destino · verde: pontos autorizados · vermelho: paradas fora do plano.</p>
       </Card>
 
-      <Card title="Evidência para a gerenciadora" icon={ShieldCheck} bodyClassName="p-5 text-[12.5px]">
+      <Card title="Evidência para a gerenciadora" icon={ShieldCheck} bodyClassName="p-5 text-[13px]">
         <p className="text-muted-foreground">A posição vem do rastreador SS. O relatório de conformidade reúne previsto × realizado da viagem.</p>
         <dl className="mt-3 grid grid-cols-[110px_1fr] gap-y-1.5">
           <dt className="text-muted-foreground">Gerenciadora</dt><dd className="font-medium">integração a definir</dd>
@@ -305,7 +305,7 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
             {porTipo.map(([tipo, nomes]) => (
               <li key={tipo} className="rounded-lg border border-border px-3 py-2">
                 <p className="text-[13px] font-semibold">{ROTULO_TIPO[tipo]}</p>
-                <p className="text-[11.5px] text-muted-foreground">{nomes.length} ponto(s) · {nomes.join(", ")}</p>
+                <p className="text-[12px] text-muted-foreground">{nomes.length} ponto(s) · {nomes.join(", ")}</p>
               </li>
             ))}
           </ul>
@@ -318,9 +318,9 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
         <p className="mb-3 text-[12px] text-muted-foreground">Recebem o alerta de parada não autorizada e atraso. O envio automático depende do canal que o cliente escolher (e-mail, WhatsApp, SMS).</p>
         <ul className="space-y-2">
           {v.destinatarios.map((d, i) => (
-            <li key={i} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-[12.5px]">
+            <li key={i} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-[13px]">
               <span><b>{d.nome}</b>{d.papel ? ` · ${d.papel}` : ""}<br /><span className="text-muted-foreground">{d.email}</span></span>
-              <button onClick={() => salvar({ destinatarios: v.destinatarios.filter((_, k) => k !== i) }, "Destinatário removido desta viagem.")} className="text-[11.5px] text-muted-foreground hover:text-coral">Remover</button>
+              <button onClick={() => salvar({ destinatarios: v.destinatarios.filter((_, k) => k !== i) }, "Destinatário removido desta viagem.")} className="text-[12px] text-muted-foreground hover:text-coral">Remover</button>
             </li>
           ))}
         </ul>
@@ -337,9 +337,9 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
             Adicionar
           </button>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">{v.rota_nome ? `Lista padrão herdada da rota ${v.rota_nome}. ` : ""}Alterações valem só para esta viagem.</p>
+        <p className="mt-2 text-[12px] text-muted-foreground">{v.rota_nome ? `Lista padrão herdada da rota ${v.rota_nome}. ` : ""}Alterações valem só para esta viagem.</p>
       </Card>
-      <p className="text-center text-[11px] text-muted-foreground">Dia {new Date(dia + "T12:00").toLocaleDateString("pt-BR")}</p>
+      <p className="text-center text-[12px] text-muted-foreground">Dia {new Date(dia + "T12:00").toLocaleDateString("pt-BR")}</p>
     </div>
   );
 }
@@ -445,7 +445,7 @@ function NovaEscala({ grupo, dia, onClose }: { grupo: string; dia: string; onClo
             </div>
             <ul className="mt-3 space-y-1.5">
               {pontos.map((p, i) => (
-                <li key={i} className="flex items-center justify-between rounded-lg border border-border px-3 py-1.5 text-[12.5px]">
+                <li key={i} className="flex items-center justify-between rounded-lg border border-border px-3 py-1.5 text-[13px]">
                   <span><Pill tone={p.tipo === "origem" || p.tipo === "destino" ? "sky" : "green"}>{ROTULO_TIPO[p.tipo]}</Pill> <b className="ml-1">{p.nome}</b> <span className="text-muted-foreground">raio {p.raio_m} m</span></span>
                   <button onClick={() => setPontos((x) => x.filter((_, k) => k !== i))} aria-label="Remover" className="text-muted-foreground hover:text-coral"><Trash2 className="h-4 w-4" /></button>
                 </li>
@@ -460,7 +460,7 @@ function NovaEscala({ grupo, dia, onClose }: { grupo: string; dia: string; onClo
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <label className="flex items-center gap-2 text-[12.5px]"><input type="checkbox" checked={salvarComoRota} onChange={(e) => setSalvarComoRota(e.target.checked)} /> Salvar pontos e destinatários como rota padrão “{f.rota_nome || "sem nome"}”</label>
+            <label className="flex items-center gap-2 text-[13px]"><input type="checkbox" checked={salvarComoRota} onChange={(e) => setSalvarComoRota(e.target.checked)} /> Salvar pontos e destinatários como rota padrão “{f.rota_nome || "sem nome"}”</label>
             <button onClick={enviar} disabled={enviando} className="rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white disabled:opacity-50">{enviando ? "Salvando…" : "Criar escala"}</button>
           </div>
         </div>
@@ -491,9 +491,9 @@ function DestinatariosEditor({ lista, onChange }: { lista: Destinatario[]; onCha
       </div>
       <ul className="mt-2 space-y-1">
         {lista.map((x, i) => (
-          <li key={i} className="flex items-center justify-between text-[12.5px]">
+          <li key={i} className="flex items-center justify-between text-[13px]">
             <span><b>{x.nome}</b>{x.papel ? ` · ${x.papel}` : ""}{x.email ? ` · ${x.email}` : ""}</span>
-            <button onClick={() => onChange(lista.filter((_, k) => k !== i))} className="text-[11.5px] text-muted-foreground hover:text-coral">Remover</button>
+            <button onClick={() => onChange(lista.filter((_, k) => k !== i))} className="text-[12px] text-muted-foreground hover:text-coral">Remover</button>
           </li>
         ))}
       </ul>
@@ -516,11 +516,11 @@ function RelatorioConformidade({ v, onClose }: { v: Viagem; onClose: () => void 
         <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-navy shadow"><Printer className="h-4 w-4" /> Imprimir / salvar em PDF</button>
         <button onClick={onClose} className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm shadow"><X className="h-4 w-4" /> Fechar</button>
       </div>
-      <div className="rel-conf mx-auto max-w-[860px] rounded-2xl bg-white p-10 text-[12.5px] text-foreground shadow-elegant">
+      <div className="rel-conf mx-auto max-w-[860px] rounded-2xl bg-white p-10 text-[13px] text-foreground shadow-elegant">
         <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-brand-navy">SS Telemática · evidência de rastreamento</p>
-            <h1 className="mt-1 font-display text-[22px] font-bold">Relatório de conformidade da viagem {v.codigo}</h1>
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-brand-navy">SS Telemática · evidência de rastreamento</p>
+            <h1 className="mt-1 font-display text-[20px] font-bold">Relatório de conformidade da viagem {v.codigo}</h1>
             <p className="text-muted-foreground">{origem?.nome} → {destino?.nome}{v.rodovia ? ` · ${v.rodovia}` : ""}</p>
           </div>
           <div className={cn("rounded-xl px-4 py-2 text-center font-bold", conforme ? "bg-leaf-tint text-leaf" : "bg-coral-tint text-coral")}>
@@ -568,7 +568,7 @@ function RelatorioConformidade({ v, onClose }: { v: Viagem; onClose: () => void 
         )}
         <h2 className="mt-6 text-[14px] font-bold">Pontos autorizados declarados</h2>
         <p className="mt-1 text-ink-soft">{v.pontos.map((p) => `${ROTULO_TIPO[p.tipo]}: ${p.nome}`).join(" · ")}</p>
-        <p className="mt-6 border-t border-border pt-3 text-[10.5px] text-muted-foreground">
+        <p className="mt-6 border-t border-border pt-3 text-[12px] text-muted-foreground">
           Posições e paradas medidas pelo rastreador SS embarcado no veículo. Parada conta a partir de 10 min parado; conforme quando dentro do raio de um ponto autorizado declarado. Relatório gerado em {geradoEm}.
         </p>
       </div>

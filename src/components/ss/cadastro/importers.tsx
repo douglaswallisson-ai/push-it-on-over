@@ -102,7 +102,7 @@ export function OcrPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-2 rounded-xl bg-navy-tint px-4 py-3 text-[12.5px] text-brand-navy">
+      <div className="flex items-start gap-2 rounded-xl bg-navy-tint px-4 py-3 text-[13px] text-brand-navy">
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
         <span>
           Suba a foto ou PDF do <strong>{docLabel}</strong> e a plataforma extrai os dados
@@ -131,8 +131,8 @@ export function OcrPanel({
           <div className="grid gap-3 sm:grid-cols-2">
             {sample.map((f) => (
               <div key={f.key} className="rounded-lg border border-border bg-white px-3 py-2">
-                <p className="text-[11px] text-muted-foreground">{f.label}</p>
-                <p className="text-[13.5px] font-medium text-foreground">{f.value}</p>
+                <p className="text-[12px] text-muted-foreground">{f.label}</p>
+                <p className="text-[14px] font-medium text-foreground">{f.value}</p>
               </div>
             ))}
           </div>
@@ -151,7 +151,7 @@ export function OcrPanel({
               Usar estes dados
             </button>
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             Protótipo — extração simulada. No sistema, o reconhecimento roda no back-end.
           </p>
         </div>
@@ -201,13 +201,13 @@ export function BulkImport({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-secondary/50 px-4 py-3">
-        <p className="text-[12.5px] text-ink-soft">
+        <p className="text-[13px] text-ink-soft">
           Baixe o modelo, preencha uma linha por {entityPlural.slice(0, -1)} e suba a planilha.
         </p>
         <a
           href={templateHref}
           download={`modelo-${entityPlural}.csv`}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-[12.5px] font-medium text-brand-navy hover:bg-secondary"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-2 text-[13px] font-medium text-brand-navy hover:bg-secondary"
         >
           <Download className="h-3.5 w-3.5" />
           Baixar modelo
@@ -241,7 +241,7 @@ export function BulkImport({
               <thead>
                 <tr className="bg-secondary">
                   {columns.map((c) => (
-                    <th key={c} className="whitespace-nowrap px-3 py-2 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    <th key={c} className="whitespace-nowrap px-3 py-2 text-left font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
                       {c}
                     </th>
                   ))}
@@ -260,7 +260,7 @@ export function BulkImport({
               </tbody>
             </table>
             {rows.length > 8 && (
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              <p className="mt-2 text-center text-[12px] text-muted-foreground">
                 +{rows.length - 8} linhas não exibidas na prévia
               </p>
             )}

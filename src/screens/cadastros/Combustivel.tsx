@@ -26,7 +26,7 @@ const DADOS: Abastecimento[] = [
 ];
 
 const COLS: Column<Abastecimento>[] = [
-  { key: "data", header: "Data", render: (r) => <span className="font-mono text-[12.5px]">{r.data}</span> },
+  { key: "data", header: "Data", render: (r) => <span className="font-mono text-[13px]">{r.data}</span> },
   { key: "veiculo", header: "Veículo", render: (r) => <span className="font-mono font-semibold text-foreground">{r.veiculo}</span> },
   { key: "posto", header: "Posto" },
   { key: "litros", header: "Litros", align: "right", render: (r) => <span className="font-mono text-coral">{r.litros}</span> },

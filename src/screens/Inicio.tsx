@@ -195,7 +195,7 @@ export default function Inicio() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-3 flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+    <p className="mb-3 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
       <span className="inline-block h-px w-4 bg-current opacity-50" />
       {children}
     </p>
@@ -238,11 +238,11 @@ function HeroValue() {
         <div className="flex items-center gap-5">
           <SSOrb size={72} halo className="text-brand-green" />
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/60">
+            <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-white/60">
               {saudacao}
               {primeiroNome ? `, ${primeiroNome}` : ""}
             </p>
-            <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[28px]">
+            <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[30px]">
               {roi ? (
                 <>
                   Economia estimada de <span className="text-brand-green">{brlCurto(roi.economia_estimada_mes)}</span> no mês.
@@ -314,10 +314,10 @@ function HeroValueExemplo() {
         <div className="flex items-center gap-5">
           <SSOrb size={72} halo className="text-brand-green" />
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/60">
+            <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-white/60">
               Bom dia, Douglas
             </p>
-            <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[28px]">
+            <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[30px]">
               Sua frota economizou <span className="text-brand-green">R$ 48.200</span> este mês.
             </h2>
           </div>
@@ -336,9 +336,9 @@ function HeroValueExemplo() {
 function HeroMetric({ value, label, foot }: { value: string; label: string; foot: string }) {
   return (
     <div>
-      <div className="font-display text-2xl font-bold tabular-nums md:text-[28px]">{value}</div>
+      <div className="font-display text-2xl font-bold tabular-nums md:text-[30px]">{value}</div>
       <div className="mt-1 text-[12px] font-medium text-white/80">{label}</div>
-      <div className="mt-0.5 text-[11px] text-white/50">{foot}</div>
+      <div className="mt-0.5 text-[12px] text-white/50">{foot}</div>
     </div>
   );
 }
@@ -369,7 +369,7 @@ function KpiCard({
         </div>
         {delta && (
           <span
-            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-semibold"
+            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[12px] font-semibold"
             style={{
               color: good ? "var(--leaf)" : "var(--gold)",
               background: good ? "var(--leaf-tint)" : "var(--gold-tint)",
@@ -380,9 +380,9 @@ function KpiCard({
           </span>
         )}
       </div>
-      <p className="text-[11.5px] text-muted-foreground">{label}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
       <div className="mt-0.5 flex items-end justify-between gap-2">
-        <p className="font-display text-[26px] font-bold leading-none tabular-nums">
+        <p className="font-display text-[24px] font-bold leading-none tabular-nums">
           {value}
           {unit && <span className="ml-1 text-sm font-medium text-muted-foreground">{unit}</span>}
         </p>
@@ -410,13 +410,13 @@ function PlanoCard() {
           {/* "Plano contratado · Plano Performance · Ativo" era texto fixo —
               não há cadastro de plano no backend. O cartão mostra a saúde
               da frota (cascata T11/DS-1511), e o título agora diz isso. */}
-          <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+          <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-muted-foreground">
             Saúde da frota
           </p>
           <p className="mt-1 text-xl font-bold">Unidades sem ponto de atenção</p>
         </div>
         {usandoMock() && (
-          <span className="rounded-full bg-leaf-tint px-3 py-1 text-[11px] font-semibold text-leaf">Ativo</span>
+          <span className="rounded-full bg-leaf-tint px-3 py-1 text-[12px] font-semibold text-leaf">Ativo</span>
         )}
       </div>
 
@@ -473,7 +473,7 @@ function PendenciasCard() {
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
-        <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+        <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-muted-foreground">
           Não visualizados
         </p>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-tint">
@@ -672,7 +672,7 @@ function CriticalCard() {
             <span className="pulse-dot absolute -right-1 -top-1" />
           </div>
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-coral">
+            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-coral">
               {usandoMock() ? "Eventos críticos hoje" : "Alarmes críticos hoje"}
             </p>
             <p className="font-display text-5xl font-bold leading-none tabular-nums">
@@ -683,7 +683,7 @@ function CriticalCard() {
 
         <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3">
           {porTipo.length === 0 && !criticosQ.isPending && (
-            <div className="col-span-full self-center text-[12.5px] text-muted-foreground">
+            <div className="col-span-full self-center text-[13px] text-muted-foreground">
               <p>Nenhum alarme crítico (nível 3) disparado hoje.</p>
               {conducao && (
                 <p className="mt-1">
@@ -751,7 +751,7 @@ function Donut({ value }: { value: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-xl font-bold leading-none">{value}%</span>
-        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">índice</span>
+        <span className="mt-0.5 text-[12px] uppercase tracking-wide text-muted-foreground">índice</span>
       </div>
     </div>
   );
@@ -849,14 +849,14 @@ function CardsManutencao() {
             >
               <c.icone className="h-4 w-4" style={{ color: c.cor }} />
             </span>
-            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               {c.label}
             </span>
           </span>
-          <span className="mt-2 block font-display text-[26px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
+          <span className="mt-2 block font-display text-[24px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
             {c.valor}
           </span>
-          <span className="mt-1 block text-[11px] leading-tight text-muted-foreground">{c.nota}</span>
+          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">{c.nota}</span>
         </button>
       ))}
     </div>

@@ -119,10 +119,10 @@ export default function PerfisAcesso() {
                       )}
                     >
                       <span className="flex items-center gap-1.5">
-                        <span className="text-[13.5px] font-medium text-foreground">{p.nome}</span>
+                        <span className="text-[14px] font-medium text-foreground">{p.nome}</span>
                         {p.sistema && <Lock className="h-3 w-3 text-muted-foreground" aria-label="Perfil de sistema" />}
                       </span>
-                      <span className="block text-[11px] text-muted-foreground">
+                      <span className="block text-[12px] text-muted-foreground">
                         {p.acoes.length} ações · {p.usuariosVinculados} usuários
                       </span>
                     </button>
@@ -147,7 +147,7 @@ export default function PerfisAcesso() {
                 }
                 bodyClassName="p-4"
               >
-                <p className="mb-3 text-[12.5px] text-muted-foreground">{perfil.descricao}</p>
+                <p className="mb-3 text-[13px] text-muted-foreground">{perfil.descricao}</p>
 
                 {perfil.sistema && (
                   <p className="mb-3 rounded-lg border border-border bg-secondary/50 px-3 py-2 text-[12px] text-muted-foreground">
@@ -159,7 +159,7 @@ export default function PerfisAcesso() {
                 <div className="space-y-4">
                   {GRUPOS.map((g) => (
                     <div key={g}>
-                      <h4 className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                      <h4 className="mb-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                         {g}
                       </h4>
                       <ul className="space-y-1">
@@ -187,7 +187,7 @@ export default function PerfisAcesso() {
                                 </span>
                                 <span className="min-w-0">
                                   <span className="block text-[13px] font-medium text-foreground">{a.label}</span>
-                                  <span className="block text-[11.5px] text-muted-foreground">{a.descricao}</span>
+                                  <span className="block text-[12px] text-muted-foreground">{a.descricao}</span>
                                 </span>
                               </button>
                             </li>

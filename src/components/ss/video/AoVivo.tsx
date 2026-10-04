@@ -180,12 +180,12 @@ export function AoVivo() {
                         <span className="block truncate font-mono text-[13px] font-bold text-foreground">
                           {v?.prefixo ?? "—"}
                         </span>
-                        <span className="block truncate text-[11px] text-muted-foreground">
+                        <span className="block truncate text-[12px] text-muted-foreground">
                           {canaisOn}/{d.canais.length} câmeras · {desde(d.ultimaComunicacao)}
                         </span>
                       </span>
                       {d.velocidadeKmh != null && d.status !== "offline" && (
-                        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{d.velocidadeKmh} km/h</span>
+                        <span className="shrink-0 font-mono text-[12px] text-muted-foreground">{d.velocidadeKmh} km/h</span>
                       )}
                     </button>
                   </li>
@@ -219,7 +219,7 @@ export function AoVivo() {
             <div className="flex h-[360px] flex-col items-center justify-center text-center">
               <Camera className="h-9 w-9 text-muted-foreground" />
               <p className="mt-3 text-[14px] font-medium text-foreground">Escolha um veículo para abrir a transmissão</p>
-              <p className="mt-1 max-w-sm text-[12.5px] text-muted-foreground">
+              <p className="mt-1 max-w-sm text-[13px] text-muted-foreground">
                 A transmissão consome dados móveis do plano do equipamento, por isso é aberta sob demanda e não fica
                 ligada para toda a frota.
               </p>
@@ -245,14 +245,14 @@ export function AoVivo() {
                             <span className="text-[12px]">Aguardando serviço de mídia</span>
                           </span>
                         </div>
-                        <span className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">
+                        <span className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded bg-black/60 px-2 py-0.5 text-[12px] font-medium text-white">
                           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-coral" />
                           AO VIVO
                         </span>
-                        <span className="absolute right-2.5 top-2.5 rounded bg-black/60 px-2 py-0.5 font-mono text-[11px] text-white">
+                        <span className="absolute right-2.5 top-2.5 rounded bg-black/60 px-2 py-0.5 font-mono text-[12px] text-white">
                           {c.nome}
                         </span>
-                        <span className="absolute bottom-2.5 left-2.5 rounded bg-black/60 px-2 py-0.5 font-mono text-[10.5px] text-white/80">
+                        <span className="absolute bottom-2.5 left-2.5 rounded bg-black/60 px-2 py-0.5 font-mono text-[12px] text-white/80">
                           {new Date().toLocaleTimeString("pt-BR")}
                           {selecionado.velocidadeKmh != null ? ` · ${selecionado.velocidadeKmh} km/h` : ""}
                         </span>

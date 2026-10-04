@@ -113,7 +113,7 @@ export function ContratoDoCliente() {
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Vigência. */}
         <div>
-          <h4 className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <h4 className="mb-1.5 flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             <CalendarClock className="h-3 w-3" />
             Vigência
           </h4>
@@ -123,13 +123,13 @@ export function ContratoDoCliente() {
           <p className={cn("text-[13px]", vencendo ? "font-semibold text-coral" : "text-ink-soft")}>
             Até <strong className={vencendo ? "" : "text-foreground"}>{dataBR(termino(contrato))}</strong>
             {contrato.status === "ativo" && (
-              <span className="ml-1.5 text-[11.5px]">
+              <span className="ml-1.5 text-[12px]">
                 ({dias > 0 ? `faltam ${dias} dias` : `vencido há ${Math.abs(dias)} dias`})
               </span>
             )}
           </p>
           {contrato.aditivos.length > 0 && (
-            <p className="mt-1 text-[11.5px] text-muted-foreground">
+            <p className="mt-1 text-[12px] text-muted-foreground">
               {contrato.aditivos.length} aditivo{contrato.aditivos.length > 1 ? "s" : ""} — prazo já prorrogado
             </p>
           )}
@@ -137,11 +137,11 @@ export function ContratoDoCliente() {
 
         {/* Veículos contratados. */}
         <div>
-          <h4 className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <h4 className="mb-1.5 flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             <Truck className="h-3 w-3" />
             Veículos contratados
           </h4>
-          <p className="font-display text-[22px] font-bold leading-none text-foreground">{nf(total(contrato))}</p>
+          <p className="font-display text-[20px] font-bold leading-none text-foreground">{nf(total(contrato))}</p>
           <ul className="mt-1.5 space-y-0.5">
             {(Object.entries(contrato.veiculosPorModalidade) as [ModalidadeContrato, number][])
               .filter(([, v]) => v > 0)
@@ -155,7 +155,7 @@ export function ContratoDoCliente() {
 
         {/* Contato — a única parte editável. */}
         <div>
-          <h4 className="mb-1.5 flex items-center justify-between gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <h4 className="mb-1.5 flex items-center justify-between gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Mail className="h-3 w-3" />
               Contato da empresa
@@ -163,7 +163,7 @@ export function ContratoDoCliente() {
             {!editando && (
               <button
                 onClick={abrirEdicao}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium normal-case tracking-normal text-brand-navy hover:bg-secondary"
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[12px] font-medium normal-case tracking-normal text-brand-navy hover:bg-secondary"
               >
                 <Pencil className="h-3 w-3" />
                 editar
@@ -177,14 +177,14 @@ export function ContratoDoCliente() {
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
                 placeholder="Telefone"
-                className="h-8 w-full rounded-lg border border-border bg-white px-2.5 text-[12.5px] outline-none focus:border-accent"
+                className="h-8 w-full rounded-lg border border-border bg-white px-2.5 text-[13px] outline-none focus:border-accent"
               />
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && salvar()}
                 placeholder="E-mail"
-                className="h-8 w-full rounded-lg border border-border bg-white px-2.5 text-[12.5px] outline-none focus:border-accent"
+                className="h-8 w-full rounded-lg border border-border bg-white px-2.5 text-[13px] outline-none focus:border-accent"
               />
               <div className="flex gap-1.5">
                 <button
@@ -203,7 +203,7 @@ export function ContratoDoCliente() {
               </div>
             </div>
           ) : (
-            <div className="space-y-0.5 text-[12.5px]">
+            <div className="space-y-0.5 text-[13px]">
               <p className="flex items-center gap-1.5 text-ink-soft">
                 <Phone className="h-3 w-3 text-muted-foreground" />
                 {telefoneAtual}
@@ -212,7 +212,7 @@ export function ContratoDoCliente() {
                 <Mail className="h-3 w-3 shrink-0 text-muted-foreground" />
                 {emailAtual}
               </p>
-              <p className="pt-1 text-[11px] text-muted-foreground">
+              <p className="pt-1 text-[12px] text-muted-foreground">
                 Responsável: {contrato.responsavelNome}
               </p>
             </div>
@@ -220,7 +220,7 @@ export function ContratoDoCliente() {
         </div>
       </div>
 
-      <p className="mt-3 border-t border-border pt-2.5 text-[11.5px] text-muted-foreground">
+      <p className="mt-3 border-t border-border pt-2.5 text-[12px] text-muted-foreground">
         Telefone e e-mail podem ser atualizados por aqui. Prazo, volume de veículos e escopo mudam por aditivo
         assinado — fale com seu contato comercial.
       </p>

@@ -111,7 +111,7 @@ function KpiCard({
           <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `color-mix(in oklab, ${cor} 14%, white)` }}>
             <Icone className="h-4 w-4" style={{ color: cor }} />
           </span>
-          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             {label}
           </span>
         </span>
@@ -119,11 +119,11 @@ function KpiCard({
       </div>
 
       <div className="mt-2.5 flex items-baseline gap-1.5">
-        <span className="font-display text-[26px] font-bold leading-none text-foreground">{valor}</span>
+        <span className="font-display text-[24px] font-bold leading-none text-foreground">{valor}</span>
         {unidade && <span className="text-[12px] text-muted-foreground">{unidade}</span>}
       </div>
 
-      <p className="mt-1 text-[11.5px] leading-tight text-muted-foreground">{descricao}</p>
+      <p className="mt-1 text-[12px] leading-tight text-muted-foreground">{descricao}</p>
 
       <div className="mt-2.5">
         <Sparkline data={serie} color={cor} width={220} height={28} />
@@ -231,7 +231,7 @@ export default function IndicadoresGerenciais() {
       render: (l) => (
         <div>
           <div className="text-[13px] font-medium text-foreground">{l.indicador}</div>
-          {l.nota && <div className="text-[11px] text-muted-foreground">{l.nota}</div>}
+          {l.nota && <div className="text-[12px] text-muted-foreground">{l.nota}</div>}
         </div>
       ),
     },
@@ -329,7 +329,7 @@ export default function IndicadoresGerenciais() {
             {daApi.unavailable.length > 0 && (
               <div className="flex items-start gap-2.5 rounded-xl border border-gold-line bg-gold-tint/40 px-4 py-3">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                <p className="text-[12.5px] text-gold">
+                <p className="text-[13px] text-gold">
                   <strong>{daApi.unavailable.join(", ").toUpperCase()} não podem ser calculados.</strong>{" "}
                   {daApi.unavailable_reason} Os cartões abaixo continuam com dados de exemplo.
                 </p>
@@ -395,7 +395,7 @@ export default function IndicadoresGerenciais() {
           bodyClassName="p-4"
         >
           <DataTable columns={COLS_COMP} rows={COMPARATIVO as (LinhaComp & Record<string, unknown>)[]} />
-          <p className="mt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             A cor da variação considera a direção desejada de cada indicador: queda no CPK é favorável, queda no IPK
             não é.
           </p>
@@ -426,14 +426,14 @@ export default function IndicadoresGerenciais() {
                 return (
                   <li key={c.cat} className="flex items-center gap-2.5">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: CORES[c.cat] }} />
-                    <span className="flex-1 truncate text-[12.5px] text-ink-soft">{CATEGORIA_CUSTO_LABEL[c.cat]}</span>
-                    <span className="shrink-0 font-mono text-[12.5px] text-muted-foreground">{c.pct.toFixed(1)}%</span>
-                    <span className="w-20 shrink-0 text-right font-mono text-[12.5px] font-semibold text-foreground">
+                    <span className="flex-1 truncate text-[13px] text-ink-soft">{CATEGORIA_CUSTO_LABEL[c.cat]}</span>
+                    <span className="shrink-0 font-mono text-[13px] text-muted-foreground">{c.pct.toFixed(1)}%</span>
+                    <span className="w-20 shrink-0 text-right font-mono text-[13px] font-semibold text-foreground">
                       {brl(c.cpk)}
                     </span>
                     <span
                       className={cn(
-                        "w-14 shrink-0 text-right font-mono text-[11.5px]",
+                        "w-14 shrink-0 text-right font-mono text-[12px]",
                         v.bom === null ? "text-muted-foreground" : v.bom ? "text-leaf" : "text-coral",
                       )}
                     >
@@ -448,7 +448,7 @@ export default function IndicadoresGerenciais() {
             <EmptyNote>Sem lançamentos de custo no período.</EmptyNote>
           )}
 
-          <p className="mt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             O CPK isolado não indica onde agir. A decisão de renovar frota ou trocar fornecedor depende de saber qual
             categoria está puxando o número.
           </p>

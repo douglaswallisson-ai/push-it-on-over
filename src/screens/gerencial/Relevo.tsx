@@ -34,7 +34,7 @@ function Calculando({ progresso }: { progresso: number }) {
     <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-card">
       <MountainSnow className="mx-auto h-8 w-8 animate-pulse text-brand-navy" />
       <p className="mt-2 text-[14px] font-semibold">Calculando o relevo do período…</p>
-      <p className="text-[12.5px] text-muted-foreground">
+      <p className="text-[13px] text-muted-foreground">
         Na primeira vez cada dia é medido posição a posição no mapa de elevação. Depois fica guardado e abre na hora.
       </p>
       <div className="mx-auto mt-4 h-2 max-w-md overflow-hidden rounded-full bg-secondary">
@@ -67,7 +67,7 @@ export function PaginaRelevo({ f }: Ctx) {
 
   const colsV: Column<Veic>[] = [
     { key: "placa", header: "Placa", render: (v) => <span className="font-semibold">{v.placa}</span> },
-    { key: "classe", header: "Relevo", render: (v) => { const c = classeRelevo(v.subida_por_100km); return <span className="inline-flex items-center gap-1.5 text-[12.5px]"><span className="h-2 w-2 rounded-full" style={{ background: c.cor }} />{c.rotulo}</span>; } },
+    { key: "classe", header: "Relevo", render: (v) => { const c = classeRelevo(v.subida_por_100km); return <span className="inline-flex items-center gap-1.5 text-[13px]"><span className="h-2 w-2 rounded-full" style={{ background: c.cor }} />{c.rotulo}</span>; } },
     { key: "km", header: "Km medido", align: "right", render: (v) => <span className="font-mono">{nf(v.km)}</span> },
     { key: "sub", header: "Subida total", align: "right", render: (v) => <span className="font-mono">{nf(v.subida_m)} m</span> },
     { key: "s100", header: "Subida /100 km", align: "right", render: (v) => <span className="font-mono font-semibold">{nf(v.subida_por_100km)} m</span> },
@@ -76,7 +76,7 @@ export function PaginaRelevo({ f }: Ctx) {
   ];
   const colsM: Column<Mot>[] = [
     { key: "nome", header: "Motorista", render: (m) => <span className="font-semibold">{m.nome ?? m.driver_id}</span> },
-    { key: "classe", header: "Relevo", render: (m) => { const c = classeRelevo(m.subida_por_100km); return <span className="inline-flex items-center gap-1.5 text-[12.5px]"><span className="h-2 w-2 rounded-full" style={{ background: c.cor }} />{c.rotulo}</span>; } },
+    { key: "classe", header: "Relevo", render: (m) => { const c = classeRelevo(m.subida_por_100km); return <span className="inline-flex items-center gap-1.5 text-[13px]"><span className="h-2 w-2 rounded-full" style={{ background: c.cor }} />{c.rotulo}</span>; } },
     { key: "km", header: "Km medido", align: "right", render: (m) => <span className="font-mono">{nf(m.km)}</span> },
     { key: "s100", header: "Subida /100 km", align: "right", render: (m) => <span className="font-mono font-semibold">{nf(m.subida_por_100km)} m</span> },
     { key: "acl", header: "% aclive", align: "right", render: (m) => <span className="font-mono">{nf(m.pct_aclive, 1)}%</span> },
@@ -138,7 +138,7 @@ export function PaginaRelevo({ f }: Ctx) {
         >
           <ComposedChart data={porDia}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="s" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="p" orientation="right" tick={{ fontSize: 11 }} unit="%" />
             <Tooltip content={<DicaGrafico fmt={(v, n) => (n.startsWith("%") ? `${nf(v, 1)}%` : `${nf(v)} m`)} />} />
@@ -176,7 +176,7 @@ export function PaginaRelevo({ f }: Ctx) {
         ) : (
           <DataTable columns={colsM as unknown as Column<Record<string, unknown>>[]} rows={motoristas as unknown as Record<string, unknown>[]} />
         )}
-        <p className="mt-2 text-[11px] text-muted-foreground">
+        <p className="mt-2 text-[12px] text-muted-foreground">
           Km medido: distância entre posições próximas, onde o relevo foi calculado. <Pill tone="green">Plano &lt; 400 m</Pill>{" "}
           <Pill tone="gold">Ondulado &lt; 900</Pill> <Pill tone="coral">Serra ≥ 1.500</Pill> de subida por 100 km.
         </p>

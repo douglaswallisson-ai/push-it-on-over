@@ -138,7 +138,7 @@ export function CrudSheet<T extends Record<string, unknown>>({
           {erros.length > 0 && (
             <div className="mb-4 flex items-start gap-2 rounded-lg border border-coral-line bg-coral-tint/50 px-3 py-2.5">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
-              <p className="text-[12.5px] text-coral">
+              <p className="text-[13px] text-coral">
                 Preencha: <strong>{erros.join(", ")}</strong>
               </p>
             </div>
@@ -152,7 +152,7 @@ export function CrudSheet<T extends Record<string, unknown>>({
                   {c.obrigatorio ? (
                     <span className="ml-1 text-coral">*</span>
                   ) : (
-                    <span className="ml-1.5 text-[10.5px] font-normal text-muted-foreground">opcional</span>
+                    <span className="ml-1.5 text-[12px] font-normal text-muted-foreground">opcional</span>
                   )}
                 </label>
 
@@ -216,7 +216,7 @@ export function CrudSheet<T extends Record<string, unknown>>({
                   </div>
                 )}
 
-                {c.hint && <span className="block text-[11px] text-muted-foreground">{c.hint}</span>}
+                {c.hint && <span className="block text-[12px] text-muted-foreground">{c.hint}</span>}
               </div>
             ))}
           </div>
@@ -233,13 +233,13 @@ export function CrudSheet<T extends Record<string, unknown>>({
                     <span className="text-[12px] text-muted-foreground">Confirma?</span>
                     <button
                       onClick={() => onExcluir(editando)}
-                      className="rounded-lg bg-coral px-3 py-1.5 text-[12.5px] font-semibold text-white"
+                      className="rounded-lg bg-coral px-3 py-1.5 text-[13px] font-semibold text-white"
                     >
                       Excluir
                     </button>
                     <button
                       onClick={() => setConfirmarExclusao(false)}
-                      className="text-[12.5px] text-muted-foreground underline"
+                      className="text-[13px] text-muted-foreground underline"
                     >
                       cancelar
                     </button>

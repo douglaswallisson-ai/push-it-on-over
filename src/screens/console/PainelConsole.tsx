@@ -86,7 +86,7 @@ export default function PainelConsole() {
                     className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-3 py-2 text-left transition-colors hover:bg-secondary"
                   >
                     <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">{p.texto}</span>
-                    <span className="shrink-0 text-[11.5px] text-muted-foreground">{p.acao}</span>
+                    <span className="shrink-0 text-[12px] text-muted-foreground">{p.acao}</span>
                   </button>
                 </li>
               ))}
@@ -104,11 +104,11 @@ export default function PainelConsole() {
                   const pct = veiculos ? (v / veiculos) * 100 : 0;
                   return (
                     <li key={mod} className="flex items-center gap-3">
-                      <span className="w-40 shrink-0 text-[12.5px] text-ink-soft">{MODALIDADE_CONTRATO_LABEL[mod]}</span>
+                      <span className="w-40 shrink-0 text-[13px] text-ink-soft">{MODALIDADE_CONTRATO_LABEL[mod]}</span>
                       <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
                         <span className="block h-2.5 rounded-full bg-brand-navy" style={{ width: `${pct}%` }} />
                       </span>
-                      <span className="w-20 shrink-0 text-right font-mono text-[12.5px] font-semibold text-foreground">
+                      <span className="w-20 shrink-0 text-right font-mono text-[13px] font-semibold text-foreground">
                         {nf(v)} ({pct.toFixed(0)}%)
                       </span>
                     </li>
@@ -130,7 +130,7 @@ export default function PainelConsole() {
                       <span className="block truncate text-[13px] font-medium text-foreground">
                         {c.nomeFantasia ?? c.razaoSocial}
                       </span>
-                      <span className="block font-mono text-[11px] text-muted-foreground">{c.numero}</span>
+                      <span className="block font-mono text-[12px] text-muted-foreground">{c.numero}</span>
                     </span>
                     <span className="shrink-0 font-mono text-[12px] text-muted-foreground">{nf(total(c))} veículos</span>
                     <Pill tone={c.status === "ativo" ? "green" : c.status === "rascunho" ? "gold" : "neutral"}>

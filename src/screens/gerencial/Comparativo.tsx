@@ -82,11 +82,11 @@ function Cartao({ it, i }: { it: ItemComparativo; i: number }) {
       style={{ animationDelay: `${i * 45}ms`, animationFillMode: "both" }}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="text-[12.5px] font-medium text-muted-foreground">{it.rotulo}</span>
+        <span className="text-[13px] font-medium text-muted-foreground">{it.rotulo}</span>
         <Info texto={it.dica} />
       </div>
       <div className="mt-1 flex items-end justify-between gap-2">
-        <p className="font-display text-[26px] font-bold leading-none tabular-nums text-foreground">
+        <p className="font-display text-[24px] font-bold leading-none tabular-nums text-foreground">
           <Numero valor={it.atual} fmt={(n) => nf(n, casas)} />
           {it.unidade && <span className="ml-1 text-[12px] font-medium text-muted-foreground">{it.unidade}</span>}
         </p>
@@ -105,7 +105,7 @@ function Cartao({ it, i }: { it: ItemComparativo; i: number }) {
           { r: "Período", val: it.atual, c: "var(--brand-navy)" },
           { r: "Anterior", val: it.anterior, c: "#C3CBD6" },
         ].map((b) => (
-          <div key={b.r} className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-2 text-[11px]">
+          <div key={b.r} className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-2 text-[12px]">
             <span className="text-muted-foreground">{b.r}</span>
             <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
               <div
@@ -134,7 +134,7 @@ export function ComparativoIndicadores({ grupos }: { grupos: GrupoComparativo[] 
     <div className="space-y-5">
       {grupos.map((g) => (
         <div key={g.titulo}>
-          <p className="mb-2 flex items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="mb-2 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             <span className="h-px w-5 bg-border" />
             {g.titulo}
           </p>

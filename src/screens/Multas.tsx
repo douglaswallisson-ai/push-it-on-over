@@ -107,8 +107,8 @@ export default function Multas() {
       header: "AIT",
       render: (m) => (
         <div>
-          <div className="font-mono text-[12.5px] font-bold text-foreground">{m.ait}</div>
-          <div className="text-[11px] text-muted-foreground">{dataBR(m.em)}</div>
+          <div className="font-mono text-[13px] font-bold text-foreground">{m.ait}</div>
+          <div className="text-[12px] text-muted-foreground">{dataBR(m.em)}</div>
         </div>
       ),
     },
@@ -122,8 +122,8 @@ export default function Multas() {
       header: "Infração",
       render: (m) => (
         <div>
-          <div className="max-w-[240px] truncate text-[12.5px] text-foreground">{m.infracao}</div>
-          <div className="text-[11px] text-muted-foreground">{m.local}</div>
+          <div className="max-w-[240px] truncate text-[13px] text-foreground">{m.infracao}</div>
+          <div className="text-[12px] text-muted-foreground">{m.local}</div>
         </div>
       ),
     },
@@ -134,7 +134,7 @@ export default function Multas() {
       render: (m) => (
         <span className="inline-flex items-center gap-1.5">
           <Pill tone={GRAV_TONE[m.gravidade]}>{m.gravidade}</Pill>
-          <span className="font-mono text-[11.5px] text-muted-foreground">{m.pontos} pts</span>
+          <span className="font-mono text-[12px] text-muted-foreground">{m.pontos} pts</span>
         </span>
       ),
     },
@@ -143,7 +143,7 @@ export default function Multas() {
       header: "Condutor",
       render: (m) =>
         m.motoristaId ? (
-          <span className="whitespace-nowrap text-[12.5px] text-ink-soft">{nomeMotorista.get(m.motoristaId) ?? "—"}</span>
+          <span className="whitespace-nowrap text-[13px] text-ink-soft">{nomeMotorista.get(m.motoristaId) ?? "—"}</span>
         ) : (
           <span className="text-[12px] text-coral">não identificado</span>
         ),
@@ -158,7 +158,7 @@ export default function Multas() {
         return (
           <span
             className={cn(
-              "whitespace-nowrap font-mono text-[12.5px] font-semibold",
+              "whitespace-nowrap font-mono text-[13px] font-semibold",
               d < 0 ? "text-coral" : d <= 7 ? "text-coral" : d <= 15 ? "text-gold" : "text-ink-soft",
             )}
             title={dataBR(m.prazoIndicacao)}
@@ -168,7 +168,7 @@ export default function Multas() {
         );
       },
     },
-    { key: "valor", header: "Valor", align: "right", render: (m) => <span className="font-mono text-[12.5px] font-semibold">{brl(m.valor)}</span> },
+    { key: "valor", header: "Valor", align: "right", render: (m) => <span className="font-mono text-[13px] font-semibold">{brl(m.valor)}</span> },
     { key: "status", header: "Status", align: "center", render: (m) => <Pill tone={STATUS_TONE[m.status]}>{STATUS_LABEL[m.status]}</Pill> },
     {
       key: "acao",
@@ -289,7 +289,7 @@ export default function Multas() {
                 <EmptyNote>Nenhuma multa com esse filtro.</EmptyNote>
               )}
 
-              <p className="mt-3 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-muted-foreground">
                 O prazo em destaque é o de <strong>indicação do condutor</strong>, não o do boleto: é o que não pode
                 passar. A indicação fica registrada em auditoria.
               </p>

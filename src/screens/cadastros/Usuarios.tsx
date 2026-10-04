@@ -38,12 +38,12 @@ const COLS: Column<Usuario>[] = [
     header: "Usuário",
     render: (u) => (
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-tint text-[11px] font-semibold text-brand-navy">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-tint text-[12px] font-semibold text-brand-navy">
           {u.nome.split(" ").map((n) => n[0]).slice(0, 2).join("")}
         </div>
         <div>
           <div className="font-semibold text-foreground">{u.nome}</div>
-          <div className="text-[11.5px] text-muted-foreground">{u.email}</div>
+          <div className="text-[12px] text-muted-foreground">{u.email}</div>
         </div>
       </div>
     ),
@@ -56,11 +56,11 @@ const COLS: Column<Usuario>[] = [
       u.perfil === "Administrador" ? (
         <Pill tone="sky">Todas as garagens</Pill>
       ) : u.garagens?.length ? (
-        <span className="whitespace-nowrap text-[12.5px] text-ink-soft">
+        <span className="whitespace-nowrap text-[13px] text-ink-soft">
           {u.garagens.length} garage{u.garagens.length > 1 ? "ns" : "m"}
         </span>
       ) : (
-        <span className="whitespace-nowrap text-[12.5px] text-gold">sem garagem</span>
+        <span className="whitespace-nowrap text-[13px] text-gold">sem garagem</span>
       ),
   },
   { key: "acesso", header: "Último acesso", align: "right", render: (u) => <span className="text-muted-foreground">{u.acesso}</span> },

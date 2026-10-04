@@ -140,7 +140,7 @@ function Metric({
       <p className="mt-1 font-display text-xl font-bold tabular-nums" style={{ color }}>
         {value}
       </p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
     </div>
   );
 }

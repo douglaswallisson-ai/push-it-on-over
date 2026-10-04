@@ -165,7 +165,7 @@ export default function CatalogoManutencao() {
                   key={c}
                   onClick={() => setCamada(c)}
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors",
+                    "rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
                     camada === c
                       ? "bg-brand-navy text-white"
                       : "border border-border bg-white text-muted-foreground hover:bg-secondary",
@@ -212,7 +212,7 @@ export default function CatalogoManutencao() {
                 <p className="text-[13px] font-semibold text-gold">
                   {modelosPendentes.length} modelo{modelosPendentes.length > 1 ? "s" : ""} sem parâmetro utilizável
                 </p>
-                <p className="mt-1 text-[12.5px] text-gold/90">
+                <p className="mt-1 text-[13px] text-gold/90">
                   Veículos desses modelos não geram alerta de preventiva. Ou o modelo foi criado automaticamente no
                   cadastro de um veículo, ou o número não foi localizado em fonte pública — nesse caso, confirme com a
                   concessionária antes de virar regra.
@@ -226,7 +226,7 @@ export default function CatalogoManutencao() {
                         setModeloAberto(m.id);
                         setSoPendentes(false);
                       }}
-                      className="rounded-full bg-white/70 px-2.5 py-1 text-[11.5px] font-medium text-gold hover:bg-white"
+                      className="rounded-full bg-white/70 px-2.5 py-1 text-[12px] font-medium text-gold hover:bg-white"
                     >
                       {montadoras.find((x) => x.id === m.montadoraId)?.nome} · {m.nome}
                     </button>
@@ -234,7 +234,7 @@ export default function CatalogoManutencao() {
                   {modelosPendentes.length > 8 && (
                     <button
                       onClick={() => setSoPendentes(true)}
-                      className="rounded-full px-2.5 py-1 text-[11.5px] font-medium text-gold underline"
+                      className="rounded-full px-2.5 py-1 text-[12px] font-medium text-gold underline"
                     >
                       ver todos os {modelosPendentes.length}
                     </button>
@@ -249,7 +249,7 @@ export default function CatalogoManutencao() {
           <button
             onClick={() => setSoPendentes((v) => !v)}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+              "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
               soPendentes ? "bg-gold text-white" : "border border-border bg-white text-muted-foreground hover:bg-secondary",
             )}
           >
@@ -284,7 +284,7 @@ export default function CatalogoManutencao() {
                     <Factory className="h-4 w-4 shrink-0 text-brand-navy" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[14px] font-semibold text-foreground">{mont.nome}</span>
-                      <span className="block text-[11.5px] text-muted-foreground">
+                      <span className="block text-[12px] text-muted-foreground">
                         {mont.tipo === "chassi" ? "Chassi" : mont.tipo === "carroceria" ? "Carroceria" : "Encarroçado"} ·{" "}
                         {seus.length} modelo{seus.length > 1 ? "s" : ""}
                       </span>
@@ -319,8 +319,8 @@ export default function CatalogoManutencao() {
                               )}
                               {mod.propulsao === "eletrico" && <Zap className="h-3.5 w-3.5 shrink-0 text-gold" />}
                               <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[13.5px] font-medium text-foreground">{mod.nome}</span>
-                                <span className="block truncate text-[11.5px] text-muted-foreground">
+                                <span className="block truncate text-[14px] font-medium text-foreground">{mod.nome}</span>
+                                <span className="block truncate text-[12px] text-muted-foreground">
                                   {mod.motor ?? "—"}
                                   {mod.anos ? ` · ${mod.anos}` : ""}
                                   {mod.faseProconve ? ` · ${mod.faseProconve}` : ""}
@@ -371,7 +371,7 @@ export default function CatalogoManutencao() {
                                     });
                                     setSheetAberto(true);
                                   }}
-                                  className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium text-brand-navy hover:bg-secondary"
+                                  className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[13px] font-medium text-brand-navy hover:bg-secondary"
                                 >
                                   <Plus className="h-3.5 w-3.5" />
                                   Novo parâmetro
@@ -396,7 +396,7 @@ export default function CatalogoManutencao() {
           action={<Pill tone="sky">{(regrasQ.data ?? []).filter((r) => r.ativa).length} regras ativas</Pill>}
           bodyClassName="p-4"
         >
-          <p className="mb-3 text-[12.5px] text-muted-foreground">
+          <p className="mb-3 text-[13px] text-muted-foreground">
             O intervalo do catálogo é o ponto de partida. Estas regras encurtam o prazo quando a telemetria mostra
             operação mais severa que a prevista — é o que os fabricantes vendem como plano flexível, usando dados que o
             sistema já coleta.
@@ -406,7 +406,7 @@ export default function CatalogoManutencao() {
               <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-card p-3">
                 <span className="min-w-0 flex-1">
                   <span className="block text-[13px] font-medium text-foreground">{r.nome}</span>
-                  <span className="block text-[11.5px] text-muted-foreground">{r.fonte}</span>
+                  <span className="block text-[12px] text-muted-foreground">{r.fonte}</span>
                 </span>
                 <span className="shrink-0 font-mono text-[12px] text-ink-soft">
                   {r.indicador} {r.operador === "maior_que" ? ">" : "<"} {r.limiar}
@@ -450,15 +450,15 @@ function ItemParametro({ p, onEditar }: { p: ParametroManutencao; onEditar: () =
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded bg-secondary px-1.5 py-0.5 text-[10.5px] font-semibold text-ink-soft">
+            <span className="rounded bg-secondary px-1.5 py-0.5 text-[12px] font-semibold text-ink-soft">
               {p.sistema}
             </span>
             <span className="text-[13px] font-medium text-foreground">{p.item}</span>
-            <span className="text-[11.5px] text-muted-foreground">· {p.acao}</span>
+            <span className="text-[12px] text-muted-foreground">· {p.acao}</span>
           </div>
 
           {p.especificacao && (
-            <p className="mt-1 text-[11.5px] text-muted-foreground">{p.especificacao}</p>
+            <p className="mt-1 text-[12px] text-muted-foreground">{p.especificacao}</p>
           )}
         </div>
 
@@ -479,7 +479,7 @@ function ItemParametro({ p, onEditar }: { p: ParametroManutencao; onEditar: () =
             sem intervalo definido
           </span>
         ) : (
-          <span className="inline-flex flex-wrap items-center gap-2 font-mono text-[12.5px]">
+          <span className="inline-flex flex-wrap items-center gap-2 font-mono text-[13px]">
             {p.intervaloKm && <span className="font-semibold text-foreground">{nf(p.intervaloKm)} km</span>}
             {p.intervaloKm && (p.intervaloMeses || p.intervaloHoras) && (
               <span className="text-muted-foreground">ou</span>
@@ -487,12 +487,12 @@ function ItemParametro({ p, onEditar }: { p: ParametroManutencao; onEditar: () =
             {p.intervaloMeses && <span className="font-semibold text-foreground">{p.intervaloMeses} meses</span>}
             {p.intervaloMeses && p.intervaloHoras && <span className="text-muted-foreground">ou</span>}
             {p.intervaloHoras && <span className="font-semibold text-foreground">{p.intervaloHoras} h</span>}
-            <span className="text-[11px] text-muted-foreground">— o que ocorrer primeiro</span>
+            <span className="text-[12px] text-muted-foreground">— o que ocorrer primeiro</span>
           </span>
         )}
 
         {p.tipoOperacao && (
-          <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-soft">
+          <span className="inline-flex items-center gap-1 text-[12px] text-ink-soft">
             <Route className="h-3 w-3" />
             {TIPO_OPERACAO_LABEL[p.tipoOperacao as TipoOperacao]}
           </span>
@@ -507,7 +507,7 @@ function ItemParametro({ p, onEditar }: { p: ParametroManutencao; onEditar: () =
       </div>
 
       {p.obsUsoSevero && (
-        <p className="mt-2 border-t border-border pt-2 text-[11.5px] text-muted-foreground">{p.obsUsoSevero}</p>
+        <p className="mt-2 border-t border-border pt-2 text-[12px] text-muted-foreground">{p.obsUsoSevero}</p>
       )}
     </li>
   );

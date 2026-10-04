@@ -269,7 +269,7 @@ export function MapaLeaflet({
           >
             <Tooltip direction="top" offset={[0, -6]}>{e.titulo} · {e.hora}</Tooltip>
             <Popup>
-              <div className="text-[12.5px]">
+              <div className="text-[13px]">
                 <p className="font-semibold" style={{ color: e.cor }}>{e.titulo}</p>
                 <p>{e.hora}{e.detalhe ? ` · ${e.detalhe}` : ""}</p>
               </div>
@@ -341,7 +341,7 @@ export function MapaLeaflet({
             ))}
           </div>
           {(visiveis.pois || visiveis.cercas) && (estadoCamadas.longe || estadoCamadas.truncado || estadoCamadas.erro || estadoCamadas.carregando) && (
-            <span className="rounded-md bg-white/95 px-2 py-1 text-[11px] text-slate-600 shadow">
+            <span className="rounded-md bg-white/95 px-2 py-1 text-[12px] text-slate-600 shadow">
               {estadoCamadas.erro
                 ? "Não foi possível carregar cercas e pontos."
                 : estadoCamadas.carregando
@@ -356,7 +356,7 @@ export function MapaLeaflet({
 
       {/* Veículo sem posição não some sem explicação. */}
       {semCoordenada > 0 && (
-        <div className="pointer-events-none absolute bottom-3 left-3 z-[400] rounded-lg bg-white/95 px-3 py-1.5 text-[11.5px] text-slate-600 shadow">
+        <div className="pointer-events-none absolute bottom-3 left-3 z-[400] rounded-lg bg-white/95 px-3 py-1.5 text-[12px] text-slate-600 shadow">
           {semCoordenada} veículo{semCoordenada > 1 ? "s" : ""} sem posição de GPS — não aparece{semCoordenada > 1 ? "m" : ""} no mapa.
         </div>
       )}

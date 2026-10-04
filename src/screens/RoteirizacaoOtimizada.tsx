@@ -117,7 +117,7 @@ export default function RoteirizacaoOtimizada() {
         {/* A comparação é o argumento da tela. */}
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
           <div className={cn("rounded-2xl border p-4", aplicada ? "border-border bg-card opacity-60" : "border-coral-line bg-coral-tint/30")}>
-            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Ordem cadastrada
             </span>
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -130,7 +130,7 @@ export default function RoteirizacaoOtimizada() {
           </div>
 
           <div className={cn("rounded-2xl border p-4", aplicada ? "border-leaf-line bg-leaf-tint/30" : "border-border bg-card")}>
-            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Rota otimizada
             </span>
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -143,7 +143,7 @@ export default function RoteirizacaoOtimizada() {
           </div>
 
           <div className="flex min-w-[200px] flex-col justify-center rounded-2xl border border-leaf-line bg-leaf-tint/50 p-4">
-            <span className="flex items-center gap-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-leaf">
+            <span className="flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-leaf">
               <TrendingDown className="h-3.5 w-3.5" />
               Economia
             </span>
@@ -170,7 +170,7 @@ export default function RoteirizacaoOtimizada() {
                 return (
                   <li key={p.id}>
                     {trecho && (
-                      <div className="flex items-center gap-2 py-0.5 pl-[26px] text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-2 py-0.5 pl-[26px] text-[12px] text-muted-foreground">
                         <ArrowDown className="h-3 w-3" />
                         {trecho.km} km · {trecho.min} min
                       </div>
@@ -183,7 +183,7 @@ export default function RoteirizacaoOtimizada() {
                     >
                       <span
                         className={cn(
-                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-bold",
                           p.fixo ? "bg-brand-navy text-white" : "bg-secondary text-ink-soft",
                         )}
                       >
@@ -192,12 +192,12 @@ export default function RoteirizacaoOtimizada() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[13px] font-medium text-foreground">{p.nome}</span>
                         {p.passageiros ? (
-                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1 text-[12px] text-muted-foreground">
                             <Users className="h-3 w-3" />
                             {p.passageiros} passageiros
                           </span>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground">{p.endereco}</span>
+                          <span className="text-[12px] text-muted-foreground">{p.endereco}</span>
                         )}
                       </span>
                       {!p.fixo && (
@@ -215,7 +215,7 @@ export default function RoteirizacaoOtimizada() {
               })}
             </ol>
 
-            <p className="mt-3 flex items-start gap-1.5 px-1 text-[11px] text-muted-foreground">
+            <p className="mt-3 flex items-start gap-1.5 px-1 text-[12px] text-muted-foreground">
               <Info className="mt-0.5 h-3 w-3 shrink-0" />
               Saída e destino são fixos e não entram na reordenação — a operação não aceita começar no meio do
               roteiro.
@@ -231,7 +231,7 @@ export default function RoteirizacaoOtimizada() {
               altura="h-[420px] lg:h-[520px]"
               percurso={percurso}
             />
-            <p className="mt-2 text-[11px] text-muted-foreground">
+            <p className="mt-2 text-[12px] text-muted-foreground">
               A distância considera um fator de 1,35 sobre a linha reta, que é a sinuosidade típica de malha urbana.
               Sem esse ajuste, a rota pareceria 25% mais curta do que é e o motorista chegaria atrasado.
             </p>
@@ -242,7 +242,7 @@ export default function RoteirizacaoOtimizada() {
         <Card title="Projeção de economia" icon={Fuel} bodyClassName="p-4">
           <div className="mb-4 flex flex-wrap items-end gap-4">
             <label className="flex flex-col gap-1">
-              <span className="text-[11.5px] text-muted-foreground">Viagens por mês</span>
+              <span className="text-[12px] text-muted-foreground">Viagens por mês</span>
               <input
                 type="number"
                 value={viagensMes}
@@ -251,7 +251,7 @@ export default function RoteirizacaoOtimizada() {
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[11.5px] text-muted-foreground">Custo por km (R$)</span>
+              <span className="text-[12px] text-muted-foreground">Custo por km (R$)</span>
               <input
                 type="number"
                 step="0.1"
@@ -260,7 +260,7 @@ export default function RoteirizacaoOtimizada() {
                 className="h-9 w-28 rounded-lg border border-border bg-white px-2.5 font-mono text-[13px] outline-none focus:border-accent"
               />
             </label>
-            <p className="flex-1 text-[11.5px] text-muted-foreground">
+            <p className="flex-1 text-[12px] text-muted-foreground">
               Os parâmetros ficam editáveis de propósito: o custo por quilômetro varia muito entre operações, e um
               valor embutido daria uma projeção que não corresponde à realidade de quem está olhando.
             </p>
@@ -287,9 +287,9 @@ export default function RoteirizacaoOtimizada() {
 
         {/* Como o cálculo funciona. */}
         <Card title="Como a rota é calculada" icon={Sparkles} bodyClassName="p-4">
-          <ol className="space-y-2 text-[12.5px] text-ink-soft">
+          <ol className="space-y-2 text-[13px] text-ink-soft">
             <li className="flex gap-2.5">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[11px] font-bold text-brand-navy">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[12px] font-bold text-brand-navy">
                 1
               </span>
               <span>
@@ -298,7 +298,7 @@ export default function RoteirizacaoOtimizada() {
               </span>
             </li>
             <li className="flex gap-2.5">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[11px] font-bold text-brand-navy">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[12px] font-bold text-brand-navy">
                 2
               </span>
               <span>
@@ -307,7 +307,7 @@ export default function RoteirizacaoOtimizada() {
               </span>
             </li>
             <li className="flex gap-2.5">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[11px] font-bold text-brand-navy">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-tint font-mono text-[12px] font-bold text-brand-navy">
                 3
               </span>
               <span>
@@ -316,7 +316,7 @@ export default function RoteirizacaoOtimizada() {
               </span>
             </li>
           </ol>
-          <p className="mt-3 border-t border-border pt-3 text-[11.5px] text-muted-foreground">
+          <p className="mt-3 border-t border-border pt-3 text-[12px] text-muted-foreground">
             O cálculo roda no navegador, em milissegundos. Não depende de servidor nem de serviço pago de
             roteirização.
           </p>

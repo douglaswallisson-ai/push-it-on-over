@@ -83,8 +83,8 @@ export function PerfilElevacao({
               { r: "Altitude", v: `${nf(r?.elevacao_min)}–${nf(r?.elevacao_max)} m`, i: Mountain, cor: "var(--brand-navy)" },
             ].map((x) => (
               <div key={x.r} className="rounded-xl bg-secondary/60 px-3 py-2">
-                <p className="flex items-center gap-1 text-[11px] text-muted-foreground"><x.i className="h-3.5 w-3.5" style={{ color: x.cor }} />{x.r}</p>
-                <p className="font-display text-[17px] font-bold tabular-nums">{x.v}</p>
+                <p className="flex items-center gap-1 text-[12px] text-muted-foreground"><x.i className="h-3.5 w-3.5" style={{ color: x.cor }} />{x.r}</p>
+                <p className="font-display text-[16px] font-bold tabular-nums">{x.v}</p>
               </div>
             ))}
           </div>
@@ -165,7 +165,7 @@ export function PerfilElevacao({
               />
             )}
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
+          <p className="mt-2 text-[12px] text-muted-foreground">
             Elevação pelo mapa da NASA (SRTM, ~90 m). Clique numa bolinha para ver o evento; clique na legenda para mostrar ou esconder cada linha.
           </p>
         </>
@@ -209,13 +209,13 @@ function CaixaEvento({
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_EVENTO[e.tipo] }} />
             {ROTULO_EVENTO[e.tipo]}
           </p>
-          {e.evento && <p className="text-[11.5px] text-muted-foreground">{e.evento}</p>}
+          {e.evento && <p className="text-[12px] text-muted-foreground">{e.evento}</p>}
         </div>
         <button type="button" onClick={onClose} aria-label="Fechar" className="rounded p-1 text-muted-foreground hover:bg-secondary">
           <X className="h-4 w-4" />
         </button>
       </div>
-      <dl className="space-y-1 text-[12.5px]">
+      <dl className="space-y-1 text-[13px]">
         {linhas.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-3 border-b border-border/60 pb-1 last:border-0">
             <dt className="shrink-0 text-muted-foreground">{k}</dt>
@@ -225,15 +225,15 @@ function CaixaEvento({
       </dl>
       <div className="mt-3 flex gap-2">
         {onVerNoMapa ? (
-          <button type="button" onClick={onVerNoMapa} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-[12.5px] font-medium text-white hover:opacity-90">
+          <button type="button" onClick={onVerNoMapa} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-[13px] font-medium text-white hover:opacity-90">
             <MapPin className="h-3.5 w-3.5" /> Ver no mapa
           </button>
         ) : linkMapa ? (
-          <Link to={linkMapa} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-[12.5px] font-medium text-white hover:opacity-90">
+          <Link to={linkMapa} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-[13px] font-medium text-white hover:opacity-90">
             <MapPin className="h-3.5 w-3.5" /> Ver no mapa
           </Link>
         ) : null}
-        <Link to={linkEventos} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-[12.5px] font-medium hover:bg-secondary">
+        <Link to={linkEventos} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-[13px] font-medium hover:bg-secondary">
           <ExternalLink className="h-3.5 w-3.5" /> Abrir em Eventos
         </Link>
       </div>

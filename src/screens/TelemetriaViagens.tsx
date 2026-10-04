@@ -93,7 +93,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
       render: (r) => (
         <div>
           <div className="font-mono text-[13px] font-bold text-foreground">{r.unit_label}</div>
-          {r.driver_name && <div className="max-w-[150px] truncate text-[11px] text-muted-foreground">{r.driver_name}</div>}
+          {r.driver_name && <div className="max-w-[150px] truncate text-[12px] text-muted-foreground">{r.driver_name}</div>}
         </div>
       ),
     },
@@ -115,22 +115,22 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
       render: (r) =>
         r.line_number ? (
           <span className="inline-flex items-center gap-1.5">
-            <span className="font-mono text-[12.5px] font-semibold text-foreground">{r.line_number}</span>
+            <span className="font-mono text-[13px] font-semibold text-foreground">{r.line_number}</span>
             {r.trip_direction != null && (
-              <span className="rounded bg-secondary px-1.5 text-[10.5px] text-ink-soft">
+              <span className="rounded bg-secondary px-1.5 text-[12px] text-ink-soft">
                 {r.trip_direction === 1 ? "volta" : "ida"}
               </span>
             )}
           </span>
         ) : (
-          <span className="text-[11.5px] text-muted-foreground">—</span>
+          <span className="text-[12px] text-muted-foreground">—</span>
         ),
     },
     {
       key: "distance_traveled",
       header: "Distância",
       align: "right",
-      render: (r) => <span className="font-mono text-[12.5px]">{r.distance_traveled?.toFixed(1) ?? "—"} km</span>,
+      render: (r) => <span className="font-mono text-[13px]">{r.distance_traveled?.toFixed(1) ?? "—"} km</span>,
     },
     {
       key: "tempos",
@@ -151,7 +151,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
       header: "Consumo",
       align: "right",
       render: (r) => (
-        <span className="font-mono text-[12.5px] font-semibold text-foreground">
+        <span className="font-mono text-[13px] font-semibold text-foreground">
           {r.efficiency_kml ? `${r.efficiency_kml.toFixed(2)} km/l` : "—"}
         </span>
       ),
@@ -164,7 +164,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
         const v = pct((r.time_green ?? 0) + (r.time_extra_eco ?? 0), r.time_moving);
         if (v == null) return <span className="text-[12px] text-muted-foreground">—</span>;
         return (
-          <span className={cn("font-mono text-[12.5px] font-semibold", v >= 60 ? "text-leaf" : v >= 40 ? "text-gold" : "text-coral")}>
+          <span className={cn("font-mono text-[13px] font-semibold", v >= 60 ? "text-leaf" : v >= 40 ? "text-gold" : "text-coral")}>
             {v}%
           </span>
         );
@@ -190,7 +190,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
       header: "Vel. máx.",
       align: "right",
       render: (r) => (
-        <span className={cn("font-mono text-[12.5px]", (r.max_speed ?? 0) > 80 ? "font-semibold text-coral" : "")}>
+        <span className={cn("font-mono text-[13px]", (r.max_speed ?? 0) > 80 ? "font-semibold text-coral" : "")}>
           {r.max_speed ?? "—"}
         </span>
       ),
@@ -199,7 +199,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
       key: "start_poi_name",
       header: "Origem → destino",
       render: (r) => (
-        <span className="flex max-w-[220px] items-center gap-1 truncate text-[11.5px] text-muted-foreground">
+        <span className="flex max-w-[220px] items-center gap-1 truncate text-[12px] text-muted-foreground">
           <MapPin className="h-3 w-3 shrink-0" />
           {r.start_poi_name || r.start_area_name || "—"}
           <span className="text-muted-foreground/50">→</span>
@@ -260,7 +260,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
         {usandoMock() && (
           <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <Database className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Esta tela lê direto da API — não tem versão de exemplo. Alterne para <strong>API real</strong> em
               Console de gestão › Configurações para ver os dados.
             </p>
@@ -270,7 +270,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
         {q.erroJanela && (
           <div className="flex items-start gap-2.5 rounded-xl border border-coral-line bg-coral-tint/40 px-4 py-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
-            <p className="text-[12.5px] text-coral">
+            <p className="text-[13px] text-coral">
               {q.erroJanela} As tabelas são particionadas por mês, e janelas maiores que {MAX_DIAS_CURSOR} dias
               obrigariam a varrer partições demais.
             </p>
@@ -344,7 +344,7 @@ export default function TelemetriaViagens({ onVoltar }: { onVoltar?: () => void 
                 </>
               )}
 
-              <p className="mt-3 flex items-start gap-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-3 flex items-start gap-1.5 text-[12px] text-muted-foreground">
                 <Info className="mt-0.5 h-3 w-3 shrink-0" />
                 Dados vindos de <span className="font-mono">con_telemetry</span>, com 113 campos por viagem. A coluna
                 de chuva usa o tempo que o equipamento registrou com sensor de chuva ativo — é o fator que mais

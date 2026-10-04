@@ -136,7 +136,7 @@ export default function AssistenteDados() {
             bodyClassName="p-2"
           >
             {conversas.length === 0 ? (
-              <p className="px-2 py-6 text-center text-[12.5px] text-muted-foreground">
+              <p className="px-2 py-6 text-center text-[13px] text-muted-foreground">
                 Nenhuma conversa salva ainda.
               </p>
             ) : (
@@ -150,8 +150,8 @@ export default function AssistenteDados() {
                         ativaId === c.id ? "bg-navy-tint" : "hover:bg-secondary",
                       )}
                     >
-                      <span className="block truncate text-[12.5px] font-medium text-foreground">{c.titulo}</span>
-                      <span className="block text-[10.5px] text-muted-foreground">
+                      <span className="block truncate text-[13px] font-medium text-foreground">{c.titulo}</span>
+                      <span className="block text-[12px] text-muted-foreground">
                         {c.mensagens.length} mensagens · {new Date(c.em).toLocaleDateString("pt-BR")}
                       </span>
                     </button>
@@ -185,7 +185,7 @@ export default function AssistenteDados() {
                         key={s}
                         onClick={() => enviar(s)}
                         disabled={carregando}
-                        className="rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] text-ink-soft transition-colors hover:bg-secondary disabled:opacity-50"
+                        className="rounded-full border border-border bg-white px-3 py-1.5 text-[13px] text-ink-soft transition-colors hover:bg-secondary disabled:opacity-50"
                       >
                         {s}
                       </button>
@@ -197,7 +197,7 @@ export default function AssistenteDados() {
                   <div key={i} className={cn("flex", m.autor === "usuario" ? "justify-end" : "justify-start")}>
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed",
+                        "max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed",
                         m.autor === "usuario"
                           ? "bg-brand-navy text-white"
                           : "border border-border bg-secondary/40 text-ink-soft",
@@ -249,7 +249,7 @@ export default function AssistenteDados() {
                   }}
                   rows={2}
                   placeholder="Pergunte sobre seus dados…"
-                  className="flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2 text-[13.5px] outline-none focus:border-accent"
+                  className="flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2 text-[14px] outline-none focus:border-accent"
                 />
                 <button
                   onClick={() => enviar(entrada)}
@@ -259,7 +259,7 @@ export default function AssistenteDados() {
                   <Send className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <p className="mt-2 flex items-center gap-1.5 text-[12px] text-muted-foreground">
                 <Info className="h-3 w-3" />
                 Enter envia · Shift+Enter quebra linha. O assistente pode errar — confira os dados antes de decidir.
               </p>

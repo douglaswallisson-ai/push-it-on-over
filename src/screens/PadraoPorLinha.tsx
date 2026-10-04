@@ -178,7 +178,7 @@ export default function PadraoPorLinha() {
           className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3"
         >
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
             O motorista é avaliado contra o padrão da linha que ele rodou, não contra a média geral da frota — linha de
             morro e linha plana deixam de ser comparadas entre si. Configurar é{" "}
             <strong className="text-foreground">opcional</strong>: linha sem padrão próprio usa o padrão global, e você
@@ -190,7 +190,7 @@ export default function PadraoPorLinha() {
         <Card title="Contexto" icon={Route} bodyClassName="p-4">
           <div data-tour="seletor-linha" className="flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2">
-              <span className="text-[12.5px] text-muted-foreground">Linha</span>
+              <span className="text-[13px] text-muted-foreground">Linha</span>
               <select
                 value={linhaId}
                 onChange={(e) => setLinhaId(e.target.value)}
@@ -205,21 +205,21 @@ export default function PadraoPorLinha() {
               </select>
             </label>
 
-            <span className="text-[11.5px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               {comPadrao.size} de {linhas.length} linhas com padrão próprio · ✓ marca as configuradas
             </span>
           </div>
 
           {/* Faixa horária. */}
           <div data-tour="faixa-horaria" className="mt-4">
-            <p className="mb-2 text-[12.5px] text-muted-foreground">
+            <p className="mb-2 text-[13px] text-muted-foreground">
               Faixa horária — pico e entrepico na mesma linha são operações diferentes.
             </p>
             <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setFaixaId(null)}
                 className={cn(
-                  "rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+                  "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
                   faixaId === null
                     ? "bg-brand-navy text-white"
                     : "border border-border bg-white text-muted-foreground hover:bg-secondary",
@@ -234,7 +234,7 @@ export default function PadraoPorLinha() {
                   onClick={() => setFaixaId(f.id)}
                   title={`${f.inicio} às ${f.fim}`}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
                     faixaId === f.id
                       ? "bg-brand-navy text-white"
                       : "border border-border bg-white text-muted-foreground hover:bg-secondary",
@@ -246,7 +246,7 @@ export default function PadraoPorLinha() {
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[11.5px] text-muted-foreground">
+            <p className="mt-2 text-[12px] text-muted-foreground">
               O número em cada aba é quantos indicadores foram definidos ali. Faixa sem definição herda da linha
               inteira, que por sua vez herda do padrão global.
             </p>
@@ -267,7 +267,7 @@ export default function PadraoPorLinha() {
                 onClick={sugerir}
                 disabled={!amostra}
                 title={amostra ? `P75 de ${amostra.viagens} viagens` : "Sem histórico suficiente"}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-brand-navy transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3.5 py-1.5 text-[13px] font-medium text-brand-navy transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Sugerir do histórico
@@ -277,13 +277,13 @@ export default function PadraoPorLinha() {
           bodyClassName="p-4"
         >
           {amostra ? (
-            <p className="mb-3 text-[11.5px] text-muted-foreground">
+            <p className="mb-3 text-[12px] text-muted-foreground">
               Histórico deste contexto: <strong className="text-foreground">{amostra.viagens} viagens</strong> nos
               últimos 90 dias. A sugestão usa o percentil 75 — o que o quarto superior dos motoristas consegue fazer
               aqui, não a média.
             </p>
           ) : (
-            <p className="mb-3 text-[11.5px] text-gold">
+            <p className="mb-3 text-[12px] text-gold">
               Sem viagens suficientes neste contexto para sugerir um valor. Preencha manualmente ou deixe herdar.
             </p>
           )}
@@ -374,20 +374,20 @@ function LinhaIndicador({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cor }} />
-            <span className={cn("text-[13.5px] font-semibold", proprio ? "text-foreground" : "text-muted-foreground")}>
+            <span className={cn("text-[14px] font-semibold", proprio ? "text-foreground" : "text-muted-foreground")}>
               {label}
             </span>
             <span
               title={direcao === "maior" ? "Quanto maior, melhor" : "Quanto menor, melhor"}
               className={cn(
-                "inline-flex items-center rounded px-1 py-0.5 text-[10px] font-semibold",
+                "inline-flex items-center rounded px-1 py-0.5 text-[12px] font-semibold",
                 direcao === "maior" ? "bg-leaf-tint text-leaf" : "bg-coral-tint text-coral",
               )}
             >
               {direcao === "maior" ? <ArrowUp className="h-2.5 w-2.5" /> : <ArrowDown className="h-2.5 w-2.5" />}
             </span>
           </div>
-          <p className="mt-0.5 line-clamp-1 text-[11.5px] text-muted-foreground" title={descricao}>
+          <p className="mt-0.5 line-clamp-1 text-[12px] text-muted-foreground" title={descricao}>
             {descricao}
           </p>
         </div>
@@ -397,7 +397,7 @@ function LinhaIndicador({
           onClick={() => (proprio ? onHerdar() : onDefinir(valor.esperado ?? sugestao ?? 0))}
           title={proprio ? "Voltar a herdar" : "Definir neste nível"}
           className={cn(
-            "inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-medium transition-colors hover:bg-secondary",
+            "inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-medium transition-colors hover:bg-secondary",
             ORIGEM_TONE[valor.origem],
           )}
         >
@@ -419,7 +419,7 @@ function LinhaIndicador({
               proprio ? "border-border bg-white text-foreground" : "border-border bg-transparent text-muted-foreground",
             )}
           />
-          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">
+          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
             {unidade}
           </span>
         </div>
@@ -428,7 +428,7 @@ function LinhaIndicador({
           <button
             onClick={() => onDefinir(sugestao)}
             title={`Aplicar sugestão do histórico: ${sugestao}${unidade}`}
-            className="inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border border-border bg-white px-2 text-[11.5px] font-medium text-brand-navy hover:bg-secondary"
+            className="inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border border-border bg-white px-2 text-[12px] font-medium text-brand-navy hover:bg-secondary"
           >
             <Sparkles className="h-3 w-3" />
             {sugestao}

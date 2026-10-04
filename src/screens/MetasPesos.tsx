@@ -135,7 +135,7 @@ export default function MetasPesos() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar indicador…"
-              className="h-10 w-full rounded-lg border border-border bg-card pl-9 pr-3 text-[13.5px] outline-none focus:border-accent"
+              className="h-10 w-full rounded-lg border border-border bg-card pl-9 pr-3 text-[14px] outline-none focus:border-accent"
             />
           </div>
           <button
@@ -191,7 +191,7 @@ export default function MetasPesos() {
           );
         })}
 
-        <p className="pb-4 text-center text-[11.5px] text-muted-foreground">
+        <p className="pb-4 text-center text-[12px] text-muted-foreground">
           A nota final do motorista é a média dos indicadores ativos, ponderada pelos pesos acima.
         </p>
       </div>
@@ -219,11 +219,11 @@ function BarraPesos({
     <div data-tour="pesos" className="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
+          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-foreground">
             <Scale className="h-4 w-4 text-brand-navy" />
             Distribuição dos pesos
           </h2>
-          <p className="mt-1 text-[12.5px] text-muted-foreground">
+          <p className="mt-1 text-[13px] text-muted-foreground">
             {ativos} indicador{ativos === 1 ? "" : "es"} ativo{ativos === 1 ? "" : "s"} compõem a nota.
           </p>
         </div>
@@ -232,18 +232,18 @@ function BarraPesos({
           <div className="text-right">
             <p
               className={cn(
-                "font-display text-[28px] font-bold leading-none tabular-nums",
+                "font-display text-[30px] font-bold leading-none tabular-nums",
                 fecha ? "text-leaf" : "text-coral",
               )}
             >
               {total}%
             </p>
-            <p className="text-[11px] text-muted-foreground">soma dos pesos</p>
+            <p className="text-[12px] text-muted-foreground">soma dos pesos</p>
           </div>
           {!fecha && (
             <button
               onClick={onNormalizar}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gold-tint px-3 py-1.5 text-[12.5px] font-semibold text-gold transition-colors hover:bg-gold-tint/70"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gold-tint px-3 py-1.5 text-[13px] font-semibold text-gold transition-colors hover:bg-gold-tint/70"
             >
               <Sparkles className="h-3.5 w-3.5" />
               Ajustar para 100%
@@ -268,7 +268,7 @@ function BarraPesos({
       </div>
 
       {!fecha && (
-        <p className="mt-2.5 flex items-center gap-1.5 text-[12.5px] text-coral">
+        <p className="mt-2.5 flex items-center gap-1.5 text-[13px] text-coral">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           {total > 100
             ? `Excedendo em ${total - 100} pontos — a nota ficaria inflada.`
@@ -305,13 +305,13 @@ function LinhaIndicador({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className={cn("text-[13.5px] font-semibold", cfg.ativo ? "text-foreground" : "text-muted-foreground")}>
+            <span className={cn("text-[14px] font-semibold", cfg.ativo ? "text-foreground" : "text-muted-foreground")}>
               {ind.label}
             </span>
             <span
               title={ind.direcao === "maior" ? "Quanto maior, melhor" : "Quanto menor, melhor"}
               className={cn(
-                "inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-semibold",
+                "inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[12px] font-semibold",
                 ind.direcao === "maior" ? "bg-leaf-tint text-leaf" : "bg-coral-tint text-coral",
               )}
             >
@@ -319,7 +319,7 @@ function LinhaIndicador({
               {ind.direcao === "maior" ? "maior" : "menor"}
             </span>
           </div>
-          <p className="mt-0.5 line-clamp-1 text-[11.5px] text-muted-foreground" title={ind.descricao}>
+          <p className="mt-0.5 line-clamp-1 text-[12px] text-muted-foreground" title={ind.descricao}>
             {ind.descricao}
           </p>
         </div>
@@ -348,7 +348,7 @@ function LinhaIndicador({
         <div className="mt-3 grid grid-cols-2 gap-3">
           {/* Meta. */}
           <div>
-            <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Meta</label>
+            <label className="mb-1 block text-[12px] font-medium text-muted-foreground">Meta</label>
             <div className="relative">
               <input
                 type="number"
@@ -359,7 +359,7 @@ function LinhaIndicador({
                 onChange={(e) => onChange({ meta: Number(e.target.value) })}
                 className="h-9 w-full rounded-lg border border-border bg-white pl-2.5 pr-12 text-[13px] font-mono outline-none focus:border-accent"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
                 {UNIDADE_SUFIXO[ind.unidade]}
               </span>
             </div>
@@ -367,7 +367,7 @@ function LinhaIndicador({
 
           {/* Peso. */}
           <div>
-            <label className="mb-1 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+            <label className="mb-1 flex items-center justify-between text-[12px] font-medium text-muted-foreground">
               <span>Peso</span>
               <span className="font-mono text-foreground">
                 {cfg.peso}
@@ -389,7 +389,7 @@ function LinhaIndicador({
       )}
 
       {!cfg.ativo && (
-        <p className="mt-2 text-[11.5px] text-muted-foreground">
+        <p className="mt-2 text-[12px] text-muted-foreground">
           Fora da nota. Meta sugerida: {fmt(cfg.meta)} {UNIDADE_SUFIXO[ind.unidade]}.
         </p>
       )}

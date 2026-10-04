@@ -49,7 +49,7 @@ const COLS: Column<Equipamento & Record<string, unknown>>[] = [
         </div>
         <div>
           <div className="font-mono font-semibold text-foreground">{e.serial}</div>
-          <div className="text-[11.5px] text-muted-foreground">
+          <div className="text-[12px] text-muted-foreground">
             {e.modelo} · fw {e.firmware}
           </div>
         </div>
@@ -200,7 +200,7 @@ export function TelemetriaEquipamentos({
           <EmptyNote>Nenhum equipamento com esse filtro.</EmptyNote>
         )}
 
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
+        <p className="mt-3 text-[12px] text-muted-foreground">
           Comunicando: até {LIMIAR_COMUNICACAO.online} h · Atraso: até {LIMIAR_COMUNICACAO.atencao} h · Sem sinal:
           acima disso. Passe o mouse sobre o tempo para ver a data exata.
         </p>

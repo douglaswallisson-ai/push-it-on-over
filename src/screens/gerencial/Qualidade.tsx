@@ -59,7 +59,7 @@ export function PaginaNaoIdentificado({ f }: Ctx) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="rotulo" tick={{ fontSize: 10.5 }} />
+            <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} unit="%" />
             <Tooltip content={<DicaGrafico fmt={(v) => `${nf(v, 1)}%`} />} />
             <Area dataKey="% não identificado" stroke="var(--brand-navy)" fill="url(#gNi)" strokeWidth={2} {...ANIM} />
@@ -138,7 +138,7 @@ export function PaginaTecnica({ f }: Ctx) {
           <Carregando q={veiQ}>
             <div className="max-h-[300px] space-y-1 overflow-y-auto pr-1">
               {semTx.slice(0, 80).map(({ v, h }) => (
-                <div key={v.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-1.5 text-[12.5px]">
+                <div key={v.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-1.5 text-[13px]">
                   <span className="font-semibold">{v.placa}{v.prefixo ? <span className="ml-1 font-normal text-muted-foreground">{v.prefixo}</span> : null}</span>
                   <span className={cn("font-mono", h == null || h > 24 * 7 ? "text-coral" : "text-gold")}>
                     {h == null ? "nunca comunicou" : h > 48 ? `${nf(h / 24, 0)} dias · ${dataHoraBR(v.odometroLidoEm)}` : ""}
@@ -162,7 +162,7 @@ export function PaginaTecnica({ f }: Ctx) {
               <div key={m.driver_id} className="rounded-lg border border-border px-3 py-2">
                 <p className="text-[13px] font-semibold">{m.nome ?? m.driver_id}</p>
                 <div className="mt-1 flex flex-wrap gap-1">{r.map((x) => <Pill key={x} tone="coral">{x}</Pill>)}</div>
-                <p className="mt-1 text-[11px] text-muted-foreground">Inércia {nf(m.faixas.inercia, 1)}% · Vermelha {nf(m.faixas.vermelha, 1)}% · Tolerância {nf(m.faixas.tolerancia, 1)}%</p>
+                <p className="mt-1 text-[12px] text-muted-foreground">Inércia {nf(m.faixas.inercia, 1)}% · Vermelha {nf(m.faixas.vermelha, 1)}% · Tolerância {nf(m.faixas.tolerancia, 1)}%</p>
               </div>
             ))}
           </div>

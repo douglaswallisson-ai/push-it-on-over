@@ -82,7 +82,7 @@ export function SelmaLauncher() {
                 Selma
                 <span className="h-2 w-2 rounded-full bg-brand-green" />
               </p>
-              <p className="text-[11px] text-white/70">Copiloto SS · online</p>
+              <p className="text-[12px] text-white/70">Copiloto SS · online</p>
             </div>
             <button
               onClick={() => setOpen(false)}
@@ -134,7 +134,7 @@ export function SelmaLauncher() {
                   key={sug}
                   onClick={() => perguntar(sug)}
                   disabled={carregando}
-                  className="rounded-full border border-border bg-white px-2.5 py-1 text-left text-[11.5px] text-ink-soft transition-colors hover:bg-secondary disabled:opacity-50"
+                  className="rounded-full border border-border bg-white px-2.5 py-1 text-left text-[12px] text-ink-soft transition-colors hover:bg-secondary disabled:opacity-50"
                 >
                   {sug}
                 </button>
@@ -144,11 +144,11 @@ export function SelmaLauncher() {
 
           {/* Ação sugerida do dia (do IA Ops Advisor). */}
           <div className="mx-4 mb-2 rounded-xl border border-navy-line bg-navy-tint/60 p-3">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-blue">
+            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-brand-blue">
               <Sparkles className="h-3.5 w-3.5" />
               Ação sugerida de hoje
             </p>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
               Retreinar 16 motoristas com condução ideal abaixo de 65,3% — pode render{" "}
               <strong className="text-foreground">+8%</strong> de condução ideal.
             </p>

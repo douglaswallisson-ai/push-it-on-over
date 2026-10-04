@@ -62,12 +62,12 @@ export default function Pontos() {
           </div>
           <div>
             <div className="font-mono text-[13px] font-bold text-foreground">{p.codigo}</div>
-            <div className="max-w-[240px] truncate text-[11.5px] text-muted-foreground">{p.nome}</div>
+            <div className="max-w-[240px] truncate text-[12px] text-muted-foreground">{p.nome}</div>
           </div>
         </div>
       ),
     },
-    { key: "endereco", header: "Endereço", render: (p) => <span className="text-[12.5px] text-ink-soft">{p.endereco}</span> },
+    { key: "endereco", header: "Endereço", render: (p) => <span className="text-[13px] text-ink-soft">{p.endereco}</span> },
     {
       key: "controle",
       header: "Tipo",
@@ -78,7 +78,7 @@ export default function Pontos() {
       key: "toleranciaMin",
       header: "Tolerância",
       align: "right",
-      render: (p) => <span className="font-mono text-[12.5px]">{p.toleranciaMin} min</span>,
+      render: (p) => <span className="font-mono text-[13px]">{p.toleranciaMin} min</span>,
     },
     {
       key: "infra",
@@ -97,7 +97,7 @@ export default function Pontos() {
       header: "Coordenada",
       align: "right",
       render: (p) => (
-        <span className="font-mono text-[11.5px] text-muted-foreground">
+        <span className="font-mono text-[12px] text-muted-foreground">
           {p.lat.toFixed(4)}, {p.lng.toFixed(4)}
         </span>
       ),

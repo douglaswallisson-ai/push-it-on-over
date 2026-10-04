@@ -127,7 +127,7 @@ export default function DiagnosticoDTC() {
 
         <div data-tour="conceito" className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
             A análise trabalha com <strong className="text-foreground">padrão</strong>, não com evento isolado. Um
             código que aparece uma vez pode ser oscilação de sensor; o mesmo código recorrente, ou dois códigos do
             mesmo sistema convivendo, indicam degradação real — e é isso que justifica antecipar um item do plano.
@@ -139,7 +139,7 @@ export default function DiagnosticoDTC() {
           <button
             onClick={() => setSoAtivos((v) => !v)}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
+              "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors",
               soAtivos ? "bg-brand-navy text-white" : "border border-border bg-white text-muted-foreground hover:bg-secondary",
             )}
           >
@@ -188,11 +188,11 @@ export default function DiagnosticoDTC() {
                         <div className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-center gap-1.5">
                             <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-sky" />
-                            <span className="text-[13.5px] font-semibold text-foreground">{r.acao}</span>
+                            <span className="text-[14px] font-semibold text-foreground">{r.acao}</span>
                             <Pill tone={URG_TONE[r.urgencia]}>{URG_LABEL[r.urgencia]}</Pill>
                             <span
                               className={cn(
-                                "rounded px-1.5 py-0.5 text-[10px] font-semibold",
+                                "rounded px-1.5 py-0.5 text-[12px] font-semibold",
                                 r.confianca === "alta" ? "bg-leaf-tint text-leaf" : "bg-secondary text-muted-foreground",
                               )}
                               title="Só recomendações de confiança alta alteram o intervalo automaticamente"
@@ -200,7 +200,7 @@ export default function DiagnosticoDTC() {
                               confiança {r.confianca}
                             </span>
                           </span>
-                          <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{r.justificativa}</p>
+                          <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{r.justificativa}</p>
                           {r.antecipacaoPct && (
                             <p className="mt-1 text-[12px] font-medium text-gold">
                               Sugere antecipar o intervalo de {r.sistema.toLowerCase()} em {r.antecipacaoPct}%.
@@ -213,7 +213,7 @@ export default function DiagnosticoDTC() {
                         ) : (
                           <button
                             onClick={() => aplicar(r)}
-                            className="shrink-0 rounded-lg bg-brand-navy px-3 py-1.5 text-[12.5px] font-semibold text-white"
+                            className="shrink-0 rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-semibold text-white"
                           >
                             <Wrench className="mr-1 inline h-3.5 w-3.5" />
                             Aplicar
@@ -231,18 +231,18 @@ export default function DiagnosticoDTC() {
                   <li key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-card px-3 py-2">
                     <span className="font-mono text-[13px] font-bold text-foreground">{d.codigo}</span>
                     {d.spn !== undefined && (
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                      <span className="font-mono text-[12px] text-muted-foreground">
                         SPN {d.spn}/FMI {d.fmi}
                       </span>
                     )}
-                    <span className="rounded bg-secondary px-1.5 py-0.5 text-[10.5px] font-semibold text-ink-soft">{d.sistema}</span>
-                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink-soft">{d.descricao}</span>
+                    <span className="rounded bg-secondary px-1.5 py-0.5 text-[12px] font-semibold text-ink-soft">{d.sistema}</span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-ink-soft">{d.descricao}</span>
                     {d.lampadaAcesa && <Lightbulb className="h-3.5 w-3.5 shrink-0 text-gold" aria-label="Luz de anomalia acesa" />}
-                    <span className="shrink-0 font-mono text-[11.5px] text-muted-foreground" title={`Primeira em ${new Date(d.primeiraOcorrencia).toLocaleDateString("pt-BR")}`}>
+                    <span className="shrink-0 font-mono text-[12px] text-muted-foreground" title={`Primeira em ${new Date(d.primeiraOcorrencia).toLocaleDateString("pt-BR")}`}>
                       {d.ocorrencias}× · {desde(d.ultimaOcorrencia)}
                     </span>
                     <Pill tone={SEV_TONE[d.severidade]}>{SEVERIDADE_DTC_LABEL[d.severidade]}</Pill>
-                    {!d.ativo && <span className="text-[11px] text-muted-foreground">resolvido</span>}
+                    {!d.ativo && <span className="text-[12px] text-muted-foreground">resolvido</span>}
                   </li>
                 ))}
               </ul>

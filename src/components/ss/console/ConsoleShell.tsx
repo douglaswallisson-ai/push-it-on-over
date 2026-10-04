@@ -79,7 +79,7 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
             <SSLogo className="h-7 w-7" />
             <span className="leading-tight">
               <span className="block text-[14px] font-semibold">SS Telemática</span>
-              <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-white/50">
+              <span className="block font-mono text-[12px] uppercase tracking-[0.14em] text-white/50">
                 Console de gestão
               </span>
             </span>
@@ -89,17 +89,17 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
             {/* Troca de ambiente. */}
             <button
               onClick={() => navigate("/app")}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3.5 py-1.5 text-[12.5px] font-medium text-white/85 transition-colors hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3.5 py-1.5 text-[13px] font-medium text-white/85 transition-colors hover:bg-white/10"
             >
               <ArrowLeftRight className="h-3.5 w-3.5" />
               Ir para Telemetria
             </button>
 
             <span className="hidden items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 sm:flex">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-blue text-[10px] font-semibold">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-blue text-[12px] font-semibold">
                 {iniciais}
               </span>
-              <span className="text-[12.5px]">{sessao?.nome ?? "Administrador"}</span>
+              <span className="text-[13px]">{sessao?.nome ?? "Administrador"}</span>
             </span>
 
             <button
@@ -140,8 +140,8 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
                   >
                     <i.icon className={cn("mt-0.5 h-4 w-4 shrink-0", ativo ? "text-brand-navy" : "text-muted-foreground")} />
                     <span className="min-w-0">
-                      <span className="block text-[13.5px] font-medium">{i.label}</span>
-                      <span className="block text-[11px] leading-tight text-muted-foreground">{i.descricao}</span>
+                      <span className="block text-[14px] font-medium">{i.label}</span>
+                      <span className="block text-[12px] leading-tight text-muted-foreground">{i.descricao}</span>
                     </span>
                   </NavLink>
                 </li>

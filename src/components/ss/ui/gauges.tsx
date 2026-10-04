@@ -40,7 +40,7 @@ export function ScoreGauge({ score, size = 150 }: { score: number; size?: number
         <span className="font-display text-3xl font-bold tabular-nums" style={{ color }}>
           {score}
         </span>
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">nota geral</span>
+        <span className="text-[12px] uppercase tracking-wide text-muted-foreground">nota geral</span>
       </div>
     </div>
   );
@@ -52,7 +52,7 @@ export function ScoreGauge({ score, size = 150 }: { score: number; size?: number
  */
 export function StarRating({ value }: { value: number | null }) {
   if (value == null) {
-    return <span className="whitespace-nowrap text-[11px] text-muted-foreground">Não avaliado</span>;
+    return <span className="whitespace-nowrap text-[12px] text-muted-foreground">Não avaliado</span>;
   }
   return (
     <span className="inline-flex gap-0.5">
@@ -110,7 +110,7 @@ export function RingProgress({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-2xl font-bold tabular-nums">{centerLabel ?? `${value}%`}</span>
-        {sublabel && <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{sublabel}</span>}
+        {sublabel && <span className="text-[12px] uppercase tracking-wide text-muted-foreground">{sublabel}</span>}
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ export function AccelBands({
           <div className={cn("flex w-full flex-1 items-end rounded-lg", b.track)}>
             <div className={cn("w-full rounded-lg transition-all", b.fill)} style={{ height: `${b.value}%` }} />
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground">{b.label}</span>
+          <span className="text-[12px] font-medium text-muted-foreground">{b.label}</span>
         </div>
       ))}
     </div>
@@ -169,11 +169,11 @@ export function IndicatorCard({
       <div className="flex items-baseline justify-between">
         <span className={cn("font-display text-2xl font-bold tabular-nums", map.text)}>{value}%</span>
       </div>
-      <p className="mt-1 text-[12.5px] font-medium text-foreground">{label}</p>
+      <p className="mt-1 text-[13px] font-medium text-foreground">{label}</p>
       <div className={cn("mt-2.5 h-1.5 w-full overflow-hidden rounded-full", map.track)}>
         <div className={cn("h-1.5 rounded-full", map.bar)} style={{ width: `${value}%` }} />
       </div>
-      {caption && <p className="mt-2 text-[11px] text-muted-foreground">{caption}</p>}
+      {caption && <p className="mt-2 text-[12px] text-muted-foreground">{caption}</p>}
     </div>
   );
 }

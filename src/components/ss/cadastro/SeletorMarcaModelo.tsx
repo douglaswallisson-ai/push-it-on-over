@@ -138,7 +138,7 @@ export function SeletorMarcaModelo({
               onChange={(e) => setNomeNovaMarca(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && criarMarca()}
               placeholder="Nome da nova marca"
-              className="h-10 flex-1 rounded-lg border border-border bg-white px-3 text-[13.5px] outline-none focus:border-accent"
+              className="h-10 flex-1 rounded-lg border border-border bg-white px-3 text-[14px] outline-none focus:border-accent"
             />
             <button
               onClick={criarMarca}
@@ -162,7 +162,7 @@ export function SeletorMarcaModelo({
                 const m = montadoras.find((x) => x.id === e.target.value);
                 if (m) escolherMarca(m);
               }}
-              className="h-10 flex-1 rounded-lg border border-border bg-white px-3 text-[13.5px] outline-none focus:border-accent"
+              className="h-10 flex-1 rounded-lg border border-border bg-white px-3 text-[14px] outline-none focus:border-accent"
             >
               <option value="">Selecione a marca…</option>
               {montadoras.map((m) => (
@@ -190,7 +190,7 @@ export function SeletorMarcaModelo({
         </label>
 
         {!valor.montadoraId ? (
-          <p className="rounded-lg border border-dashed border-border bg-secondary/30 px-3 py-2.5 text-[12.5px] text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border bg-secondary/30 px-3 py-2.5 text-[13px] text-muted-foreground">
             Escolha a marca do chassi para listar os modelos.
           </p>
         ) : (
@@ -211,7 +211,7 @@ export function SeletorMarcaModelo({
                   }
                 }}
                 placeholder="Buscar ou digitar o modelo…"
-                className="h-10 w-full rounded-lg border border-border bg-white pl-9 pr-3 text-[13.5px] outline-none focus:border-accent"
+                className="h-10 w-full rounded-lg border border-border bg-white pl-9 pr-3 text-[14px] outline-none focus:border-accent"
               />
             </div>
 
@@ -219,13 +219,13 @@ export function SeletorMarcaModelo({
               <div className="mt-1.5 max-h-52 overflow-y-auto rounded-lg border border-border bg-card">
                 {filtrados.length === 0 ? (
                   <div className="p-3">
-                    <p className="text-[12.5px] text-muted-foreground">
+                    <p className="text-[13px] text-muted-foreground">
                       Nenhum modelo desta marca com esse nome.
                     </p>
                     {buscaModelo.trim() && (
                       <button
                         onClick={criarModelo}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-brand-navy px-3 py-1.5 text-[12.5px] font-semibold text-white"
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-brand-navy px-3 py-1.5 text-[13px] font-semibold text-white"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Criar modelo &quot;{buscaModelo.trim()}&quot;
@@ -244,11 +244,11 @@ export function SeletorMarcaModelo({
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-[13px] font-medium text-foreground">{m.nome}</span>
                             {m.motor && (
-                              <span className="block truncate text-[11px] text-muted-foreground">{m.motor}</span>
+                              <span className="block truncate text-[12px] text-muted-foreground">{m.motor}</span>
                             )}
                           </span>
                           {semParametros(m.id) && (
-                            <span className="shrink-0 rounded bg-gold-tint px-1.5 py-0.5 text-[10px] font-semibold text-gold">
+                            <span className="shrink-0 rounded bg-gold-tint px-1.5 py-0.5 text-[12px] font-semibold text-gold">
                               sem parâmetros
                             </span>
                           )}
@@ -259,7 +259,7 @@ export function SeletorMarcaModelo({
                       <li className="border-t border-border">
                         <button
                           onClick={criarModelo}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-brand-navy transition-colors hover:bg-secondary"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] font-medium text-brand-navy transition-colors hover:bg-secondary"
                         >
                           <Plus className="h-3.5 w-3.5" />
                           Criar modelo &quot;{buscaModelo.trim()}&quot;
@@ -278,7 +278,7 @@ export function SeletorMarcaModelo({
       {valor.modeloId && semParametros(valor.modeloId) && (
         <div className="flex items-start gap-2.5 rounded-lg border border-gold-line bg-gold-tint/40 px-3 py-2.5">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-          <p className="text-[12.5px] text-gold">
+          <p className="text-[13px] text-gold">
             <strong>Este modelo ainda não tem parâmetros de manutenção.</strong> O veículo será cadastrado
             normalmente, mas não vai gerar alerta de preventiva até que o administrador configure os intervalos no
             catálogo. Ele já foi notificado.

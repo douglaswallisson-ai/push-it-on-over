@@ -129,6 +129,11 @@ export const ROTULO_PERIODO: Record<Periodo, string> = {
 };
 
 /** Fim sempre em ontem: as tabelas consolidadas não têm o dia corrente. */
+/** Período com que o Gerencial abre: até o dia 7 o mês atual tem poucos dias, então abre nos últimos 30 dias (decisão de 02/10/2026). */
+export function periodoPadrao(hoje = new Date()): Periodo {
+  return hoje.getDate() <= 7 ? "30d" : "mes";
+}
+
 export function datasDoPeriodo(p: Periodo): { inicio: string; fim: string } {
   const f = ontem();
   const menos = (dias: number) => {

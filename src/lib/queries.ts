@@ -44,6 +44,7 @@ import {
   Programacao,
   Veiculos,
   ViagensOperacao,
+  ApiError,
 } from "@/lib/api";
 import type { StatusComunicacao, StatusManutencao } from "@/types";
 import { refetchInterval, usandoMock } from "@/lib/modo";
@@ -538,7 +539,11 @@ export const cumprimentoQuery = (linhaId: string | undefined, data: string) =>
 export const trackingApiQuery = (unitId: string | undefined, data: string) =>
   queryOptions({
     queryKey: ["tracking", "api", unitId, data],
-    queryFn: () => Operacional.tracking(unitId!, data),
+    // 404 = veículo sem posição nesta data: vira "sem percurso", não erro na tela.
+    queryFn: () => Operacional.tracking(unitId!, data).catch((e) => {
+      if (e instanceof ApiError && e.status === 404) return null;
+      throw e;
+    }),
     enabled: Boolean(unitId) && !usandoMock(),
     staleTime: MINUTE,
     // 404 aqui significa "veículo sem posição nesta data", que é resposta

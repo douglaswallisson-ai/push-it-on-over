@@ -172,7 +172,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: pedido?.data ?? (usandoMock() ? "2026-07-24" : iso(new Date())) });
   const [pedidoAtendido, setPedidoAtendido] = useState(false);
   const [origem, setOrigem] = useState<"todas" | "alarme" | "conducao">("todas");
-  const [mostrar, setMostrar] = useState(200);
+  const [mostrar, setMostrar] = useState(40);
   const [gravFiltro, setGravFiltro] = useState<Gravidade | "todas">("todas");
   const [vistos, setVistos] = useState<Set<string>>(() => new Set(EVENTOS.filter((e) => e.visto).map((e) => e.id)));
   const [validacao, setValidacao] = useState<Record<string, "correto" | "falso">>({});
@@ -465,7 +465,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
             ))
           )}
           {lista.length > mostrar && (
-            <button onClick={() => setMostrar((m) => m + 300)} className="mt-2 w-full rounded-xl border border-border py-2 text-[13px] font-medium text-brand-navy hover:bg-secondary">
+            <button onClick={() => setMostrar((m) => m + 60)} className="mt-2 w-full rounded-xl border border-border py-2 text-[13px] font-medium text-brand-navy hover:bg-secondary">
               Mostrar mais ({(lista.length - mostrar).toLocaleString("pt-BR")} restantes)
             </button>
           )}

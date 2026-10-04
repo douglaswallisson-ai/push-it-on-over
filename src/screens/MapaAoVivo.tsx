@@ -275,7 +275,7 @@ export default function MapaAoVivo() {
                 <div className="flex-1 overflow-y-auto p-2">
                   {visiveis.slice(0, 200).map((v) => (
                     <button
-                      key={v.placa}
+                      key={`${v.veiculoId}-${v.placa}`}
                       onClick={() => setSelected(v.placa)}
                       className={cn(
                         "mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
@@ -375,7 +375,7 @@ function MapCanvas({
         const isSel = selected === v.placa;
         return (
           <button
-            key={v.placa}
+            key={`${v.veiculoId}-${v.placa}`}
             onClick={() => onSelect(v.placa)}
             style={{ left: `${v.x}%`, top: `${v.y}%` }}
             className="group absolute -translate-x-1/2 -translate-y-full"

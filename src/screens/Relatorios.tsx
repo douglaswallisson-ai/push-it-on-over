@@ -60,7 +60,7 @@ const CATALOGO: Categoria[] = [
       { icon: Activity, title: "Sinais do motor", desc: "22 leituras do barramento CAN: ARLA, turbo, pressão, marcha.", color: "var(--brand-sky)", rota: "/app/frota/sinais" },
       { icon: ShieldAlert, title: "Eventos e alarmes", desc: "Alarmes por severidade, com fila de tratativa.", color: "var(--gold)", rota: "/app/eventos" },
       { icon: Gauge, title: "Excesso de velocidade", desc: "Por tipo de via e condição de pista — urbano, rodoviário, chuva.", color: "var(--coral)", rota: "/app/gerencial#seguranca" },
-      { icon: Clock, title: "Percurso do dia", desc: "Ignição, paradas e retomadas de um veículo, com traçado.", color: "var(--brand-navy)", rota: "/app/frota/tracking" },
+      { icon: Clock, title: "Tracking", desc: "Ignição, paradas e retomadas de um veículo, com traçado.", color: "var(--brand-navy)", rota: "/app/frota/tracking" },
       { icon: Flame, title: "Mapa de calor", desc: "Onde a frota mais circula, por concentração de passagens.", color: "var(--coral)", embutido: "operacionais", aba: "calor" },
       { icon: MapPin, title: "Pontos e cercas", desc: "Passagens por ponto de interesse, com entrada e saída.", color: "var(--leaf)", rota: "/app/cadastros/pontos-interesse" },
     ],

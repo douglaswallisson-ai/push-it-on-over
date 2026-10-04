@@ -137,10 +137,10 @@ export const DUVIDAS: Duvida[] = [
     categoria: "Mapa e percurso",
     pergunta: "Como vejo o caminho que um veículo fez no dia?",
     resposta: [
-      "Abra Frota › Percurso do dia, escolha o veículo e a data. O traçado aparece no mapa.",
+      "Abra Frota › Tracking, escolha o veículo e a data. O traçado aparece no mapa.",
       "Os eventos (freada brusca, excesso de velocidade etc.) aparecem no ponto exato onde aconteceram. Abaixo do mapa fica o perfil de elevação do trajeto.",
     ],
-    tela: { rotulo: "Abrir Percurso do dia", to: "/app/frota/tracking" },
+    tela: { rotulo: "Abrir Tracking", to: "/app/frota/tracking" },
     palavras: "trajeto percurso caminho rota histórico tracking dia",
   },
 

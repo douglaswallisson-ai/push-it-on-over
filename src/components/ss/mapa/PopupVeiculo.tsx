@@ -225,7 +225,7 @@ export function PopupVeiculo({
         <Acao icone={Video} rotulo="Câmeras" onClick={() => navigate("/app/seguranca/video")} />
         <Acao icone={TrendingUp} rotulo="Desempenho" onClick={() => navigate("/app/frota/analise")} />
         <Acao icone={Wrench} rotulo="Manutenção" onClick={() => navigate(`/app/manutencao?placa=${placa}`)} />
-        <Acao icone={Play} rotulo="Percurso do dia" onClick={() => navigate(`/app/frota/tracking?veiculo=${veiculoId ?? placa}`)} full />
+        <Acao icone={Play} rotulo="Tracking" onClick={() => navigate(`/app/frota/tracking?veiculo=${veiculoId ?? placa}`)} full />
       </div>
     </div>
   );

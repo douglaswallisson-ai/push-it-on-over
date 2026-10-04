@@ -707,7 +707,7 @@ function EventoDrawer({
                       to={`/app/frota/tracking?veiculo=${encodeURIComponent(String(evento.unitId))}&dia=${dia}&foco=${evento.lat},${evento.lng}&focoTitulo=${encodeURIComponent(`${evento.tipo} · ${evento.hora}`)}`}
                       className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-navy hover:underline"
                     >
-                      <MapPin className="h-3.5 w-3.5" /> Ver no percurso do dia
+                      <MapPin className="h-3.5 w-3.5" /> Ver no tracking
                     </Link>
                   </div>
                 )}

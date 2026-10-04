@@ -71,7 +71,7 @@ const isGroup = (e: Entry): e is Group => "items" in e;
  * A navegação é dividida em dois blocos: as funcionalidades do dia a dia em
  * cima e, abaixo de um divisor, os itens de apoio (análise, ESG, config).
  */
-// Ordem definida pelo PM em 04/10/2026.
+// Ordem definida pelo PM em 04/10/2026 (Relatórios por último, depois de Cadastros).
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
@@ -93,7 +93,7 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Acompanhamento do veículo", to: "/app/frota/analise" },
-      { label: "Percurso do dia", to: "/app/frota/tracking" },
+      { label: "Tracking", to: "/app/frota/tracking" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
       { label: "Controle de combustível", to: "/app/frota/combustivel" },
@@ -151,7 +151,6 @@ const NAV_PRIMARY: Entry[] = [
   },
   { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
   { label: "IA Ops Advisor", icon: Sparkles, to: "/app/estrategico" },
-  { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
   {
     label: "Cadastros",
     icon: ClipboardList,
@@ -171,6 +170,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Veículos", to: "/app/cadastros/veiculos" },
     ],
   },
+  { label: "Relatórios", icon: FileText, to: "/app/relatorios" },
 ];
 
 // Itens de apoio, sem título de seção. Premiação foi para Pessoas e Auditoria

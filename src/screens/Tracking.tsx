@@ -216,7 +216,7 @@ export default function Tracking() {
   return (
     <>
       <PageHeader
-        title="Percurso do dia"
+        title="Tracking"
         subtitle="Frota › Tracking de eventos"
         actions={
           <div className="flex flex-wrap items-center gap-2">

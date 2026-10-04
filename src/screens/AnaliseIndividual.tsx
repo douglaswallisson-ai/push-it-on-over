@@ -244,7 +244,7 @@ function AnaliseIndividualReal() {
               <>
                 <button onClick={() => navigate(`/app/frota/tracking?veiculo=${id}`)} className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white">
                   <Route className="h-[15px] w-[15px]" />
-                  Percurso do dia
+                  Tracking
                 </button>
                 <button onClick={() => navigate(`/app/manutencao?placa=${v?.placa ?? ""}`)} className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-brand-navy hover:bg-secondary">
                   Manutenção

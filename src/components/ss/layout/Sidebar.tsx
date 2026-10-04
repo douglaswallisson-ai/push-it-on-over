@@ -52,8 +52,6 @@ const RAIL = 68;
 const PANEL = 256;
 
 type SubItem = { label: string; to: string
-  /** Nome completo, mostrado ao passar o mouse quando o rótulo é curto. */
-  dica?: string;
   /**
    * Marca a tela como beta no menu.
    *
@@ -83,9 +81,9 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Motoristas", to: "/app/motoristas" },
       // Jornada, escala e ponto são abas da mesma tela: uma entrada só.
-      { label: "Jornada e ponto", dica: "Jornada, escala e espelho de ponto", to: "/app/pessoas/jornada" },
+      { label: "Jornada, escala e ponto", to: "/app/pessoas/jornada" },
       { label: "Premiação", to: "/app/premiacao" },
-      { label: "Metas e pesos", dica: "Metas e pesos da premiação", to: "/app/premiacao/metas" },
+      { label: "Metas e pesos da premiação", to: "/app/premiacao/metas" },
     ],
   },
   {
@@ -94,12 +92,12 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Tracking", to: "/app/frota/tracking" },
-      { label: "Desempenho", dica: "Desempenho da frota", to: "/app/frota/desempenho" },
+      { label: "Desempenho", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
-      { label: "Combustível", dica: "Controle de combustível", to: "/app/frota/combustivel" },
+      { label: "Combustível", to: "/app/frota/combustivel" },
       // Ferramentas compartilhadas aparecem dentro de cada módulo que as usa
       // (decisão do PM, 04/10/2026): o cliente de carga só vê Frota.
-      { label: "Escala de viagem", dica: "Escala de viagem (gerenciadora de risco)", to: "/app/escala-viagem" },
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Checklist", to: "/app/frota/checklist", beta: true },
       { label: "Multas", to: "/app/pessoas/multas", beta: true },
@@ -110,11 +108,11 @@ const NAV_PRIMARY: Entry[] = [
     icon: Route,
     modulo: "urbano",
     items: [
-      { label: "Sinótico", dica: "Painel sinótico das linhas", to: "/app/operacao/sinotico" },
-      { label: "Viagens", dica: "Gestão de viagens (programado × realizado)", to: "/app/operacao/viagens" },
-      { label: "Padrões", dica: "Padrão de operação por linha", to: "/app/urbano/padrao", beta: true },
-      { label: "Escala de viagem", dica: "Escala de viagem (gerenciadora de risco)", to: "/app/escala-viagem" },
-      { label: "Passageiros", dica: "Contagem de passageiros", to: "/app/urbano/passageiros" },
+      { label: "Painel sinótico", to: "/app/operacao/sinotico" },
+      { label: "Gestão de viagens", to: "/app/operacao/viagens" },
+      { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
+      { label: "Contagem de passageiros", to: "/app/urbano/passageiros" },
     ],
   },
   {
@@ -124,10 +122,10 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       // "Nova viagem" é botão dentro de Viagens, não item de menu.
       { label: "Viagens", to: "/app/fretamento/viagens" },
-      { label: "Escala de viagem", dica: "Escala de viagem (gerenciadora de risco)", to: "/app/escala-viagem" },
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
-      { label: "Assentos", dica: "Layout de assentos", to: "/app/fretamento/assentos" },
-      { label: "Passageiros", dica: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
+      { label: "Layout de assentos", to: "/app/fretamento/assentos" },
+      { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
     ],
   },
   {
@@ -143,11 +141,11 @@ const NAV_PRIMARY: Entry[] = [
     icon: Wrench,
     items: [
       // As ordens de serviço ficam dentro do painel (aba "Corretiva e ordens").
-      { label: "Painel", dica: "Painel de manutenção", to: "/app/manutencao" },
-      { label: "Sinais do motor", dica: "Sinais do motor (CAN)", to: "/app/frota/sinais" },
+      { label: "Painel de manutenção", to: "/app/manutencao" },
+      { label: "Sinais do motor", to: "/app/frota/sinais" },
       { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
-      { label: "Diagnóstico", dica: "Diagnóstico de falhas (DTC)", to: "/app/manutencao/diagnostico", beta: true },
-      { label: "Regeneração", dica: "Regeneração do filtro de partículas (DPF)", to: "/app/manutencao/regeneracao", beta: true },
+      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
+      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
     ],
   },
   { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
@@ -156,16 +154,16 @@ const NAV_PRIMARY: Entry[] = [
     label: "Cadastros",
     icon: ClipboardList,
     items: [
-      { label: "Alarmes", dica: "Cadastro de alarmes", to: "/app/cadastros/alarme" },
+      { label: "Alarme", to: "/app/cadastros/alarme" },
       { label: "Combustível", to: "/app/cadastros/combustivel" },
       { label: "Dispositivos", to: "/app/cadastros/dispositivos" },
-      { label: "Equipamentos", dica: "Equipamentos por veículo (rastreador e câmera)", to: "/app/cadastros/equipamentos" },
+      { label: "Equipamentos por veículo", to: "/app/cadastros/equipamentos" },
       { label: "Garagens", to: "/app/cadastros/garagens" },
       { label: "Grupos", to: "/app/cadastros/grupos" },
       { label: "Linhas", to: "/app/cadastros/linhas" },
-      { label: "Paradas", dica: "Pontos de parada e de controle", to: "/app/cadastros/pontos" },
-      { label: "Pontos", dica: "Pontos de interesse", to: "/app/cadastros/pontos-interesse" },
-      { label: "Cercas", dica: "Cercas eletrônicas com alerta", to: "/app/cadastros/cerca" },
+      { label: "Pontos de parada", to: "/app/cadastros/pontos" },
+      { label: "Pontos e cercas", to: "/app/cadastros/pontos-interesse" },
+      { label: "Cercas com alerta", to: "/app/cadastros/cerca" },
       { label: "Unidades", to: "/app/cadastros/unidades" },
       { label: "Usuários", to: "/app/cadastros/usuarios" },
       { label: "Veículos", to: "/app/cadastros/veiculos" },
@@ -463,7 +461,6 @@ function GroupRow({
             <NavLink
               key={item.to}
               to={item.to}
-              title={item.dica ?? item.label}
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
@@ -477,7 +474,7 @@ function GroupRow({
                 {item.beta && (
                   <span
                     title="Ainda usa dados de exemplo — sem origem no backend"
-                    className="shrink-0 text-[12px] font-medium text-gold/80"
+                    className="shrink-0 rounded bg-gold/25 px-1 py-px font-mono text-[12px] font-bold uppercase tracking-[0.06em] text-gold"
                   >
                     beta
                   </span>

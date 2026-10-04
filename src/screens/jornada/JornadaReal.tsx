@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Card, Pill, StatTile, type PillTone } from "@/components/ss/ui/data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { grupoAtivo } from "@/lib/escopo-ativo";
+import { api } from "@/lib/api";
 import { mensagemErro } from "@/lib/suporte-api";
 import {
   JornadaApi,
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
  * escala planejada × realizada e espelho de ponto com justificativas.
  */
 
-type Aba = "jornada" | "escala" | "ponto";
+type Aba = "jornada" | "escala" | "ponto" | "identificacao";
 const isoDia = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const ontem = () => {
   const d = new Date();
@@ -83,6 +84,7 @@ export default function JornadaReal({ abaInicial = "jornada" }: { abaInicial?: A
               ["jornada", "Jornada do dia", Scale],
               ["escala", "Escala", CalendarDays],
               ["ponto", "Espelho de ponto", FileText],
+              ["identificacao", "Identificação", UserX],
             ] as const
           ).map(([id, rot, Ic]) => (
             <button
@@ -99,6 +101,7 @@ export default function JornadaReal({ abaInicial = "jornada" }: { abaInicial?: A
         {aba === "jornada" && <JornadaDoDia g={g} dia={dia} setDia={setDia} onLinha={setDetalhe} />}
         {aba === "escala" && <EscalaAba g={g} dia={dia} setDia={setDia} onLinha={setDetalhe} />}
         {aba === "ponto" && <EspelhoAba g={g} motorista={espelhoDe} setMotorista={setEspelhoDe} />}
+        {aba === "identificacao" && <IdentificacaoAba g={g} />}
       </main>
       <DetalheJornada
         g={g}
@@ -676,6 +679,125 @@ function EspelhoAba({ g, motorista, setMotorista }: { g: string; motorista: numb
                 </tbody>
               </table>
             </div>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+
+/* ------------------------------------------------------------ identificação */
+
+type Identificacao = {
+  totais: { km: number; km_sem: number; pct_sem: number; veiculos: number; veiculos_sem_nenhuma: number; identificacoes_presas: number };
+  veiculos: { unit_id: number; veiculo: string; km: number; km_sem: number; trechos: number; trechos_sem: number; motoristas: number; pct_sem: number }[];
+  presas: { unit_id: number; veiculo: string; driver_id: number; motorista: string; desde: string; ate: string; horas: number; km: number }[];
+  regra: string;
+};
+
+/**
+ * Identificação do motorista: quanto a frota rodou sem motorista identificado e
+ * as identificações "presas" (motorista que não fez logout). É o material para
+ * levar ao cliente (pedido do PM, 02/10/2026).
+ */
+function IdentificacaoAba({ g }: { g: string }) {
+  const hoje = new Date();
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  const fimMes = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+  const [periodo, setPeriodo] = useState({ inicio: isoDia(ini), fim: isoDia(fimMes) });
+  const q = useQuery({
+    queryKey: ["jornada", "identificacao", g, periodo],
+    queryFn: () => api.get<Identificacao>(`/api/v1/jornada/identificacao?group_id=${g}&inicio=${periodo.inicio}&fim=${periodo.fim}`),
+  });
+  const nf = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const hora = (s: string) => new Date(s).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const csv = () => {
+    if (!q.data) return;
+    const esc = (x: unknown) => `"${String(x ?? "").replace(/"/g, '""')}"`;
+    const linhas: unknown[][] = [
+      ["Veículo", "Km rodados", "Km sem motorista", "% sem motorista", "Trechos", "Trechos sem motorista", "Motoristas identificados"],
+      ...q.data.veiculos.map((v) => [v.veiculo, v.km, v.km_sem, v.pct_sem, v.trechos, v.trechos_sem, v.motoristas]),
+      [], ["Identificações presas"], ["Veículo", "Motorista", "Desde", "Até", "Horas", "Km"],
+      ...q.data.presas.map((p) => [p.veiculo, p.motorista, p.desde.replace("T", " "), p.ate.replace("T", " "), p.horas, p.km]),
+    ];
+    const txt = "\ufeff" + linhas.map((l) => l.map(esc).join(";")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([txt], { type: "text/csv;charset=utf-8" }));
+    a.download = `identificacao_motorista_${periodo.inicio}_${periodo.fim}.csv`;
+    a.click();
+  };
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-[13px]">
+        <input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} aria-label="Início" className="h-9 rounded-lg border border-border px-2" />
+        <span className="text-muted-foreground">a</span>
+        <input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} aria-label="Fim" className="h-9 rounded-lg border border-border px-2" />
+        <span className="text-muted-foreground">até 31 dias</span>
+        {q.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        <button onClick={csv} disabled={!q.data} className="ml-auto inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 disabled:opacity-40">
+          <Download className="h-4 w-4" /> Baixar para o cliente (CSV)
+        </button>
+      </div>
+      {q.error ? (
+        <p className="text-[13px] text-coral">{mensagemErro(q.error)}</p>
+      ) : !q.data ? (
+        <p className="flex items-center gap-2 text-[13px] text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Calculando…</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatTile icon={UserX} label="Km sem motorista identificado" value={`${nf(q.data.totais.pct_sem)}%`} foot={`${nf(q.data.totais.km_sem)} de ${nf(q.data.totais.km)} km`} color="var(--coral)" />
+            <StatTile icon={Users} label="Veículos sem nenhuma identificação" value={nf(q.data.totais.veiculos_sem_nenhuma)} foot={`de ${nf(q.data.totais.veiculos)} que rodaram`} />
+            <StatTile icon={AlertTriangle} label="Identificações presas" value={nf(q.data.totais.identificacoes_presas)} foot="motorista que não fez logout" color="var(--gold)" />
+            <StatTile icon={Clock} label="Maior identificação presa" value={q.data.presas[0] ? `${nf(q.data.presas[0].horas)} h` : "—"} foot={q.data.presas[0]?.veiculo ?? ""} />
+          </div>
+          <p className="text-[12px] text-muted-foreground">
+            Sem identificação, a jornada, o ranking e a premiação do motorista ficam sem base. {q.data.regra} SUPOSIÇÃO: quase sempre é o
+            motorista que não fez logout e outros rodaram com o cartão dele; confirmar com o cliente.
+          </p>
+          <Card title="Identificações presas" icon={AlertTriangle}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-border text-left text-[12px] uppercase tracking-wide text-muted-foreground">
+                    <th className="px-3 py-2">Veículo</th><th className="px-3 py-2">Motorista</th><th className="px-3 py-2">Desde</th>
+                    <th className="px-3 py-2">Até</th><th className="px-3 py-2 text-right">Horas</th><th className="px-3 py-2 text-right">Km</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {q.data.presas.slice(0, 100).map((p, i) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2">{p.veiculo}</td><td className="px-3 py-2">{p.motorista}</td>
+                      <td className="px-3 py-2 font-mono">{hora(p.desde)}</td><td className="px-3 py-2 font-mono">{hora(p.ate)}</td>
+                      <td className="px-3 py-2 text-right font-semibold text-coral">{nf(p.horas)}</td><td className="px-3 py-2 text-right">{nf(p.km)}</td>
+                    </tr>
+                  ))}
+                  {!q.data.presas.length && <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Nenhuma identificação presa no período.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+          <Card title="Por veículo (mais km sem motorista primeiro)" icon={UserX}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-border text-left text-[12px] uppercase tracking-wide text-muted-foreground">
+                    <th className="px-3 py-2">Veículo</th><th className="px-3 py-2 text-right">Km</th><th className="px-3 py-2 text-right">Km sem motorista</th>
+                    <th className="px-3 py-2 text-right">%</th><th className="px-3 py-2 text-right">Motoristas</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {q.data.veiculos.slice(0, 100).map((v) => (
+                    <tr key={v.unit_id}>
+                      <td className="px-3 py-2">{v.veiculo}</td><td className="px-3 py-2 text-right">{nf(v.km)}</td><td className="px-3 py-2 text-right">{nf(v.km_sem)}</td>
+                      <td className={cn("px-3 py-2 text-right font-semibold", v.pct_sem >= 50 ? "text-coral" : v.pct_sem >= 10 ? "text-gold" : "text-leaf")}>{nf(v.pct_sem)}%</td>
+                      <td className="px-3 py-2 text-right">{v.motoristas}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {q.data.veiculos.length > 100 && <p className="px-3 pt-2 text-[12px] text-muted-foreground">Mostrando os 100 primeiros; o CSV traz todos os {q.data.veiculos.length}.</p>}
           </Card>
         </>
       )}

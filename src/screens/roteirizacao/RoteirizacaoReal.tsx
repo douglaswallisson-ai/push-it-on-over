@@ -36,7 +36,7 @@ type Resultado = {
   duracao_total_min: number;
   agenda: { ponto: string; chegada: string | null; saida: string | null }[];
   combustivel: { kml: number; fonte_kml: string; litros: number | null; preco_litro: number | null; fonte_preco: string | null; custo: number | null };
-  pedagio: { pracas: { nome: string; rodovia: string; uf: string }[]; base_disponivel: boolean; eixos: number; tarifa_eixo: number | null; valor: number | null; observacao: string | null };
+  pedagio: { pracas: { nome: string; rodovia: string; uf: string }[]; base_disponivel: boolean; eixos: number; tarifa_eixo: number | null; tarifa_estimada?: boolean; valor: number | null; observacao: string | null };
   geometria: [number, number][] | null;
 };
 
@@ -202,7 +202,7 @@ export default function RoteirizacaoReal() {
                 </select></label>
               <label className="space-y-1"><span>Saída</span><input type="datetime-local" className={campo} value={saida} onChange={(e) => setSaida(e.target.value)} /></label>
               <label className="space-y-1"><span>Eixos</span><input type="number" min={2} max={9} className={campo} value={eixos} onChange={(e) => setEixos(Number(e.target.value) || 2)} /></label>
-              <label className="col-span-2 space-y-1"><span>Tarifa média de pedágio por eixo (R$, opcional)</span><input className={campo} inputMode="decimal" value={tarifa} onChange={(e) => setTarifa(e.target.value)} placeholder="ex.: 9,40" /></label>
+              <label className="col-span-2 space-y-1"><span>Tarifa média de pedágio por eixo (R$, opcional)</span><input className={campo} inputMode="decimal" value={tarifa} onChange={(e) => setTarifa(e.target.value)} placeholder="padrão: R$ 8,00 (estimativa)" /></label>
               {(rotas.data?.length ?? 0) > 0 && (
                 <label className="col-span-2 space-y-1"><span>Carregar rota padrão</span>
                   <select className={campo} value="" onChange={(e) => {
@@ -321,8 +321,17 @@ export default function RoteirizacaoReal() {
                   </table>
                   <div className="mt-3 border-t border-border pt-2 text-[12px]">
                     {res.pedagio.base_disponivel ? (
-                      <p>{res.pedagio.pracas.length} praças da ANTT no caminho{res.pedagio.pracas.length ? `: ${res.pedagio.pracas.map((p) => `${p.nome} (${p.rodovia}/${p.uf})`).join(", ")}` : ""}.
-                        {res.pedagio.valor == null && res.pedagio.pracas.length > 0 && " Informe a tarifa média por eixo para estimar o valor."}</p>
+                      <>
+                        <p>
+                          <b>{res.pedagio.pracas.length} praças</b> de rodovias federais no caminho
+                          {res.pedagio.valor != null && <> · <b>{BRL.format(res.pedagio.valor)}</b> para {res.pedagio.eixos} eixos</>}
+                          {res.pedagio.pracas.length ? `: ${res.pedagio.pracas.map((p) => `${p.nome} (${p.rodovia}/${p.uf})`).join(", ")}` : ""}.
+                        </p>
+                        <p className="mt-1 text-muted-foreground">
+                          {res.pedagio.tarifa_estimada ? `Estimativa com R$ ${nf(res.pedagio.tarifa_eixo, 2)} por eixo por praça (a tarifa de cada praça não é dado aberto); informe a tarifa média acima se souber. ` : ""}
+                          Conta só praças federais (ANTT); pedágios estaduais e o Free Flow da Dutra ficam de fora.
+                        </p>
+                      </>
                     ) : (
                       <p className="text-muted-foreground">{res.pedagio.observacao} Para o valor exato por eixo, a recomendação é ligar um serviço de rotas com pedágio (Amazon Location Service ou QualP).</p>
                     )}

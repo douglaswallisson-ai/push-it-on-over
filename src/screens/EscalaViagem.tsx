@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import {
   AlertTriangle, CheckCircle2, ClipboardCheck, MapPin, Plus, Printer, Route, ShieldCheck, Trash2, Users, X,
 } from "lucide-react";
@@ -296,6 +297,10 @@ function Detalhe({ v, onRelatorio, dia }: { v: Viagem; onRelatorio: () => void; 
           <dt className="text-muted-foreground">Motorista</dt><dd className="font-medium">{r.motoristas_identificados.length ? r.motoristas_identificados.join(", ") : <span className="text-gold">não identificado no veículo</span>}</dd>
         </dl>
         <button onClick={onRelatorio} className="mt-4 w-full rounded-xl bg-brand-navy py-2.5 text-[13px] font-semibold text-white">Gerar relatório de conformidade</button>
+        {/* A escala conversa com a roteirização: a rota destes pontos com tempo, combustível e pedágio. */}
+        <a href={`/app/fretamento/roteirizacao?viagem=${v.id}`} className="mt-2 block w-full rounded-xl border border-border py-2.5 text-center text-[13px] font-semibold text-brand-navy hover:bg-secondary">
+          Ver rota, tempo, combustível e pedágio
+        </a>
       </Card>
 
       <Card title="Pontos autorizados da rota" icon={CheckCircle2} bodyClassName="p-5">
@@ -424,7 +429,20 @@ function NovaEscala({ grupo, dia, onClose }: { grupo: string; dia: string; onClo
             <label className="text-[12px] text-muted-foreground">Motorista<input value={f.motorista} onChange={(e) => setF({ ...f, motorista: e.target.value })} className={cn(inp, "mt-1")} /></label>
             <label className="text-[12px] text-muted-foreground">Nome da rota<input value={f.rota_nome} onChange={(e) => setF({ ...f, rota_nome: e.target.value })} placeholder="ex.: Betim → Juiz de Fora" className={cn(inp, "mt-1")} /></label>
             <label className="text-[12px] text-muted-foreground">Saída prevista<input type="datetime-local" value={f.saida} onChange={(e) => setF({ ...f, saida: e.target.value })} className={cn(inp, "mt-1")} /></label>
-            <label className="text-[12px] text-muted-foreground">Chegada prevista<input type="datetime-local" value={f.chegada} onChange={(e) => setF({ ...f, chegada: e.target.value })} className={cn(inp, "mt-1")} /></label>
+            <label className="text-[12px] text-muted-foreground">Chegada prevista<input type="datetime-local" value={f.chegada} onChange={(e) => setF({ ...f, chegada: e.target.value })} className={cn(inp, "mt-1")} />
+              {/* Conversa com a roteirização: tempo de direção + pausas da Lei do Motorista. */}
+              <button type="button" disabled={pontos.length < 2} className="mt-1 text-[12px] text-brand-navy underline disabled:opacity-40" onClick={async () => {
+                try {
+                  const ord = [...pontos].sort((x, y) => (x.tipo === "origem" ? -1 : y.tipo === "origem" ? 1 : x.tipo === "destino" ? 1 : y.tipo === "destino" ? -1 : 0));
+                  const r = await api.post<{ chegada: string; km_total: number; duracao_total_min: number; combustivel: { litros: number | null; custo: number | null } }>("/api/v1/roteirizacao/calcular", {
+                    group_id: Number(grupo), unit_id: f.unit_id ? Number(f.unit_id) : null, saida: `${f.saida}:00`,
+                    pontos: ord.map((p) => ({ nome: p.nome, latitude: p.latitude, longitude: p.longitude, parada_min: p.tipo === "origem" || p.tipo === "destino" ? 0 : 30 })),
+                  });
+                  setF({ ...f, chegada: r.chegada.slice(0, 16) });
+                  toast.success(`Rota de ~${Math.round(r.km_total)} km, ${Math.floor(r.duracao_total_min / 60)}h${String(r.duracao_total_min % 60).padStart(2, "0")} com as pausas legais${r.combustivel.litros ? `, ~${Math.round(r.combustivel.litros)} L de diesel` : ""}.`);
+                } catch (e) { toast.error((e as Error).message); }
+              }}>Calcular pela roteirização</button>
+            </label>
             <label className="text-[12px] text-muted-foreground">Rodovia<input value={f.rodovia} onChange={(e) => setF({ ...f, rodovia: e.target.value })} placeholder="ex.: BR-040" className={cn(inp, "mt-1")} /></label>
             <label className="text-[12px] text-muted-foreground">Cliente da carga<input value={f.carga_cliente} onChange={(e) => setF({ ...f, carga_cliente: e.target.value })} placeholder="ex.: Gerdau" className={cn(inp, "mt-1")} /></label>
             <label className="text-[12px] text-muted-foreground">Carga<input value={f.carga_descricao} onChange={(e) => setF({ ...f, carga_descricao: e.target.value })} placeholder="ex.: Bobina" className={cn(inp, "mt-1")} /></label>

@@ -128,7 +128,6 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
       { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
       { label: "Cadastro de passageiros", to: "/app/fretamento/cadastro-passageiros" },
-      { label: "Rotas", to: "/app/fretamento/rotas" },
       { label: "Centros de custo", to: "/app/fretamento/centros-custo" },
       { label: "Turnos", to: "/app/fretamento/turnos" },
       { label: "Grupos de linhas", to: "/app/cadastros/grupos-linhas" },

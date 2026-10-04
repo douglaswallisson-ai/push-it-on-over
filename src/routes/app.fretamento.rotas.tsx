@@ -1,6 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import CadastroTela from "@/screens/cadastros/CadastroTela";
-import { CFG_ROTA } from "@/screens/cadastros/config";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// Cadastro real (motor cadastros.py), regras do sistema atual.
-export const Route = createFileRoute("/app/fretamento/rotas")({ component: () => <CadastroTela cfg={CFG_ROTA} /> });
+/**
+ * Página antiga. As rotas do cliente passaram a abrir na Roteirização, com o
+ * traçado e os dados da rota (decisão do PM, 04/10/2026).
+ */
+export const Route = createFileRoute("/app/fretamento/rotas")({
+  beforeLoad: () => {
+    throw redirect({ to: "/app/fretamento/roteirizacao", replace: true });
+  },
+});

@@ -350,25 +350,6 @@ export const CFG_GRUPO_LINHAS: ConfigCadastro = {
   ] }],
 };
 
-export const CFG_ROTA: ConfigCadastro = {
-  tipo: "rota", titulo: "Rotas", subtitulo: "Fretamento › Trajetos gravados das viagens", singular: "Rota",
-  explicacao: "O traçado de cada rota vem do sistema atual. Aqui se ajustam nome, cor, velocidade e centro de custo.",
-  rotulo: (r) => String(r.nome), padrao: { cor: "#0000FF", velocidade: 60 },
-  colunas: [
-    { chave: "nome", rotulo: "Rota" }, { chave: "descricao", rotulo: "Descrição" },
-    { chave: "centro_custo", rotulo: "Centro de custo", render: (r, op) => String(r.centro_custo ?? nomeDe(op, "centros_custo", r.cost_center_id) ?? "—") },
-    { chave: "km", rotulo: "Extensão", num: true, render: (r) => (Number(r.km) ? `${nf(r.km, 1)} km` : "—") },
-    { chave: "velocidade", rotulo: "Velocidade", num: true, render: (r) => (Number(r.velocidade) ? `${nf(r.velocidade)} km/h` : "—") },
-    { chave: "cor", rotulo: "Cor", render: (r) => <Cor c={r.cor} /> },
-  ],
-  secoes: [{ campos: [
-    { nome: "nome", rotulo: "Nome da rota", tipo: "texto", obrig: true }, { nome: "descricao", rotulo: "Descrição", tipo: "texto" },
-    { nome: "cost_center_id", rotulo: "Centro de custo", tipo: "select", opcoes: "centros_custo" },
-    { nome: "velocidade", rotulo: "Velocidade máxima (km/h)", tipo: "numero" }, { nome: "cor", rotulo: "Cor", tipo: "cor" },
-    { nome: "trajeto", rotulo: "Traçado", tipo: "trajeto" },
-  ] }],
-};
-
 export const CFG_LAYOUT_ASSENTOS: ConfigCadastro = {
   tipo: "layout_assentos", titulo: "Layout de assentos", subtitulo: "Fretamento › Mapas de assentos dos veículos", singular: "Layout",
   explicacao: "Imagem com a numeração das poltronas, usada para marcar o assento de cada passageiro.",

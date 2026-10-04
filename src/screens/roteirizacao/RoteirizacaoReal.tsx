@@ -8,10 +8,11 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { api } from "@/lib/api";
-import { Escala, escalaPoisQuery, escalaRotasQuery, type PontoPlano } from "@/lib/escala-api";
+import { Escala, escalaPoisQuery, escalaRotasQuery, type PontoPlano, type RotaPadrao } from "@/lib/escala-api";
 import { rotaOtimizada, type Parada } from "@/lib/roteirizacao";
 import { veiculosApiQuery } from "@/lib/queries";
 import { mensagemErro } from "@/lib/suporte-api";
+import { CadastrosApi, type Registro } from "@/lib/cadastros-api";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,6 +21,11 @@ import { cn } from "@/lib/utils";
  * com as pausas da Lei do Motorista, combustível pelo km/L real do veículo,
  * custo pelo preço ANP e pedágio. As duas ferramentas são separadas e
  * conversam: daqui se salva a rota para a escala usar (decisão do PM, 04/10/2026).
+ *
+ * É também o lugar das rotas do cliente (fretamento): as rotas cadastradas no
+ * sistema atual abrem aqui com o traçado gravado, e nome, cor, velocidade e
+ * centro de custo se editam no painel da rota. A página Rotas foi retirada
+ * para não haver dois lugares de rota (decisão do PM, 04/10/2026).
  */
 
 type Ponto = { id: string; nome: string; latitude: number; longitude: number; parada_min: number; tipo?: string };
@@ -91,9 +97,56 @@ export default function RoteirizacaoReal() {
   const [res, setRes] = useState<Resultado | null>(null);
   const [calculando, setCalculando] = useState(false);
   const [origemTxt, setOrigemTxt] = useState<string | null>(null);
+  // Rota cadastrada aberta: o cálculo usa o traçado gravado dela.
+  const [rotaCad, setRotaCad] = useState<Registro | null>(null);
+  const [buscaRota, setBuscaRota] = useState("");
+  const [edicao, setEdicao] = useState<Record<string, unknown>>({});
+  const [salvandoRota, setSalvandoRota] = useState(false);
 
   const pois = useQuery(escalaPoisQuery(g));
   const rotas = useQuery(escalaRotasQuery(g));
+  const rotasCad = useQuery({ queryKey: ["cad", "rota", g], queryFn: () => CadastrosApi.listar("rota", g!), enabled: Boolean(g), staleTime: 300_000 });
+  const opcoesCad = useQuery({ queryKey: ["cad", "opcoes", g], queryFn: () => CadastrosApi.opcoes(g!), enabled: Boolean(g), staleTime: 600_000 });
+  const trajeto = useMemo(() => ((rotaCad?.trajeto as [number, number][]) ?? []).filter((x) => Array.isArray(x) && x.length === 2), [rotaCad]);
+
+  // Rotas do cliente (cadastradas) e rotas salvas para a escala, numa lista só.
+  const listaRotas = useMemo(() => {
+    const b = buscaRota.trim().toLowerCase();
+    const cad = (rotasCad.data?.data ?? []).map((r) => ({ chave: `c${r.id}`, nome: String(r.nome ?? "Rota"), sub: [r.descricao, r.centro_custo, Number(r.km) ? `${nf(Number(r.km), 1)} km` : null].filter(Boolean).join(" · "), cad: r as Registro | undefined, pad: undefined as RotaPadrao | undefined }));
+    const pad = (rotas.data ?? []).map((r) => ({ chave: `p${r.id}`, nome: r.nome, sub: `salva para a escala · ${r.pontos.length} pontos`, cad: undefined as Registro | undefined, pad: r as RotaPadrao | undefined }));
+    return [...cad, ...pad].filter((x) => !b || `${x.nome} ${x.sub}`.toLowerCase().includes(b));
+  }, [rotasCad.data, rotas.data, buscaRota]);
+
+  const abrirRotaCad = (r: Registro) => {
+    const tr = ((r.trajeto as [number, number][]) ?? []).filter((x) => Array.isArray(x) && x.length === 2);
+    if (tr.length < 2) { toast.error("Esta rota não tem traçado gravado."); return; }
+    const nome = String(r.nome ?? "Rota");
+    setRotaCad(r);
+    setEdicao({ nome: r.nome, descricao: r.descricao, cor: r.cor, velocidade: r.velocidade, cost_center_id: r.cost_center_id });
+    setPontos([
+      { id: novoId(), nome: `Início · ${nome}`, latitude: tr[0][0], longitude: tr[0][1], parada_min: 0, tipo: "origem" },
+      { id: novoId(), nome: `Fim · ${nome}`, latitude: tr[tr.length - 1][0], longitude: tr[tr.length - 1][1], parada_min: 0, tipo: "destino" },
+    ]);
+    setOrigemTxt(`Rota ${nome}: traçado gravado no sistema. Inclua as paradas de embarque, se quiser; pontos fora do traçado (mais de 1,5 km) são estimados em linha reta.`);
+    setBuscaRota("");
+  };
+
+  const fecharRotaCad = () => { setRotaCad(null); setEdicao({}); setOrigemTxt(null); };
+
+  const salvarDadosRota = async () => {
+    if (!g || !rotaCad) return;
+    setSalvandoRota(true);
+    try {
+      const r = await CadastrosApi.editar("rota", g, String(rotaCad.id), edicao);
+      await qc.invalidateQueries({ queryKey: ["cad", "rota", g] });
+      setRotaCad({ ...rotaCad, ...edicao, id: r.id, provisorio: true });
+      toast.success("Dados da rota salvos (provisório: ainda não chegam ao sistema atual)");
+    } catch (e) {
+      toast.error(mensagemErro(e));
+    } finally {
+      setSalvandoRota(false);
+    }
+  };
   const veiculos = useQuery(veiculosApiQuery());
 
   // Pontos de uma viagem da Escala (a conversa entre as duas ferramentas).
@@ -123,6 +176,7 @@ export default function RoteirizacaoReal() {
         group_id: Number(g), unit_id: unitId ? Number(unitId) : null, saida: saida.length === 16 ? `${saida}:00` : saida, eixos,
         tarifa_eixo: tarifa ? Number(tarifa.replace(",", ".")) : null,
         pontos: pontos.map(({ nome, latitude, longitude, parada_min }) => ({ nome, latitude, longitude, parada_min })),
+        ...(rotaCad && trajeto.length > 1 ? { trajeto, rota_id: rotaCad.origem_id ?? null, operacao: "passageiros" } : {}),
       });
       setRes(r);
     } catch (e) {
@@ -133,7 +187,7 @@ export default function RoteirizacaoReal() {
   };
 
   // Recalcula sozinho quando os pontos mudam (com espera curta).
-  const chave = JSON.stringify([pontos, unitId, saida, eixos, tarifa]);
+  const chave = JSON.stringify([pontos, unitId, saida, eixos, tarifa, rotaCad?.id ?? null]);
   useEffect(() => {
     if (pontos.length < 2) { setRes(null); return; }
     const t = setTimeout(calcular, 500);
@@ -185,7 +239,8 @@ export default function RoteirizacaoReal() {
     );
   }
 
-  const linha: [number, number][] = res?.geometria ?? pontos.map((p) => [p.latitude, p.longitude]);
+  const linha: [number, number][] = res?.geometria ?? (trajeto.length > 1 ? trajeto : pontos.map((p) => [p.latitude, p.longitude]));
+  const corLinha = rotaCad ? String(edicao.cor || rotaCad.cor || "#1d4ed8") : "#1d4ed8";
   const campo = "h-9 w-full rounded-lg border border-border bg-white px-3 text-[13px]";
 
   return (
@@ -194,6 +249,60 @@ export default function RoteirizacaoReal() {
       <main className="mx-auto grid max-w-[1760px] gap-4 px-4 py-4 md:px-6 lg:grid-cols-[420px_1fr]">
         <section className="space-y-3">
           {origemTxt && <p className="rounded-lg bg-brand-sky/10 px-3 py-2 text-[12px] text-brand-navy">{origemTxt}</p>}
+          <div className="rounded-xl border border-border bg-card p-3">
+            <p className="mb-2 text-[13px] font-semibold">Rotas do cliente</p>
+            <input value={buscaRota} onChange={(e) => setBuscaRota(e.target.value)} placeholder={`Buscar entre ${nf(listaRotas.length)} rotas (nome, centro de custo)…`} className={campo} aria-label="Buscar rota" />
+            {buscaRota.trim().length > 0 && (
+              <ul className="mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-white">
+                {listaRotas.slice(0, 60).map((x) => (
+                  <li key={x.chave}>
+                    <button className="w-full px-3 py-1.5 text-left hover:bg-secondary" onClick={() => {
+                      if (x.cad) abrirRotaCad(x.cad);
+                      else if (x.pad) {
+                        fecharRotaCad();
+                        setPontos(x.pad.pontos.map((p) => ({ id: novoId(), nome: p.nome, latitude: p.latitude, longitude: p.longitude, parada_min: p.tipo === "origem" || p.tipo === "destino" ? 0 : 30, tipo: p.tipo })));
+                        setBuscaRota("");
+                      }
+                    }}>
+                      <span className="block truncate text-[13px] text-foreground">{x.nome}</span>
+                      <span className="block truncate text-[12px] text-muted-foreground">{x.sub}</span>
+                    </button>
+                  </li>
+                ))}
+                {listaRotas.length === 0 && <li className="px-3 py-2 text-[12px] text-muted-foreground">Nenhuma rota com esse nome.</li>}
+              </ul>
+            )}
+            {!buscaRota && (rotasCad.data?.total ?? 0) === 0 && (rotas.data?.length ?? 0) === 0 && (
+              <p className="mt-1 text-[12px] text-muted-foreground">Este cliente ainda não tem rotas. Monte os pontos abaixo e salve.</p>
+            )}
+          </div>
+
+          {rotaCad && (
+            <div className="rounded-xl border border-border bg-card p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-[13px] font-semibold">Dados da rota{rotaCad.provisorio ? <span className="ml-2 text-[12px] font-normal text-gold">provisório</span> : null}</p>
+                <button onClick={fecharRotaCad} className="text-[12px] text-muted-foreground hover:text-foreground">Fechar rota</button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
+                <label className="col-span-2 space-y-1"><span>Nome</span><input className={campo} value={String(edicao.nome ?? "")} onChange={(e) => setEdicao((d) => ({ ...d, nome: e.target.value }))} /></label>
+                <label className="col-span-2 space-y-1"><span>Descrição</span><input className={campo} value={String(edicao.descricao ?? "")} onChange={(e) => setEdicao((d) => ({ ...d, descricao: e.target.value }))} /></label>
+                <label className="col-span-2 space-y-1"><span>Centro de custo</span>
+                  <select className={campo} value={String(edicao.cost_center_id ?? "")} onChange={(e) => setEdicao((d) => ({ ...d, cost_center_id: e.target.value ? Number(e.target.value) : null }))}>
+                    <option value="">—</option>
+                    {(opcoesCad.data?.centros_custo ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  </select></label>
+                <label className="space-y-1"><span>Velocidade máxima (km/h)</span><input type="number" min={0} max={300} className={campo} value={String(edicao.velocidade ?? "")} onChange={(e) => setEdicao((d) => ({ ...d, velocidade: e.target.value === "" ? null : Number(e.target.value) }))} /></label>
+                <label className="space-y-1"><span>Cor no mapa</span><input type="color" className={cn(campo, "p-1")} value={String(edicao.cor || "#0000FF")} onChange={(e) => setEdicao((d) => ({ ...d, cor: e.target.value }))} /></label>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-[12px] text-muted-foreground">{Number(rotaCad.km) ? `${nf(Number(rotaCad.km), 1)} km de traçado gravado.` : ""}</p>
+                <button disabled={salvandoRota || !String(edicao.nome ?? "").trim()} onClick={salvarDadosRota} className="inline-flex items-center gap-1 rounded-md bg-brand-navy px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-40">
+                  {salvandoRota ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Salvar dados da rota
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="rounded-xl border border-border bg-card p-3">
             <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
               <label className="col-span-2 space-y-1"><span>Veículo (o km/L vem do histórico dele)</span>
@@ -204,16 +313,6 @@ export default function RoteirizacaoReal() {
               <label className="space-y-1"><span>Saída</span><input type="datetime-local" className={campo} value={saida} onChange={(e) => setSaida(e.target.value)} /></label>
               <label className="space-y-1"><span>Eixos</span><input type="number" min={2} max={9} className={campo} value={eixos} onChange={(e) => setEixos(Number(e.target.value) || 2)} /></label>
               <label className="col-span-2 space-y-1"><span>Tarifa média de pedágio por eixo (R$, opcional)</span><input className={campo} inputMode="decimal" value={tarifa} onChange={(e) => setTarifa(e.target.value)} placeholder="padrão: R$ 8,00 (estimativa)" /></label>
-              {(rotas.data?.length ?? 0) > 0 && (
-                <label className="col-span-2 space-y-1"><span>Carregar rota padrão</span>
-                  <select className={campo} value="" onChange={(e) => {
-                    const r = rotas.data!.find((x) => String(x.id) === e.target.value);
-                    if (r) setPontos(r.pontos.map((p) => ({ id: novoId(), nome: p.nome, latitude: p.latitude, longitude: p.longitude, parada_min: p.tipo === "origem" || p.tipo === "destino" ? 0 : 30, tipo: p.tipo })));
-                  }}>
-                    <option value="">—</option>
-                    {rotas.data!.map((r) => <option key={r.id} value={r.id}>{r.nome}</option>)}
-                  </select></label>
-              )}
             </div>
           </div>
 
@@ -264,13 +363,13 @@ export default function RoteirizacaoReal() {
             <MapContainer center={[-19.92, -43.94]} zoom={6} className="h-full w-full" scrollWheelZoom>
               <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <CliqueNoMapa onClique={(lat, lng) => setPontos((ps) => [...ps, { id: novoId(), nome: `Ponto ${lat.toFixed(4)}, ${lng.toFixed(4)}`, latitude: lat, longitude: lng, parada_min: ps.length ? 30 : 0 }])} />
-              {linha.length > 1 && <Polyline positions={linha} pathOptions={{ color: "#1d4ed8", weight: 4, opacity: 0.8, dashArray: res?.geometria ? undefined : "8 6" }} />}
+              {linha.length > 1 && <Polyline positions={linha} pathOptions={{ color: corLinha, weight: 4, opacity: 0.8, dashArray: res?.geometria || trajeto.length > 1 ? undefined : "8 6" }} />}
               {pontos.map((p, i) => (
                 <Marker key={p.id} position={[p.latitude, p.longitude]} icon={pino(i === 0 ? "#2e7d32" : i === pontos.length - 1 ? "#d84a3a" : "#16325c", String(i + 1))}>
                   <Tooltip>{p.nome}</Tooltip>
                 </Marker>
               ))}
-              <Enquadrar pontos={pontos.map((p) => [p.latitude, p.longitude])} />
+              <Enquadrar pontos={trajeto.length > 1 ? trajeto : pontos.map((p) => [p.latitude, p.longitude])} />
             </MapContainer>
           </div>
 

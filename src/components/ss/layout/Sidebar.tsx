@@ -82,7 +82,6 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Motoristas", to: "/app/motoristas" },
       // Jornada, escala e ponto são abas da mesma tela: uma entrada só.
       { label: "Jornada, escala e ponto", to: "/app/pessoas/jornada" },
-      { label: "Multas", to: "/app/pessoas/multas", beta: true },
       { label: "Premiação", to: "/app/premiacao" },
       { label: "Metas e pesos da premiação", to: "/app/premiacao/metas" },
     ],
@@ -102,6 +101,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Checklist", to: "/app/frota/checklist", beta: true },
+      { label: "Multas", to: "/app/pessoas/multas", beta: true },
     ],
   },
   {

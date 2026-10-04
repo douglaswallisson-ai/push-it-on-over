@@ -223,7 +223,7 @@ export function PopupVeiculo({
       <div className="mt-2.5 grid grid-cols-2 gap-1.5 border-t border-slate-200 pt-2.5">
         <Acao icone={Siren} rotulo="Eventos" onClick={() => navigate("/app/eventos")} destaque={eventosAbertos > 0} />
         <Acao icone={Video} rotulo="Câmeras" onClick={() => navigate("/app/seguranca/video")} />
-        <Acao icone={TrendingUp} rotulo="Desempenho" onClick={() => navigate("/app/frota/analise")} />
+        <Acao icone={TrendingUp} rotulo="Desempenho" onClick={() => navigate(`/app/frota/analise?veiculo=${veiculoId ?? placa}`)} />
         <Acao icone={Wrench} rotulo="Manutenção" onClick={() => navigate(`/app/manutencao?placa=${placa}`)} />
         <Acao icone={Play} rotulo="Tracking" onClick={() => navigate(`/app/frota/tracking?veiculo=${veiculoId ?? placa}`)} full />
       </div>

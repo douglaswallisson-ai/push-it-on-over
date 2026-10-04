@@ -50,6 +50,7 @@ import { Route as AppCadastrosPontosRouteImport } from './routes/app.cadastros.p
 import { Route as AppCadastrosPontosInteresseRouteImport } from './routes/app.cadastros.pontos-interesse'
 import { Route as AppCadastrosUnidadesRouteImport } from './routes/app.cadastros.unidades'
 import { Route as AppCadastrosUsuariosRouteImport } from './routes/app.cadastros.usuarios'
+import { Route as AppCadastrosVeiculosRouteImport } from './routes/app.cadastros.veiculos'
 import { Route as AppFretamentoAssentosRouteImport } from './routes/app.fretamento.assentos'
 import { Route as AppFretamentoEscalaRouteImport } from './routes/app.fretamento.escala'
 import { Route as AppFretamentoPassageirosRouteImport } from './routes/app.fretamento.passageiros'
@@ -299,6 +300,11 @@ const AppCadastrosUnidadesRoute = AppCadastrosUnidadesRouteImport.update({
 const AppCadastrosUsuariosRoute = AppCadastrosUsuariosRouteImport.update({
   id: '/cadastros/usuarios',
   path: '/cadastros/usuarios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCadastrosVeiculosRoute = AppCadastrosVeiculosRouteImport.update({
+  id: '/cadastros/veiculos',
+  path: '/cadastros/veiculos',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFretamentoAssentosRoute = AppFretamentoAssentosRouteImport.update({
@@ -561,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
+  '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
@@ -644,6 +651,7 @@ export interface FileRoutesByTo {
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
+  '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
@@ -730,6 +738,7 @@ export interface FileRoutesById {
   '/app/cadastros/pontos-interesse': typeof AppCadastrosPontosInteresseRoute
   '/app/cadastros/unidades': typeof AppCadastrosUnidadesRoute
   '/app/cadastros/usuarios': typeof AppCadastrosUsuariosRoute
+  '/app/cadastros/veiculos': typeof AppCadastrosVeiculosRoute
   '/app/fretamento/assentos': typeof AppFretamentoAssentosRoute
   '/app/fretamento/escala': typeof AppFretamentoEscalaRoute
   '/app/fretamento/passageiros': typeof AppFretamentoPassageirosRoute
@@ -817,6 +826,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
+    | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
@@ -900,6 +910,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
+    | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
@@ -985,6 +996,7 @@ export interface FileRouteTypes {
     | '/app/cadastros/pontos-interesse'
     | '/app/cadastros/unidades'
     | '/app/cadastros/usuarios'
+    | '/app/cadastros/veiculos'
     | '/app/fretamento/assentos'
     | '/app/fretamento/escala'
     | '/app/fretamento/passageiros'
@@ -1324,6 +1336,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastros/usuarios'
       fullPath: '/app/cadastros/usuarios'
       preLoaderRoute: typeof AppCadastrosUsuariosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cadastros/veiculos': {
+      id: '/app/cadastros/veiculos'
+      path: '/cadastros/veiculos'
+      fullPath: '/app/cadastros/veiculos'
+      preLoaderRoute: typeof AppCadastrosVeiculosRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/fretamento/assentos': {
@@ -1679,6 +1698,7 @@ interface AppRouteChildren {
   AppCadastrosPontosInteresseRoute: typeof AppCadastrosPontosInteresseRoute
   AppCadastrosUnidadesRoute: typeof AppCadastrosUnidadesRoute
   AppCadastrosUsuariosRoute: typeof AppCadastrosUsuariosRoute
+  AppCadastrosVeiculosRoute: typeof AppCadastrosVeiculosRoute
   AppFretamentoAssentosRoute: typeof AppFretamentoAssentosRoute
   AppFretamentoEscalaRoute: typeof AppFretamentoEscalaRoute
   AppFretamentoPassageirosRoute: typeof AppFretamentoPassageirosRoute
@@ -1747,6 +1767,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCadastrosPontosInteresseRoute: AppCadastrosPontosInteresseRoute,
   AppCadastrosUnidadesRoute: AppCadastrosUnidadesRoute,
   AppCadastrosUsuariosRoute: AppCadastrosUsuariosRoute,
+  AppCadastrosVeiculosRoute: AppCadastrosVeiculosRoute,
   AppFretamentoAssentosRoute: AppFretamentoAssentosRoute,
   AppFretamentoEscalaRoute: AppFretamentoEscalaRoute,
   AppFretamentoPassageirosRoute: AppFretamentoPassageirosRoute,

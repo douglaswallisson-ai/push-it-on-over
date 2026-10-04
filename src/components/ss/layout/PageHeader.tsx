@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 import { useMarcaEmbutido } from "@/components/ss/layout/PonteEmbutido";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { usandoMock } from "@/lib/modo";
 
 /**
  * Cabeçalho branco sticky de cada página — título à esquerda, ações à direita.
@@ -18,7 +22,15 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   const embutido = useMarcaEmbutido();
-  const logo = embutido?.marca.logo;
+  // Parceiro (embutido) primeiro; senão, a logo do cliente aberto.
+  const g = grupoAtivo();
+  const logoCliente = useQuery({
+    queryKey: ["cliente-logo", g],
+    queryFn: () => api.get<{ logo: string | null }>(`/api/v1/cliente/logo?group_id=${g}`),
+    enabled: !!g && !usandoMock() && !embutido?.marca.logo,
+    staleTime: 3_600_000,
+  });
+  const logo = embutido?.marca.logo ?? logoCliente.data?.logo ?? undefined;
   const semMenu = embutido && !embutido.menu;
 
   return (

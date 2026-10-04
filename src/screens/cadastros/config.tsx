@@ -20,6 +20,7 @@ export const CFG_EMPRESA: ConfigCadastro = {
     { chave: "subgrupos", rotulo: "Unidades", num: true }, { chave: "veiculos", rotulo: "Veículos", num: true },
   ],
   secoes: [{ campos: [
+    { nome: "logo", rotulo: "Logo do cliente (aparece no topo das telas)", tipo: "imagem", ajuda: "PNG, JPG, SVG ou WEBP de até 500 KB." },
     { nome: "nome", rotulo: "Nome do grupo", tipo: "texto", obrig: true, cheio: true },
     { nome: "razao_social", rotulo: "Razão social", tipo: "texto", cheio: true },
     { nome: "cnpj", rotulo: "CNPJ", tipo: "texto", placeholder: "99.999.999/9999-99" },

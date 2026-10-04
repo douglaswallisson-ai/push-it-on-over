@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 export type TipoCampo =
   | "texto" | "numero" | "select" | "multi" | "toggle" | "cor" | "area" | "email" | "hora" | "data"
-  | "mapa" | "regras" | "geometria" | "pontos";
+  | "mapa" | "regras" | "geometria" | "pontos" | "imagem";
 
 export type Campo = {
   nome: string;
@@ -252,7 +252,7 @@ function Formulario({ cfg, g, op, alvo, ss, onFechar }: { cfg: ConfigCadastro; g
               {s.titulo && <legend className="mb-1 text-[13px] font-semibold">{s.titulo}</legend>}
               <div className="grid grid-cols-2 gap-3">
                 {s.campos.filter((c) => (c.visivel?.(v) ?? true) && (!c.somenteSS || ss)).map((c) => (
-                  <div key={c.nome} className={cn(["area", "mapa", "regras", "geometria", "pontos", "multi"].includes(c.tipo) || c.cheio ? "col-span-2" : "")}>
+                  <div key={c.nome} className={cn(["area", "mapa", "regras", "geometria", "pontos", "multi", "imagem"].includes(c.tipo) || c.cheio ? "col-span-2" : "")}>
                     <CampoEditor c={c} v={v} set={set} op={op} erro={erroCampo === c.nome} g={g} />
                   </div>
                 ))}
@@ -333,6 +333,26 @@ function CampoEditor({ c, v, set, op, erro, g }: { c: Campo; v: Record<string, u
       return <Rotulo c={c} erro={erro}><input type="time" className={css} value={String(val ?? "").slice(0, 5)} onChange={(e) => set(c.nome, e.target.value || null)} /></Rotulo>;
     case "data":
       return <Rotulo c={c} erro={erro}><input type="date" className={css} value={String(val ?? "").slice(0, 10)} onChange={(e) => set(c.nome, e.target.value || null)} /></Rotulo>;
+    case "imagem":
+      return (
+        <Rotulo c={c} erro={erro}>
+          <div className="flex items-center gap-3">
+            {val ? <img src={String(val)} alt="Logo" className="h-12 max-w-[160px] rounded border border-border bg-white object-contain p-1" /> : <span className="text-[12px]">Sem imagem.</span>}
+            <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-[12px] text-foreground">
+              Enviar imagem
+              <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                if (f.size > 500_000) { toast.error("A imagem deve ter no máximo 500 KB."); return; }
+                const r = new FileReader();
+                r.onload = () => set(c.nome, String(r.result));
+                r.readAsDataURL(f);
+              }} />
+            </label>
+            {Boolean(val) && <button type="button" className="text-[12px] text-coral underline" onClick={() => set(c.nome, null)}>Remover</button>}
+          </div>
+        </Rotulo>
+      );
     case "mapa":
       return <EditorMapa v={v} set={set} />;
     case "geometria":

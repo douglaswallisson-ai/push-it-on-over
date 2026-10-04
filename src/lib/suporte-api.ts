@@ -73,6 +73,8 @@ export function mensagemErro(e: unknown): string {
     try {
       const d = JSON.parse(e.message)?.detail;
       if (typeof d === "string") return d;
+      // Cadastros e combustível respondem {message, field/issues}.
+      if (d && typeof d === "object" && !Array.isArray(d) && typeof d.message === "string") return d.message;
       if (Array.isArray(d)) return "Confira os campos: a descrição precisa ter pelo menos 10 letras.";
     } catch {
       /* não era JSON */

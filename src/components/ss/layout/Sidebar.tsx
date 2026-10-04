@@ -163,9 +163,10 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Linhas", to: "/app/cadastros/linhas" },
       { label: "Pontos de parada", to: "/app/cadastros/pontos" },
       { label: "Pontos e cercas", to: "/app/cadastros/pontos-interesse" },
-      { label: "Cercas com alerta", to: "/app/cadastros/cerca", beta: true },
+      { label: "Cercas com alerta", to: "/app/cadastros/cerca" },
       { label: "Unidades", to: "/app/cadastros/unidades" },
       { label: "Usuários", to: "/app/cadastros/usuarios" },
+      { label: "Veículos", to: "/app/cadastros/veiculos" },
     ],
   },
 ];

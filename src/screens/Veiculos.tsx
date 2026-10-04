@@ -76,7 +76,7 @@ const faixa = (
           bom ? "text-leaf" : pct > 0 ? "text-gold" : "text-muted-foreground",
         )}
       >
-        {nf(pct, 1)}
+        {pct > 0 && pct < 0.01 ? "< 0,01" : nf(pct, pct > 0 && pct < 0.1 ? 2 : 1)}
         <span className="ml-0.5 text-[12px] font-normal text-muted-foreground">%</span>
       </span>
     );

@@ -21,6 +21,11 @@ import { veiculosApiQuery, nf } from "@/lib/queries";
 import { usandoMock } from "@/lib/modo";
 import { cn } from "@/lib/utils";
 
+/** Leitura com o motor funcionando (girando ou andando). O resto é o sinal periódico do veículo parado. */
+const motorLigado = (r: HistoricoDetalhadoApi) => (r.can_rpm ?? 0) > 0 || (r.speed ?? 0) > 0 || (r.can_speed ?? 0) > 0;
+/** Marchas reais vão de ré (-5) a 20; códigos acima disso (ex.: 130) são "sem informação" do equipamento. */
+const marchaValida = (g?: number | null) => g != null && g >= -5 && g <= 20;
+
 /**
  * Sinais do barramento CAN.
  *
@@ -79,16 +84,24 @@ export default function SinaisCAN() {
   // tem as leituras (898 de 898 posições de um veículo num dia).
   const registros = useMemo(() => q.registros.map(achatar) as HistoricoDetalhadoApi[], [q.registros]);
 
-  /** Última leitura conhecida de cada sinal — é o estado atual do veículo. */
+  // Parado e desligado, o equipamento manda um sinal de "estou vivo" a cada
+  // ~2 h repetindo os últimos valores do CAN (velocidade 0, RPM 0, a última
+  // temperatura). Não é leitura do motor: fica escondido por padrão.
+  const [verParado, setVerParado] = useState(false);
+  const ligados = useMemo(() => registros.filter(motorLigado), [registros]);
+  const parados = registros.length - ligados.length;
+  const visiveis = verParado ? registros : ligados;
+
+  /** Última leitura conhecida de cada sinal com o motor ligado — o estado atual do veículo. */
   const atual = useMemo(() => {
     const ultimo: Partial<HistoricoDetalhadoApi> = {};
-    for (const r of registros) {
+    for (const r of ligados.length ? ligados : registros) {
       for (const [k, v] of Object.entries(r)) {
         if (v !== null && v !== undefined) (ultimo as Record<string, unknown>)[k] = v;
       }
     }
     return ultimo;
-  }, [registros]);
+  }, [ligados, registros]);
 
   const alertas = useMemo(() => {
     const lista: string[] = [];
@@ -115,7 +128,11 @@ export default function SinaisCAN() {
     },
     { key: "speed", header: "Velocidade", align: "right", render: (r) => <span className="font-mono text-[13px]">{r.speed ?? "—"}</span> },
     { key: "can_rpm", header: "RPM", align: "right", render: (r) => <span className="font-mono text-[13px]">{r.can_rpm ?? "—"}</span> },
-    { key: "can_gear", header: "Marcha", align: "center", render: (r) => <span className="font-mono text-[13px]">{r.can_gear ?? "—"}</span> },
+    { key: "can_gear", header: "Marcha", align: "center", render: (r) => (
+      <span className="font-mono text-[13px]" title={marchaValida(r.can_gear) ? undefined : r.can_gear != null ? `Código ${r.can_gear}: o equipamento não informou a marcha` : undefined}>
+        {marchaValida(r.can_gear) ? r.can_gear : "—"}
+      </span>
+    ) },
     {
       key: "can_accel_pedal_percent",
       header: "Acelerador",
@@ -294,7 +311,17 @@ export default function SinaisCAN() {
             <Card
               title="Leituras do período"
               icon={Activity}
-              action={<Pill tone="sky">{nf(registros.length)} posições</Pill>}
+              action={
+                <div className="flex items-center gap-2">
+                  {parados > 0 && (
+                    <label className="flex cursor-pointer items-center gap-1.5 text-[12px] text-muted-foreground">
+                      <input type="checkbox" checked={verParado} onChange={(e) => setVerParado(e.target.checked)} />
+                      Mostrar sinais com o veículo desligado ({nf(parados)})
+                    </label>
+                  )}
+                  <Pill tone="sky">{nf(ligados.length)} com motor ligado</Pill>
+                </div>
+              }
               bodyClassName="p-4"
             >
               {q.isPending ? (
@@ -303,9 +330,14 @@ export default function SinaisCAN() {
                 <ErrorBox error={q.error} onRetry={() => q.refetch()} />
               ) : registros.length === 0 ? (
                 <EmptyNote>Nenhuma leitura neste dia.</EmptyNote>
+              ) : visiveis.length === 0 ? (
+                <EmptyNote>
+                  O veículo ficou desligado neste período. Só chegaram os sinais de "estou vivo" que o equipamento manda a cada 2 horas, com os
+                  últimos valores de antes de desligar ({nf(parados)}). Marque "Mostrar sinais com o veículo desligado" para vê-los.
+                </EmptyNote>
               ) : (
                 <>
-                  <DataTable columns={COLS} rows={registros as (HistoricoDetalhadoApi & Record<string, unknown>)[]} />
+                  <DataTable columns={COLS} rows={visiveis as (HistoricoDetalhadoApi & Record<string, unknown>)[]} />
                   {q.hasNextPage && (
                     <div className="mt-3 flex justify-center">
                       <button

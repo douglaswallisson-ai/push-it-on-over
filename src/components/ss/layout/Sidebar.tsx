@@ -66,6 +66,7 @@ const isGroup = (e: Entry): e is Group => "items" in e;
  * A navegação é dividida em dois blocos: as funcionalidades do dia a dia em
  * cima e, abaixo de um divisor, os itens de apoio (análise, ESG, config).
  */
+// Ordem definida pelo PM em 04/10/2026.
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
@@ -92,27 +93,7 @@ const NAV_PRIMARY: Entry[] = [
     ],
   },
   {
-    label: "Segurança",
-    icon: Siren,
-    items: [
-      { label: "Eventos", to: "/app/eventos" },
-      { label: "Videotelemetria", to: "/app/seguranca/video" },
-    ],
-  },
-  {
-    label: "Manutenção",
-    icon: Wrench,
-    items: [
-      // As ordens de serviço ficam dentro do painel (aba "Corretiva e ordens").
-      { label: "Painel de manutenção", to: "/app/manutencao" },
-      { label: "Sinais do motor", to: "/app/frota/sinais" },
-      { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
-      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
-      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
-    ],
-  },
-  {
-    label: "Transporte urbano",
+    label: "Urbano",
     icon: Route,
     items: [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
@@ -131,6 +112,26 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
+    ],
+  },
+  {
+    label: "Segurança",
+    icon: Siren,
+    items: [
+      { label: "Eventos", to: "/app/eventos" },
+      { label: "Videotelemetria", to: "/app/seguranca/video" },
+    ],
+  },
+  {
+    label: "Manutenção",
+    icon: Wrench,
+    items: [
+      // As ordens de serviço ficam dentro do painel (aba "Corretiva e ordens").
+      { label: "Painel de manutenção", to: "/app/manutencao" },
+      { label: "Sinais do motor", to: "/app/frota/sinais" },
+      { label: "Pneus", to: "/app/manutencao/pneus", beta: true },
+      { label: "Diagnóstico (DTC)", to: "/app/manutencao/diagnostico", beta: true },
+      { label: "Regeneração (DPF)", to: "/app/manutencao/regeneracao", beta: true },
     ],
   },
   { label: "Gerencial", icon: Gauge, to: "/app/gerencial" },
@@ -154,10 +155,10 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Usuários", to: "/app/cadastros/usuarios" },
     ],
   },
-  { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
 ];
 
 const NAV_SECONDARY: Entry[] = [
+  { label: "Auditoria", icon: ShieldCheck, to: "/app/auditoria" },
   {
     label: "Premiação",
     icon: Award,

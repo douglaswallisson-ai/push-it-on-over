@@ -192,7 +192,9 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
     }
 
     const pct = (parte: number, total: number) =>
-      total > 0 ? Math.round((parte / total) * 1000) / 10 : null;
+      // Três casas: a faixa vermelha costuma ficar em centésimos de % (FERTRAN,
+      // set/2026: 3,4 h em 6.200 h de verde) e arredondada a uma casa virava 0,0%.
+      total > 0 ? Math.round((parte / total) * 100000) / 1000 : null;
 
     for (const [id, a] of acc) {
       const paradoPct = pct(a.parado, a.total);

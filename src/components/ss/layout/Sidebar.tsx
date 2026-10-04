@@ -31,6 +31,10 @@ import { sair } from "@/lib/session";
 import { lerEmbutido } from "@/lib/embutido";
 import { useSessao } from "@/hooks/use-sessao";
 import { pode } from "@/lib/permissoes";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { usandoMock } from "@/lib/modo";
 
 /**
  * Menu lateral em trilho de ícones.
@@ -57,7 +61,8 @@ type SubItem = { label: string; to: string
   beta?: boolean;
 };
 type Leaf = { label: string; icon: LucideIcon; to: string; badge?: string };
-type Group = { label: string; icon: LucideIcon; items: SubItem[] };
+/** `modulo`: só aparece para o cliente desse segmento (ver /cliente/modulos). */
+type Group = { label: string; icon: LucideIcon; items: SubItem[]; modulo?: "urbano" | "fretamento" };
 type Entry = Leaf | Group;
 
 const isGroup = (e: Entry): e is Group => "items" in e;
@@ -89,29 +94,37 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Percurso do dia", to: "/app/frota/tracking" },
       { label: "Desempenho da frota", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
+      { label: "Controle de combustível", to: "/app/frota/combustivel" },
+      // Ferramentas compartilhadas aparecem dentro de cada módulo que as usa
+      // (decisão do PM, 04/10/2026): o cliente de carga só vê Frota.
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
+      { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Checklist", to: "/app/frota/checklist", beta: true },
     ],
   },
   {
     label: "Urbano",
     icon: Route,
+    modulo: "urbano",
     items: [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
       { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
-      // Mesma tela atende urbano e fretamento: uma entrada só.
+      { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Contagem de passageiros", to: "/app/urbano/passageiros" },
     ],
   },
   {
     label: "Fretamento",
     icon: Bus,
+    modulo: "fretamento",
     items: [
       // "Nova viagem" é botão dentro de Viagens, não item de menu.
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
+      { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
     ],
   },
   {
@@ -185,6 +198,14 @@ function useIsDesktop() {
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  // Segmentos do cliente aberto (Urbano/Fretamento). Sem cliente escolhido, mostra tudo.
+  const grupo = grupoAtivo();
+  const modulos = useQuery({
+    queryKey: ["cliente-modulos", grupo],
+    queryFn: () => api.get<{ urbano: boolean; fretamento: boolean }>(`/api/v1/cliente/modulos?group_id=${grupo}`),
+    enabled: !!grupo && !usandoMock(),
+    staleTime: 3_600_000,
+  });
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
 
@@ -251,9 +272,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Itens sensíveis só aparecem para quem tem permissão. */}
         <nav className="rolagem-escura flex-1 overflow-y-auto overflow-x-hidden py-3">
-          {NAV_PRIMARY.filter(
-            (entry) => !("to" in entry && entry.to === "/app/auditoria") || pode(sessao?.perfil, "ver_auditoria"),
-          ).map((entry) => (
+          {NAV_PRIMARY.filter((entry) => !(isGroup(entry) && entry.modulo && modulos.data && !modulos.data[entry.modulo])).map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}
@@ -275,7 +294,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             )}
           </div>
 
-          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte")).map((entry) => (
+          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte"))
+            .filter((e) => isGroup(e) || e.to !== "/app/auditoria" || pode(sessao?.perfil, "ver_auditoria"))
+            .map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}

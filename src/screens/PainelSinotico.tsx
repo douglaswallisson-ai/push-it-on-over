@@ -1,3 +1,5 @@
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { mensagemErro } from "@/lib/suporte-api";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -58,11 +60,25 @@ const corDesvio = (d: number) => (Math.abs(d) <= 3 ? "var(--leaf)" : Math.abs(d)
 export default function PainelSinotico() {
   const urbano = useLinhasUrbanas();
   if (!usandoMock() && urbano.data?.length) return <SinoticoUrbano linhas={urbano.data} />;
-  if (!usandoMock() && urbano.isLoading) {
+  // Com dado real nunca cai no protótipo: sem linha, sem empresa ou com erro,
+  // a tela diz o motivo (antes mostrava a régua de exemplo com o selo).
+  if (!usandoMock()) {
+    const msg = !grupoAtivo()
+      ? "Escolha uma empresa no seletor do menu para ver as linhas."
+      : urbano.isLoading
+        ? "Carregando as linhas em operação…"
+        : urbano.isError
+          ? `Não foi possível carregar as linhas agora: ${mensagemErro(urbano.error)}`
+          : "Nenhum ônibus desta empresa está rodando em linha urbana agora (últimos 40 minutos). O painel aparece quando houver viagem em andamento.";
     return (
       <>
         <PageHeader title="Painel sinótico" subtitle="Operação › Visão da linha em tempo real" />
-        <div className="px-8 py-6 text-[13px] text-muted-foreground">Carregando as linhas em operação…</div>
+        <div className="px-8 py-6">
+          <p className="rounded-xl border border-border bg-card px-4 py-6 text-[13px] text-muted-foreground">{msg}</p>
+          {urbano.isError && (
+            <button type="button" onClick={() => urbano.refetch()} className="mt-3 rounded-lg border border-border bg-white px-3 py-1.5 text-[13px]">Tentar de novo</button>
+          )}
+        </div>
       </>
     );
   }

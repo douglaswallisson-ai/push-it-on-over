@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, Clock, Wrench } from "lucide-react";
 import { MANUTENCAO_COLUNAS, nf } from "@/lib/queries";
 import { SilhuetaVeiculo, TIPO_VEICULO_LABEL, tipoDoVeiculo } from "./SilhuetaVeiculo";
@@ -6,8 +6,9 @@ import { SilhuetaVeiculo, TIPO_VEICULO_LABEL, tipoDoVeiculo } from "./SilhuetaVe
 /**
  * Cartões exibidos por coluna.
  *
- * Coluna com sessenta veículos vira rolagem infinita que ninguém percorre; o
- * contador informa o total e a tabela serve para a lista completa.
+ * Coluna com sessenta veículos vira rolagem infinita que ninguém percorre:
+ * mostra 12 e o botão "Ver mais" abre de 12 em 12 (pedido do PM, 05/10/2026 —
+ * antes o texto mandava "usar a tabela", que nem aparece nesta tela).
  */
 const LIMITE_COLUNA = 12;
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ export function ManutencaoKanban({
    */
   modoTV?: boolean;
 }) {
+  const [visiveis, setVisiveis] = useState<Partial<Record<StatusManutencao, number>>>({});
   const porColuna = useMemo(() => {
     const mapa = new Map<StatusManutencao, CardManutencao[]>();
     for (const col of MANUTENCAO_COLUNAS) mapa.set(col.id, []);
@@ -63,6 +65,8 @@ export function ManutencaoKanban({
     <div data-tour="kanban" className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
       {MANUTENCAO_COLUNAS.map((col) => {
         const lista = porColuna.get(col.id) ?? [];
+        const limite = visiveis[col.id] ?? LIMITE_COLUNA;
+        const restantes = lista.length - limite;
         return (
           <section
             key={col.id}
@@ -84,11 +88,11 @@ export function ManutencaoKanban({
                   "rounded-full bg-card px-2 py-0.5 font-mono font-bold text-muted-foreground",
                   modoTV ? "text-[16px]" : "text-[12px]",
                 )}
-                title={`${Math.min(lista.length, LIMITE_COLUNA)} de ${lista.length} exibidos`}
+                title={`${Math.min(lista.length, limite)} de ${lista.length} exibidos`}
               >
-                {lista.length > LIMITE_COLUNA ? (
+                {lista.length > limite ? (
                   <>
-                    {LIMITE_COLUNA}
+                    {limite}
                     <span className="opacity-50">/{lista.length}</span>
                   </>
                 ) : (
@@ -104,7 +108,7 @@ export function ManutencaoKanban({
                 </p>
               ) : (
                 <>
-                  {lista.slice(0, LIMITE_COLUNA).map((card) => (
+                  {lista.slice(0, limite).map((card) => (
                     <CardVeiculo
                       key={card.veiculoId}
                       card={card}
@@ -114,11 +118,24 @@ export function ManutencaoKanban({
                       modoTV={modoTV}
                     />
                   ))}
-                  {lista.length > LIMITE_COLUNA && (
-                    <p className="px-1 py-2 text-center text-[12px] text-muted-foreground">
-                      +{lista.length - LIMITE_COLUNA} veículo{lista.length - LIMITE_COLUNA > 1 ? "s" : ""} nesta
-                      coluna — use a tabela para ver todos.
-                    </p>
+                  {restantes > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setVisiveis((v) => ({ ...v, [col.id]: limite + LIMITE_COLUNA }))}
+                      className="w-full rounded-lg border border-border bg-card py-2 text-[13px] font-medium text-brand-navy hover:bg-secondary"
+                    >
+                      Ver mais {Math.min(restantes, LIMITE_COLUNA)} veículo{Math.min(restantes, LIMITE_COLUNA) > 1 ? "s" : ""}
+                      <span className="ml-1 text-[12px] font-normal text-muted-foreground">({restantes} restante{restantes > 1 ? "s" : ""})</span>
+                    </button>
+                  )}
+                  {restantes <= 0 && limite > LIMITE_COLUNA && (
+                    <button
+                      type="button"
+                      onClick={() => setVisiveis((v) => ({ ...v, [col.id]: LIMITE_COLUNA }))}
+                      className="w-full py-1.5 text-[12px] text-muted-foreground hover:text-foreground"
+                    >
+                      Mostrar menos
+                    </button>
                   )}
                 </>
               )}

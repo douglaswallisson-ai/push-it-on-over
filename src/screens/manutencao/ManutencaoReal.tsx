@@ -23,6 +23,7 @@ import { InspecaoVeiculo } from "@/components/ss/frota/InspecaoVeiculo";
 import { RelatorioVeiculo } from "@/screens/manutencao/RelatorioVeiculo";
 import { tipoPorCategoria } from "@/components/ss/mapa/iconesVeiculo";
 import { ManutencaoKanban } from "@/components/ss/frota/ManutencaoKanban";
+import { TIPO_VEICULO_LABEL, tipoDoVeiculo } from "@/components/ss/frota/SilhuetaVeiculo";
 import { MANUTENCAO_COLUNAS } from "@/lib/queries";
 import type { CardManutencao } from "@/types";
 import { grupoAtivo } from "@/lib/escopo-ativo";
@@ -201,12 +202,16 @@ function cartoes(veiculos: VeiculoManut[], ordens: OrdemServico[]): CardManutenc
       servico = "Ordem de serviço concluída nesta semana.";
     }
     const tipo = tipoPorCategoria(v.categoria_id);
+    // A silhueta do cartão é escolhida pelo texto. Primeiro vale a descrição do
+    // veículo quando ela diz o tipo ("11180 - CAMINHÃO"): a categoria do
+    // cadastro às vezes está errada (RTR-8I02 cadastrado como "Passeio" e
+    // mostrado como "Van"). Categoria de passeio vira utilitário, não van.
+    const pelaDescricao = tipoDoVeiculo("", `${v.prefixo ?? ""} ${v.modelo ?? ""}`);
     return {
       veiculoId: String(v.unit_id),
       placa: nomeVeiculo(v),
-      // A silhueta do cartão é escolhida pelo texto: o tipo do cadastro garante o desenho certo.
-      marca: tipo === "onibus" ? "Ônibus" : tipo === "caminhao" ? "Caminhão" : tipo === "carro" ? "Van" : "",
-      modelo: v.modelo ?? v.categoria ?? "",
+      marca: pelaDescricao !== "urbano" ? TIPO_VEICULO_LABEL[pelaDescricao] : tipo === "onibus" ? "Ônibus" : tipo === "caminhao" ? "Caminhão" : tipo === "carro" ? "Pickup" : "",
+      modelo: pelaDescricao !== "urbano" ? "" : v.modelo ?? v.categoria ?? "",
       status,
       servico,
       prazoDias: prazo,

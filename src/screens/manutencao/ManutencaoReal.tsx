@@ -50,7 +50,7 @@ import { cn } from "@/lib/utils";
  * - Preventiva: o cliente cadastra planos (por tipo de veículo, modelo ou
  *   veículo) a partir de modelos sugeridos; o vencimento é calculado pelo
  *   odômetro real e pela data do último serviço registrado.
- * - Corretiva: alertas automáticos pelos sinais do motor (última leitura) que
+ * - Corretiva: alertas automáticos pelos sinais do motor (últimas 24 h) que
  *   viram ordem de serviço, acompanhada até fechar.
  */
 
@@ -449,6 +449,8 @@ function Corretiva({
   const qc = useQueryClient();
   const [nova, setNova] = useState(false);
   const alertas = veiculos.flatMap((v) => v.alertas.map((a) => ({ v, a })));
+  const suspeitos = veiculos.flatMap((v) => (v.sinais_suspeitos ?? []).map((s) => ({ v, s })));
+  const [verSuspeitos, setVerSuspeitos] = useState(false);
   const nome = (id: number) => {
     const v = veiculos.find((x) => x.unit_id === id);
     return v ? nomeVeiculo(v) : `#${id}`;
@@ -473,7 +475,7 @@ function Corretiva({
 
   return (
     <div className="space-y-5">
-      <Card title="Alertas do motor (última leitura)" icon={Siren} action={<Pill tone={alertas.length ? "coral" : "green"}>{alertas.length}</Pill>} bodyClassName="p-2">
+      <Card title="Alertas do motor (últimas 24 h)" icon={Siren} action={<Pill tone={alertas.length ? "coral" : "green"}>{alertas.length}</Pill>} bodyClassName="p-2">
         {!alertas.length ? (
           <p className="px-3 py-4 text-[13px] text-muted-foreground">Nenhum sinal fora do normal agora.</p>
         ) : (
@@ -508,6 +510,31 @@ function Corretiva({
           </ul>
         )}
       </Card>
+
+      {suspeitos.length > 0 && (
+        <Card
+          title="Sinais suspeitos (sensor, não motor)"
+          icon={AlertTriangle}
+          action={<button type="button" onClick={() => setVerSuspeitos((x) => !x)} className="text-[12px] text-brand-navy hover:underline">{verSuspeitos ? "Esconder" : `Ver os ${suspeitos.length}`}</button>}
+          bodyClassName="p-2"
+        >
+          <p className="px-3 py-2 text-[12px] text-muted-foreground">
+            Leituras que não podem ser reais (valor travado, escala estourando, nível pulando). Não abrem alerta para não mandar o veículo à oficina por engano; o que precisa de conferência é o sensor ou a configuração do equipamento.
+          </p>
+          {verSuspeitos && (
+            <ul className="divide-y divide-border">
+              {suspeitos.map(({ v, s }) => (
+                <li key={`${v.unit_id}-${s.sinal}`} className="px-3 py-2">
+                  <button type="button" onClick={() => onVeiculo(v.unit_id)} className="text-left">
+                    <span className="block text-[13px] font-medium">{s.titulo} · <span className="font-mono">{nomeVeiculo(v)}</span></span>
+                    <span className="block text-[12px] text-muted-foreground">{s.detalhe}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
 
       <Card
         title="Ordens de serviço"

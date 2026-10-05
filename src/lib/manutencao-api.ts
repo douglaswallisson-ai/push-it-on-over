@@ -58,6 +58,8 @@ export type VeiculoManut = {
   vencendo: number;
   sem_registro: number;
   alertas: Alerta[];
+  /** Sensor mandando valor impossível (travado, estourando a escala, pulando): qualidade do dado, não defeito. */
+  sinais_suspeitos?: { sinal: string; titulo: string; detalhe: string }[];
   ordens_abertas: number;
   alertas_com_os: string[];
 };
@@ -72,6 +74,7 @@ export type PainelManut = {
     itens_vencendo: number;
     alertas_criticos: number;
     alertas: number;
+    sinais_suspeitos?: number;
     ordens_abertas: number;
   };
   limites: Record<string, number>;

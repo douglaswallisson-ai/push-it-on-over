@@ -48,7 +48,22 @@ export function PerfilElevacao({
   const c = classeRelevo(r?.subida_por_100km);
   const pts = dados?.pontos ?? [];
   const temRpm = pts.some((p) => p.rpm);
-  const [ocultas, setOcultas] = useState<Set<Serie>>(new Set());
+  // Trajeto curto: sem classe de relevo e com a distância em metros. Antes,
+  // 70 m rodados viravam "Relevo serra" e o eixo mostrava "0 km" em tudo.
+  const kmTotal = r?.km ?? (pts.length ? (pts[pts.length - 1].km ?? 0) - (pts[0].km ?? 0) : 0);
+  const curto = kmTotal < 5;
+  const emMetros = kmTotal < 2;
+  const fmtDist = (v: number) => (emMetros ? `${nf(Math.round(v * 1000))} m` : `${nf(v, kmTotal < 20 ? 1 : 0)} km`);
+  // Escala da elevação com pelo menos 40 m de altura: diferença de 4 m não
+  // pode ocupar o gráfico inteiro e parecer uma montanha.
+  const elevs = pts.map((p) => p.elevacao).filter((v): v is number => typeof v === "number");
+  const eMin = elevs.length ? Math.min(...elevs) : 0;
+  const eMax = elevs.length ? Math.max(...elevs) : 0;
+  const folga = Math.max(0, 40 - (eMax - eMin)) / 2;
+  const dominioElev: [number, number] = [Math.floor((eMin - folga - 2) / 5) * 5, Math.ceil((eMax + folga + 2) / 5) * 5];
+  // RPM e altitude do equipamento começam escondidos: com as quatro linhas juntas
+  // o gráfico de um dia longo vira um emaranhado. A legenda liga de volta.
+  const [ocultas, setOcultas] = useState<Set<Serie>>(new Set<Serie>(["rpm", "altitude_gps"]));
   const [evento, setEvento] = useState<EventoTrajeto | null>(null);
   const alternar = (s: Serie) =>
     setOcultas((o) => {
@@ -63,7 +78,7 @@ export function PerfilElevacao({
     <Card
       title="Perfil do percurso"
       icon={Mountain}
-      action={r ? <span className="text-[12px] font-semibold" style={{ color: c.cor }}>Relevo {c.rotulo.toLowerCase()}</span> : undefined}
+      action={r && r.subida_por_100km != null ? <span className="text-[12px] font-semibold" style={{ color: c.cor }}>Relevo {c.rotulo.toLowerCase()}</span> : undefined}
       bodyClassName="p-4"
     >
       {erro ? (
@@ -74,12 +89,17 @@ export function PerfilElevacao({
         <p className="py-8 text-center text-sm text-muted-foreground">Sem deslocamento neste dia para montar o perfil.</p>
       ) : (
         <>
+          {curto && (
+            <p className="mb-3 rounded-lg bg-secondary px-3 py-2 text-[12px] text-muted-foreground">
+              O veículo rodou só {fmtDist(kmTotal)} neste dia: pouco para classificar o relevo. A subida por 100 km e o % em aclive aparecem a partir de 5 km.
+            </p>
+          )}
           <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
               { r: "Subida", v: `${nf(r?.subida_m)} m`, i: TrendingUp, cor: "var(--coral)" },
               { r: "Descida", v: `${nf(r?.descida_m)} m`, i: TrendingDown, cor: "var(--leaf)" },
-              { r: "Subida /100 km", v: `${nf(r?.subida_por_100km)} m`, i: Mountain, cor: c.cor },
-              { r: "Em aclive", v: `${nf(r?.pct_aclive, 1)}%`, i: TrendingUp, cor: "var(--gold)" },
+              { r: "Subida /100 km", v: r?.subida_por_100km != null ? `${nf(r.subida_por_100km)} m` : "—", i: Mountain, cor: c.cor },
+              { r: "Em aclive", v: r?.pct_aclive != null ? `${nf(r.pct_aclive, 1)}%` : "—", i: TrendingUp, cor: "var(--gold)" },
               { r: "Altitude", v: `${nf(r?.elevacao_min)}–${nf(r?.elevacao_max)} m`, i: Mountain, cor: "var(--brand-navy)" },
             ].map((x) => (
               <div key={x.r} className="rounded-xl bg-secondary/60 px-3 py-2">
@@ -103,8 +123,8 @@ export function PerfilElevacao({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="km" type="number" domain={["dataMin", "dataMax"]} tickFormatter={(v) => `${nf(v)} km`} tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="e" tick={{ fontSize: 11 }} domain={["auto", "auto"]} unit=" m" width={62} />
+                <XAxis dataKey="km" type="number" domain={["dataMin", "dataMax"]} tickFormatter={fmtDist} tickCount={6} allowDecimals tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="e" tick={{ fontSize: 11 }} domain={dominioElev} allowDataOverflow={false} unit=" m" width={62} />
                 <YAxis yAxisId="v" orientation="right" tick={{ fontSize: 11 }} domain={[0, "auto"]} unit=" km/h" width={64} hide={ocultas.has("velocidade")} />
                 <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11 }} domain={[0, "auto"]} width={52} hide={!temRpm || ocultas.has("rpm")} tickFormatter={(v) => `${nf(v)}`} />
                 <Tooltip
@@ -112,7 +132,7 @@ export function PerfilElevacao({
                     const p = active && (payload?.[0]?.payload as (typeof pts)[number] | undefined);
                     return p ? (
                       <div className="rounded-xl border border-border bg-white/95 px-3 py-2 text-[12px] shadow-elegant">
-                        <p className="font-semibold">{p.hora} · km {nf(p.km, 1)}</p>
+                        <p className="font-semibold">{p.hora} · {fmtDist(p.km ?? 0)}</p>
                         <p>Elevação: <b>{nf(p.elevacao)} m</b></p>
                         {p.altitude_gps != null && <p className="text-muted-foreground">Equipamento: {nf(p.altitude_gps)} m</p>}
                         <p>Velocidade: <b>{nf(p.velocidade)} km/h</b></p>

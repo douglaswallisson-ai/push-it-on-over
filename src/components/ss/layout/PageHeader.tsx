@@ -46,7 +46,6 @@ export function PageHeader({
           )}
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-foreground">{title}</h1>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -64,6 +63,12 @@ export function PageHeader({
           </button>
         </div>
       </div>
+      {/* TESTE visual câmeras: subtítulo como faixa de migalhas (CoreUI c-subheader). */}
+      {subtitle && (
+        <div className={`subheader-cameras flex items-center px-8 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}>
+          <span><b>Início</b> / {subtitle}</span>
+        </div>
+      )}
     </header>
   );
 }

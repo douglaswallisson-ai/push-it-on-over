@@ -422,3 +422,6 @@ header[data-tour="page-header"] { border-bottom: 1px solid #d8dbe0; box-shadow: 
 /* Cartões no padrão CoreUI: borda clara, sombra curta. */
 .shadow-card { box-shadow: var(--shadow-card) !important; }
 .rounded-2xl, .rounded-xl { border-radius: 0.25rem !important; }
+
+/* Menu no padrão CoreUI: item ativo com fundo verde translúcido e faixa à esquerda. */
+.coreui-ativo { background: rgba(120, 192, 82, 0.2) !important; box-shadow: inset 3px 0 0 #78c052; }

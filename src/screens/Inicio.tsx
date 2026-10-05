@@ -11,6 +11,8 @@ import type { ResumoOperacao } from "@/types";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { ordensQuery } from "@/lib/queries";
 import { usePreventivaFrota } from "@/hooks/use-preventiva-frota";
+import { ordensQueryReal, painelManutQuery } from "@/lib/manutencao-api";
+import { grupoAtivo } from "@/lib/escopo-ativo";
 import { ContratoDoCliente } from "@/components/ss/contrato/ContratoDoCliente";
 import {
   AlertTriangle,
@@ -768,6 +770,82 @@ function Donut({ value }: { value: number }) {
  * o que acabou de ver.
  */
 function CardsManutencao() {
+  return usandoMock() ? <CardsManutencaoExemplo /> : <CardsManutencaoReal />;
+}
+
+/**
+ * Com dado real os cartões leem o MESMO painel do quadro de manutenção
+ * (`/manutencao/painel` + ordens): antes liam o motor do protótipo (catálogo
+ * do fabricante e ordens de exemplo) e davam "0 corretivas" para a CECOTI com
+ * carros na coluna Corretiva do quadro (05/10/2026). A regra das colunas é a
+ * de `cartoes()` em ManutencaoReal.tsx.
+ */
+function CardsManutencaoReal() {
+  const navigate = useNavigate();
+  const g = grupoAtivo();
+  const painelQ = useQuery(painelManutQuery(g));
+  const ordensQ = useQuery(ordensQueryReal(g));
+
+  if (!g) {
+    return <p className="mt-3 text-[13px] text-muted-foreground">Escolha uma empresa para ver a situação da manutenção.</p>;
+  }
+  if (painelQ.isPending || ordensQ.isPending) {
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        {Array.from({ length: 5 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl border border-border bg-card" />)}
+      </div>
+    );
+  }
+  const veiculos = painelQ.data?.veiculos ?? [];
+  const ordens = ordensQ.data ?? [];
+  const abertas = ordens.filter((o) => o.status !== "concluida" && o.status !== "cancelada");
+  const comOsCorretiva = new Set(abertas.filter((o) => o.tipo === "corretiva").map((o) => o.unit_id));
+  const emCorretiva = veiculos.filter((v) => v.alertas.length > 0 || comOsCorretiva.has(v.unit_id)).length;
+  const criticos = veiculos.filter((v) => v.alertas.some((a) => a.nivel === "critico")).length;
+  const aguardandoPeca = abertas.filter((o) => o.status === "aguardando_peca").length;
+  const vencidos = painelQ.data?.totais.itens_vencidos ?? 0;
+  const vencendo = painelQ.data?.totais.itens_vencendo ?? 0;
+  const semPlano = veiculos.filter((v) => !v.plano).length;
+
+  const cards = [
+    { label: "Preventivas vencidas", valor: vencidos, icone: AlertTriangle, cor: "var(--coral)",
+      nota: vencidos ? `itens do plano vencidos em ${nf(painelQ.data?.totais.veiculos_com_vencido ?? 0)} veículo(s)` : "nenhum item do plano vencido", destino: "/app/manutencao" },
+    { label: "Preventivas próximas", valor: vencendo, icone: CalendarClock, cor: "var(--gold)",
+      nota: "vencem em breve (km, dias ou horas)", destino: "/app/manutencao" },
+    { label: "Em corretiva", valor: emCorretiva, icone: Wrench, cor: "var(--coral)",
+      nota: emCorretiva ? `alerta do motor ou OS corretiva aberta${criticos ? ` · ${nf(criticos)} crítico(s)` : ""}` : "nenhum veículo com alerta ou OS corretiva", destino: "/app/manutencao/ordens" },
+    { label: "Aguardando peça", valor: aguardandoPeca, icone: Package, cor: "var(--brand-sky)",
+      nota: "ordens paradas esperando material", destino: "/app/manutencao/ordens" },
+    { label: "Sem plano preventivo", valor: semPlano, icone: FileWarning, cor: semPlano ? "var(--gold)" : "var(--leaf)",
+      nota: semPlano ? `de ${nf(veiculos.length)} veículos — cadastre o plano em Manutenção` : "todos os veículos com plano", destino: "/app/manutencao" },
+  ];
+
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {cards.map((c) => (
+        <button
+          key={c.label}
+          onClick={() => navigate(c.destino)}
+          className="rounded-2xl border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant"
+        >
+          <span className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `color-mix(in oklab, ${c.cor} 14%, white)` }}>
+              <c.icone className="h-4 w-4" style={{ color: c.cor }} />
+            </span>
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{c.label}</span>
+          </span>
+          <span className="mt-2 block font-display text-[24px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
+            {nf(c.valor)}
+          </span>
+          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">{c.nota}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Cartões do protótipo (catálogo do fabricante e ordens de exemplo) — só em demonstração. */
+function CardsManutencaoExemplo() {
   const navigate = useNavigate();
   const { porVeiculo, carregando } = usePreventivaFrota();
   const ordensQ = useQuery(ordensQuery());

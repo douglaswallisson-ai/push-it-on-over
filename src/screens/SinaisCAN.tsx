@@ -46,8 +46,32 @@ const LIMITES = {
   combustivelBaixo: 15,
   tempAlta: 100,
   pressaoPneumaticaBaixa: 6,
-  voltagemBaixa: 23,
+  /** Carregando: acima disso com o motor ligado (sistemas de 12 V e 24 V). */
+  carga12: 13,
+  carga24: 26,
 };
+
+/**
+ * Códigos de "sem informação" que o equipamento grava no lugar do valor
+ * (conferido no TDP-2E24 da CECOTI, 05/10/2026): ARLA/combustível acima de
+ * 100%, horímetro 4294967293 (0xFFFFFFFD). Sinal que vem 0 em todas as
+ * leituras do dia é sensor ausente (ex.: VW Express 4x2 tem freio hidráulico,
+ * sem circuito de ar; nível de combustível não vem pelo CAN) — não é alerta.
+ */
+const HORIMETRO_INVALIDO = 4_000_000_000;
+type Situacao = "ok" | "sem_sensor" | "sem_dado";
+function lerSinal(regs: HistoricoDetalhadoApi[], campo: keyof HistoricoDetalhadoApi, valido: (v: number) => boolean) {
+  const vals = regs.map((r) => r[campo]).filter((v): v is number => typeof v === "number");
+  if (!vals.length) return { valor: null as number | null, situacao: "sem_dado" as Situacao };
+  if (vals.every((v) => v === 0)) return { valor: null, situacao: "sem_sensor" as Situacao };
+  const bons = vals.filter(valido);
+  // Maioria das leituras com código de "sem informação": a exceção não é estado
+  // (TDP-2E24: ARLA 102% quase o dia todo e um 5% solto).
+  if (bons.length < vals.length / 2) return { valor: null, situacao: "sem_dado" as Situacao };
+  // `regs` vem do mais antigo para o mais novo: o último válido é o estado atual.
+  return bons.length ?{ valor: bons[bons.length - 1], situacao: "ok" as Situacao } : { valor: null, situacao: "sem_dado" as Situacao };
+}
+const textoSituacao = (s: Situacao) => (s === "sem_sensor" ? "sem sensor" : "sem leitura válida");
 
 /** Sobe para o primeiro nível os campos dos objetos aninhados (um nível). */
 function achatar(r: unknown): Record<string, unknown> {
@@ -93,29 +117,48 @@ export default function SinaisCAN() {
   const parados = registros.length - ligados.length;
   const visiveis = verParado ? registros : ligados;
 
-  /** Última leitura conhecida de cada sinal com o motor ligado — o estado atual do veículo. */
+  /**
+   * Estado atual = a leitura MAIS NOVA válida de cada sinal com o motor ligado.
+   * A lista vem do mais novo para o mais antigo; antes o laço guardava o
+   * último visto e os cartões mostravam a leitura mais ANTIGA do dia (20 °C da
+   * partida a frio no TDP-2E24, com o motor a 86 °C).
+   */
   const atual = useMemo(() => {
-    const ultimo: Partial<HistoricoDetalhadoApi> = {};
-    for (const r of ligados.length ? ligados : registros) {
-      for (const [k, v] of Object.entries(r)) {
-        if (v !== null && v !== undefined) (ultimo as Record<string, unknown>)[k] = v;
-      }
-    }
-    return ultimo;
+    const base = [...(ligados.length ? ligados : registros)].sort((a, b) => String(a.local_time ?? "").localeCompare(String(b.local_time ?? "")));
+    const pct = (v: number) => v >= 0 && v <= 100;
+    const horas = (v: number) => v > 0 && v < HORIMETRO_INVALIDO;
+    const hCan = lerSinal(base, "can_engine_hourmeter", horas);
+    const hEq = lerSinal(base, "hourmeter" as keyof HistoricoDetalhadoApi, horas);
+    const minutos = hCan.valor ?? hEq.valor;
+    return {
+      arla: lerSinal(base, "can_def_level_percent", pct),
+      combustivel: lerSinal(base, "can_fuel_level_percent", pct),
+      temp: lerSinal(base, "can_engine_coolant_temp", (v) => v > -40 && v < 150),
+      // Horímetro do equipamento vem em MINUTOS (decisão do PM, 02/10/2026).
+      horimetroH: minutos != null ? minutos / 60 : null,
+      pneu1: lerSinal(base, "can_pneumatic_system1_pressure", (v) => v >= 0 && v < 20),
+      pneu2: lerSinal(base, "can_pneumatic_system2_pressure", (v) => v >= 0 && v < 20),
+      tensao: lerSinal(base, "can_control_module_voltage", (v) => v >= 5 && v < 40),
+      ligado: ligados.length > 0,
+    };
   }, [ligados, registros]);
 
   const alertas = useMemo(() => {
     const lista: string[] = [];
-    if ((atual.can_def_level_percent ?? 100) < LIMITES.arlaBaixo)
-      lista.push(`ARLA em ${atual.can_def_level_percent}% — motor entra em derate quando acaba`);
-    if ((atual.can_fuel_level_percent ?? 100) < LIMITES.combustivelBaixo)
-      lista.push(`Combustível em ${atual.can_fuel_level_percent}%`);
-    if ((atual.can_engine_coolant_temp ?? 0) > LIMITES.tempAlta)
-      lista.push(`Temperatura do líquido em ${atual.can_engine_coolant_temp}°C`);
-    if ((atual.can_pneumatic_system1_pressure ?? 10) < LIMITES.pressaoPneumaticaBaixa)
+    const { arla, combustivel, temp, pneu1, tensao } = atual;
+    if (arla.valor != null && arla.valor < LIMITES.arlaBaixo)
+      lista.push(`ARLA em ${arla.valor}% — motor entra em derate quando acaba`);
+    if (combustivel.valor != null && combustivel.valor < LIMITES.combustivelBaixo)
+      lista.push(`Combustível em ${combustivel.valor}%`);
+    if (temp.valor != null && temp.valor > LIMITES.tempAlta)
+      lista.push(`Temperatura do líquido em ${temp.valor}°C`);
+    if (pneu1.valor != null && pneu1.valor < LIMITES.pressaoPneumaticaBaixa)
       lista.push(`Pressão pneumática do circuito 1 baixa — afeta o freio`);
-    if ((atual.can_control_module_voltage ?? 28) < LIMITES.voltagemBaixa)
-      lista.push(`Voltagem em ${atual.can_control_module_voltage}V — verificar alternador e baterias`);
+    // Alternador só se avalia com o motor ligado: parado, 12,3 V num sistema de 12 V é normal.
+    if (atual.ligado && tensao.valor != null) {
+      const carga = tensao.valor > 18 ? LIMITES.carga24 : LIMITES.carga12;
+      if (tensao.valor < carga) lista.push(`Tensão em ${tensao.valor} V com o motor ligado — o alternador deveria passar de ${carga} V`);
+    }
     return lista;
   }, [atual]);
 
@@ -235,35 +278,38 @@ export default function SinaisCAN() {
               <StatTile
                 icon={Droplets}
                 label="ARLA"
-                value={atual.can_def_level_percent != null ? `${atual.can_def_level_percent}%` : "—"}
-                color={(atual.can_def_level_percent ?? 100) < LIMITES.arlaBaixo ? "var(--coral)" : "var(--leaf)"}
-                foot="derate quando acaba"
+                value={atual.arla.valor != null ? `${atual.arla.valor}%` : "—"}
+                color={atual.arla.valor != null && atual.arla.valor < LIMITES.arlaBaixo ? "var(--coral)" : "var(--leaf)"}
+                foot={atual.arla.valor != null ? "derate quando acaba" : textoSituacao(atual.arla.situacao)}
               />
               <StatTile
                 icon={Gauge}
                 label="Combustível"
-                value={atual.can_fuel_level_percent != null ? `${atual.can_fuel_level_percent}%` : "—"}
-                color={(atual.can_fuel_level_percent ?? 100) < LIMITES.combustivelBaixo ? "var(--coral)" : "var(--brand-navy)"}
+                value={atual.combustivel.valor != null ? `${atual.combustivel.valor}%` : "—"}
+                color={atual.combustivel.valor != null && atual.combustivel.valor < LIMITES.combustivelBaixo ? "var(--coral)" : "var(--brand-navy)"}
+                foot={atual.combustivel.valor != null ? "nível do tanque" : textoSituacao(atual.combustivel.situacao)}
               />
               <StatTile
                 icon={Timer}
                 label="Horímetro"
-                value={atual.can_engine_hourmeter != null ? nf(Math.round(atual.can_engine_hourmeter)) : "—"}
+                value={atual.horimetroH != null ? nf(Math.round(atual.horimetroH)) : "—"}
                 unit="h"
                 color="var(--brand-sky)"
-                foot="gatilho da preventiva"
+                foot={atual.horimetroH != null ? "horas de motor · gatilho da preventiva" : "sem leitura válida"}
               />
               <StatTile
                 icon={Thermometer}
                 label="Temp. líquido"
-                value={atual.can_engine_coolant_temp != null ? `${atual.can_engine_coolant_temp}°` : "—"}
-                color={(atual.can_engine_coolant_temp ?? 0) > LIMITES.tempAlta ? "var(--coral)" : "var(--leaf)"}
+                value={atual.temp.valor != null ? `${atual.temp.valor}°` : "—"}
+                color={atual.temp.valor != null && atual.temp.valor > LIMITES.tempAlta ? "var(--coral)" : "var(--leaf)"}
+                foot={atual.temp.valor != null ? "leitura mais recente" : textoSituacao(atual.temp.situacao)}
               />
               <StatTile
                 icon={Battery}
                 label="Voltagem"
-                value={atual.can_control_module_voltage != null ? `${atual.can_control_module_voltage}V` : "—"}
-                color={(atual.can_control_module_voltage ?? 28) < LIMITES.voltagemBaixa ? "var(--coral)" : "var(--leaf)"}
+                value={atual.tensao.valor != null ? `${atual.tensao.valor} V` : "—"}
+                color={alertas.some((a) => a.startsWith("Tensão")) ? "var(--coral)" : "var(--leaf)"}
+                foot={atual.tensao.valor != null ? (atual.tensao.valor > 18 ? "sistema de 24 V" : "sistema de 12 V") + (atual.ligado ? " · motor ligado" : "") : textoSituacao(atual.tensao.situacao)}
               />
             </div>
 
@@ -287,14 +333,15 @@ export default function SinaisCAN() {
             <Card title="Sistema pneumático" icon={Wind} bodyClassName="p-4">
               <div className="grid grid-cols-2 gap-4">
                 {[1, 2].map((n) => {
-                  const v = n === 1 ? atual.can_pneumatic_system1_pressure : atual.can_pneumatic_system2_pressure;
-                  const baixa = (v ?? 10) < LIMITES.pressaoPneumaticaBaixa;
+                  const s = n === 1 ? atual.pneu1 : atual.pneu2;
+                  const v = s.valor;
+                  const baixa = v != null && v < LIMITES.pressaoPneumaticaBaixa;
                   return (
                     <div key={n} className="rounded-xl border border-border p-3">
                       <div className="flex items-baseline justify-between">
                         <span className="text-[13px] text-muted-foreground">Circuito {n}</span>
                         <span className={cn("font-mono text-[16px] font-bold", baixa ? "text-coral" : "text-foreground")}>
-                          {v != null ? `${v} bar` : "—"}
+                          {v != null ? `${v} bar` : textoSituacao(s.situacao)}
                         </span>
                       </div>
                       <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
@@ -308,6 +355,7 @@ export default function SinaisCAN() {
                 })}
               </div>
               <p className="mt-3 text-[12px] text-muted-foreground">
+                {atual.pneu1.situacao === "sem_sensor" && atual.pneu2.situacao === "sem_sensor" && "Este veículo não envia pressão de ar (freio hidráulico ou sensor ausente). "}
                 Os dois circuitos são independentes por segurança: se um falha, o outro mantém o freio. Queda em
                 apenas um indica vazamento localizado; nos dois, problema no compressor.
               </p>

@@ -64,8 +64,9 @@ function achatar(r: unknown): Record<string, unknown> {
 
 export default function SinaisCAN() {
   const veiculosQ = useQuery(veiculosApiQuery(1, 200));
-  const [veiculoId, setVeiculoId] = useState("");
-  const [data, setData] = useState(hoje());
+  const qs = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const [veiculoId, setVeiculoId] = useState(qs.get("veiculo") ?? "");
+  const [data, setData] = useState(/^\d{4}-\d{2}-\d{2}$/.test(qs.get("dia") ?? "") ? qs.get("dia")! : hoje());
 
   const filtro = useMemo(
     () => ({
@@ -170,14 +171,18 @@ export default function SinaisCAN() {
     {
       key: "estados",
       header: "Estados",
-      render: (r) => (
-        <span className="flex flex-wrap gap-1">
-          {r.can_cruise_control_state && <Pill tone="sky">piloto</Pill>}
-          {r.can_break_pedal_state && <Pill tone="gold">freio</Pill>}
-          {r.can_parking_brake_state && <Pill tone="neutral">estacion.</Pill>}
-          {r.can_retarder_in_use && <Pill tone="green">retarder</Pill>}
-        </span>
-      ),
+      render: (r) => {
+        // Os estados chegam como 0/1. Com `0 && <Pill />` o React imprime o
+        // zero — a coluna mostrava "0000" e "0 freio 00".
+        const ligado = (x: unknown) => Number(x) > 0 || x === true;
+        const pills = [
+          ligado(r.can_cruise_control_state) && <Pill key="p" tone="sky">piloto</Pill>,
+          ligado(r.can_break_pedal_state) && <Pill key="f" tone="gold">freio</Pill>,
+          ligado(r.can_parking_brake_state) && <Pill key="e" tone="neutral">estacion.</Pill>,
+          ligado(r.can_retarder_in_use) && <Pill key="r" tone="green">retarder</Pill>,
+        ].filter(Boolean);
+        return pills.length ? <span className="flex flex-wrap gap-1">{pills}</span> : <span className="text-muted-foreground">—</span>;
+      },
     },
   ];
 

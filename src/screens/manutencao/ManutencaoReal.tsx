@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Activity,
   AlertTriangle,
   CalendarClock,
   CheckCircle2,
@@ -800,9 +801,18 @@ function DetalheVeiculo({ g, v, limites, ordens, onClose }: { g: string; v: Veic
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between gap-3 pr-8">
                 {nomeVeiculo(v)}
-                <button type="button" onClick={() => setRelatorio(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-90">
-                  <ClipboardList className="h-3.5 w-3.5" /> Relatório para o cliente
-                </button>
+                <span className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={`/app/frota/sinais?veiculo=${v.unit_id}${v.ultimo_sinal ? `&dia=${String(v.ultimo_sinal).slice(0, 10)}` : ""}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-[13px] font-medium text-brand-navy hover:bg-secondary"
+                    title="Leituras do motor deste veículo no dia do último sinal"
+                  >
+                    <Activity className="h-3.5 w-3.5" /> Sinais do motor
+                  </a>
+                  <button type="button" onClick={() => setRelatorio(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-90">
+                    <ClipboardList className="h-3.5 w-3.5" /> Relatório para o cliente
+                  </button>
+                </span>
               </SheetTitle>
               <p className="text-[13px] text-muted-foreground">
                 {[v.placa, v.modelo, v.ano].filter(Boolean).join(" · ")} · odômetro {nf(v.odometro_km)} km{v.odometro_travado && " (travado)"}{v.horimetro_h != null && ` · ${nf(v.horimetro_h)} h de motor`}

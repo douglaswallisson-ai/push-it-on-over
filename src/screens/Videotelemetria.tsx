@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { videoOcorrenciasApiQuery } from "@/lib/queries";
 import { ex, usandoMock } from "@/lib/modo";
 import { AoVivo } from "@/components/ss/video/AoVivo";
+import { AoVivoReal } from "@/components/ss/video/AoVivoReal";
 import { Gravacoes } from "@/components/ss/video/Gravacoes";
 import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
 import { EmptyNote, ErrorBox, SkeletonRows } from "@/components/ss/ui/QueryState";
@@ -307,7 +308,7 @@ export default function Videotelemetria() {
           ))}
         </div>
 
-        {aba === "ao_vivo" && <AoVivo />}
+        {aba === "ao_vivo" && (usandoMock() ? <AoVivo /> : <AoVivoReal />)}
         {aba === "gravacoes" && <Gravacoes />}
 
         {aba === "ocorrencias" && (ocorrenciasQ.error ? (

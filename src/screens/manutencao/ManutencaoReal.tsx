@@ -1260,6 +1260,11 @@ function DetalheVeiculo({
                 sinais={v.sinais}
                 limites={limites}
               />
+              {(v.sinais_suspeitos ?? []).map((x) => (
+                <p key={x.sinal} className="rounded-lg bg-secondary px-3 py-2 text-[13px]">
+                  <b>{x.titulo} (sensor, não motor):</b> {x.detalhe}
+                </p>
+              ))}
               {v.alertas.length > 0 && (
                 <div className="space-y-1.5">
                   {v.alertas.map((a) => (

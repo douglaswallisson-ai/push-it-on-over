@@ -15,7 +15,6 @@ import { recomendarPorDTC } from "@/lib/dtc";
 import { calcularPreventivas, classificarOperacao } from "@/lib/preventiva";
 import type { ModeloVeiculo, PreventivaPrevista, TipoOperacao, Veiculo } from "@/types";
 import { usandoMock } from "@/lib/modo";
-import { useIndicadoresPorVeiculo } from "@/hooks/use-indicadores-veiculo";
 
 /**
  * Cálculo da preventiva de toda a frota.
@@ -48,12 +47,6 @@ export function usePreventivaFrota(garagem?: string) {
   const apiVeicQ = useQuery(veiculosApiQuery(1, 500));
   const veiculosQ = usandoMock() ? mockVeicQ : apiVeicQ;
 
-  const idsDaFrota = useMemo(
-    () => (usandoMock() ? [] : (apiVeicQ.data?.items ?? []).map((v) => v.id)),
-    [apiVeicQ.data],
-  );
-
-  const indicadores = useIndicadoresPorVeiculo(30, idsDaFrota);
   const modelosQ = useQuery(modelosQuery());
   const parametrosQ = useQuery(parametrosCatalogoQuery());
   const execucoesQ = useQuery(execucoesQuery());
@@ -68,12 +61,12 @@ export function usePreventivaFrota(garagem?: string) {
      *
      * `tracked_unit.initial_odometer` é o valor de quando o equipamento foi
      * instalado — usá-lo faria a preventiva calcular sobre uma quilometragem
-     * de meses atrás, e nada venceria nunca. O atual vem da última viagem.
+     * de meses atrás, e nada venceria nunca. O atual é a última leitura do
+     * equipamento (`estado_atual`), na regra única de odômetro da plataforma
+     * (app/core/odometro.py) — a mesma de Veículos e de Manutenção. Antes vinha do
+     * fim da última viagem, e divergia em 5 de 132 veículos na CECOTI.
      */
-    const veiculos = (veiculosQ.data?.items ?? []).map((v) => {
-      const ind = indicadores.porVeiculo.get(v.id);
-      return ind?.odometro != null ? { ...v, odometro: ind.odometro } : v;
-    });
+    const veiculos = veiculosQ.data?.items ?? [];
     const modelos = modelosQ.data ?? [];
     const parametros = parametrosQ.data ?? [];
     const execucoes = execucoesQ.data ?? [];
@@ -116,10 +109,11 @@ export function usePreventivaFrota(garagem?: string) {
           semCatalogo: !modelo || preventivas.length === 0,
         };
       })
-      .sort((a, b) => (b.preventivas[0]?.consumidoPct ?? 0) - (a.preventivas[0]?.consumidoPct ?? 0));
+      .sort(
+        (a, b) => (b.preventivas[0]?.consumidoPct ?? 0) - (a.preventivas[0]?.consumidoPct ?? 0),
+      );
   }, [
     veiculosQ.data,
-    indicadores.porVeiculo,
     modelosQ.data,
     parametrosQ.data,
     execucoesQ.data,
@@ -132,7 +126,8 @@ export function usePreventivaFrota(garagem?: string) {
 
   return {
     porVeiculo,
-    carregando: veiculosQ.isPending || modelosQ.isPending || parametrosQ.isPending || execucoesQ.isPending,
+    carregando:
+      veiculosQ.isPending || modelosQ.isPending || parametrosQ.isPending || execucoesQ.isPending,
     erro: veiculosQ.error ?? modelosQ.error ?? parametrosQ.error,
     recarregar: () => {
       veiculosQ.refetch();

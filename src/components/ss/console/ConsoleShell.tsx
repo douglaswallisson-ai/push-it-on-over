@@ -14,6 +14,7 @@ import {
   Wrench,
   X,
   Activity,
+  Boxes,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { SSLogo } from "@/components/ss/brand/SSLogo";
@@ -37,15 +38,66 @@ import { cn } from "@/lib/utils";
 type Item = { label: string; to: string; icon: typeof LayoutGrid; descricao: string };
 
 const NAV: Item[] = [
-  { label: "Painel", to: "/console", icon: LayoutGrid, descricao: "Visão geral da base de clientes" },
-  { label: "Contratos", to: "/console/contratos", icon: FileText, descricao: "Todos os contratos de todos os clientes" },
-  { label: "Perfis de acesso", to: "/console/perfis", icon: UserCog, descricao: "O que cada perfil pode fazer" },
-  { label: "Administradores", to: "/console/administradores", icon: Users, descricao: "Quem acessa este console" },
-  { label: "Catálogo de manutenção", to: "/console/catalogo", icon: Wrench, descricao: "Parâmetros do fabricante" },
-  { label: "Indicadores gerais", to: "/console/indicadores", icon: Gauge, descricao: "Consolidado de toda a base" },
-  { label: "Acessos", to: "/console/acessos", icon: Activity, descricao: "Quem usa a plataforma e quando" },
-  { label: "Auditoria", to: "/console/auditoria", icon: ShieldCheck, descricao: "Log de todas as organizações" },
-  { label: "Configurações", to: "/console/configuracoes", icon: Settings, descricao: "Origem dos dados e sistema" },
+  {
+    label: "Painel",
+    to: "/console",
+    icon: LayoutGrid,
+    descricao: "Visão geral da base de clientes",
+  },
+  {
+    label: "Contratos",
+    to: "/console/contratos",
+    icon: FileText,
+    descricao: "Todos os contratos de todos os clientes",
+  },
+  {
+    label: "Estoque de equipamentos",
+    to: "/console/estoque",
+    icon: Boxes,
+    descricao: "Seriais expedidos, placa e contrato",
+  },
+  {
+    label: "Perfis de acesso",
+    to: "/console/perfis",
+    icon: UserCog,
+    descricao: "O que cada perfil pode fazer",
+  },
+  {
+    label: "Administradores",
+    to: "/console/administradores",
+    icon: Users,
+    descricao: "Quem acessa este console",
+  },
+  {
+    label: "Catálogo de manutenção",
+    to: "/console/catalogo",
+    icon: Wrench,
+    descricao: "Parâmetros do fabricante",
+  },
+  {
+    label: "Indicadores gerais",
+    to: "/console/indicadores",
+    icon: Gauge,
+    descricao: "Consolidado de toda a base",
+  },
+  {
+    label: "Acessos",
+    to: "/console/acessos",
+    icon: Activity,
+    descricao: "Quem usa a plataforma e quando",
+  },
+  {
+    label: "Auditoria",
+    to: "/console/auditoria",
+    icon: ShieldCheck,
+    descricao: "Log de todas as organizações",
+  },
+  {
+    label: "Configurações",
+    to: "/console/configuracoes",
+    icon: Settings,
+    descricao: "Origem dos dados e sistema",
+  },
 ];
 
 export function ConsoleShell({ children }: { children?: ReactNode }) {
@@ -122,12 +174,15 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
         <nav
           className={cn(
             "w-[260px] shrink-0 border-r border-border bg-card p-3",
-            aberto ? "fixed inset-y-14 left-0 z-[155] overflow-y-auto shadow-elegant" : "hidden lg:block",
+            aberto
+              ? "fixed inset-y-14 left-0 z-[155] overflow-y-auto shadow-elegant"
+              : "hidden lg:block",
           )}
         >
           <ul className="space-y-1">
             {NAV.map((i) => {
-              const ativo = i.to === "/console" ? pathname === "/console" : pathname.startsWith(i.to);
+              const ativo =
+                i.to === "/console" ? pathname === "/console" : pathname.startsWith(i.to);
               return (
                 <li key={i.to}>
                   <NavLink
@@ -138,10 +193,17 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
                       ativo ? "bg-navy-tint text-brand-navy" : "text-ink-soft hover:bg-secondary",
                     )}
                   >
-                    <i.icon className={cn("mt-0.5 h-4 w-4 shrink-0", ativo ? "text-brand-navy" : "text-muted-foreground")} />
+                    <i.icon
+                      className={cn(
+                        "mt-0.5 h-4 w-4 shrink-0",
+                        ativo ? "text-brand-navy" : "text-muted-foreground",
+                      )}
+                    />
                     <span className="min-w-0">
                       <span className="block text-[14px] font-medium">{i.label}</span>
-                      <span className="block text-[12px] leading-tight text-muted-foreground">{i.descricao}</span>
+                      <span className="block text-[12px] leading-tight text-muted-foreground">
+                        {i.descricao}
+                      </span>
                     </span>
                   </NavLink>
                 </li>

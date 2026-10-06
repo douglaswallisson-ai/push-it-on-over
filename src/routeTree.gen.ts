@@ -33,6 +33,7 @@ import { Route as ConsoleAuditoriaRouteImport } from './routes/console.auditoria
 import { Route as ConsoleCatalogoRouteImport } from './routes/console.catalogo'
 import { Route as ConsoleConfiguracoesRouteImport } from './routes/console.configuracoes'
 import { Route as ConsoleContratosRouteImport } from './routes/console.contratos'
+import { Route as ConsoleEstoqueRouteImport } from './routes/console.estoque'
 import { Route as ConsoleIndicadoresRouteImport } from './routes/console.indicadores'
 import { Route as ConsolePerfisRouteImport } from './routes/console.perfis'
 import { Route as AppAdminCatalogoRouteImport } from './routes/app.admin.catalogo'
@@ -217,6 +218,11 @@ const ConsoleConfiguracoesRoute = ConsoleConfiguracoesRouteImport.update({
 const ConsoleContratosRoute = ConsoleContratosRouteImport.update({
   id: '/contratos',
   path: '/contratos',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleEstoqueRoute = ConsoleEstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
   getParentRoute: () => ConsoleRoute,
 } as any)
 const ConsoleIndicadoresRoute = ConsoleIndicadoresRouteImport.update({
@@ -581,6 +587,7 @@ export interface FileRoutesByFullPath {
   '/console/catalogo': typeof ConsoleCatalogoRoute
   '/console/configuracoes': typeof ConsoleConfiguracoesRoute
   '/console/contratos': typeof ConsoleContratosRoute
+  '/console/estoque': typeof ConsoleEstoqueRoute
   '/console/indicadores': typeof ConsoleIndicadoresRoute
   '/console/perfis': typeof ConsolePerfisRoute
   '/app/': typeof AppIndexRoute
@@ -670,6 +677,7 @@ export interface FileRoutesByTo {
   '/console/catalogo': typeof ConsoleCatalogoRoute
   '/console/configuracoes': typeof ConsoleConfiguracoesRoute
   '/console/contratos': typeof ConsoleContratosRoute
+  '/console/estoque': typeof ConsoleEstoqueRoute
   '/console/indicadores': typeof ConsoleIndicadoresRoute
   '/console/perfis': typeof ConsolePerfisRoute
   '/app': typeof AppIndexRoute
@@ -762,6 +770,7 @@ export interface FileRoutesById {
   '/console/catalogo': typeof ConsoleCatalogoRoute
   '/console/configuracoes': typeof ConsoleConfiguracoesRoute
   '/console/contratos': typeof ConsoleContratosRoute
+  '/console/estoque': typeof ConsoleEstoqueRoute
   '/console/indicadores': typeof ConsoleIndicadoresRoute
   '/console/perfis': typeof ConsolePerfisRoute
   '/app/': typeof AppIndexRoute
@@ -855,6 +864,7 @@ export interface FileRouteTypes {
     | '/console/catalogo'
     | '/console/configuracoes'
     | '/console/contratos'
+    | '/console/estoque'
     | '/console/indicadores'
     | '/console/perfis'
     | '/app/'
@@ -944,6 +954,7 @@ export interface FileRouteTypes {
     | '/console/catalogo'
     | '/console/configuracoes'
     | '/console/contratos'
+    | '/console/estoque'
     | '/console/indicadores'
     | '/console/perfis'
     | '/app'
@@ -1035,6 +1046,7 @@ export interface FileRouteTypes {
     | '/console/catalogo'
     | '/console/configuracoes'
     | '/console/contratos'
+    | '/console/estoque'
     | '/console/indicadores'
     | '/console/perfis'
     | '/app/'
@@ -1280,6 +1292,13 @@ declare module '@tanstack/react-router' {
       path: '/contratos'
       fullPath: '/console/contratos'
       preLoaderRoute: typeof ConsoleContratosRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/console/estoque': {
+      id: '/console/estoque'
+      path: '/estoque'
+      fullPath: '/console/estoque'
+      preLoaderRoute: typeof ConsoleEstoqueRouteImport
       parentRoute: typeof ConsoleRoute
     }
     '/console/indicadores': {
@@ -1925,6 +1944,7 @@ interface ConsoleRouteChildren {
   ConsoleCatalogoRoute: typeof ConsoleCatalogoRoute
   ConsoleConfiguracoesRoute: typeof ConsoleConfiguracoesRoute
   ConsoleContratosRoute: typeof ConsoleContratosRoute
+  ConsoleEstoqueRoute: typeof ConsoleEstoqueRoute
   ConsoleIndicadoresRoute: typeof ConsoleIndicadoresRoute
   ConsolePerfisRoute: typeof ConsolePerfisRoute
   ConsoleIndexRoute: typeof ConsoleIndexRoute
@@ -1937,6 +1957,7 @@ const ConsoleRouteChildren: ConsoleRouteChildren = {
   ConsoleCatalogoRoute: ConsoleCatalogoRoute,
   ConsoleConfiguracoesRoute: ConsoleConfiguracoesRoute,
   ConsoleContratosRoute: ConsoleContratosRoute,
+  ConsoleEstoqueRoute: ConsoleEstoqueRoute,
   ConsoleIndicadoresRoute: ConsoleIndicadoresRoute,
   ConsolePerfisRoute: ConsolePerfisRoute,
   ConsoleIndexRoute: ConsoleIndexRoute,

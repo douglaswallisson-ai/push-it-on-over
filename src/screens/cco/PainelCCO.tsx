@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -8,11 +9,12 @@ import {
   Camera,
   CheckCheck,
   Columns2,
-  Eye,
   ExternalLink,
+  Eye,
   Fuel,
   Gauge,
   Grid2x2,
+  Loader2,
   Maximize,
   Minimize,
   Mountain,
@@ -24,43 +26,56 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
+import { NOME_TIPO, svgVeiculo } from "@/components/ss/mapa/iconesVeiculo";
 import {
   AREAS,
   avancar,
   avisosExemplo,
   CATALOGO,
   COR_HEX,
-  comunicando,
   corDoCarro,
   frotaExemplo,
+  LIMITE_SEM_COMUNICACAO_MS,
   ROTULO_COR,
   ROTULO_FONTE,
   type Aviso,
-  type CorCarro,
-  type Fonte,
   type VeiculoCCO,
 } from "@/lib/cco";
+import {
+  CCO,
+  consumoQuery,
+  painelCCOQuery,
+  type AvisoPainel,
+  type CorCarro,
+  type FonteAviso,
+  type VeiculoPainel,
+} from "@/lib/cco-api";
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { usandoMock } from "@/lib/modo";
 import { lerSessao } from "@/lib/session";
+import { mensagemErro } from "@/lib/suporte-api";
 import { cn } from "@/lib/utils";
 
 /**
- * Painel CCO — fase 1 (protótipo com DADOS DE EXEMPLO para aprovação).
- *
- * Especificação combinada com o PM em 06/10/2026 (ver lib/cco.ts):
- * - tela própria, aberta em outra aba (segundo monitor / telão), tela cheia;
+ * Painel CCO — a operação em tempo real numa tela própria (aberta em outra aba
+ * para o segundo monitor ou o telão). Especificação combinada com o PM em
+ * 06/10/2026 (ver lib/cco.ts e ss-fleet-core endpoints/cco.py):
  * - até 4 mapas, cada um com o seu zoom; o layout fica guardado no navegador;
- * - cores: vermelho crítico, amarelo moderado, verde em movimento, cinza parado;
+ * - carro desenhado pelo tipo (caminhão, ônibus, van…) na cor da situação:
+ *   vermelho crítico, amarelo moderado, verde andando, cinza parado — sem piscar;
  * - wifi vermelho só sem comunicação há mais de 2 h;
- * - avisos sem som, saem só com Visto ou Tratado;
- * - card do veículo com faixa, consumo e altitude do momento, e atalhos que
- *   abrem o sistema em OUTRA aba — o painel nunca é trocado.
+ * - avisos sem som, agrupados por veículo e tipo, saem só com Visto ou Tratado;
+ * - o card e os avisos abrem o sistema em OUTRA aba (rel="opener" para levar o
+ *   login, que fica no sessionStorage) — o painel nunca é trocado.
+ * Em modo de demonstração usa os dados de exemplo de lib/cco.ts.
  */
 
 type Layout = 1 | 2 | 4;
 type Vista = { centro: [number, number]; zoom: number; area: string };
 const CHAVE = "ss:cco:layout";
-const ATUALIZA_MS = 30_000;
+const HORAS = [1, 2, 6, 12];
 
 function lerLayout(): { layout: Layout; vistas: Vista[] } {
   const padrao = {
@@ -76,56 +91,138 @@ function lerLayout(): { layout: Layout; vistas: Vista[] } {
     if (v && [1, 2, 4].includes(v.layout) && Array.isArray(v.vistas) && v.vistas.length === 4)
       return v;
   } catch {
-    /* navegador sem armazenamento: usa o padrão */
+    /* navegador sem armazenamento */
   }
   return padrao;
 }
 
-function icone(v: VeiculoCCO, cor: CorCarro, selecionado: boolean, comunica: boolean) {
-  const hex = COR_HEX[cor];
-  const d = selecionado ? 22 : 16;
+function icone(v: VeiculoPainel, selecionado: boolean) {
+  const hex = COR_HEX[v.cor];
+  const d = selecionado ? 34 : 28;
   return L.divIcon({
     className: "",
-    html: `<div style="display:flex;align-items:center;transform:translate(-${d / 2}px,-50%);width:max-content;${cor === "vermelho" ? "animation:ss-pulsar 1.1s ease-in-out infinite;" : ""}">
-      <span style="width:${d}px;height:${d}px;border-radius:50%;background:${hex};border:2px solid #fff;box-shadow:0 1px 5px rgba(15,25,40,.45)${selecionado ? ",0 0 0 4px rgba(46,134,193,.45)" : ""};${comunica ? "" : "opacity:.55;"}"></span>
-      <span style="margin-left:3px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.92);color:#16263a;font:700 11px/1.2 ui-monospace,monospace;border:1px solid ${hex}">${v.prefixo}</span>
+    html: `<div style="display:flex;align-items:center;transform:translate(-${d / 2}px,-50%);width:max-content">
+      <span style="display:flex;align-items:center;justify-content:center;width:${d}px;height:${d}px;border-radius:50%;background:${hex};color:#fff;border:2px solid #fff;box-shadow:0 1px 5px rgba(15,25,40,.45)${selecionado ? ",0 0 0 4px rgba(46,134,193,.5)" : ""};${v.comunicando ? "" : "opacity:.55;"}">${svgVeiculo(v.tipo, selecionado ? 19 : 16)}</span>
+      <span style="margin-left:-6px;padding:2px 7px 2px 10px;border-radius:0 999px 999px 0;background:#fff;color:#16263a;font:700 11px/1.2 ui-monospace,monospace;border:1.5px solid ${hex};border-left:0;white-space:nowrap">${v.prefixo}</span>
     </div>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   });
 }
 
-export default function PainelCCO() {
-  const sessao = lerSessao();
-  const ehSS = sessao?.perfil === "super_admin";
-  const [agora, setAgora] = useState(() => Date.now());
+const ESCALA: Record<CorCarro, number> = { vermelho: 3000, amarelo: 2000, verde: 1000, cinza: 0 };
+
+// ----------------------------------------------------- dados de exemplo (demonstração)
+
+function exemploParaPainel(
+  frota: VeiculoCCO[],
+  avisos: Aviso[],
+  agora: number,
+): { veiculos: VeiculoPainel[]; avisos: AvisoPainel[] } {
+  const abertos = avisos.filter((a) => a.situacao === "aberto");
+  return {
+    veiculos: frota.map((v, i) => ({
+      id: v.id,
+      placa: v.placa,
+      prefixo: v.prefixo,
+      empresa: v.empresa,
+      tipo: v.empresa.includes("Viação") ? "onibus" : i % 9 === 0 ? "van" : "caminhao",
+      lat: v.lat,
+      lng: v.lng,
+      ignicao: v.ignicao,
+      velocidade: v.velocidade,
+      rpm: v.rpm,
+      faixa: v.faixa,
+      altitude: v.altitude,
+      temperatura: v.temperatura,
+      combustivel: v.combustivelPct,
+      motorista: v.motorista,
+      ultima_comunicacao: new Date(v.ultimaComunicacao).toISOString(),
+      comunicando: agora - v.ultimaComunicacao <= LIMITE_SEM_COMUNICACAO_MS,
+      tem_camera: v.temCamera,
+      cor: corDoCarro(v, abertos),
+    })),
+    avisos: abertos.map((a) => ({
+      id: a.id,
+      unit_id: a.veiculoId,
+      nome: CATALOGO[a.tipo].nome,
+      fonte: CATALOGO[a.tipo].fonte,
+      gravidade: CATALOGO[a.tipo].gravidade,
+      quantidade: 1,
+      ultimo: new Date(a.em).toISOString(),
+      detalhe: a.detalhe,
+    })),
+  };
+}
+
+function useExemplo(ativo: boolean) {
   const [frota, setFrota] = useState<VeiculoCCO[]>(() => frotaExemplo());
   const [avisos, setAvisos] = useState<Aviso[]>(() => avisosExemplo(frotaExemplo()));
-  const [, setCiclo] = useState(0);
-  const [empresa, setEmpresa] = useState("");
-  const [{ layout, vistas }, setCfg] = useState(lerLayout);
-  const [selId, setSelId] = useState<string | null>(null);
-  const [foco, setFoco] = useState<{ id: string; n: number; mapa: number } | null>(null);
-  // Cada mapa informa se um ponto está na área que ele mostra.
-  const contem = useRef<((lat: number, lng: number) => boolean)[]>([]);
-  const [fonte, setFonte] = useState<"" | Fonte>("");
-  const [cheia, setCheia] = useState(false);
-
-  // Atualização a cada 30 s (no protótipo, simulada).
+  const [agora, setAgora] = useState(() => Date.now());
+  const n = useRef(0);
   useEffect(() => {
+    if (!ativo) return;
     const t = setInterval(() => {
       const ag = Date.now();
+      n.current += 1;
       setAgora(ag);
-      setCiclo((c) => {
-        const n = c + 1;
-        setFrota((f) => {
-          const r = avancar(f, ag, n);
-          if (r.novo) setAvisos((a) => [r.novo!, ...a]);
-          return r.frota;
-        });
-        return n;
+      setFrota((f) => {
+        const r = avancar(f, ag, n.current);
+        if (r.novo) setAvisos((a) => [r.novo!, ...a]);
+        return r.frota;
       });
-    }, ATUALIZA_MS);
+    }, 30_000);
+    return () => clearInterval(t);
+  }, [ativo]);
+  const dados = useMemo(() => exemploParaPainel(frota, avisos, agora), [frota, avisos, agora]);
+  const marcar = (id: string, situacao: "visto" | "tratado") =>
+    setAvisos((l) => l.map((a) => (a.id === id ? { ...a, situacao } : a)));
+  const consumo = (id: string | number) => frota.find((v) => v.id === id)?.consumoLh ?? null;
+  return { dados, marcar, consumo };
+}
+
+// ------------------------------------------------------------------ painel
+
+export default function PainelCCO() {
+  const qc = useQueryClient();
+  const mock = usandoMock();
+  const sessao = lerSessao();
+  const ehSS = sessao?.perfil === "super_admin";
+  const [grupo, setGrupo] = useState<string | undefined>(() => (ehSS ? undefined : grupoAtivo()));
+  const [horas, setHoras] = useState(2);
+  const q = useQuery(painelCCOQuery(grupo, horas));
+  const ex = useExemplo(mock);
+  const [{ layout, vistas }, setCfg] = useState(lerLayout);
+  const [selId, setSelId] = useState<string | number | null>(null);
+  const [foco, setFoco] = useState<{ id: string | number; n: number; mapa: number } | null>(null);
+  const contem = useRef<((lat: number, lng: number) => boolean)[]>([]);
+  const [fonte, setFonte] = useState<"" | FonteAviso>("");
+  const [cheia, setCheia] = useState(false);
+  const [ocultos, setOcultos] = useState<Set<string>>(new Set());
+  const [empresas, setEmpresas] = useState<{ id: number; nome: string }[]>([]);
+  const [relogio, setRelogio] = useState(() => Date.now());
+
+  const dados = mock ? ex.dados : q.data;
+  const veiculos = useMemo(() => dados?.veiculos ?? [], [dados]);
+  const avisos = useMemo(
+    () => (dados?.avisos ?? []).filter((a) => !ocultos.has(a.id)),
+    [dados, ocultos],
+  );
+
+  // Empresas do seletor da SS: vêm da visão "todas" (cada veículo traz o grupo).
+  useEffect(() => {
+    if (!mock && !grupo && q.data) {
+      const m = new Map<number, string>();
+      for (const v of q.data.veiculos)
+        if (v.group_id) m.set(v.group_id, v.empresa ?? `Grupo ${v.group_id}`);
+      setEmpresas(
+        [...m].map(([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome)),
+      );
+    }
+  }, [q.data, grupo, mock]);
+  useEffect(() => setOcultos(new Set()), [q.dataUpdatedAt]);
+  useEffect(() => {
+    const t = setInterval(() => setRelogio(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
@@ -141,65 +238,71 @@ export default function PainelCCO() {
     return () => document.removeEventListener("fullscreenchange", f);
   }, []);
 
-  const empresas = useMemo(() => [...new Set(frota.map((v) => v.empresa))].sort(), [frota]);
-  const visiveis = useMemo(
-    () => frota.filter((v) => !empresa || v.empresa === empresa),
-    [frota, empresa],
-  );
-  const ids = useMemo(() => new Set(visiveis.map((v) => v.id)), [visiveis]);
-  const abertos = useMemo(
-    () => avisos.filter((a) => a.situacao === "aberto" && ids.has(a.veiculoId)),
-    [avisos, ids],
-  );
-  const cores = useMemo(
-    () => new Map(visiveis.map((v) => [v.id, corDoCarro(v, abertos)])),
-    [visiveis, abertos],
-  );
-  const contagem = (c: CorCarro) => [...cores.values()].filter((x) => x === c).length;
-  const semSinal = visiveis.filter((v) => !comunicando(v, agora)).length;
-  const sel = frota.find((v) => v.id === selId) ?? null;
-  const tratadosHoje = avisos.filter((a) => a.situacao !== "aberto" && ids.has(a.veiculoId)).length;
+  // A cor vem do servidor, mas um aviso marcado agora já tira a cor do carro.
+  const comCor = useMemo(() => {
+    const porUnidade = new Map<string, AvisoPainel[]>();
+    for (const a of avisos)
+      porUnidade.set(String(a.unit_id), [...(porUnidade.get(String(a.unit_id)) ?? []), a]);
+    return veiculos.map((v) => {
+      const meus = porUnidade.get(String(v.id)) ?? [];
+      const cor: CorCarro = meus.some((a) => a.gravidade === "critico")
+        ? "vermelho"
+        : meus.length
+          ? "amarelo"
+          : v.ignicao && v.velocidade > 3
+            ? "verde"
+            : "cinza";
+      return { ...v, cor };
+    });
+  }, [veiculos, avisos]);
 
-  const listaAvisos = abertos
-    .filter((a) => !fonte || CATALOGO[a.tipo].fonte === fonte)
+  const contagem = (c: CorCarro) => comCor.filter((v) => v.cor === c).length;
+  const semSinal = comCor.filter((v) => !v.comunicando).length;
+  const sel = comCor.find((v) => String(v.id) === String(selId)) ?? null;
+  const lista = avisos
+    .filter((a) => !fonte || a.fonte === fonte)
     .sort((a, b) =>
-      CATALOGO[a.tipo].gravidade === CATALOGO[b.tipo].gravidade
-        ? b.em - a.em
-        : CATALOGO[a.tipo].gravidade === "critico"
+      a.gravidade === b.gravidade
+        ? String(b.ultimo).localeCompare(String(a.ultimo))
+        : a.gravidade === "critico"
           ? -1
           : 1,
     );
 
-  const marcar = (id: string, situacao: "visto" | "tratado", nota?: string) =>
-    setAvisos((l) =>
-      l.map((a) =>
-        a.id === id
-          ? { ...a, situacao, por: sessao?.nome || "Operador", quando: Date.now(), nota }
-          : a,
-      ),
-    );
+  const marcar = async (a: AvisoPainel, situacao: "visto" | "tratado") => {
+    setOcultos((s) => new Set(s).add(a.id));
+    if (mock) return ex.marcar(a.id, situacao);
+    try {
+      await CCO.marcar(a, situacao);
+      await qc.invalidateQueries({ queryKey: ["cco"] });
+    } catch (e) {
+      setOcultos((s) => {
+        const n = new Set(s);
+        n.delete(a.id);
+        return n;
+      });
+      toast.error(mensagemErro(e));
+    }
+  };
 
-  const focar = (veiculoId: string) => {
-    setSelId(veiculoId);
-    const v = frota.find((x) => x.id === veiculoId);
-    // Usa o mapa que já mostra o carro; se nenhum mostra, leva o Mapa 1 até ele.
+  const focar = (id: string | number) => {
+    setSelId(id);
+    const v = comCor.find((x) => String(x.id) === String(id));
     const mapa = v
       ? Array.from({ length: layout }, (_, i) => i).find((i) => contem.current[i]?.(v.lat, v.lng))
       : undefined;
-    setFoco((f) => ({ id: veiculoId, n: (f?.n ?? 0) + 1, mapa: mapa ?? 0 }));
+    setFoco((f) => ({ id, n: (f?.n ?? 0) + 1, mapa: mapa ?? 0 }));
   };
 
   const telaCheia = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen().catch(() => {});
   };
-
   const setVista = (i: number, v: Vista) =>
     setCfg((c) => ({ ...c, vistas: c.vistas.map((x, k) => (k === i ? v : x)) }));
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* Barra do topo */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border bg-[#0f1f38] px-4 py-2 text-white">
         <div className="flex items-center gap-2">
           <SSOrb size={26} />
@@ -210,21 +313,41 @@ export default function PainelCCO() {
             </div>
           </div>
         </div>
-        <span className="rounded bg-gold/90 px-2 py-0.5 text-[11px] font-bold text-[#0f1f38]">
-          DADOS DE EXEMPLO — protótipo para aprovação
-        </span>
+        {mock && (
+          <span className="rounded bg-gold/90 px-2 py-0.5 text-[11px] font-bold text-[#0f1f38]">
+            DADOS DE EXEMPLO
+          </span>
+        )}
 
-        {ehSS && (
+        {ehSS && !mock && (
           <select
             id="cco-empresa"
-            value={empresa}
-            onChange={(e) => setEmpresa(e.target.value)}
-            className="h-8 rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
+            value={grupo ?? ""}
+            onChange={(e) => {
+              setGrupo(e.target.value || undefined);
+              setSelId(null);
+            }}
+            className="h-8 max-w-[260px] rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
           >
             <option value="">Todas as empresas</option>
             {empresas.map((e) => (
-              <option key={e} value={e}>
-                {e}
+              <option key={e.id} value={e.id}>
+                {e.nome}
+              </option>
+            ))}
+          </select>
+        )}
+        {!mock && (
+          <select
+            id="cco-horas"
+            value={horas}
+            onChange={(e) => setHoras(Number(e.target.value))}
+            title="Avisos de quanto tempo para trás"
+            className="h-8 rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
+          >
+            {HORAS.map((h) => (
+              <option key={h} value={h}>
+                Avisos: última{h > 1 ? `s ${h} horas` : " hora"}
               </option>
             ))}
           </select>
@@ -232,7 +355,7 @@ export default function PainelCCO() {
 
         <div className="flex flex-wrap items-center gap-3 text-[12px]">
           {(["vermelho", "amarelo", "verde", "cinza"] as CorCarro[]).map((c) => (
-            <span key={c} className="flex items-center gap-1.5" title={ROTULO_COR[c]}>
+            <span key={c} className="flex items-center gap-1.5">
               <span
                 className="h-3 w-3 rounded-full border-2 border-white"
                 style={{ background: COR_HEX[c] }}
@@ -244,6 +367,7 @@ export default function PainelCCO() {
             <WifiOff className="h-3.5 w-3.5 text-coral" /> Sem comunicação{" "}
             <b className="font-mono">{semSinal}</b>
           </span>
+          {q.isFetching && !mock && <Loader2 className="h-3.5 w-3.5 animate-spin text-white/70" />}
         </div>
 
         <div className="ml-auto flex items-center gap-1">
@@ -255,6 +379,7 @@ export default function PainelCCO() {
                 type="button"
                 onClick={() => setCfg((c) => ({ ...c, layout: n }))}
                 aria-pressed={layout === n}
+                aria-label={`${n} mapa${n > 1 ? "s" : ""}`}
                 title={`${n} mapa${n > 1 ? "s" : ""}`}
                 className={cn(
                   "inline-flex h-8 w-8 items-center justify-center rounded-md border",
@@ -268,165 +393,190 @@ export default function PainelCCO() {
           <button
             type="button"
             onClick={telaCheia}
-            title={cheia ? "Sair da tela cheia" : "Tela cheia"}
             className="ml-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-white/20 px-2.5 text-[12px] hover:bg-white/10"
           >
             {cheia ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}{" "}
             {cheia ? "Sair" : "Tela cheia"}
           </button>
           <span className="ml-2 font-mono text-[12px] text-white/70">
-            {new Date(agora).toLocaleTimeString("pt-BR")}
+            {new Date(relogio).toLocaleTimeString("pt-BR")}
           </span>
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_340px]">
-        {/* Mapas */}
-        <div
-          className={cn(
-            "grid min-h-0 gap-1 bg-border p-1",
-            layout === 1 ? "grid-cols-1" : layout === 2 ? "grid-cols-2" : "grid-cols-2 grid-rows-2",
-          )}
-        >
-          {Array.from({ length: layout }, (_, i) => (
-            <MapaCCO
-              key={i}
-              indice={i}
-              vista={vistas[i]}
-              onVista={(v) => setVista(i, v)}
-              frota={visiveis}
-              cores={cores}
-              agora={agora}
-              selId={selId}
-              onSelecionar={setSelId}
-              foco={foco && foco.mapa === i ? foco : null}
-              registrar={(fn) => (contem.current[i] = fn)}
-            />
-          ))}
+      {!mock && q.error ? (
+        <div className="flex flex-1 items-center justify-center p-8 text-center text-[14px] text-coral">
+          {mensagemErro(q.error)}
         </div>
-
-        {/* Avisos */}
-        <aside className="flex min-h-0 flex-col border-l border-border bg-card">
-          <div className="border-b border-border px-3 py-2">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
-                <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto · {abertos.length}
-              </h2>
-              <span className="text-[11px] text-muted-foreground">
-                {tratadosHoje} vistos/tratados
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {(
-                [
-                  ["", "Todos"],
-                  ["seguranca", "Segurança"],
-                  ["camera", "Câmera"],
-                  ["manutencao", "Manutenção"],
-                  ["equipamento", "Equipamento"],
-                ] as [string, string][]
-              ).map(([k, r]) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setFonte(k as "" | Fonte)}
-                  aria-pressed={fonte === k}
-                  className={cn(
-                    "h-7 rounded-full border px-2.5 text-[11px] font-medium",
-                    fonte === k
-                      ? "border-brand-navy bg-brand-navy text-white"
-                      : "border-border hover:bg-secondary",
-                  )}
-                >
-                  {r} {k ? `· ${abertos.filter((a) => CATALOGO[a.tipo].fonte === k).length}` : ""}
-                </button>
-              ))}
-            </div>
-          </div>
-          <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
-            {listaAvisos.length === 0 && (
-              <li className="p-6 text-center text-[13px] text-muted-foreground">
-                Nenhum aviso em aberto.
-              </li>
+      ) : !mock && q.isPending ? (
+        <div className="flex flex-1 items-center justify-center gap-2 text-[14px] text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" /> Carregando a operação…
+        </div>
+      ) : (
+        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_340px]">
+          <div
+            className={cn(
+              "grid min-h-0 gap-1 bg-border p-1",
+              layout === 1
+                ? "grid-cols-1"
+                : layout === 2
+                  ? "grid-cols-2"
+                  : "grid-cols-2 grid-rows-2",
             )}
-            {listaAvisos.map((a) => {
-              const c = CATALOGO[a.tipo];
-              const v = frota.find((x) => x.id === a.veiculoId)!;
-              return (
-                <li key={a.id} className="overflow-hidden rounded-lg border border-border bg-white">
+          >
+            {Array.from({ length: layout }, (_, i) => (
+              <MapaCCO
+                key={i}
+                indice={i}
+                vista={vistas[i]}
+                onVista={(v) => setVista(i, v)}
+                veiculos={comCor}
+                selId={selId}
+                onSelecionar={setSelId}
+                foco={foco && foco.mapa === i ? foco : null}
+                registrar={(fn) => (contem.current[i] = fn)}
+              />
+            ))}
+          </div>
+
+          <aside className="flex min-h-0 flex-col border-l border-border bg-card">
+            <div className="border-b border-border px-3 py-2">
+              <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
+                <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto · {avisos.length}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {(
+                  [
+                    ["", "Todos"],
+                    ["seguranca", "Segurança"],
+                    ["camera", "Câmera"],
+                    ["manutencao", "Manutenção"],
+                    ["equipamento", "Equipamento"],
+                  ] as [string, string][]
+                ).map(([k, r]) => (
                   <button
+                    key={k}
                     type="button"
-                    onClick={() => focar(a.veiculoId)}
-                    className="flex w-full gap-2 p-2 text-left hover:bg-secondary/50"
+                    onClick={() => setFonte(k as "" | FonteAviso)}
+                    aria-pressed={fonte === k}
+                    className={cn(
+                      "h-7 rounded-full border px-2.5 text-[11px] font-medium",
+                      fonte === k
+                        ? "border-brand-navy bg-brand-navy text-white"
+                        : "border-border hover:bg-secondary",
+                    )}
                   >
-                    <span
-                      className="w-1 shrink-0 rounded"
-                      style={{
-                        background: c.gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
-                      }}
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[13px] font-semibold">{c.nome}</span>
-                        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
-                          {new Date(a.em).toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                    {r} {k ? `· ${avisos.filter((a) => a.fonte === k).length}` : ""}
+                  </button>
+                ))}
+              </div>
+              {!mock && !q.data?.manutencao_disponivel && (
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Avisos de manutenção aparecem ao escolher uma empresa.
+                </p>
+              )}
+            </div>
+            <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
+              {lista.length === 0 && (
+                <li className="p-6 text-center text-[13px] text-muted-foreground">
+                  Nenhum aviso em aberto.
+                </li>
+              )}
+              {lista.slice(0, 300).map((a) => {
+                const v = comCor.find((x) => String(x.id) === String(a.unit_id));
+                if (!v) return null;
+                return (
+                  <li
+                    key={a.id}
+                    className="overflow-hidden rounded-lg border border-border bg-white"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => focar(v.id)}
+                      className="flex w-full gap-2 p-2 text-left hover:bg-secondary/50"
+                    >
+                      <span
+                        className="w-1 shrink-0 rounded"
+                        style={{
+                          background:
+                            a.gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
+                        }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-[13px] font-semibold">
+                            {a.nome}
+                            {a.quantidade > 1 ? ` ×${a.quantidade}` : ""}
+                          </span>
+                          <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                            {a.ultimo
+                              ? new Date(a.ultimo).toLocaleTimeString("pt-BR", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : ""}
+                          </span>
+                        </span>
+                        <span className="block truncate text-[12px] text-muted-foreground">
+                          <b className="font-mono text-foreground">{v.prefixo}</b> {v.placa} ·{" "}
+                          {ROTULO_FONTE[a.fonte]}
+                          {a.detalhe ? ` · ${a.detalhe}` : ""}
+                          {a.reaberto ? " · voltou a ocorrer" : ""}
                         </span>
                       </span>
-                      <span className="block truncate text-[12px] text-muted-foreground">
-                        <b className="font-mono text-foreground">{v.prefixo}</b> {v.placa} ·{" "}
-                        {ROTULO_FONTE[c.fonte]}
-                        {a.detalhe ? ` · ${a.detalhe}` : ""}
-                      </span>
-                    </span>
-                  </button>
-                  <div className="flex border-t border-border text-[12px]">
-                    {(c.fonte === "camera" || c.fonte === "equipamento") && (
-                      <a
-                        href="/app/seguranca/video"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-brand-navy hover:bg-secondary"
+                    </button>
+                    <div className="flex border-t border-border text-[12px]">
+                      {(a.fonte === "camera" || a.fonte === "equipamento") && (
+                        <a
+                          href="/app/seguranca/video"
+                          target="_blank"
+                          rel="opener"
+                          className="flex flex-1 items-center justify-center gap-1 py-1.5 text-brand-navy hover:bg-secondary"
+                        >
+                          <Camera className="h-3.5 w-3.5" /> Vídeo
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => marcar(a, "visto")}
+                        className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 hover:bg-secondary first:border-l-0"
                       >
-                        <Camera className="h-3.5 w-3.5" /> Vídeo
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => marcar(a.id, "visto")}
-                      className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 hover:bg-secondary first:border-l-0"
-                    >
-                      <Eye className="h-3.5 w-3.5" /> Visto
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => marcar(a.id, "tratado")}
-                      className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 font-medium text-leaf hover:bg-secondary"
-                    >
-                      <CheckCheck className="h-3.5 w-3.5" /> Tratado
-                    </button>
-                  </div>
+                        <Eye className="h-3.5 w-3.5" /> Visto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => marcar(a, "tratado")}
+                        className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 font-medium text-leaf hover:bg-secondary"
+                      >
+                        <CheckCheck className="h-3.5 w-3.5" /> Tratado
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+              {lista.length > 300 && (
+                <li className="p-2 text-center text-[12px] text-muted-foreground">
+                  Mostrando os 300 primeiros de {lista.length}. Escolha uma empresa ou um tipo para
+                  ver o resto.
                 </li>
-              );
-            })}
-          </ul>
-          <p className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-            Sem som. O aviso só sai da lista quando alguém marca Visto ou Tratado (fica registrado
-            quem e quando).
-          </p>
-        </aside>
-      </div>
+              )}
+            </ul>
+            <p className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+              Sem som. Um aviso junta as ocorrências do mesmo tipo no veículo e só sai com Visto ou
+              Tratado; se voltar a ocorrer depois, reaparece.
+            </p>
+          </aside>
+        </div>
+      )}
 
       {sel && (
         <CardVeiculo
           v={sel}
-          cor={cores.get(sel.id) ?? "cinza"}
-          avisos={abertos.filter((a) => a.veiculoId === sel.id)}
-          agora={agora}
+          avisos={avisos.filter((a) => String(a.unit_id) === String(sel.id))}
           onFechar={() => setSelId(null)}
           onMarcar={marcar}
+          consumoExemplo={mock ? ex.consumo(sel.id) : undefined}
+          agora={relogio}
         />
       )}
     </div>
@@ -437,9 +587,7 @@ function MapaCCO({
   indice,
   vista,
   onVista,
-  frota,
-  cores,
-  agora,
+  veiculos,
   selId,
   onSelecionar,
   foco,
@@ -448,12 +596,10 @@ function MapaCCO({
   indice: number;
   vista: Vista;
   onVista: (v: Vista) => void;
-  frota: VeiculoCCO[];
-  cores: Map<string, CorCarro>;
-  agora: number;
-  selId: string | null;
-  onSelecionar: (id: string) => void;
-  foco: { id: string; n: number; mapa: number } | null;
+  veiculos: VeiculoPainel[];
+  selId: string | number | null;
+  onSelecionar: (id: string | number) => void;
+  foco: { id: string | number; n: number } | null;
   registrar: (fn: (lat: number, lng: number) => boolean) => void;
 }) {
   return (
@@ -470,20 +616,17 @@ function MapaCCO({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Guardar vista={vista} onVista={onVista} />
-        <Focar foco={foco} frota={frota} registrar={registrar} />
-        {frota.map((v) => (
+        <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
+        {veiculos.map((v) => (
           <Marker
             key={v.id}
             position={[v.lat, v.lng]}
-            icon={icone(v, cores.get(v.id) ?? "cinza", selId === v.id, comunicando(v, agora))}
-            zIndexOffset={
-              { vermelho: 3000, amarelo: 2000, verde: 1000, cinza: 0 }[cores.get(v.id) ?? "cinza"] +
-              (selId === v.id ? 5000 : 0)
-            }
+            icon={icone(v, String(selId) === String(v.id))}
+            zIndexOffset={ESCALA[v.cor] + (String(selId) === String(v.id) ? 5000 : 0)}
             eventHandlers={{ click: () => onSelecionar(v.id) }}
           >
-            <Tooltip direction="top" offset={[0, -8]}>
-              {v.prefixo} · {v.placa} · {ROTULO_COR[cores.get(v.id) ?? "cinza"]}
+            <Tooltip direction="top" offset={[0, -10]}>
+              {NOME_TIPO[v.tipo]} {v.prefixo} · {v.placa} · {ROTULO_COR[v.cor]}
             </Tooltip>
           </Marker>
         ))}
@@ -521,7 +664,7 @@ function Guardar({ vista, onVista }: { vista: Vista; onVista: (v: Vista) => void
     const k = vista.area + vista.zoom + vista.centro.join();
     if (k !== ultimo.current && vista.area !== "livre") {
       programatico.current = true;
-      map.setView(vista.centro, vista.zoom);
+      map.setView(vista.centro, vista.zoom, { animate: false });
     }
     ultimo.current = k;
   }, [vista, map]);
@@ -551,11 +694,11 @@ function Guardar({ vista, onVista }: { vista: Vista; onVista: (v: Vista) => void
 
 function Focar({
   foco,
-  frota,
+  veiculos,
   registrar,
 }: {
-  foco: { id: string; n: number } | null;
-  frota: VeiculoCCO[];
+  foco: { id: string | number; n: number } | null;
+  veiculos: VeiculoPainel[];
   registrar: (fn: (lat: number, lng: number) => boolean) => void;
 }) {
   const map = useMap();
@@ -571,9 +714,10 @@ function Focar({
   }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!foco) return;
-    const v = frota.find((x) => x.id === foco.id);
-    // Já visível: só centraliza, sem mudar o zoom que o operador escolheu.
-    if (v && map.getBounds().contains([v.lat, v.lng])) map.panTo([v.lat, v.lng], { animate: false });
+    const v = veiculos.find((x) => String(x.id) === String(foco.id));
+    // Sem animação: aba em segundo plano não anima e o voo calculava posição inválida.
+    if (v && map.getBounds().contains([v.lat, v.lng]))
+      map.panTo([v.lat, v.lng], { animate: false });
     else if (v) map.setView([v.lat, v.lng], Math.max(map.getZoom(), 12), { animate: false });
   }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
@@ -581,73 +725,88 @@ function Focar({
 
 function CardVeiculo({
   v,
-  cor,
   avisos,
-  agora,
   onFechar,
   onMarcar,
+  consumoExemplo,
+  agora,
 }: {
-  v: VeiculoCCO;
-  cor: CorCarro;
-  avisos: Aviso[];
-  agora: number;
+  v: VeiculoPainel;
+  avisos: AvisoPainel[];
   onFechar: () => void;
-  onMarcar: (id: string, s: "visto" | "tratado") => void;
+  onMarcar: (a: AvisoPainel, s: "visto" | "tratado") => void;
+  consumoExemplo?: number | null;
+  agora: number;
 }) {
-  const ok = comunicando(v, agora);
+  const cq = useQuery(consumoQuery(typeof v.id === "number" ? v.id : null));
   const desligado = !v.ignicao;
-  const metr = (rot: string, valor: string, Ic: typeof Gauge) => (
-    <div className="rounded-lg border border-border bg-secondary/40 px-2.5 py-2">
+  const consumo = consumoExemplo !== undefined ? consumoExemplo : (cq.data?.consumo_lh ?? null);
+  const minCom = v.ultima_comunicacao
+    ? Math.round((agora - new Date(v.ultima_comunicacao).getTime()) / 60000)
+    : null;
+  const metr = (rot: string, valor: string, Ic: typeof Gauge, dica?: string) => (
+    <div className="rounded-lg border border-border bg-secondary/40 px-2.5 py-2" title={dica}>
       <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
         <Ic className="h-3.5 w-3.5" /> {rot}
       </div>
       <div className="mt-0.5 font-mono text-[15px] font-semibold text-foreground">{valor}</div>
     </div>
   );
+  const id = encodeURIComponent(String(v.id));
   const atalhos: [string, string, typeof Gauge][] = [
-    ["Sinais do motor", `/app/frota/sinais?veiculo=${v.id}`, Activity],
-    ["Tracking do dia", `/app/frota/tracking?veiculo=${encodeURIComponent(v.placa)}`, Gauge],
+    ["Sinais do motor", `/app/frota/sinais?veiculo=${id}`, Activity],
+    ["Tracking do dia", `/app/frota/tracking?veiculo=${encodeURIComponent(v.prefixo)}`, Gauge],
     ["Eventos", "/app/eventos", AlertTriangle],
-    ...(v.temCamera
+    ...(v.tem_camera
       ? ([["Câmera ao vivo", "/app/seguranca/video", Camera]] as [string, string, typeof Gauge][])
       : []),
     ["Manutenção", "/app/manutencao/", Wrench],
     ["Ficha do veículo", "/app/veiculos/", ExternalLink],
   ];
   return (
-    <div className="fixed bottom-4 left-4 z-[1000] w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-card shadow-2xl">
+    <div className="fixed bottom-4 left-4 z-[1000] w-[430px] max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-card shadow-2xl">
       <div
         className="flex items-start gap-3 border-b border-border p-3"
         style={{
-          borderTop: `4px solid ${COR_HEX[cor]}`,
+          borderTop: `4px solid ${COR_HEX[v.cor]}`,
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
         }}
       >
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
+          style={{ background: COR_HEX[v.cor] }}
+          dangerouslySetInnerHTML={{ __html: svgVeiculo(v.tipo, 22) }}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-mono text-[16px] font-bold">{v.prefixo}</span>
             <span className="font-mono text-[13px] text-muted-foreground">{v.placa}</span>
-            <span title={ok ? "Comunicando" : "Sem comunicação há mais de 2 h"}>
-              {ok ? (
+            <span title={v.comunicando ? "Comunicando" : "Sem comunicação há mais de 2 h"}>
+              {v.comunicando ? (
                 <Wifi className="h-4 w-4 text-leaf" />
               ) : (
                 <WifiOff className="h-4 w-4 text-coral" />
               )}
             </span>
           </div>
-          <div className="text-[12px] text-muted-foreground">
-            {v.empresa} ·{" "}
-            <span style={{ color: COR_HEX[cor] }} className="font-semibold">
-              {ROTULO_COR[cor]}
+          <div className="truncate text-[12px] text-muted-foreground">
+            {NOME_TIPO[v.tipo]}{v.descricao ? ` ${v.descricao}` : ""} · {v.empresa} ·{" "}
+            <span style={{ color: COR_HEX[v.cor] }} className="font-semibold">
+              {ROTULO_COR[v.cor]}
             </span>
           </div>
           <div className="mt-0.5 flex items-center gap-1 text-[12px] text-muted-foreground">
-            <User className="h-3.5 w-3.5" /> {v.motorista ?? "Motorista não identificado"} · ignição{" "}
-            {v.ignicao ? "ligada" : "desligada"} ·{" "}
-            {ok
-              ? `há ${Math.max(0, Math.round((agora - v.ultimaComunicacao) / 60000))} min`
-              : `sem sinal há ${Math.round((agora - v.ultimaComunicacao) / 3600000)} h`}
+            <User className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {v.motorista ?? "Motorista não identificado"} · ignição{" "}
+              {v.ignicao ? "ligada" : "desligada"} ·{" "}
+              {minCom == null
+                ? "sem registro"
+                : minCom < 120
+                  ? `há ${Math.max(0, minCom)} min`
+                  : `sem sinal há ${Math.round(minCom / 60)} h`}
+            </span>
           </div>
         </div>
         <button
@@ -666,8 +825,11 @@ function CardVeiculo({
         {metr("Faixa agora", desligado || !v.faixa ? "—" : v.faixa, Gauge)}
         {metr(
           "Consumo agora",
-          desligado || v.consumoLh == null ? "—" : `${v.consumoLh.toLocaleString("pt-BR")} L/h`,
+          desligado || consumo == null ? "—" : `${consumo.toLocaleString("pt-BR")} L/h`,
           Fuel,
+          cq.data?.consumo_minutos
+            ? `Média dos últimos ${cq.data.consumo_minutos} min, pelo totalizador de combustível`
+            : undefined,
         )}
         {metr("Altitude", v.altitude == null ? "—" : `${v.altitude} m`, Mountain)}
         {metr(
@@ -678,7 +840,7 @@ function CardVeiculo({
       </div>
 
       {avisos.length > 0 && (
-        <div className="space-y-1 px-3 pb-2">
+        <div className="max-h-[140px] space-y-1 overflow-y-auto px-3 pb-2">
           {avisos.map((a) => (
             <div
               key={a.id}
@@ -687,24 +849,29 @@ function CardVeiculo({
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{
-                  background:
-                    CATALOGO[a.tipo].gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
+                  background: a.gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
                 }}
               />
               <span className="min-w-0 flex-1 truncate">
-                <b>{CATALOGO[a.tipo].nome}</b> ·{" "}
-                {new Date(a.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                <b>{a.nome}</b>
+                {a.quantidade > 1 ? ` ×${a.quantidade}` : ""} ·{" "}
+                {a.ultimo
+                  ? new Date(a.ultimo).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : ""}
               </span>
               <button
                 type="button"
-                onClick={() => onMarcar(a.id, "visto")}
+                onClick={() => onMarcar(a, "visto")}
                 className="rounded px-1.5 py-0.5 hover:bg-secondary"
               >
                 Visto
               </button>
               <button
                 type="button"
-                onClick={() => onMarcar(a.id, "tratado")}
+                onClick={() => onMarcar(a, "tratado")}
                 className="rounded px-1.5 py-0.5 font-medium text-leaf hover:bg-secondary"
               >
                 Tratado
@@ -720,7 +887,7 @@ function CardVeiculo({
             key={rot}
             href={href}
             target="_blank"
-            rel="noreferrer"
+            rel="opener"
             title="Abre em outra aba (o painel continua aqui)"
             className="flex items-center gap-1.5 rounded-lg border border-border px-2 py-1.5 text-[12px] font-medium text-brand-navy hover:bg-navy-tint"
           >

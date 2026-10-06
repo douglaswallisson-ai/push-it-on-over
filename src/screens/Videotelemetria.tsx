@@ -65,25 +65,32 @@ const CLASSE_LABEL = {
   equipamento: "Saúde do equipamento",
 } as const;
 
+/** Nome e classe: o que a API manda vence a tabela fixa, que não cobre todo modelo de câmera. */
+const rotuloDe = (o: OcorrenciaVideo) => o.rotulo ?? ALARME_VIDEO_LABEL[o.tipo] ?? o.tipo;
+const classeDe = (o: OcorrenciaVideo) => o.classe ?? ALARME_VIDEO_CLASSE[o.tipo];
+
 export default function Videotelemetria() {
   const mockOcorrQ = useQuery(videoOcorrenciasQuery());
   const apiOcorrQ = useQuery(videoOcorrenciasApiQuery({ limit: 300 }));
 
   /**
-   * Conectado à API, as ocorrências vêm de fleet_events já classificadas em
-   * DMS, ADAS e equipamento. A conversão para o formato da tela acontece aqui,
-   * mantendo filtros e contadores intactos.
+   * Conectado à API, as ocorrências vêm de `vcms_history` (alarmes gravados
+   * pela câmera) já classificadas em DMS, ADAS e equipamento. A conversão para
+   * o formato da tela acontece aqui, mantendo filtros e contadores intactos.
    */
   const daApi = apiOcorrQ.data as
     | {
         items: {
           id: number;
           vehicle_id?: number;
+          vehicle_label?: string;
           vehicle_prefix?: string;
           event_type?: string;
           category: string;
           severity?: string;
           timestamp?: string;
+          description?: string;
+          data?: { speed?: number | null };
           has_clip: boolean;
           acknowledged?: boolean;
         }[];
@@ -111,12 +118,17 @@ export default function Videotelemetria() {
     if (!usandoMock() && daApi?.items) {
       const risco = (sev?: string): NivelRisco =>
         sev === "critical" ? "alto" : sev === "warning" ? "medio" : "baixo";
+      const classe = { dms: "comportamento", adas: "seguranca", equipamento: "equipamento" } as const;
       return daApi.items.map((o) => ({
         id: String(o.id),
         tipo: (o.event_type ?? "distracao") as TipoAlarmeVideo,
+        rotulo: o.description,
+        classe: classe[o.category as keyof typeof classe],
+        veiculoRotulo: o.vehicle_prefix || o.vehicle_label,
         risco: risco(o.severity),
         veiculoId: String(o.vehicle_id ?? ""),
         em: o.timestamp ?? new Date().toISOString(),
+        velocidadeKmh: o.data?.speed ?? undefined,
         imei: "",
         // Sem clipe não há o que revisar; o backend informa se a mídia existe.
         clipeDisponivel: o.has_clip,
@@ -141,7 +153,7 @@ export default function Videotelemetria() {
       ocorrencias.filter((o) => {
         if (statusFiltro !== "todas" && o.status !== statusFiltro) return false;
         if (riscoFiltro !== "todos" && o.risco !== riscoFiltro) return false;
-        if (classeFiltro !== "todas" && ALARME_VIDEO_CLASSE[o.tipo] !== classeFiltro) return false;
+        if (classeFiltro !== "todas" && classeDe(o) !== classeFiltro) return false;
         return true;
       }),
     [ocorrencias, statusFiltro, riscoFiltro, classeFiltro],
@@ -157,9 +169,9 @@ export default function Videotelemetria() {
     setAlteracoes((a) => ({ ...a, [o.id]: novo }));
     registrarAuditoria(
       "tratativa_video",
-      `${TRATATIVA_LABEL[novo]}: ${ALARME_VIDEO_LABEL[o.tipo]} · veículo ${prefixo.get(o.veiculoId) ?? o.veiculoId}.`,
+      `${TRATATIVA_LABEL[novo]}: ${rotuloDe(o)} · veículo ${prefixo.get(o.veiculoId) ?? o.veiculoRotulo ?? o.veiculoId}.`,
     );
-    toast.success(TRATATIVA_LABEL[novo], { description: ALARME_VIDEO_LABEL[o.tipo] });
+    toast.success(TRATATIVA_LABEL[novo], { description: rotuloDe(o) });
   };
 
   const COLS: Column<OcorrenciaVideo & Record<string, unknown>>[] = [
@@ -174,8 +186,8 @@ export default function Videotelemetria() {
       header: "Ocorrência",
       render: (o) => (
         <div>
-          <div className="text-[13px] font-medium text-foreground">{ALARME_VIDEO_LABEL[o.tipo]}</div>
-          <div className="text-[12px] text-muted-foreground">{CLASSE_LABEL[ALARME_VIDEO_CLASSE[o.tipo]]}</div>
+          <div className="text-[13px] font-medium text-foreground">{rotuloDe(o)}</div>
+          <div className="text-[12px] text-muted-foreground">{CLASSE_LABEL[classeDe(o)]}</div>
         </div>
       ),
     },
@@ -184,7 +196,7 @@ export default function Videotelemetria() {
       header: "Veículo",
       render: (o) => (
         <span className="whitespace-nowrap font-mono text-[13px] font-semibold text-foreground">
-          {prefixo.get(o.veiculoId) ?? "—"}
+          {prefixo.get(o.veiculoId) ?? o.veiculoRotulo ?? "—"}
         </span>
       ),
     },
@@ -213,7 +225,7 @@ export default function Videotelemetria() {
             onClick={(e) => {
               e.stopPropagation();
               toast.info("Reprodução do clipe", {
-                description: `${ALARME_VIDEO_LABEL[o.tipo]} · ${o.duracaoS}s · aguardando o serviço de mídia.`,
+                description: `${rotuloDe(o)} · ${o.duracaoS}s · aguardando o serviço de mídia.`,
               });
             }}
             className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border text-brand-navy transition-colors hover:bg-secondary"

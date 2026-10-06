@@ -39,7 +39,11 @@ import { Card, DataTable, Pill, type Column, type PillTone } from "@/components/
  * dos últimos gerados. Cada cartão dispararia a geração (protótipo).
  */
 
-type Report = { icon: LucideIcon; title: string; desc: string; color: string
+type Report = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  color: string;
   /**
    * Tela que já entrega este relatório. Sem rota, o item consta do catálogo
    * mas ainda não tem destino — e o cartão diz isso, em vez de abrir vazio.
@@ -58,85 +62,389 @@ const CATALOGO: Categoria[] = [
   {
     grupo: "Operação",
     itens: [
-      { icon: Route, title: "Telemetria por viagem", desc: "Viagem a viagem, com 113 campos: consumo, faixas, chuva, linha.", color: "var(--brand-navy)", embutido: "telemetria" },
-      { icon: MapPin, title: "Histórico de posições", desc: "Todas as posições registradas, com endereço e velocidade.", color: "var(--brand-sky)", embutido: "operacionais", aba: "historico" },
-      { icon: Activity, title: "Sinais do motor", desc: "22 leituras do barramento CAN: ARLA, turbo, pressão, marcha.", color: "var(--brand-sky)", rota: "/app/frota/sinais" },
-      { icon: ShieldAlert, title: "Eventos e alarmes", desc: "Alarmes por severidade, com fila de tratativa.", color: "var(--gold)", rota: "/app/eventos" },
-      { icon: Gauge, title: "Excesso de velocidade", desc: "Por tipo de via e condição de pista — urbano, rodoviário, chuva.", color: "var(--coral)", rota: "/app/gerencial#seguranca" },
-      { icon: Clock, title: "Tracking", desc: "Ignição, paradas e retomadas de um veículo, com traçado.", color: "var(--brand-navy)", rota: "/app/frota/tracking" },
-      { icon: Flame, title: "Mapa de calor", desc: "Onde a frota mais circula, por concentração de passagens.", color: "var(--coral)", embutido: "operacionais", aba: "calor" },
-      { icon: Clock, title: "Paradas e deslocamentos", desc: "Cada parada e deslocamento, com duração, km, local e motorista.", color: "var(--brand-navy)", embutido: "frota", abaFrota: "paradas" },
-      { icon: BarChart3, title: "Paradas e deslocamentos consolidado", desc: "Por veículo: tempo parado, parado ligado, em movimento e km.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "consolidado" },
-      { icon: MapPin, title: "Paradas em pontos", desc: "Quanto tempo cada veículo ficou em cada ponto de interesse.", color: "var(--leaf)", embutido: "frota", abaFrota: "paradas-poi" },
-      { icon: MapPin, title: "Passagem por pontos", desc: "Quem passou perto de um ponto, parando ou não.", color: "var(--leaf)", embutido: "frota", abaFrota: "passagem-poi" },
-      { icon: ShieldAlert, title: "Cercas", desc: "Entrada e saída de cercas, com o tempo que ficou dentro.", color: "var(--gold)", embutido: "frota", abaFrota: "cercas" },
+      {
+        icon: Route,
+        title: "Telemetria por viagem",
+        desc: "Viagem a viagem, com 113 campos: consumo, faixas, chuva, linha.",
+        color: "var(--brand-navy)",
+        embutido: "telemetria",
+      },
+      {
+        icon: MapPin,
+        title: "Histórico de posições",
+        desc: "Todas as posições registradas, com endereço e velocidade.",
+        color: "var(--brand-sky)",
+        embutido: "operacionais",
+        aba: "historico",
+      },
+      {
+        icon: Activity,
+        title: "Sinais do motor",
+        desc: "22 leituras do barramento CAN: ARLA, turbo, pressão, marcha.",
+        color: "var(--brand-sky)",
+        rota: "/app/frota/sinais",
+      },
+      {
+        icon: ShieldAlert,
+        title: "Eventos e alarmes",
+        desc: "Alarmes por severidade, com fila de tratativa.",
+        color: "var(--gold)",
+        rota: "/app/eventos",
+      },
+      {
+        icon: Gauge,
+        title: "Excesso de velocidade",
+        desc: "Por tipo de via e condição de pista — urbano, rodoviário, chuva.",
+        color: "var(--coral)",
+        rota: "/app/gerencial#seguranca",
+      },
+      {
+        icon: Clock,
+        title: "Tracking",
+        desc: "Ignição, paradas e retomadas de um veículo, com traçado.",
+        color: "var(--brand-navy)",
+        rota: "/app/frota/tracking",
+      },
+      {
+        icon: Flame,
+        title: "Mapa de calor",
+        desc: "Onde a frota mais circula, por concentração de passagens.",
+        color: "var(--coral)",
+        embutido: "operacionais",
+        aba: "calor",
+      },
+      {
+        icon: Clock,
+        title: "Paradas e deslocamentos",
+        desc: "Cada parada e deslocamento, com duração, km, local e motorista.",
+        color: "var(--brand-navy)",
+        embutido: "frota",
+        abaFrota: "paradas",
+      },
+      {
+        icon: BarChart3,
+        title: "Paradas e deslocamentos consolidado",
+        desc: "Por veículo: tempo parado, parado ligado, em movimento e km.",
+        color: "var(--brand-sky)",
+        embutido: "frota",
+        abaFrota: "consolidado",
+      },
+      {
+        icon: MapPin,
+        title: "Paradas em pontos",
+        desc: "Quanto tempo cada veículo ficou em cada ponto de interesse.",
+        color: "var(--leaf)",
+        embutido: "frota",
+        abaFrota: "paradas-poi",
+      },
+      {
+        icon: MapPin,
+        title: "Passagem por pontos",
+        desc: "Quem passou perto de um ponto, parando ou não.",
+        color: "var(--leaf)",
+        embutido: "frota",
+        abaFrota: "passagem-poi",
+      },
+      {
+        icon: ShieldAlert,
+        title: "Cercas",
+        desc: "Entrada e saída de cercas, com o tempo que ficou dentro.",
+        color: "var(--gold)",
+        embutido: "frota",
+        abaFrota: "cercas",
+      },
     ],
   },
   {
     grupo: "Frota",
     itens: [
-      { icon: Fuel, title: "Consumo de combustível", desc: "Litros, km/l e desvio contra a média, por veículo.", color: "var(--gold)", embutido: "operacionais", aba: "motoristas" },
-      { icon: Truck, title: "Utilização da frota", desc: "Disponibilidade, ociosidade e horas de motor.", color: "var(--brand-navy)", rota: "/app/gerencial" },
-      { icon: Route, title: "Distância por período e semana", desc: "Km por veículo, dia a dia ou por semana, sem os saltos de odômetro.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "distancia" },
-      { icon: Gauge, title: "Horímetro por período", desc: "Horas de motor por veículo e km por hora de motor.", color: "var(--gold)", embutido: "frota", abaFrota: "distancia" },
-      { icon: Wrench, title: "Manutenção preventiva", desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.", color: "var(--coral)", rota: "/app/manutencao" },
-      { icon: ClipboardCheck, title: "Checklist de inspeção", desc: "Modelos, itens e respostas, com reprovações destacadas.", color: "var(--leaf)", rota: "/app/frota/checklist" },
-      { icon: Cable, title: "Equipamentos por veículo", desc: "Rastreador e câmera instalados, e quem está sem.", color: "var(--brand-sky)", rota: "/app/cadastros/equipamentos" },
-      { icon: Leaf, title: "Emissão de CO₂", desc: "Pegada de carbono estimada a partir do consumo real.", color: "var(--leaf)", rota: "/app/co2" },
-      { icon: Wrench, title: "Ordens de serviço", desc: "Abertas, em execução e concluídas, com custo.", color: "var(--gold)", rota: "/app/manutencao/ordens" },
-      { icon: Gauge, title: "Diagnóstico DTC", desc: "Códigos de falha ativos e recomendação de ação.", color: "var(--coral)", rota: "/app/manutencao/diagnostico" },
-      { icon: Cable, title: "Configurações do veículo", desc: "Firmware, script, faixas de RPM e fator de consumo do equipamento.", color: "var(--brand-sky)", embutido: "frota", abaFrota: "configuracoes" },
-      { icon: Gauge, title: "Odômetro travado", desc: "Veículos que andaram com o odômetro parado nas últimas 24 h.", color: "var(--coral)", embutido: "frota", abaFrota: "odometro" },
+      {
+        icon: Fuel,
+        title: "Consumo de combustível",
+        desc: "Litros, km/l e desvio contra a média, por veículo.",
+        color: "var(--gold)",
+        embutido: "operacionais",
+        aba: "motoristas",
+      },
+      {
+        icon: Truck,
+        title: "Utilização da frota",
+        desc: "Disponibilidade, ociosidade e horas de motor.",
+        color: "var(--brand-navy)",
+        rota: "/app/gerencial",
+      },
+      {
+        icon: Route,
+        title: "Distância por período e semana",
+        desc: "Km por veículo, dia a dia ou por semana, sem os saltos de odômetro.",
+        color: "var(--brand-sky)",
+        embutido: "frota",
+        abaFrota: "distancia",
+      },
+      {
+        icon: Gauge,
+        title: "Velocidade limite",
+        desc: "Limite cadastrado no veículo, grupo e equipamento, com os excessos do período.",
+        color: "var(--coral)",
+        embutido: "frota",
+        abaFrota: "velocidade-limite",
+      },
+      {
+        icon: Gauge,
+        title: "Horímetro por período",
+        desc: "Horas de motor por veículo e km por hora de motor.",
+        color: "var(--gold)",
+        embutido: "frota",
+        abaFrota: "distancia",
+      },
+      {
+        icon: Wrench,
+        title: "Manutenção preventiva",
+        desc: "O que vence, quando e por qual gatilho — km, horas ou prazo.",
+        color: "var(--coral)",
+        rota: "/app/manutencao",
+      },
+      {
+        icon: ClipboardCheck,
+        title: "Checklist de inspeção",
+        desc: "Modelos, itens e respostas, com reprovações destacadas.",
+        color: "var(--leaf)",
+        rota: "/app/frota/checklist",
+      },
+      {
+        icon: Cable,
+        title: "Equipamentos por veículo",
+        desc: "Rastreador e câmera instalados, e quem está sem.",
+        color: "var(--brand-sky)",
+        rota: "/app/cadastros/equipamentos",
+      },
+      {
+        icon: Leaf,
+        title: "Emissão de CO₂",
+        desc: "Pegada de carbono estimada a partir do consumo real.",
+        color: "var(--leaf)",
+        rota: "/app/co2",
+      },
+      {
+        icon: Wrench,
+        title: "Ordens de serviço",
+        desc: "Abertas, em execução e concluídas, com custo.",
+        color: "var(--gold)",
+        rota: "/app/manutencao/ordens",
+      },
+      {
+        icon: Gauge,
+        title: "Diagnóstico DTC",
+        desc: "Códigos de falha ativos e recomendação de ação.",
+        color: "var(--coral)",
+        rota: "/app/manutencao/diagnostico",
+      },
+      {
+        icon: Cable,
+        title: "Configurações do veículo",
+        desc: "Firmware, script, faixas de RPM e fator de consumo do equipamento.",
+        color: "var(--brand-sky)",
+        embutido: "frota",
+        abaFrota: "configuracoes",
+      },
+      {
+        icon: Gauge,
+        title: "Odômetro travado",
+        desc: "Veículos que andaram com o odômetro parado nas últimas 24 h.",
+        color: "var(--coral)",
+        embutido: "frota",
+        abaFrota: "odometro",
+      },
     ],
   },
   {
     grupo: "Motoristas",
     itens: [
-      { icon: Star, title: "Desempenho de condução", desc: "Nota contextual por linha e faixa horária.", color: "var(--brand-sky)", rota: "/app/frota/analise" },
-      { icon: Fuel, title: "Km e combustível", desc: "Distância, litros e horas por motorista, com consumo.", color: "var(--gold)", embutido: "operacionais", aba: "motoristas" },
-      { icon: Gauge, title: "Faixas de RPM", desc: "Distribuição do tempo entre azul, verde, amarela e vermelha.", color: "var(--leaf)", embutido: "operacionais", aba: "rpm" },
-      { icon: Users, title: "Premiação", desc: "Apuração de bônus por meta e peso configurados.", color: "var(--leaf)", rota: "/app/premiacao" },
-      { icon: Clock, title: "Espelho de ponto", desc: "Jornada, intervalos e horas extras — Lei 13.103.", color: "var(--brand-navy)", rota: "/app/pessoas/jornada" },
-      { icon: ShieldAlert, title: "Multas por motorista", desc: "Infrações, pontos e prazo de indicação do condutor.", color: "var(--coral)", rota: "/app/pessoas/multas" },
-      { icon: Target, title: "Metas e pesos", desc: "Critérios de avaliação por grupo e subgrupo.", color: "var(--brand-sky)", embutido: "operacionais", aba: "metas" },
+      {
+        icon: Star,
+        title: "Desempenho de condução",
+        desc: "Nota contextual por linha e faixa horária.",
+        color: "var(--brand-sky)",
+        rota: "/app/frota/analise",
+      },
+      {
+        icon: Fuel,
+        title: "Km e combustível",
+        desc: "Distância, litros e horas por motorista, com consumo.",
+        color: "var(--gold)",
+        embutido: "operacionais",
+        aba: "motoristas",
+      },
+      {
+        icon: Gauge,
+        title: "Faixas de RPM",
+        desc: "Distribuição do tempo entre azul, verde, amarela e vermelha.",
+        color: "var(--leaf)",
+        embutido: "operacionais",
+        aba: "rpm",
+      },
+      {
+        icon: Users,
+        title: "Premiação",
+        desc: "Apuração de bônus por meta e peso configurados.",
+        color: "var(--leaf)",
+        rota: "/app/premiacao",
+      },
+      {
+        icon: Clock,
+        title: "Espelho de ponto",
+        desc: "Jornada, intervalos e horas extras — Lei 13.103.",
+        color: "var(--brand-navy)",
+        rota: "/app/pessoas/jornada",
+      },
+      {
+        icon: ShieldAlert,
+        title: "Multas por motorista",
+        desc: "Infrações, pontos e prazo de indicação do condutor.",
+        color: "var(--coral)",
+        rota: "/app/pessoas/multas",
+      },
+      {
+        icon: Target,
+        title: "Metas e pesos",
+        desc: "Critérios de avaliação por grupo e subgrupo.",
+        color: "var(--brand-sky)",
+        embutido: "operacionais",
+        aba: "metas",
+      },
     ],
   },
   {
     grupo: "Transporte urbano",
     itens: [
-      { icon: Route, title: "Cumprimento de programação", desc: "Programado contra realizado, com desvio por viagem.", color: "var(--brand-navy)", rota: "/app/operacao/viagens" },
-      { icon: Bus, title: "Escala por linha", desc: "Turnos, dias de operação e motorista fixo.", color: "var(--brand-sky)", rota: "/app/fretamento/escala" },
-      { icon: Users, title: "Contagem de passageiros", desc: "Embarques por linha, viagem e faixa horária.", color: "var(--leaf)", rota: "/app/urbano/passageiros" },
-      { icon: Activity, title: "Intervalo entre carros", desc: "Headway realizado e formação de comboio.", color: "var(--gold)", rota: "/app/operacao/sinotico" },
+      {
+        icon: Route,
+        title: "Cumprimento de programação",
+        desc: "Programado contra realizado, com desvio por viagem.",
+        color: "var(--brand-navy)",
+        rota: "/app/operacao/viagens",
+      },
+      {
+        icon: Bus,
+        title: "Escala por linha",
+        desc: "Turnos, dias de operação e motorista fixo.",
+        color: "var(--brand-sky)",
+        rota: "/app/fretamento/escala",
+      },
+      {
+        icon: Users,
+        title: "Contagem de passageiros",
+        desc: "Embarques por linha, viagem e faixa horária.",
+        color: "var(--leaf)",
+        rota: "/app/urbano/passageiros",
+      },
+      {
+        icon: Activity,
+        title: "Intervalo entre carros",
+        desc: "Headway realizado e formação de comboio.",
+        color: "var(--gold)",
+        rota: "/app/operacao/sinotico",
+      },
     ],
   },
   {
     grupo: "Fretamento",
     itens: [
-      { icon: Clock, title: "SLA de paradas", desc: "Programado contra realizado em cada ponto das viagens.", color: "var(--gold)", embutido: "frota", abaFrota: "sla" },
-      { icon: Bus, title: "Embarques e taxa de frequência", desc: "Embarques por cartão por viagem e quem está na lista e não embarca.", color: "var(--brand-navy)", rota: "/app/fretamento/passageiros" },
-      { icon: Route, title: "Economia de roteirização", desc: "Quilômetros poupados pela otimização de rota.", color: "var(--leaf)", rota: "/app/fretamento/roteirizacao" },
+      {
+        icon: Clock,
+        title: "SLA de paradas",
+        desc: "Programado contra realizado em cada ponto das viagens.",
+        color: "var(--gold)",
+        embutido: "frota",
+        abaFrota: "sla",
+      },
+      {
+        icon: Bus,
+        title: "Embarques e taxa de frequência",
+        desc: "Embarques por cartão por viagem e quem está na lista e não embarca.",
+        color: "var(--brand-navy)",
+        rota: "/app/fretamento/passageiros",
+      },
+      {
+        icon: Route,
+        title: "Economia de roteirização",
+        desc: "Quilômetros poupados pela otimização de rota.",
+        color: "var(--leaf)",
+        rota: "/app/fretamento/roteirizacao",
+      },
     ],
   },
   {
     grupo: "Gestão",
     itens: [
-      { icon: BarChart3, title: "Painel operacional", desc: "Consolidado do período com comparação contra o anterior.", color: "var(--brand-navy)", rota: "/app/gerencial" },
-      { icon: ShieldAlert, title: "Auditoria", desc: "Quem alterou o quê e quando, por organização.", color: "var(--muted-foreground)", rota: "/app/auditoria" },
-      { icon: BarChart3, title: "Contratos", desc: "Vigência, veículos por modalidade e aditivos.", color: "var(--gold)", rota: "/console/contratos" },
+      {
+        icon: BarChart3,
+        title: "Painel operacional",
+        desc: "Consolidado do período com comparação contra o anterior.",
+        color: "var(--brand-navy)",
+        rota: "/app/gerencial",
+      },
+      {
+        icon: ShieldAlert,
+        title: "Auditoria",
+        desc: "Quem alterou o quê e quando, por organização.",
+        color: "var(--muted-foreground)",
+        rota: "/app/auditoria",
+      },
+      {
+        icon: BarChart3,
+        title: "Contratos",
+        desc: "Vigência, veículos por modalidade e aditivos.",
+        color: "var(--gold)",
+        rota: "/console/contratos",
+      },
     ],
   },
 ];
 
-
-type Recente = { nome: string; categoria: string; periodo: string; gerado: string; formato: string; status: "Pronto" | "Processando" };
+type Recente = {
+  nome: string;
+  categoria: string;
+  periodo: string;
+  gerado: string;
+  formato: string;
+  status: "Pronto" | "Processando";
+};
 const statusTone: Record<Recente["status"], PillTone> = { Pronto: "green", Processando: "gold" };
 
 const RECENTES: Recente[] = [
-  { nome: "Consumo de combustível", categoria: "Frota", periodo: "Jul 2026", gerado: "há 12 min", formato: "PDF", status: "Pronto" },
-  { nome: "Emissão de CO₂", categoria: "Frota", periodo: "1º sem 2026", gerado: "há 1 h", formato: "CSV", status: "Pronto" },
-  { nome: "Espelho de ponto", categoria: "Motoristas", periodo: "24/07", gerado: "há 3 h", formato: "PDF", status: "Pronto" },
-  { nome: "Faturamento por rota", categoria: "Fretamento", periodo: "Jul 2026", gerado: "agora", formato: "XLSX", status: "Processando" },
+  {
+    nome: "Consumo de combustível",
+    categoria: "Frota",
+    periodo: "Jul 2026",
+    gerado: "há 12 min",
+    formato: "PDF",
+    status: "Pronto",
+  },
+  {
+    nome: "Emissão de CO₂",
+    categoria: "Frota",
+    periodo: "1º sem 2026",
+    gerado: "há 1 h",
+    formato: "CSV",
+    status: "Pronto",
+  },
+  {
+    nome: "Espelho de ponto",
+    categoria: "Motoristas",
+    periodo: "24/07",
+    gerado: "há 3 h",
+    formato: "PDF",
+    status: "Pronto",
+  },
+  {
+    nome: "Faturamento por rota",
+    categoria: "Fretamento",
+    periodo: "Jul 2026",
+    gerado: "agora",
+    formato: "XLSX",
+    status: "Processando",
+  },
 ];
 
 /**
@@ -174,12 +482,30 @@ function baixarRelatorio(r: Recente) {
 }
 
 const COLS: Column<Recente>[] = [
-  { key: "nome", header: "Relatório", render: (r) => <span className="font-semibold text-foreground">{r.nome}</span> },
+  {
+    key: "nome",
+    header: "Relatório",
+    render: (r) => <span className="font-semibold text-foreground">{r.nome}</span>,
+  },
   { key: "categoria", header: "Categoria", render: (r) => <Pill tone="sky">{r.categoria}</Pill> },
   { key: "periodo", header: "Período" },
-  { key: "gerado", header: "Gerado", render: (r) => <span className="text-muted-foreground">{r.gerado}</span> },
-  { key: "formato", header: "Formato", align: "center", render: (r) => <span className="font-mono text-[12px]">{r.formato}</span> },
-  { key: "status", header: "Status", align: "center", render: (r) => <Pill tone={statusTone[r.status]}>{r.status}</Pill> },
+  {
+    key: "gerado",
+    header: "Gerado",
+    render: (r) => <span className="text-muted-foreground">{r.gerado}</span>,
+  },
+  {
+    key: "formato",
+    header: "Formato",
+    align: "center",
+    render: (r) => <span className="font-mono text-[12px]">{r.formato}</span>,
+  },
+  {
+    key: "status",
+    header: "Status",
+    align: "center",
+    render: (r) => <Pill tone={statusTone[r.status]}>{r.status}</Pill>,
+  },
   {
     key: "acao",
     header: "",
@@ -211,18 +537,28 @@ const COLS: Column<Recente>[] = [
  * Abrir aqui em vez de navegar mantém o usuário na central: ele compara dois
  * relatórios sem perder o caminho de volta.
  */
-type Embutido = { tipo: "telemetria" | "operacionais" | "frota"; aba?: AbaOperacional; abaFrota?: AbaFrota };
+type Embutido = {
+  tipo: "telemetria" | "operacionais" | "frota";
+  aba?: AbaOperacional;
+  abaFrota?: AbaFrota;
+};
 
 function CentralRelatorios() {
   const navigate = useNavigate();
   const [embutido, setEmbutido] = useState<Embutido | null>(null);
   const real = !usandoMock();
-  const disponiveis = CATALOGO.reduce((a, c) => a + c.itens.filter((r) => r.rota || r.embutido).length, 0);
+  const disponiveis = CATALOGO.reduce(
+    (a, c) => a + c.itens.filter((r) => r.rota || r.embutido).length,
+    0,
+  );
 
   // O relatório escolhido abre aqui mesmo, com o caminho de volta.
-  if (embutido?.tipo === "telemetria") return <TelemetriaViagens onVoltar={() => setEmbutido(null)} />;
-  if (embutido?.tipo === "operacionais") return <RelatoriosOperacionais abaInicial={embutido.aba} onVoltar={() => setEmbutido(null)} />;
-  if (embutido?.tipo === "frota") return <RelatoriosFrota abaInicial={embutido.abaFrota} onVoltar={() => setEmbutido(null)} />;
+  if (embutido?.tipo === "telemetria")
+    return <TelemetriaViagens onVoltar={() => setEmbutido(null)} />;
+  if (embutido?.tipo === "operacionais")
+    return <RelatoriosOperacionais abaInicial={embutido.aba} onVoltar={() => setEmbutido(null)} />;
+  if (embutido?.tipo === "frota")
+    return <RelatoriosFrota abaInicial={embutido.abaFrota} onVoltar={() => setEmbutido(null)} />;
 
   return (
     <>
@@ -256,39 +592,45 @@ function CentralRelatorios() {
               {cat.itens.map((r) => {
                 const semDestino = !r.embutido && !r.rota;
                 return (
-                <button
-                  key={r.title}
-                  disabled={real && semDestino}
-                  onClick={() =>
-                    r.embutido
-                      ? setEmbutido({ tipo: r.embutido, aba: r.aba, abaFrota: r.abaFrota })
-                      : r.rota
-                        ? navigate(r.rota)
-                        : gerarRelatorio(r.title, cat.grupo)
-                  }
-                  title={semDestino ? "Ainda sem tela no sistema novo" : "Abrir relatório"}
-                  className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0"
-                >
-                  <div
-                    className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                    style={{ background: `color-mix(in oklab, ${r.color} 14%, white)` }}
+                  <button
+                    key={r.title}
+                    disabled={real && semDestino}
+                    onClick={() =>
+                      r.embutido
+                        ? setEmbutido({ tipo: r.embutido, aba: r.aba, abaFrota: r.abaFrota })
+                        : r.rota
+                          ? navigate(r.rota)
+                          : gerarRelatorio(r.title, cat.grupo)
+                    }
+                    title={semDestino ? "Ainda sem tela no sistema novo" : "Abrir relatório"}
+                    className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0"
                   >
-                    <r.icon className="h-5 w-5" style={{ color: r.color }} />
-                  </div>
-                  <h3 className="text-[14px] font-semibold text-foreground">{r.title}</h3>
-                  <p className="mt-1 flex-1 text-[13px] leading-relaxed text-muted-foreground">{r.desc}</p>
-                  {semDestino && (
-                    <span className="mt-1.5 inline-block w-fit rounded bg-secondary px-1.5 py-0.5 font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                      em breve
-                    </span>
-                  )}
-                  {!(real && semDestino) && (
-                    <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-navy">
-                      <FileText className="h-3.5 w-3.5" />
-                      {r.embutido ? "Abrir relatório" : r.rota ? "Ir para a tela" : "Gerar relatório"}
-                    </span>
-                  )}
-                </button>
+                    <div
+                      className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg"
+                      style={{ background: `color-mix(in oklab, ${r.color} 14%, white)` }}
+                    >
+                      <r.icon className="h-5 w-5" style={{ color: r.color }} />
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-foreground">{r.title}</h3>
+                    <p className="mt-1 flex-1 text-[13px] leading-relaxed text-muted-foreground">
+                      {r.desc}
+                    </p>
+                    {semDestino && (
+                      <span className="mt-1.5 inline-block w-fit rounded bg-secondary px-1.5 py-0.5 font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                        em breve
+                      </span>
+                    )}
+                    {!(real && semDestino) && (
+                      <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-navy">
+                        <FileText className="h-3.5 w-3.5" />
+                        {r.embutido
+                          ? "Abrir relatório"
+                          : r.rota
+                            ? "Ir para a tela"
+                            : "Gerar relatório"}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </div>

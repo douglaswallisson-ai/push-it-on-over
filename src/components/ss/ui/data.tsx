@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Link } from "@/lib/router-compat";
-import { ArrowUpRight, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, ImageDown, type LucideIcon } from "lucide-react";
+import { toast } from "sonner";
+import { baixarImagem } from "@/lib/export";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,15 +28,55 @@ export function Card({
   bodyClassName?: string;
   tourId?: string;
 }) {
+  // Cartão com gráfico, ranking ou mapa de calor ganha "Baixar imagem".
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [temGrafico, setTemGrafico] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el || !title) return;
+    const ver = () => setTemGrafico(Boolean(el.querySelector(".recharts-wrapper, [data-grafico]")));
+    ver();
+    const obs = new MutationObserver(ver);
+    obs.observe(el, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, [title]);
+  const baixar = async () => {
+    if (!ref.current) return;
+    try {
+      await baixarImagem(ref.current, title ?? "grafico");
+    } catch {
+      toast.error("Não foi possível gerar a imagem.", {
+        description: "Tente de novo com a tela já carregada.",
+      });
+    }
+  };
   return (
-    <div data-tour={tourId} className={cn("rounded-2xl border border-border bg-card shadow-card", className)}>
+    <div
+      ref={ref}
+      data-tour={tourId}
+      className={cn("rounded-2xl border border-border bg-card shadow-card", className)}
+    >
       {(title || action) && (
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3.5">
           <div className="flex items-center gap-2">
             {Icon && <Icon className="h-4 w-4 text-brand-navy" />}
             {title && <h3 className="text-[14px] font-semibold text-foreground">{title}</h3>}
           </div>
-          {action}
+          <div className="flex items-center gap-2">
+            {action}
+            {temGrafico && (
+              <button
+                type="button"
+                data-sem-exportar
+                onClick={baixar}
+                title="Baixar imagem (PNG)"
+                aria-label="Baixar imagem do gráfico"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                <ImageDown className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
       <div className={cn("p-5", bodyClassName)}>{children}</div>
@@ -87,7 +129,10 @@ export function StatTile({
       <Link
         to={to}
         data-tour="stat"
-        className={cn(base, "group relative block transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2] hover:shadow-elegant")}
+        className={cn(
+          base,
+          "group relative block transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2] hover:shadow-elegant",
+        )}
       >
         <ArrowUpRight className="absolute right-3 top-3 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
         {inner}
@@ -112,7 +157,13 @@ const PILL: Record<PillTone, string> = {
   neutral: "bg-secondary text-muted-foreground",
 };
 
-export function Pill({ tone = "neutral", children }: { tone?: PillTone; children: React.ReactNode }) {
+export function Pill({
+  tone = "neutral",
+  children,
+}: {
+  tone?: PillTone;
+  children: React.ReactNode;
+}) {
   return (
     <span
       className={cn(
@@ -165,7 +216,8 @@ export function DataTable<T extends Record<string, unknown>>({
   const paginas = porPagina > 0 ? Math.max(1, Math.ceil(rows.length / porPagina)) : 1;
   const atual = Math.min(pagina, paginas - 1);
   React.useEffect(() => setPagina(0), [rows.length]);
-  const visiveis = porPagina > 0 ? rows.slice(atual * porPagina, atual * porPagina + porPagina) : rows;
+  const visiveis =
+    porPagina > 0 ? rows.slice(atual * porPagina, atual * porPagina + porPagina) : rows;
   return (
     <div data-tour="table" className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[640px] border-collapse text-[14px]">
@@ -189,7 +241,10 @@ export function DataTable<T extends Record<string, unknown>>({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-muted-foreground">
+              <td
+                colSpan={columns.length}
+                className="px-4 py-10 text-center text-sm text-muted-foreground"
+              >
                 {empty}
               </td>
             </tr>
@@ -225,10 +280,26 @@ export function DataTable<T extends Record<string, unknown>>({
       {paginas > 1 && (
         <div className="flex items-center justify-end gap-2 border-t border-border bg-card px-4 py-2 text-[13px]">
           <span className="text-muted-foreground">
-            {(atual * porPagina + 1).toLocaleString("pt-BR")}–{Math.min(rows.length, (atual + 1) * porPagina).toLocaleString("pt-BR")} de {rows.length.toLocaleString("pt-BR")}
+            {(atual * porPagina + 1).toLocaleString("pt-BR")}–
+            {Math.min(rows.length, (atual + 1) * porPagina).toLocaleString("pt-BR")} de{" "}
+            {rows.length.toLocaleString("pt-BR")}
           </span>
-          <button type="button" className="rounded-md border border-border px-2 py-1 disabled:opacity-40" disabled={atual === 0} onClick={() => setPagina(atual - 1)}>Anterior</button>
-          <button type="button" className="rounded-md border border-border px-2 py-1 disabled:opacity-40" disabled={atual >= paginas - 1} onClick={() => setPagina(atual + 1)}>Próxima</button>
+          <button
+            type="button"
+            className="rounded-md border border-border px-2 py-1 disabled:opacity-40"
+            disabled={atual === 0}
+            onClick={() => setPagina(atual - 1)}
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            className="rounded-md border border-border px-2 py-1 disabled:opacity-40"
+            disabled={atual >= paginas - 1}
+            onClick={() => setPagina(atual + 1)}
+          >
+            Próxima
+          </button>
         </div>
       )}
     </div>
@@ -282,7 +353,8 @@ export function FilterChip({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-[13px] transition-colors hover:border-[#c7d2df]">
+      className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-[13px] transition-colors hover:border-[#c7d2df]"
+    >
       {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       <span className="text-muted-foreground">{label}:</span>
       <span className="font-medium text-foreground">{value}</span>

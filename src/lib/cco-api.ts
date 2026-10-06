@@ -9,7 +9,7 @@ import type { TipoVeiculo } from "@/components/ss/mapa/iconesVeiculo";
  */
 
 export type CorCarro = "vermelho" | "amarelo" | "verde" | "cinza";
-export type FonteAviso = "seguranca" | "camera" | "manutencao" | "equipamento";
+export type FonteAviso = "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao";
 
 export type VeiculoPainel = {
   id: number | string;
@@ -102,6 +102,28 @@ export const posicaoQuery = (unitId: number | string | null) =>
     refetchIntervalInBackground: true,
   });
 
+/** Ocorrências tratadas no turno (passagem de turno). */
+export type OcorrenciaTurno = {
+  em: string;
+  situacao: "visto" | "tratado";
+  por: string | null;
+  nota: string | null;
+  aviso: string | null;
+  unit_id: number;
+  veiculo: string;
+  placa: string;
+};
+export const turnoQuery = (grupo: string | undefined, desde: string, ativo: boolean) =>
+  queryOptions({
+    queryKey: ["cco", "turno", grupo ?? "", desde],
+    queryFn: () =>
+      api.get<{ data: OcorrenciaTurno[] }>(
+        `/api/v1/cco/turno?desde=${encodeURIComponent(desde)}${grupo ? `&group_id=${grupo}` : ""}`,
+      ),
+    enabled: !usandoMock() && ativo,
+    refetchInterval: 30_000,
+  });
+
 export const CCO = {
   marcar: (a: AvisoPainel, situacao: "visto" | "tratado", nota?: string) =>
     api.post<{ ok: boolean }>(`/api/v1/cco/avisos/${encodeURIComponent(a.id)}/marcar`, {
@@ -109,5 +131,6 @@ export const CCO = {
       ate: a.ate ?? a.ultimo ?? new Date().toISOString(),
       unit_id: a.unit_id,
       nota,
+      nome: a.nome,
     }),
 };

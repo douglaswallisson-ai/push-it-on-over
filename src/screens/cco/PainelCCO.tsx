@@ -51,6 +51,7 @@ import {
   CCO,
   consumoQuery,
   posicaoQuery,
+  turnoQuery,
   painelCCOQuery,
   type AvisoPainel,
   type CorCarro,
@@ -58,10 +59,12 @@ import {
   type VeiculoPainel,
 } from "@/lib/cco-api";
 import { lerEmbutido } from "@/lib/embutido";
+import { PlayerAoVivo } from "@/components/ss/video/PlayerAoVivo";
+import { Cameras, type Transmissao } from "@/lib/cameras-api";
 import { empresasQuery } from "@/lib/queries";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { usandoMock } from "@/lib/modo";
-import { lerSessao } from "@/lib/session";
+import { lerSessao, registrarAuditoria } from "@/lib/session";
 import { mensagemErro } from "@/lib/suporte-api";
 import { cn } from "@/lib/utils";
 
@@ -447,6 +450,36 @@ export default function PainelCCO() {
     setSelId(null);
   };
 
+  // Painel lateral: avisos em aberto ou ocorrências do turno.
+  const [abaLateral, setAbaLateral] = useState<"avisos" | "turno">("avisos");
+  // Faixa de críticos: os mais recentes, um de cada vez, trocando a cada 6 s.
+  const criticos = useMemo(
+    () =>
+      avisosVisiveis
+        .filter((a) => a.gravidade === "critico" && a.ultimo)
+        .sort((a, b) => String(b.ultimo).localeCompare(String(a.ultimo)))
+        .slice(0, 10),
+    [avisosVisiveis],
+  );
+  const [iCritico, setICritico] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setICritico((i) => i + 1), 6000);
+    return () => clearInterval(t);
+  }, []);
+  const critico = criticos.length ? criticos[iCritico % criticos.length] : null;
+  // Câmera do último aviso crítico de câmera (fadiga, celular…), com vídeo ao vivo.
+  const [cameraDispensada, setCameraDispensada] = useState<string | null>(null);
+  const avisoCamera = useMemo(
+    () =>
+      avisosVisiveis
+        .filter((a) => a.fonte === "camera" && a.gravidade === "critico" && a.ultimo)
+        .filter((a) => comCor.find((v) => String(v.id) === String(a.unit_id))?.tem_camera)
+        .sort((a, b) => String(b.ultimo).localeCompare(String(a.ultimo)))[0] ?? null,
+    [avisosVisiveis, comCor],
+  );
+  const camera =
+    avisoCamera && avisoCamera.id + avisoCamera.ultimo !== cameraDispensada ? avisoCamera : null;
+
   const abrir = (titulo: string, url: string) =>
     embutido ? setSobreposicao({ titulo, url }) : undefined;
 
@@ -641,6 +674,32 @@ export default function PainelCCO() {
         </div>
       </header>
 
+      {critico && (
+        <button
+          type="button"
+          onClick={() => focar(critico.unit_id)}
+          title="Mostrar no mapa"
+          className="flex h-9 shrink-0 items-center gap-3 bg-coral px-3 text-left text-[14px] text-white hover:brightness-95"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <b className="uppercase tracking-wide">Crítico</b>
+          <span className="font-mono font-bold">
+            {comCor.find((v) => String(v.id) === String(critico.unit_id))?.prefixo ??
+              critico.unit_id}
+          </span>
+          <span className="min-w-0 truncate">
+            {critico.nome}
+            {critico.detalhe ? ` · ${critico.detalhe}` : ""}
+          </span>
+          <span className="ml-auto shrink-0 font-mono text-[12px] opacity-90">
+            {critico.ultimo
+              ? `há ${Math.max(0, Math.round((relogio - new Date(critico.ultimo).getTime()) / 60000))} min`
+              : ""}
+            {criticos.length > 1 ? ` · ${(iCritico % criticos.length) + 1}/${criticos.length}` : ""}
+          </span>
+        </button>
+      )}
+
       {!mock && q.error ? (
         <div className="flex flex-1 items-center justify-center p-8 text-center text-[14px] text-coral">
           {mensagemErro(q.error)}
@@ -723,11 +782,31 @@ export default function PainelCCO() {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
-                  <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto ·{" "}
-                  {avisosVisiveis.length}
-                </h2>
-                {layout > 1 && (
+                <div className="flex gap-1" role="tablist" aria-label="Painel lateral">
+                  {(
+                    [
+                      ["avisos", `Avisos em aberto · ${avisosVisiveis.length}`],
+                      ["turno", "Ocorrências do turno"],
+                    ] as const
+                  ).map(([k, rot]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      role="tab"
+                      aria-selected={abaLateral === k}
+                      onClick={() => setAbaLateral(k)}
+                      className={cn(
+                        "h-8 flex-1 rounded-md text-[12px] font-semibold",
+                        abaLateral === k
+                          ? "bg-brand-navy text-white"
+                          : "text-muted-foreground hover:bg-secondary",
+                      )}
+                    >
+                      {rot}
+                    </button>
+                  ))}
+                </div>
+                {abaLateral === "avisos" && layout > 1 && (
                   <div className="mt-2 flex gap-1" role="tablist" aria-label="Avisos de qual mapa">
                     {[-1, ...Array.from({ length: layout }, (_, i) => i)].map((i) => (
                       <button
@@ -748,7 +827,9 @@ export default function PainelCCO() {
                     ))}
                   </div>
                 )}
-                <div className="mt-2 flex flex-wrap gap-1">
+                <div
+                  className={cn("mt-2 flex flex-wrap gap-1", abaLateral === "turno" && "hidden")}
+                >
                   {(
                     [
                       ["", "Todos"],
@@ -756,6 +837,7 @@ export default function PainelCCO() {
                       ["camera", "Câmera"],
                       ["manutencao", "Manutenção"],
                       ["equipamento", "Equipamento"],
+                      ["operacao", "Operação"],
                     ] as [string, string][]
                   ).map(([k, r]) => (
                     <button
@@ -780,7 +862,13 @@ export default function PainelCCO() {
                   </p>
                 )}
               </div>
-              <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
+              {abaLateral === "turno" && <OcorrenciasTurno grupo={grupo} onFocar={focar} />}
+              <ul
+                className={cn(
+                  "min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2",
+                  abaLateral === "turno" && "hidden",
+                )}
+              >
                 {lista.length === 0 && (
                   <li className="p-6 text-center text-[13px] text-muted-foreground">
                     Nenhum aviso em aberto.
@@ -885,6 +973,16 @@ export default function PainelCCO() {
           consumoExemplo={mock ? ex.consumo(sel.id) : undefined}
           agora={relogio}
           abrir={abrir}
+        />
+      )}
+
+      {camera && !mock && (
+        <CameraDoAviso
+          key={camera.id + camera.ultimo}
+          aviso={camera}
+          veiculo={comCor.find((v) => String(v.id) === String(camera.unit_id)) ?? null}
+          agora={relogio}
+          onFechar={() => setCameraDispensada(camera.id + camera.ultimo)}
         />
       )}
 
@@ -1212,6 +1310,163 @@ function Focar({
     else if (v) map.setView([v.lat, v.lng], Math.max(map.getZoom(), 12), { animate: false });
   }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
+}
+
+/** Início do turno atual: 06h, 14h ou 22h (o das 22h começa no dia anterior antes das 6h). */
+function inicioDoTurno(agora = new Date()) {
+  const d = new Date(agora);
+  const h = d.getHours();
+  const inicio = h >= 22 ? 22 : h >= 14 ? 14 : h >= 6 ? 6 : 22;
+  if (h < 6) d.setDate(d.getDate() - 1);
+  d.setHours(inicio, 0, 0, 0);
+  const z = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(inicio)}:00:00`;
+}
+
+/** O que foi visto ou tratado no turno, mais recente primeiro — para a passagem de turno. */
+function OcorrenciasTurno({ grupo, onFocar }: { grupo?: string; onFocar: (id: number) => void }) {
+  const desde = inicioDoTurno();
+  const tq = useQuery(turnoQuery(grupo, desde, true));
+  const itens = tq.data?.data ?? [];
+  const tratados = itens.filter((x) => x.situacao === "tratado").length;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <p className="border-b border-border px-3 py-2 text-[12px] text-muted-foreground">
+        Turno desde {desde.slice(11, 16)} · <b className="text-foreground">{itens.length}</b>{" "}
+        marcações · <b className="text-foreground">{tratados}</b> tratadas
+      </p>
+      <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
+        {tq.isPending && (
+          <li className="p-6 text-center text-[13px] text-muted-foreground">
+            <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+          </li>
+        )}
+        {tq.error && (
+          <li className="p-4 text-center text-[13px] text-coral">{mensagemErro(tq.error)}</li>
+        )}
+        {!tq.isPending && !tq.error && itens.length === 0 && (
+          <li className="p-6 text-center text-[13px] text-muted-foreground">
+            Nada marcado neste turno ainda.
+          </li>
+        )}
+        {itens.map((x, i) => (
+          <li key={i}>
+            <button
+              type="button"
+              onClick={() => onFocar(x.unit_id)}
+              className="w-full rounded-lg border border-border px-2.5 py-1.5 text-left text-[12px] hover:bg-secondary"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  {x.em.slice(11, 16)}
+                </span>
+                <b className="font-mono">{x.veiculo}</b>
+                <span
+                  className={cn(
+                    "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                    x.situacao === "tratado"
+                      ? "bg-leaf/15 text-leaf"
+                      : "bg-secondary text-muted-foreground",
+                  )}
+                >
+                  {x.situacao === "tratado" ? "Tratado" : "Visto"}
+                </span>
+              </div>
+              <div className="truncate text-muted-foreground">
+                {x.aviso ?? "Aviso"} · {x.por ?? "—"}
+                {x.nota ? ` · ${x.nota}` : ""}
+              </div>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Vídeo ao vivo do carro que gerou o último aviso crítico de câmera. */
+function CameraDoAviso({
+  aviso,
+  veiculo,
+  agora,
+  onFechar,
+}: {
+  aviso: AvisoPainel;
+  veiculo: VeiculoPainel | null;
+  agora: number;
+  onFechar: () => void;
+}) {
+  const [canal, setCanal] = useState(1);
+  const [t, setT] = useState<Transmissao | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const unitId = Number(aviso.unit_id);
+  useEffect(() => {
+    let vivo = true;
+    setT(null);
+    setErro(null);
+    registrarAuditoria(
+      "video_ao_vivo",
+      `CCO: canal ${canal} aberto — veículo ${veiculo?.placa ?? unitId} (${aviso.nome}).`,
+    );
+    Cameras.abrir(unitId, canal)
+      .then((x) => vivo && setT(x))
+      .catch((e) => vivo && setErro(mensagemErro(e)));
+    return () => {
+      vivo = false;
+    };
+  }, [unitId, canal]); // eslint-disable-line react-hooks/exhaustive-deps
+  const min = aviso.ultimo
+    ? Math.max(0, Math.round((agora - new Date(aviso.ultimo).getTime()) / 60000))
+    : null;
+  return (
+    <div className="fixed bottom-4 right-4 z-[950] w-[380px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-[12px]">
+        <Camera className="h-4 w-4 text-coral" />
+        <b className="font-mono">{veiculo?.prefixo ?? unitId}</b>
+        <span className="min-w-0 truncate">
+          {aviso.nome}
+          {min != null ? ` · há ${min} min` : ""}
+        </span>
+        <button
+          type="button"
+          onClick={onFechar}
+          aria-label="Fechar câmera"
+          className="ml-auto rounded p-1 hover:bg-secondary"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="aspect-video bg-black">
+        {t ? (
+          <PlayerAoVivo url={t.url} formato={t.formato} onErro={(e) => setErro(e.motivo)} />
+        ) : (
+          <div className="flex h-full items-center justify-center p-4 text-center text-[12px] text-white/80">
+            {erro ? erro : <Loader2 className="h-5 w-5 animate-spin" />}
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-1 px-3 py-2 text-[11px]">
+        <span className="text-muted-foreground">Canal</span>
+        {[1, 2, 3, 4].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setCanal(n)}
+            aria-pressed={canal === n}
+            className={cn(
+              "h-6 w-6 rounded border",
+              canal === n
+                ? "border-brand-navy bg-navy-tint font-semibold"
+                : "border-border hover:bg-secondary",
+            )}
+          >
+            {n}
+          </button>
+        ))}
+        {erro && t && <span className="ml-2 truncate text-coral">{erro}</span>}
+      </div>
+    </div>
+  );
 }
 
 /** Mantém o carro seguido no centro do mapa a cada nova posição. */

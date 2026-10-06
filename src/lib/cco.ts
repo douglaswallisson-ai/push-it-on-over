@@ -15,7 +15,7 @@
  */
 
 export type Gravidade = "critico" | "moderado";
-export type Fonte = "seguranca" | "camera" | "manutencao" | "equipamento";
+export type Fonte = "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao";
 export type CorCarro = "vermelho" | "amarelo" | "verde" | "cinza";
 
 export const COR_HEX: Record<CorCarro, string> = {
@@ -42,7 +42,6 @@ export const CATALOGO: Record<string, { nome: string; fonte: Fonte; gravidade: G
   ev_13: { nome: "Movimento sem tração", fonte: "seguranca", gravidade: "critico" },
   ev_27: { nome: "Alimentação desconectada", fonte: "seguranca", gravidade: "critico" },
   ev_11: { nome: "Pânico ativado", fonte: "seguranca", gravidade: "critico" },
-  ev_440: { nome: "Furto de combustível", fonte: "seguranca", gravidade: "critico" },
   ev_161: { nome: "Faixa amarela", fonte: "seguranca", gravidade: "moderado" },
   ev_359: { nome: "Curva brusca", fonte: "seguranca", gravidade: "moderado" },
   ev_148: { nome: "Excesso de embreagem", fonte: "seguranca", gravidade: "moderado" },
@@ -83,6 +82,7 @@ export const ROTULO_FONTE: Record<Fonte, string> = {
   camera: "Câmera",
   manutencao: "Manutenção",
   equipamento: "Equipamento",
+  operacao: "Operação",
 };
 
 export type Aviso = {

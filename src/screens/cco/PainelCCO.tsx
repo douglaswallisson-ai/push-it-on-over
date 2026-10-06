@@ -28,6 +28,7 @@ import {
   Wrench,
   X,
   Plus,
+  Crosshair,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
@@ -49,6 +50,7 @@ import {
 import {
   CCO,
   consumoQuery,
+  posicaoQuery,
   painelCCOQuery,
   type AvisoPainel,
   type CorCarro,
@@ -273,7 +275,27 @@ export default function PainelCCO() {
   }, [est]);
 
   const dados = mock ? ex.dados : q.data;
-  const veiculos = useMemo(() => dados?.veiculos ?? [], [dados]);
+  // Seguir veículo: o mapa mostra só ele e vai atrás, com a posição a cada 10 s.
+  const [seguindo, setSeguindo] = useState<{ id: string; mapa: number; rotulo: string } | null>(
+    null,
+  );
+  const posQ = useQuery(posicaoQuery(seguindo ? Number(seguindo.id) || seguindo.id : null));
+  const veiculos = useMemo(() => {
+    const base = dados?.veiculos ?? [];
+    const p = posQ.data;
+    if (!seguindo || !p || p.lat == null || p.lng == null) return base;
+    return base.map((v) =>
+      String(v.id) === seguindo.id
+        ? {
+            ...v,
+            lat: p.lat!,
+            lng: p.lng!,
+            velocidade: p.velocidade ?? v.velocidade,
+            ignicao: p.ignicao ?? v.ignicao,
+          }
+        : v,
+    );
+  }, [dados, posQ.data, seguindo]);
   const avisos = useMemo(
     () => (dados?.avisos ?? []).filter((a) => !ocultos.has(a.id)),
     [dados, ocultos],
@@ -321,6 +343,15 @@ export default function PainelCCO() {
         return s.size ? comCor.filter((v) => s.has(String(v.id))) : comCor;
       }),
     [comCor, selecoes],
+  );
+  // Clique num contador do topo filtra os mapas por aquela situação (os contadores seguem com o total).
+  const [filtroSituacao, setFiltroSituacao] = useState<CorCarro | "sem_sinal" | null>(null);
+  const naSituacao = (v: VeiculoPainel, f: CorCarro | "sem_sinal") =>
+    f === "sem_sinal" ? !v.comunicando : v.cor === f;
+  const doMapaFiltrado = useMemo(
+    () =>
+      filtroSituacao ? doMapa.map((l) => l.filter((v) => naSituacao(v, filtroSituacao))) : doMapa,
+    [doMapa, filtroSituacao],
   );
   const fechados = est.fechados ?? [false, false, false, false];
   const fecharMapa = (i: number, f: boolean) => {
@@ -398,6 +429,18 @@ export default function PainelCCO() {
     setFoco((f) => ({ id: v.id, n: (f?.n ?? 0) + 1, mapa }));
     setBusca("");
   };
+  const seguir = (v: VeiculoPainel) => {
+    const mapa =
+      filtrado?.mapa ?? Array.from({ length: layout }, (_, i) => i).find((i) => !fechados[i]) ?? 0;
+    if (filtrado && filtrado.mapa !== mapa) setSelecao(filtrado.mapa, []);
+    setFiltrado(null);
+    setSelecao(mapa, [String(v.id)]);
+    setSeguindo({ id: String(v.id), mapa, rotulo: rotuloBusca(v) });
+  };
+  const pararDeSeguir = () => {
+    if (seguindo) setSelecao(seguindo.mapa, []);
+    setSeguindo(null);
+  };
   const limparBusca = () => {
     if (filtrado) setSelecao(filtrado.mapa, []);
     setFiltrado(null);
@@ -443,7 +486,20 @@ export default function PainelCCO() {
             ))}
           </select>
         )}
-        {filtrado ? (
+        {seguindo ? (
+          <span className="inline-flex h-7 items-center gap-1 rounded-md bg-brand-navy px-2 font-semibold text-white">
+            <Crosshair className="h-3.5 w-3.5" /> Seguindo {seguindo.rotulo}
+            <button
+              type="button"
+              onClick={pararDeSeguir}
+              aria-label="Parar de seguir"
+              title="Parar de seguir"
+              className="ml-0.5 rounded p-0.5 hover:bg-white/20"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ) : filtrado ? (
           <span className="inline-flex h-7 items-center gap-1 rounded-md border border-brand-navy bg-navy-tint px-2 font-semibold text-brand-navy">
             <Search className="h-3.5 w-3.5" /> {filtrado.rotulo}
             <button
@@ -482,19 +538,56 @@ export default function PainelCCO() {
           </label>
         )}
         <span className="hidden items-center gap-2.5 text-muted-foreground md:flex">
-          {(alertasNoMapa
-            ? (["vermelho", "amarelo", "verde", "cinza"] as CorCarro[])
-            : (["verde", "cinza"] as CorCarro[])
-          ).map((c) => (
-            <span key={c} className="flex items-center gap-1" title={ROTULO_COR[c]}>
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_HEX[c] }} />
-              {ROTULO_COR[c]} <b className="font-mono text-foreground">{contagem(c)}</b>
-            </span>
-          ))}
-          <span className="flex items-center gap-1" title="Sem comunicação há mais de 2 h">
-            <WifiOff className="h-3.5 w-3.5 text-coral" />{" "}
-            <b className="font-mono text-foreground">{semSinal}</b>
-          </span>
+          {[
+            ...(alertasNoMapa
+              ? (["vermelho", "amarelo", "verde", "cinza"] as CorCarro[])
+              : (["verde", "cinza"] as CorCarro[])),
+            "sem_sinal" as const,
+          ].map((c) => {
+            const deles = visiveis.filter((v) => naSituacao(v, c));
+            const ativo = filtroSituacao === c;
+            const rotulo = c === "sem_sinal" ? "Sem comunicação há mais de 2 h" : ROTULO_COR[c];
+            return (
+              <span key={c} className="group relative">
+                <button
+                  type="button"
+                  onClick={() => setFiltroSituacao(ativo ? null : c)}
+                  aria-pressed={ativo}
+                  className={cn(
+                    "flex h-7 items-center gap-1 rounded-md px-1.5",
+                    ativo
+                      ? "bg-navy-tint text-brand-navy ring-1 ring-brand-navy"
+                      : "hover:bg-secondary",
+                  )}
+                >
+                  {c === "sem_sinal" ? (
+                    <WifiOff className="h-3.5 w-3.5 text-coral" />
+                  ) : (
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_HEX[c] }} />
+                  )}
+                  {c !== "sem_sinal" && ROTULO_COR[c]}{" "}
+                  <b className="font-mono text-foreground">{deles.length}</b>
+                </button>
+                {/* Lista ao passar o mouse; clicar filtra os mapas. */}
+                <span className="pointer-events-none absolute left-0 top-full z-[1500] mt-1 hidden w-[260px] rounded-lg border border-border bg-card p-2 text-[12px] text-foreground shadow-xl group-hover:block">
+                  <b className="block">
+                    {rotulo} · {deles.length}
+                  </b>
+                  <span className="mt-1 block font-mono text-[11px] leading-5 text-muted-foreground">
+                    {deles.length
+                      ? deles
+                          .slice(0, 60)
+                          .map((v) => rotuloBusca(v))
+                          .join(" · ") + (deles.length > 60 ? ` · +${deles.length - 60}` : "")
+                      : "Nenhum veículo"}
+                  </span>
+                  <span className="mt-1 block text-[11px] text-muted-foreground">
+                    {ativo ? "Clique para mostrar todos" : "Clique para mostrar só estes no mapa"}
+                  </span>
+                </span>
+              </span>
+            );
+          })}
           {q.isFetching && !mock && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         </span>
         <div className="ml-auto flex items-center gap-1">
@@ -590,10 +683,11 @@ export default function PainelCCO() {
                 <MapaCCO
                   key={i}
                   onFechar={() => fecharMapa(i, true)}
+                  seguindoId={seguindo && seguindo.mapa === i ? seguindo.id : null}
                   indice={i}
                   vista={vistas[i]}
                   onVista={(v) => setVista(i, v)}
-                  veiculos={doMapa[i]}
+                  veiculos={doMapaFiltrado[i]}
                   todos={comCor}
                   selecao={selecoes[i] ?? []}
                   onSelecao={(ids) => setSelecao(i, ids)}
@@ -785,6 +879,8 @@ export default function PainelCCO() {
           v={sel}
           avisos={avisos.filter((a) => String(a.unit_id) === String(sel.id))}
           onFechar={() => setSelId(null)}
+          seguindo={seguindo?.id === String(sel.id)}
+          onSeguir={() => (seguindo?.id === String(sel.id) ? pararDeSeguir() : seguir(sel))}
           onMarcar={marcar}
           consumoExemplo={mock ? ex.consumo(sel.id) : undefined}
           agora={relogio}
@@ -867,8 +963,10 @@ function MapaCCO({
   foco,
   registrar,
   onFechar,
+  seguindoId,
 }: {
   onFechar: () => void;
+  seguindoId: string | null;
   indice: number;
   vista: Vista;
   onVista: (v: Vista) => void;
@@ -897,6 +995,7 @@ function MapaCCO({
         />
         <Guardar vista={vista} onVista={onVista} />
         <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
+        {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
         {veiculos.map((v) => (
           <Marker
             key={v.id}
@@ -1115,10 +1214,30 @@ function Focar({
   return null;
 }
 
+/** Mantém o carro seguido no centro do mapa a cada nova posição. */
+function Seguir({ alvo }: { alvo?: VeiculoPainel }) {
+  const map = useMap();
+  const primeira = useRef(true);
+  useEffect(() => {
+    if (!alvo) return;
+    try {
+      if (primeira.current)
+        map.setView([alvo.lat, alvo.lng], Math.max(map.getZoom(), 15), { animate: false });
+      else map.panTo([alvo.lat, alvo.lng], { animate: false });
+      primeira.current = false;
+    } catch {
+      /* mapa montando */
+    }
+  }, [alvo?.lat, alvo?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 function CardVeiculo({
   v,
   avisos,
   onFechar,
+  seguindo,
+  onSeguir,
   onMarcar,
   consumoExemplo,
   agora,
@@ -1127,6 +1246,8 @@ function CardVeiculo({
   v: VeiculoPainel;
   avisos: AvisoPainel[];
   onFechar: () => void;
+  seguindo: boolean;
+  onSeguir: () => void;
   onMarcar: (a: AvisoPainel, s: "visto" | "tratado") => void;
   consumoExemplo?: number | null;
   agora: number;
@@ -1204,6 +1325,20 @@ function CardVeiculo({
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={onSeguir}
+          aria-pressed={seguindo}
+          title={seguindo ? "Parar de seguir" : "O mapa mostra só este veículo e vai atrás dele"}
+          className={cn(
+            "inline-flex h-8 shrink-0 items-center gap-1 rounded-md border px-2 text-[12px] font-semibold",
+            seguindo
+              ? "border-brand-navy bg-brand-navy text-white"
+              : "border-border hover:bg-secondary",
+          )}
+        >
+          <Crosshair className="h-3.5 w-3.5" /> {seguindo ? "Seguindo" : "Seguir veículo"}
+        </button>
         <button
           type="button"
           onClick={onFechar}

@@ -83,6 +83,25 @@ export const consumoQuery = (unitId: number | string | null) =>
     refetchInterval: 60_000,
   });
 
+/** Posição de um veículo a cada 10 s, para "Seguir veículo" (leve: uma linha). */
+export type PosicaoVeiculo = {
+  local_time: string | null;
+  lat: number | null;
+  lng: number | null;
+  rumo: number | null;
+  ignicao: boolean | null;
+  velocidade: number | null;
+  endereco: string | null;
+};
+export const posicaoQuery = (unitId: number | string | null) =>
+  queryOptions({
+    queryKey: ["cco", "posicao", unitId],
+    queryFn: () => api.get<PosicaoVeiculo>(`/api/v1/cco/posicao/${unitId}`),
+    enabled: !usandoMock() && unitId != null,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
+  });
+
 export const CCO = {
   marcar: (a: AvisoPainel, situacao: "visto" | "tratado", nota?: string) =>
     api.post<{ ok: boolean }>(`/api/v1/cco/avisos/${encodeURIComponent(a.id)}/marcar`, {

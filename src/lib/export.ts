@@ -63,14 +63,34 @@ export function exportarCSV<T>(linhas: T[], colunas: ColunaExport<T>[], nomeBase
  */
 export async function baixarImagem(el: HTMLElement, nomeBase: string) {
   if (!isBrowser) return;
-  const { toPng } = await import("html-to-image");
+  const { toSvg } = await import("html-to-image");
   const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
-  const url = await toPng(el, {
+  // toSvg + canvas próprio: o toPng da biblioteca espera um quadro de animação
+  // e trava com a aba em segundo plano.
+  const svg = await toSvg(el, {
     pixelRatio: 2,
+    // A fonte vem do Google Fonts, que não deixa ler o CSS de outro site; sem
+    // isto a geração travava. A imagem usa a fonte do sistema.
+    skipFonts: true,
     backgroundColor: fundo,
     // O próprio botão de baixar não entra na imagem.
     filter: (n) => !(n instanceof HTMLElement && n.dataset.semExportar !== undefined),
   });
+  const img = new Image();
+  await new Promise<void>((ok, erro) => {
+    img.onload = () => ok();
+    img.onerror = () => erro(new Error("imagem"));
+    img.src = svg;
+  });
+  const escala = 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = el.offsetWidth * escala;
+  canvas.height = el.offsetHeight * escala;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = fundo;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const url = canvas.toDataURL("image/png");
   const a = document.createElement("a");
   a.href = url;
   a.download = `${nomeArquivo(nomeBase)}-${new Date().toISOString().slice(0, 10)}.png`;

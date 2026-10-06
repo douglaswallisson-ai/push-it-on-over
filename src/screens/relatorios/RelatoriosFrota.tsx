@@ -1414,6 +1414,7 @@ export default function RelatoriosFrota({
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Bar
+                        isAnimationActive={false}
                         yAxisId="km"
                         dataKey="km"
                         name="Distância"
@@ -1421,6 +1422,7 @@ export default function RelatoriosFrota({
                         radius={[3, 3, 0, 0]}
                       />
                       <Line
+                        isAnimationActive={false}
                         yAxisId="l"
                         dataKey="litros"
                         name="Combustível"

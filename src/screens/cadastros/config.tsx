@@ -12,8 +12,8 @@ const Cor = ({ c }: { c: unknown }) => <span className="inline-flex items-center
 
 export const CFG_EMPRESA: ConfigCadastro = {
   tipo: "empresa", titulo: "Grupos", subtitulo: "Cadastros › Dados da empresa (grupo)", singular: "Grupo",
-  explicacao: "Os dados do cliente. As bases e filiais dele (subgrupos) ficam em Cadastros › Unidades.",
-  podeCriar: "ss", podeExcluir: false, rotulo: (r) => String(r.nome),
+  explicacao: "Os dados do cliente. As bases e filiais dele (subgrupos) ficam em Cadastros › Unidades. Cliente novo só entra pelo cadastro de contrato (Console › Contratos › Novo contrato).",
+  podeCriar: false, podeExcluir: false, rotulo: (r) => String(r.nome),
   colunas: [
     { chave: "nome", rotulo: "Nome" }, { chave: "razao_social", rotulo: "Razão social" }, { chave: "cnpj", rotulo: "CNPJ" },
     { chave: "velocidade_max", rotulo: "Velocidade máxima", num: true, render: (r) => `${nf(r.velocidade_max)} km/h` },

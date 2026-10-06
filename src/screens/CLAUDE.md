@@ -51,6 +51,7 @@ Legenda de situação:
 | Emissão de CO₂ | `/app/co2` | `EmissaoCO2.tsx` | Casca → `CO2Real.tsx` | `gerencial/co2` |
 | Suporte | `/app/suporte` | `Suporte.tsx` | Real (Zendesk desligado sem variáveis) | `suporte` |
 | Assistente (tela cheia) | `/app/assistente` | `AssistenteDados.tsx` | Protótipo de IA (ver `components/ss/selma/CLAUDE.md`) | — |
+| Console › Contratos | `/console/contratos` | `ContratosOrganizacao.tsx` | Casca → `contratos/ContratosReal` (todo cliente tem contrato; grupo novo só por contrato) | `contratos` |
 | Console (só SS) | `/console/...` | `console/*`, `Auditoria.tsx`, `ContratosOrganizacao.tsx`, `CatalogoManutencao.tsx`, `IndicadoresGerenciais.tsx`, `ConfiguracoesAdmin.tsx` | Acessos e administradores reais; contratos, catálogo e indicadores protótipo | `acessos` |
 | Login / Embutido | `/login`, `/embed` | `Login.tsx`, `Embutido.tsx` | Real | `auth`, `embed` |
 | Itens sem tela | `/app/$` | `EmBreve.tsx` | — | — |

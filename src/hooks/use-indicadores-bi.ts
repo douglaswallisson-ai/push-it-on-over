@@ -69,6 +69,10 @@ type LinhaKmFuel = {
   used_fuel_hist?: number | null;
   time_traveled_hist?: number | null;
   is_estimated?: boolean | null;
+  /** Regra única da plataforma (app/core/combustivel.py): a mesma do Gerencial e do ranking. */
+  km_real?: number | null;
+  litros_validos?: number | null;
+  km_com_combustivel?: number | null;
 };
 
 /**
@@ -133,9 +137,12 @@ export function useIndicadoresBi(dias = 30, veiculoIds?: string[]) {
       if (!id) continue;
 
       const a = acc.get(id) ?? { km: 0, kmF: 0, litros: 0, horas: 0, est: false, dias: new Set<string>() };
-      a.km += l.distance_traveled_hist ?? 0;
-      a.kmF += l.distance_traveled_hist_filtrado ?? 0;
-      a.litros += l.used_fuel_hist ?? 0;
+      // Colunas da regra única quando o servidor manda (mesmo número do Gerencial). As antigas
+      // trocavam o km real pelo estimado nos dias sem combustível (CECOTI: −62 mil km em 30 dias)
+      // e somavam litros impossíveis.
+      a.km += l.km_real ?? l.distance_traveled_hist ?? 0;
+      a.kmF += l.km_com_combustivel ?? l.distance_traveled_hist_filtrado ?? 0;
+      a.litros += l.litros_validos ?? l.used_fuel_hist ?? 0;
       a.horas += l.time_traveled_hist ?? 0;
       a.est = a.est || Boolean(l.is_estimated);
       if (l.dt) a.dias.add(l.dt);

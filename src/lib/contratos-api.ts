@@ -56,8 +56,43 @@ export type DadosContrato = Partial<{
 
 export type StatusContrato = "ativo" | "suspenso" | "encerrado";
 
+/** Aditivo de veículos. `numero` = número do contrato pai + sequência (CT-00042-AD01). */
+export type Aditivo = {
+  id: number;
+  contrato_id: number;
+  sequencia: number;
+  numero: string;
+  numero_contrato_pai: string;
+  tipo: "inclusao" | "retirada";
+  qtd_veiculos: number;
+  valor_parcela_adicional: number | null;
+  valor_implantacao_adicional: number | null;
+  data_assinatura: string | null;
+  data_inicio: string;
+  data_fim: string | null;
+  placas: string | null;
+  observacoes: string | null;
+  status: "ativo" | "cancelado";
+  motivo_cancelamento: string | null;
+  criado_em: string;
+};
+
+export type NovoAditivo = {
+  tipo: "inclusao" | "retirada";
+  qtd_veiculos: number;
+  valor_parcela_adicional?: number | null;
+  valor_implantacao_adicional?: number | null;
+  data_assinatura?: string | null;
+  data_inicio: string;
+  data_fim?: string | null;
+  placas?: string | null;
+  observacoes?: string | null;
+};
+
 export type Contrato = {
   id: number;
+  /** Número fixo do sistema (CT-00042): não muda, é a referência dos aditivos. */
+  numero_sistema: string;
   group_id: number | null;
   origem: "existente" | "novo";
   status: StatusContrato;
@@ -74,6 +109,11 @@ export type Contrato = {
   veiculos_hoje: number | null;
   sem_veiculos: boolean;
   grupo_a_criar: boolean;
+  aditivos: Aditivo[];
+  /** Contrato original + aditivos ativos. */
+  qtd_veiculos_total: number | null;
+  valor_parcela_total: number | null;
+  aditivos_ativos: number;
 };
 
 export type RespostaContratos = {
@@ -88,6 +128,7 @@ export type RespostaContratos = {
     grupos_a_criar: number;
     sem_veiculos: number;
     receita_mensal: number;
+    aditivos: number;
   };
   opcoes: { segmentos: string[]; produtos: string[]; reajustes: string[]; pagamentos: string[] };
 };
@@ -112,6 +153,10 @@ export const Contratos = {
   criar: (dados: DadosContrato) => api.post<{ id: number; aviso: string }>(B, { dados }),
   editar: (id: number, dados: DadosContrato, motivo?: string) =>
     api.put<Contrato>(`${B}/${id}`, { dados, motivo }),
+  criarAditivo: (id: number, a: NovoAditivo) =>
+    api.post<{ numero: string; contrato: Contrato }>(`${B}/${id}/aditivos`, a),
+  cancelarAditivo: (id: number, aid: number, motivo: string) =>
+    api.post<Contrato>(`${B}/${id}/aditivos/${aid}/cancelar`, { motivo }),
   status: (id: number, status: StatusContrato, motivo?: string) =>
     api.post<Contrato>(`${B}/${id}/status`, { dados: { status }, motivo }),
 };

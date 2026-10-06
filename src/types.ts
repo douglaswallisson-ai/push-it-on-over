@@ -795,6 +795,12 @@ export type OcorrenciaVideo = {
   duracaoS?: number;
   velocidadeKmh?: number;
   clipeDisponivel: boolean;
+  /** Nome do catálogo da câmera, quando o tipo não está na lista acima. */
+  rotulo?: string;
+  /** Classe já calculada pela API (DMS → comportamento, ADAS → segurança). */
+  classe?: "comportamento" | "seguranca" | "equipamento";
+  /** Prefixo ou placa vindos junto da ocorrência. */
+  veiculoRotulo?: string;
   status: StatusTratativa;
   tratativa?: string;
   tratadoPor?: string;

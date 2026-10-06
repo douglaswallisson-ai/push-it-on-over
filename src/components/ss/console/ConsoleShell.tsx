@@ -17,7 +17,7 @@ import {
   Boxes,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
-import { SSLogo } from "@/components/ss/brand/SSLogo";
+import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { useSessao } from "@/hooks/use-sessao";
 import { sair } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -128,7 +128,7 @@ export function ConsoleShell({ children }: { children?: ReactNode }) {
           </button>
 
           <NavLink to="/console" className="flex items-center gap-2.5">
-            <SSLogo className="h-7 w-7" />
+            <SSOrb size={28} />
             <span className="leading-tight">
               <span className="block text-[14px] font-semibold">SS Telemática</span>
               <span className="block font-mono text-[12px] uppercase tracking-[0.14em] text-white/50">

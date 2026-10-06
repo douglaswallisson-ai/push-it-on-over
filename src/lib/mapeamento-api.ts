@@ -86,7 +86,9 @@ function situacaoDaLeitura(e: VeiculoApi["estado_atual"]): "em_rota" | "parado" 
 
 export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
   const [marca, ...resto] = (v.model ?? "").split(" ");
-  const odomMetros = v.estado_atual?.odom_total ?? v.estado_atual?.odom ?? null;
+  // Regra única (app/core/odometro.py): odom_total, odom; 0 e 100.000.000 são sentinela do equipamento.
+  const valido = (x?: number | null) => (x != null && x !== 0 && x !== 100_000_000 ? x : null);
+  const odomMetros = valido(v.estado_atual?.odom_total) ?? valido(v.estado_atual?.odom);
   return {
     id: String(v.id),
     placa: v.label,
@@ -116,32 +118,35 @@ export function veiculoDaApiParaTela(v: VeiculoApi): Veiculo {
      * a telemetria traz leitura mais recente, ela tem precedência.
      */
     /**
-   * Odômetro atual, da última leitura do equipamento.
-   *
-   * `initial_odometer` é o valor de quando o equipamento foi instalado —
-   * preenchido em poucos veículos e parado no tempo. O que avança está em
-   * `dev_status`, exposto agora como `estado_atual`.
-   *
-   * Leitura marcada como corrigida ainda vale: a correção foi feita
-   * justamente para o número ser utilizável. O que não vale é apresentá-la
-   * sem dizer, e por isso a marca acompanha o valor.
-   *
-   * `odom_total` primeiro, `odom` se vazio — a mesma regra do plataforma_web
-   * (`mapcontroller` e `devstatuscontroller`: `coalesce(odom_total, odom)`).
-   * Os dois divergem em ~1.000 dos 10.266 veículos, e só com `odom` a tela
-   * mostrava quilometragem diferente da que o cliente vê em produção.
-   */
-  odometro:
-    odomMetros != null
-      ? Math.round(odomMetros / 1000)
-      : v.initial_odometer
-        ? Math.round(v.initial_odometer / 1000)
-        : null,
-  odometroQualidade: v.estado_atual?.odom_quality_flag ?? null,
-  odometroLidoEm: v.estado_atual?.local_time ?? null,
-  horimetro: v.estado_atual?.hourmeter_total ?? null,
-  /** Consumo que o próprio veículo informa — contraprova do calculado. */
-  kmlDoVeiculo: v.estado_atual?.can_avg_fuel_economy_kmpl ?? null,
+     * Odômetro atual, da última leitura do equipamento.
+     *
+     * `initial_odometer` é o valor de quando o equipamento foi instalado —
+     * preenchido em poucos veículos e parado no tempo. O que avança está em
+     * `dev_status`, exposto agora como `estado_atual`.
+     *
+     * Leitura marcada como corrigida ainda vale: a correção foi feita
+     * justamente para o número ser utilizável. O que não vale é apresentá-la
+     * sem dizer, e por isso a marca acompanha o valor.
+     *
+     * `odom_total` primeiro, `odom` se vazio — a mesma regra do plataforma_web
+     * (`mapcontroller` e `devstatuscontroller`: `coalesce(odom_total, odom)`).
+     * Os dois divergem em ~1.000 dos 10.266 veículos, e só com `odom` a tela
+     * mostrava quilometragem diferente da que o cliente vê em produção.
+     */
+    odometro:
+      odomMetros != null
+        ? Math.round(odomMetros / 1000)
+        : v.initial_odometer
+          ? Math.round(v.initial_odometer / 1000)
+          : null,
+    odometroQualidade: v.estado_atual?.odom_quality_flag ?? null,
+    odometroLidoEm: v.estado_atual?.local_time ?? null,
+    // `hourmeter_total` vem em minutos (PM, 02/10/2026); a tela trabalha em horas, como Manutenção.
+    horimetro: v.estado_atual?.hourmeter_total
+      ? Math.round(v.estado_atual.hourmeter_total / 60)
+      : null,
+    /** Consumo que o próprio veículo informa — contraprova do calculado. */
+    kmlDoVeiculo: v.estado_atual?.can_avg_fuel_economy_kmpl ?? null,
     grupoId: v.group_id != null ? String(v.group_id) : undefined,
     unidadeId: v.subgroup_id != null ? String(v.subgroup_id) : undefined,
   };

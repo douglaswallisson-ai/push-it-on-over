@@ -88,7 +88,6 @@ type Estado = {
   /** Seleção de veículos de cada mapa, por empresa ("" = todas). Lista vazia = todos. */
   selecoes: Record<string, string[][]>;
   grupo?: string;
-  horas: number;
   fonte: "" | FonteAviso;
   abaAvisos: number;
   /** Aba de avisos aberta (retrátil). */
@@ -96,7 +95,8 @@ type Estado = {
   /** Pintar o carro pelo alerta. Desligado = mapa só com a situação (andando/parado), sem poluir. */
   alertasNoMapa: boolean;
 };
-const HORAS = [1, 2, 6, 12];
+/** O CCO é ao vivo: avisos das últimas 2 h ainda não tratados, sem seletor de janela. */
+const JANELA_AO_VIVO_H = 2;
 const VAZIO: string[][] = [[], [], [], []];
 
 /** Visualização desta aba do navegador (cada monitor com a sua empresa). */
@@ -116,7 +116,8 @@ function lerEstado(): Estado {
       area: a.id,
     })),
     selecoes: {},
-    horas: 2,
+    // Abre na empresa escolhida na plataforma, nunca na base inteira da SS.
+    grupo: grupoAtivo(),
     fonte: "",
     abaAvisos: -1,
     painelAvisos: true,
@@ -128,7 +129,7 @@ function lerEstado(): Estado {
       return { ...padrao, ...daAba };
     const v = JSON.parse(localStorage.getItem(chaveEstado()) ?? "null");
     if (v && [1, 2, 4].includes(v.layout) && Array.isArray(v.vistas) && v.vistas.length === 4)
-      return { ...padrao, ...v };
+      return { ...padrao, ...v, grupo: padrao.grupo };
     // Layout salvo pela versão anterior.
     const antigo = JSON.parse(localStorage.getItem("ss:cco:layout") ?? "null");
     if (antigo?.vistas?.length === 4)
@@ -233,11 +234,11 @@ export default function PainelCCO() {
   const ehSS = sessao?.perfil === "super_admin";
   const embutido = Boolean(lerEmbutido());
   const [est, setEst] = useState<Estado>(lerEstado);
-  const { layout, vistas, horas, fonte, abaAvisos } = est;
+  const { layout, vistas, fonte, abaAvisos } = est;
   const grupo = ehSS ? est.grupo : grupoAtivo();
   const chaveGrupo = grupo ?? "";
   const selecoes = est.selecoes[chaveGrupo] ?? VAZIO;
-  const q = useQuery(painelCCOQuery(grupo, horas));
+  const q = useQuery(painelCCOQuery(grupo, JANELA_AO_VIVO_H));
   const ex = useExemplo(mock);
   const [selId, setSelId] = useState<string | number | null>(null);
   const [foco, setFoco] = useState<{ id: string | number; n: number; mapa: number } | null>(null);
@@ -402,21 +403,6 @@ export default function PainelCCO() {
             {empresas.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.name}
-              </option>
-            ))}
-          </select>
-        )}
-        {!mock && (
-          <select
-            id="cco-horas"
-            value={horas}
-            onChange={(e) => mudar({ horas: Number(e.target.value) })}
-            aria-label="Janela dos avisos"
-            className="h-7 rounded-md border border-border bg-white px-2 text-[12px]"
-          >
-            {HORAS.map((h) => (
-              <option key={h} value={h}>
-                Últimas {h} h
               </option>
             ))}
           </select>

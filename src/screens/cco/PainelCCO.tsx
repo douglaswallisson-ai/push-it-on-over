@@ -14,10 +14,12 @@ import {
   Fuel,
   Gauge,
   Grid2x2,
+  ListFilter,
   Loader2,
   Maximize,
   Minimize,
   Mountain,
+  Search,
   Square,
   Thermometer,
   User,
@@ -52,6 +54,7 @@ import {
   type FonteAviso,
   type VeiculoPainel,
 } from "@/lib/cco-api";
+import { lerEmbutido } from "@/lib/embutido";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { usandoMock } from "@/lib/modo";
 import { lerSessao } from "@/lib/session";
@@ -62,34 +65,61 @@ import { cn } from "@/lib/utils";
  * Painel CCO — a operação em tempo real numa tela própria (aberta em outra aba
  * para o segundo monitor ou o telão). Especificação combinada com o PM em
  * 06/10/2026 (ver lib/cco.ts e ss-fleet-core endpoints/cco.py):
- * - até 4 mapas, cada um com o seu zoom; o layout fica guardado no navegador;
- * - carro desenhado pelo tipo (caminhão, ônibus, van…) na cor da situação:
- *   vermelho crítico, amarelo moderado, verde andando, cinza parado — sem piscar;
+ * - até 4 mapas, cada um com o seu zoom e a SUA seleção de veículos (urbano
+ *   concentrado: cada mapa mostra só as placas escolhidas) e os avisos podem
+ *   ser vistos por mapa;
+ * - a última visualização (layout, áreas, seleções, empresa, janela e filtros)
+ *   fica salva no navegador, por usuário, e volta ao abrir;
+ * - carro desenhado pelo tipo (caminhão, ônibus, van…) na cor da situação, sem piscar;
  * - wifi vermelho só sem comunicação há mais de 2 h;
  * - avisos sem som, agrupados por veículo e tipo, saem só com Visto ou Tratado;
- * - o card e os avisos abrem o sistema em OUTRA aba (rel="opener" para levar o
- *   login, que fica no sessionStorage) — o painel nunca é trocado.
+ * - o card abre o sistema em OUTRA aba (rel="opener" leva o login, que fica no
+ *   sessionStorage). Embutido em outro sistema (iframe) a aba nova não teria o
+ *   login — o armazenamento do iframe é separado —, então abre por cima do painel.
  * Em modo de demonstração usa os dados de exemplo de lib/cco.ts.
  */
 
 type Layout = 1 | 2 | 4;
 type Vista = { centro: [number, number]; zoom: number; area: string };
-const CHAVE = "ss:cco:layout";
+type Estado = {
+  layout: Layout;
+  vistas: Vista[];
+  /** Seleção de veículos de cada mapa, por empresa ("" = todas). Lista vazia = todos. */
+  selecoes: Record<string, string[][]>;
+  grupo?: string;
+  horas: number;
+  fonte: "" | FonteAviso;
+  abaAvisos: number;
+};
 const HORAS = [1, 2, 6, 12];
+const VAZIO: string[][] = [[], [], [], []];
 
-function lerLayout(): { layout: Layout; vistas: Vista[] } {
-  const padrao = {
-    layout: 1 as Layout,
+function chaveEstado() {
+  const s = lerSessao();
+  return `ss:cco:v2:${s?.email || s?.nome || "anon"}`;
+}
+
+function lerEstado(): Estado {
+  const padrao: Estado = {
+    layout: 1,
     vistas: [AREAS[0], AREAS[1], AREAS[5], AREAS[4]].map((a) => ({
       centro: a.centro,
       zoom: a.zoom,
       area: a.id,
     })),
+    selecoes: {},
+    horas: 2,
+    fonte: "",
+    abaAvisos: -1,
   };
   try {
-    const v = JSON.parse(localStorage.getItem(CHAVE) ?? "null");
+    const v = JSON.parse(localStorage.getItem(chaveEstado()) ?? "null");
     if (v && [1, 2, 4].includes(v.layout) && Array.isArray(v.vistas) && v.vistas.length === 4)
-      return v;
+      return { ...padrao, ...v };
+    // Layout salvo pela versão anterior.
+    const antigo = JSON.parse(localStorage.getItem("ss:cco:layout") ?? "null");
+    if (antigo?.vistas?.length === 4)
+      return { ...padrao, layout: antigo.layout, vistas: antigo.vistas };
   } catch {
     /* navegador sem armazenamento */
   }
@@ -188,19 +218,39 @@ export default function PainelCCO() {
   const mock = usandoMock();
   const sessao = lerSessao();
   const ehSS = sessao?.perfil === "super_admin";
-  const [grupo, setGrupo] = useState<string | undefined>(() => (ehSS ? undefined : grupoAtivo()));
-  const [horas, setHoras] = useState(2);
+  const embutido = Boolean(lerEmbutido());
+  const [est, setEst] = useState<Estado>(lerEstado);
+  const { layout, vistas, horas, fonte, abaAvisos } = est;
+  const grupo = ehSS ? est.grupo : grupoAtivo();
+  const chaveGrupo = grupo ?? "";
+  const selecoes = est.selecoes[chaveGrupo] ?? VAZIO;
   const q = useQuery(painelCCOQuery(grupo, horas));
   const ex = useExemplo(mock);
-  const [{ layout, vistas }, setCfg] = useState(lerLayout);
   const [selId, setSelId] = useState<string | number | null>(null);
   const [foco, setFoco] = useState<{ id: string | number; n: number; mapa: number } | null>(null);
   const contem = useRef<((lat: number, lng: number) => boolean)[]>([]);
-  const [fonte, setFonte] = useState<"" | FonteAviso>("");
   const [cheia, setCheia] = useState(false);
   const [ocultos, setOcultos] = useState<Set<string>>(new Set());
   const [empresas, setEmpresas] = useState<{ id: number; nome: string }[]>([]);
   const [relogio, setRelogio] = useState(() => Date.now());
+  const [sobreposicao, setSobreposicao] = useState<{ titulo: string; url: string } | null>(null);
+
+  const mudar = (p: Partial<Estado>) => setEst((e) => ({ ...e, ...p }));
+  const setSelecao = (i: number, ids: string[]) =>
+    setEst((e) => {
+      const atual = [...(e.selecoes[chaveGrupo] ?? VAZIO)];
+      atual[i] = ids;
+      return { ...e, selecoes: { ...e.selecoes, [chaveGrupo]: atual } };
+    });
+
+  // Salva a última visualização (por usuário) a cada mudança.
+  useEffect(() => {
+    try {
+      localStorage.setItem(chaveEstado(), JSON.stringify(est));
+    } catch {
+      /* sem armazenamento */
+    }
+  }, [est]);
 
   const dados = mock ? ex.dados : q.data;
   const veiculos = useMemo(() => dados?.veiculos ?? [], [dados]);
@@ -209,7 +259,6 @@ export default function PainelCCO() {
     [dados, ocultos],
   );
 
-  // Empresas do seletor da SS: vêm da visão "todas" (cada veículo traz o grupo).
   useEffect(() => {
     if (!mock && !grupo && q.data) {
       const m = new Map<number, string>();
@@ -225,13 +274,6 @@ export default function PainelCCO() {
     const t = setInterval(() => setRelogio(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem(CHAVE, JSON.stringify({ layout, vistas }));
-    } catch {
-      /* sem armazenamento */
-    }
-  }, [layout, vistas]);
   useEffect(() => {
     const f = () => setCheia(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", f);
@@ -256,10 +298,31 @@ export default function PainelCCO() {
     });
   }, [veiculos, avisos]);
 
-  const contagem = (c: CorCarro) => comCor.filter((v) => v.cor === c).length;
-  const semSinal = comCor.filter((v) => !v.comunicando).length;
+  // Veículos de cada mapa (seleção vazia = todos). Seleção com placa que saiu da frota é ignorada.
+  const doMapa = useMemo(
+    () =>
+      Array.from({ length: 4 }, (_, i) => {
+        const s = new Set(selecoes[i] ?? []);
+        return s.size ? comCor.filter((v) => s.has(String(v.id))) : comCor;
+      }),
+    [comCor, selecoes],
+  );
+  const idsVisiveis = useMemo(() => {
+    const s = new Set<string>();
+    const abas =
+      abaAvisos >= 0 && abaAvisos < layout
+        ? [abaAvisos]
+        : Array.from({ length: layout }, (_, i) => i);
+    for (const i of abas) for (const v of doMapa[i]) s.add(String(v.id));
+    return s;
+  }, [doMapa, layout, abaAvisos]);
+  const visiveis = comCor.filter((v) => idsVisiveis.has(String(v.id)));
+  const avisosVisiveis = avisos.filter((a) => idsVisiveis.has(String(a.unit_id)));
+
+  const contagem = (c: CorCarro) => visiveis.filter((v) => v.cor === c).length;
+  const semSinal = visiveis.filter((v) => !v.comunicando).length;
   const sel = comCor.find((v) => String(v.id) === String(selId)) ?? null;
-  const lista = avisos
+  const lista = avisosVisiveis
     .filter((a) => !fonte || a.fonte === fonte)
     .sort((a, b) =>
       a.gravidade === b.gravidade
@@ -288,18 +351,21 @@ export default function PainelCCO() {
   const focar = (id: string | number) => {
     setSelId(id);
     const v = comCor.find((x) => String(x.id) === String(id));
-    const mapa = v
-      ? Array.from({ length: layout }, (_, i) => i).find((i) => contem.current[i]?.(v.lat, v.lng))
-      : undefined;
+    const noMapa = (i: number) => doMapa[i].some((x) => String(x.id) === String(id));
+    const mapas = Array.from({ length: layout }, (_, i) => i).filter(noMapa);
+    const mapa = v ? (mapas.find((i) => contem.current[i]?.(v.lat, v.lng)) ?? mapas[0]) : undefined;
     setFoco((f) => ({ id, n: (f?.n ?? 0) + 1, mapa: mapa ?? 0 }));
   };
+
+  const abrir = (titulo: string, url: string) =>
+    embutido ? setSobreposicao({ titulo, url }) : undefined;
 
   const telaCheia = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen().catch(() => {});
   };
   const setVista = (i: number, v: Vista) =>
-    setCfg((c) => ({ ...c, vistas: c.vistas.map((x, k) => (k === i ? v : x)) }));
+    setEst((e) => ({ ...e, vistas: e.vistas.map((x, k) => (k === i ? v : x)) }));
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
@@ -324,7 +390,7 @@ export default function PainelCCO() {
             id="cco-empresa"
             value={grupo ?? ""}
             onChange={(e) => {
-              setGrupo(e.target.value || undefined);
+              mudar({ grupo: e.target.value || undefined });
               setSelId(null);
             }}
             className="h-8 max-w-[260px] rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
@@ -335,13 +401,16 @@ export default function PainelCCO() {
                 {e.nome}
               </option>
             ))}
+            {grupo && !empresas.some((e) => String(e.id) === grupo) && (
+              <option value={grupo}>{veiculos[0]?.empresa ?? `Empresa ${grupo}`}</option>
+            )}
           </select>
         )}
         {!mock && (
           <select
             id="cco-horas"
             value={horas}
-            onChange={(e) => setHoras(Number(e.target.value))}
+            onChange={(e) => mudar({ horas: Number(e.target.value) })}
             title="Avisos de quanto tempo para trás"
             className="h-8 rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
           >
@@ -377,7 +446,7 @@ export default function PainelCCO() {
               <button
                 key={n}
                 type="button"
-                onClick={() => setCfg((c) => ({ ...c, layout: n }))}
+                onClick={() => mudar({ layout: n, abaAvisos: abaAvisos >= n ? -1 : abaAvisos })}
                 aria-pressed={layout === n}
                 aria-label={`${n} mapa${n > 1 ? "s" : ""}`}
                 title={`${n} mapa${n > 1 ? "s" : ""}`}
@@ -430,7 +499,10 @@ export default function PainelCCO() {
                 indice={i}
                 vista={vistas[i]}
                 onVista={(v) => setVista(i, v)}
-                veiculos={comCor}
+                veiculos={doMapa[i]}
+                todos={comCor}
+                selecao={selecoes[i] ?? []}
+                onSelecao={(ids) => setSelecao(i, ids)}
                 selId={selId}
                 onSelecionar={setSelId}
                 foco={foco && foco.mapa === i ? foco : null}
@@ -442,8 +514,30 @@ export default function PainelCCO() {
           <aside className="flex min-h-0 flex-col border-l border-border bg-card">
             <div className="border-b border-border px-3 py-2">
               <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
-                <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto · {avisos.length}
+                <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto ·{" "}
+                {avisosVisiveis.length}
               </h2>
+              {layout > 1 && (
+                <div className="mt-2 flex gap-1" role="tablist" aria-label="Avisos de qual mapa">
+                  {[-1, ...Array.from({ length: layout }, (_, i) => i)].map((i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      role="tab"
+                      aria-selected={abaAvisos === i}
+                      onClick={() => mudar({ abaAvisos: i })}
+                      className={cn(
+                        "h-7 flex-1 rounded-md border text-[11px] font-medium",
+                        abaAvisos === i
+                          ? "border-brand-navy bg-navy-tint text-foreground"
+                          : "border-border text-muted-foreground hover:bg-secondary",
+                      )}
+                    >
+                      {i < 0 ? "Todos os mapas" : `Mapa ${i + 1}`}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="mt-2 flex flex-wrap gap-1">
                 {(
                   [
@@ -457,7 +551,7 @@ export default function PainelCCO() {
                   <button
                     key={k}
                     type="button"
-                    onClick={() => setFonte(k as "" | FonteAviso)}
+                    onClick={() => mudar({ fonte: k as "" | FonteAviso })}
                     aria-pressed={fonte === k}
                     className={cn(
                       "h-7 rounded-full border px-2.5 text-[11px] font-medium",
@@ -466,7 +560,7 @@ export default function PainelCCO() {
                         : "border-border hover:bg-secondary",
                     )}
                   >
-                    {r} {k ? `· ${avisos.filter((a) => a.fonte === k).length}` : ""}
+                    {r} {k ? `· ${avisosVisiveis.filter((a) => a.fonte === k).length}` : ""}
                   </button>
                 ))}
               </div>
@@ -527,14 +621,14 @@ export default function PainelCCO() {
                     </button>
                     <div className="flex border-t border-border text-[12px]">
                       {(a.fonte === "camera" || a.fonte === "equipamento") && (
-                        <a
+                        <Atalho
                           href="/app/seguranca/video"
-                          target="_blank"
-                          rel="opener"
+                          titulo="Videotelemetria"
+                          abrir={abrir}
                           className="flex flex-1 items-center justify-center gap-1 py-1.5 text-brand-navy hover:bg-secondary"
                         >
                           <Camera className="h-3.5 w-3.5" /> Vídeo
-                        </a>
+                        </Atalho>
                       )}
                       <button
                         type="button"
@@ -556,8 +650,8 @@ export default function PainelCCO() {
               })}
               {lista.length > 300 && (
                 <li className="p-2 text-center text-[12px] text-muted-foreground">
-                  Mostrando os 300 primeiros de {lista.length}. Escolha uma empresa ou um tipo para
-                  ver o resto.
+                  Mostrando os 300 primeiros de {lista.length}. Escolha uma empresa, um mapa ou um
+                  tipo para ver o resto.
                 </li>
               )}
             </ul>
@@ -577,9 +671,69 @@ export default function PainelCCO() {
           onMarcar={marcar}
           consumoExemplo={mock ? ex.consumo(sel.id) : undefined}
           agora={relogio}
+          abrir={abrir}
         />
       )}
+
+      {sobreposicao && (
+        <div
+          className="fixed inset-0 z-[2000] flex flex-col bg-black/40 p-4"
+          role="dialog"
+          aria-label={sobreposicao.titulo}
+        >
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-card shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-4 py-2">
+              <span className="text-[14px] font-semibold">{sobreposicao.titulo}</span>
+              <button
+                type="button"
+                onClick={() => setSobreposicao(null)}
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-[12px] hover:bg-secondary"
+              >
+                <X className="h-3.5 w-3.5" /> Voltar ao painel
+              </button>
+            </div>
+            <iframe
+              title={sobreposicao.titulo}
+              src={sobreposicao.url}
+              className="min-h-0 flex-1 border-0"
+            />
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+/** Link que abre em outra aba; embutido em outro sistema, abre por cima do painel. */
+function Atalho({
+  href,
+  titulo,
+  abrir,
+  className,
+  children,
+}: {
+  href: string;
+  titulo: string;
+  abrir: (titulo: string, url: string) => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const embutido = Boolean(lerEmbutido());
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="opener"
+      title={embutido ? "Abre por cima do painel" : "Abre em outra aba (o painel continua aqui)"}
+      className={className}
+      onClick={(e) => {
+        if (!embutido) return;
+        e.preventDefault();
+        abrir(titulo, href);
+      }}
+    >
+      {children}
+    </a>
   );
 }
 
@@ -588,6 +742,9 @@ function MapaCCO({
   vista,
   onVista,
   veiculos,
+  todos,
+  selecao,
+  onSelecao,
   selId,
   onSelecionar,
   foco,
@@ -597,11 +754,15 @@ function MapaCCO({
   vista: Vista;
   onVista: (v: Vista) => void;
   veiculos: VeiculoPainel[];
+  todos: VeiculoPainel[];
+  selecao: string[];
+  onSelecao: (ids: string[]) => void;
   selId: string | number | null;
   onSelecionar: (id: string | number) => void;
   foco: { id: string | number; n: number } | null;
   registrar: (fn: (lat: number, lng: number) => boolean) => void;
 }) {
+  const [aberto, setAberto] = useState(false);
   return (
     <div className="relative min-h-0 overflow-hidden bg-white">
       <MapContainer
@@ -649,7 +810,127 @@ function MapaCCO({
           ))}
           <option value="livre">Área livre</option>
         </select>
+        <button
+          type="button"
+          onClick={() => setAberto((x) => !x)}
+          aria-expanded={aberto}
+          className={cn(
+            "inline-flex h-7 items-center gap-1 rounded border px-2 text-[12px]",
+            selecao.length
+              ? "border-brand-navy bg-navy-tint font-semibold"
+              : "border-border bg-white",
+          )}
+        >
+          <ListFilter className="h-3.5 w-3.5" />{" "}
+          {selecao.length
+            ? `${veiculos.length} veículo${veiculos.length === 1 ? "" : "s"}`
+            : "Todos os veículos"}
+        </button>
       </div>
+      {aberto && (
+        <SeletorVeiculos
+          todos={todos}
+          selecao={selecao}
+          onSelecao={onSelecao}
+          onFechar={() => setAberto(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Escolha das placas do mapa (vazio = todas). */
+function SeletorVeiculos({
+  todos,
+  selecao,
+  onSelecao,
+  onFechar,
+}: {
+  todos: VeiculoPainel[];
+  selecao: string[];
+  onSelecao: (ids: string[]) => void;
+  onFechar: () => void;
+}) {
+  const [busca, setBusca] = useState("");
+  const marcados = new Set(selecao);
+  const t = busca.trim().toLowerCase();
+  const lista = todos
+    .filter(
+      (v) =>
+        !t ||
+        [v.prefixo, v.placa, v.motorista, v.empresa].some((x) =>
+          (x ?? "").toLowerCase().includes(t),
+        ),
+    )
+    .sort((a, b) => String(a.prefixo).localeCompare(String(b.prefixo), "pt-BR", { numeric: true }));
+  const alternar = (id: string) => {
+    const n = new Set(marcados);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    onSelecao([...n]);
+  };
+  return (
+    <div className="absolute right-2 top-12 z-[500] flex max-h-[70%] w-[280px] flex-col rounded-xl border border-border bg-card shadow-2xl">
+      <div className="flex items-center gap-1 border-b border-border p-2">
+        <Search className="h-3.5 w-3.5 text-muted-foreground" />
+        <input
+          autoFocus
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Prefixo, placa ou motorista…"
+          className="h-7 min-w-0 flex-1 bg-transparent text-[12px] outline-none"
+        />
+        <button
+          type="button"
+          onClick={onFechar}
+          aria-label="Fechar"
+          className="rounded p-1 hover:bg-secondary"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1 border-b border-border p-2 text-[11px]">
+        <button
+          type="button"
+          onClick={() => onSelecao([])}
+          className="rounded border border-border px-2 py-0.5 hover:bg-secondary"
+        >
+          Todos (sem filtro)
+        </button>
+        {t && (
+          <button
+            type="button"
+            onClick={() => onSelecao([...new Set([...selecao, ...lista.map((v) => String(v.id))])])}
+            className="rounded border border-border px-2 py-0.5 hover:bg-secondary"
+          >
+            Marcar os {lista.length} da busca
+          </button>
+        )}
+        <span className="ml-auto self-center text-muted-foreground">
+          {selecao.length ? `${selecao.length} escolhidos` : "mostrando todos"}
+        </span>
+      </div>
+      <ul className="min-h-0 flex-1 overflow-y-auto p-1">
+        {lista.slice(0, 500).map((v) => (
+          <li key={v.id}>
+            <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-[12px] hover:bg-secondary">
+              <input
+                type="checkbox"
+                checked={marcados.has(String(v.id))}
+                onChange={() => alternar(String(v.id))}
+              />
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ background: COR_HEX[v.cor] }}
+              />
+              <b className="font-mono">{v.prefixo}</b>
+              <span className="truncate text-muted-foreground">
+                {v.placa !== v.prefixo ? v.placa : (v.motorista ?? "")}
+              </span>
+            </label>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -730,6 +1011,7 @@ function CardVeiculo({
   onMarcar,
   consumoExemplo,
   agora,
+  abrir,
 }: {
   v: VeiculoPainel;
   avisos: AvisoPainel[];
@@ -737,6 +1019,7 @@ function CardVeiculo({
   onMarcar: (a: AvisoPainel, s: "visto" | "tratado") => void;
   consumoExemplo?: number | null;
   agora: number;
+  abrir: (titulo: string, url: string) => void;
 }) {
   const cq = useQuery(consumoQuery(typeof v.id === "number" ? v.id : null));
   const desligado = !v.ignicao;
@@ -791,7 +1074,8 @@ function CardVeiculo({
             </span>
           </div>
           <div className="truncate text-[12px] text-muted-foreground">
-            {NOME_TIPO[v.tipo]}{v.descricao ? ` ${v.descricao}` : ""} · {v.empresa} ·{" "}
+            {NOME_TIPO[v.tipo]}
+            {v.descricao ? ` ${v.descricao}` : ""} · {v.empresa} ·{" "}
             <span style={{ color: COR_HEX[v.cor] }} className="font-semibold">
               {ROTULO_COR[v.cor]}
             </span>
@@ -883,16 +1167,15 @@ function CardVeiculo({
 
       <div className="grid grid-cols-3 gap-1.5 border-t border-border p-3">
         {atalhos.map(([rot, href, Ic]) => (
-          <a
+          <Atalho
             key={rot}
             href={href}
-            target="_blank"
-            rel="opener"
-            title="Abre em outra aba (o painel continua aqui)"
+            titulo={rot}
+            abrir={abrir}
             className="flex items-center gap-1.5 rounded-lg border border-border px-2 py-1.5 text-[12px] font-medium text-brand-navy hover:bg-navy-tint"
           >
             <Ic className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{rot}</span>
-          </a>
+          </Atalho>
         ))}
       </div>
     </div>

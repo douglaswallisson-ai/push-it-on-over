@@ -55,6 +55,7 @@ import {
   type VeiculoPainel,
 } from "@/lib/cco-api";
 import { lerEmbutido } from "@/lib/embutido";
+import { empresasQuery } from "@/lib/queries";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { usandoMock } from "@/lib/modo";
 import { lerSessao } from "@/lib/session";
@@ -90,9 +91,16 @@ type Estado = {
   horas: number;
   fonte: "" | FonteAviso;
   abaAvisos: number;
+  /** Aba de avisos aberta (retrátil). */
+  painelAvisos: boolean;
+  /** Pintar o carro pelo alerta. Desligado = mapa só com a situação (andando/parado), sem poluir. */
+  alertasNoMapa: boolean;
 };
 const HORAS = [1, 2, 6, 12];
 const VAZIO: string[][] = [[], [], [], []];
+
+/** Visualização desta aba do navegador (cada monitor com a sua empresa). */
+const CHAVE_ABA = "ss:cco:aba";
 
 function chaveEstado() {
   const s = lerSessao();
@@ -111,8 +119,13 @@ function lerEstado(): Estado {
     horas: 2,
     fonte: "",
     abaAvisos: -1,
+    painelAvisos: true,
+    alertasNoMapa: false,
   };
   try {
+    const daAba = JSON.parse(sessionStorage.getItem(CHAVE_ABA) ?? "null");
+    if (daAba && [1, 2, 4].includes(daAba.layout) && daAba.vistas?.length === 4)
+      return { ...padrao, ...daAba };
     const v = JSON.parse(localStorage.getItem(chaveEstado()) ?? "null");
     if (v && [1, 2, 4].includes(v.layout) && Array.isArray(v.vistas) && v.vistas.length === 4)
       return { ...padrao, ...v };
@@ -231,7 +244,8 @@ export default function PainelCCO() {
   const contem = useRef<((lat: number, lng: number) => boolean)[]>([]);
   const [cheia, setCheia] = useState(false);
   const [ocultos, setOcultos] = useState<Set<string>>(new Set());
-  const [empresas, setEmpresas] = useState<{ id: number; nome: string }[]>([]);
+  const empresasQ = useQuery({ ...empresasQuery(), enabled: ehSS && !mock });
+  const empresas = empresasQ.data ?? [];
   const [relogio, setRelogio] = useState(() => Date.now());
   const [sobreposicao, setSobreposicao] = useState<{ titulo: string; url: string } | null>(null);
 
@@ -246,6 +260,7 @@ export default function PainelCCO() {
   // Salva a última visualização (por usuário) a cada mudança.
   useEffect(() => {
     try {
+      sessionStorage.setItem(CHAVE_ABA, JSON.stringify(est));
       localStorage.setItem(chaveEstado(), JSON.stringify(est));
     } catch {
       /* sem armazenamento */
@@ -259,16 +274,6 @@ export default function PainelCCO() {
     [dados, ocultos],
   );
 
-  useEffect(() => {
-    if (!mock && !grupo && q.data) {
-      const m = new Map<number, string>();
-      for (const v of q.data.veiculos)
-        if (v.group_id) m.set(v.group_id, v.empresa ?? `Grupo ${v.group_id}`);
-      setEmpresas(
-        [...m].map(([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome)),
-      );
-    }
-  }, [q.data, grupo, mock]);
   useEffect(() => setOcultos(new Set()), [q.dataUpdatedAt]);
   useEffect(() => {
     const t = setInterval(() => setRelogio(Date.now()), 1000);
@@ -281,22 +286,27 @@ export default function PainelCCO() {
   }, []);
 
   // A cor vem do servidor, mas um aviso marcado agora já tira a cor do carro.
+  const alertasNoMapa = est.alertasNoMapa;
   const comCor = useMemo(() => {
     const porUnidade = new Map<string, AvisoPainel[]>();
     for (const a of avisos)
       porUnidade.set(String(a.unit_id), [...(porUnidade.get(String(a.unit_id)) ?? []), a]);
     return veiculos.map((v) => {
       const meus = porUnidade.get(String(v.id)) ?? [];
-      const cor: CorCarro = meus.some((a) => a.gravidade === "critico")
-        ? "vermelho"
-        : meus.length
-          ? "amarelo"
-          : v.ignicao && v.velocidade > 3
-            ? "verde"
-            : "cinza";
+      const cor: CorCarro = !alertasNoMapa
+        ? v.ignicao && v.velocidade > 3
+          ? "verde"
+          : "cinza"
+        : meus.some((a) => a.gravidade === "critico")
+          ? "vermelho"
+          : meus.length
+            ? "amarelo"
+            : v.ignicao && v.velocidade > 3
+              ? "verde"
+              : "cinza";
       return { ...v, cor };
     });
-  }, [veiculos, avisos]);
+  }, [veiculos, avisos, alertasNoMapa]);
 
   // Veículos de cada mapa (seleção vazia = todos). Seleção com placa que saiu da frota é ignorada.
   const doMapa = useMemo(
@@ -369,41 +379,31 @@ export default function PainelCCO() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border bg-[#0f1f38] px-4 py-2 text-white">
-        <div className="flex items-center gap-2">
-          <SSOrb size={26} />
-          <div className="leading-tight">
-            <div className="text-[14px] font-semibold">Painel CCO</div>
-            <div className="text-[11px] text-white/60">
-              Operação em tempo real · atualiza a cada 30 s
-            </div>
-          </div>
-        </div>
+      <header className="flex h-11 shrink-0 items-center gap-3 border-b border-border bg-card px-3 text-[12px]">
+        <SSOrb size={20} />
+        <span className="text-[14px] font-semibold text-foreground">Painel CCO</span>
         {mock && (
-          <span className="rounded bg-gold/90 px-2 py-0.5 text-[11px] font-bold text-[#0f1f38]">
-            DADOS DE EXEMPLO
+          <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+            exemplo
           </span>
         )}
-
         {ehSS && !mock && (
           <select
             id="cco-empresa"
             value={grupo ?? ""}
+            aria-label="Empresa"
             onChange={(e) => {
               mudar({ grupo: e.target.value || undefined });
               setSelId(null);
             }}
-            className="h-8 max-w-[260px] rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
+            className="h-7 max-w-[240px] rounded-md border border-border bg-white px-2 text-[12px]"
           >
             <option value="">Todas as empresas</option>
             {empresas.map((e) => (
               <option key={e.id} value={e.id}>
-                {e.nome}
+                {e.name}
               </option>
             ))}
-            {grupo && !empresas.some((e) => String(e.id) === grupo) && (
-              <option value={grupo}>{veiculos[0]?.empresa ?? `Empresa ${grupo}`}</option>
-            )}
           </select>
         )}
         {!mock && (
@@ -411,34 +411,32 @@ export default function PainelCCO() {
             id="cco-horas"
             value={horas}
             onChange={(e) => mudar({ horas: Number(e.target.value) })}
-            title="Avisos de quanto tempo para trás"
-            className="h-8 rounded-md border border-white/20 bg-white/10 px-2 text-[12px] text-white [&>option]:text-foreground"
+            aria-label="Janela dos avisos"
+            className="h-7 rounded-md border border-border bg-white px-2 text-[12px]"
           >
             {HORAS.map((h) => (
               <option key={h} value={h}>
-                Avisos: última{h > 1 ? `s ${h} horas` : " hora"}
+                Últimas {h} h
               </option>
             ))}
           </select>
         )}
-
-        <div className="flex flex-wrap items-center gap-3 text-[12px]">
-          {(["vermelho", "amarelo", "verde", "cinza"] as CorCarro[]).map((c) => (
-            <span key={c} className="flex items-center gap-1.5">
-              <span
-                className="h-3 w-3 rounded-full border-2 border-white"
-                style={{ background: COR_HEX[c] }}
-              />
-              {ROTULO_COR[c]} <b className="font-mono">{contagem(c)}</b>
+        <span className="hidden items-center gap-2.5 text-muted-foreground md:flex">
+          {(alertasNoMapa
+            ? (["vermelho", "amarelo", "verde", "cinza"] as CorCarro[])
+            : (["verde", "cinza"] as CorCarro[])
+          ).map((c) => (
+            <span key={c} className="flex items-center gap-1" title={ROTULO_COR[c]}>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: COR_HEX[c] }} />
+              {ROTULO_COR[c]} <b className="font-mono text-foreground">{contagem(c)}</b>
             </span>
           ))}
-          <span className="flex items-center gap-1.5" title="Sem comunicação há mais de 2 h">
-            <WifiOff className="h-3.5 w-3.5 text-coral" /> Sem comunicação{" "}
-            <b className="font-mono">{semSinal}</b>
+          <span className="flex items-center gap-1" title="Sem comunicação há mais de 2 h">
+            <WifiOff className="h-3.5 w-3.5 text-coral" />{" "}
+            <b className="font-mono text-foreground">{semSinal}</b>
           </span>
-          {q.isFetching && !mock && <Loader2 className="h-3.5 w-3.5 animate-spin text-white/70" />}
-        </div>
-
+          {q.isFetching && !mock && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+        </span>
         <div className="ml-auto flex items-center gap-1">
           {([1, 2, 4] as Layout[]).map((n) => {
             const Ic = n === 1 ? Square : n === 2 ? Columns2 : Grid2x2;
@@ -451,24 +449,41 @@ export default function PainelCCO() {
                 aria-label={`${n} mapa${n > 1 ? "s" : ""}`}
                 title={`${n} mapa${n > 1 ? "s" : ""}`}
                 className={cn(
-                  "inline-flex h-8 w-8 items-center justify-center rounded-md border",
-                  layout === n ? "border-white bg-white/20" : "border-white/20 hover:bg-white/10",
+                  "inline-flex h-7 w-7 items-center justify-center rounded-md border",
+                  layout === n
+                    ? "border-brand-navy bg-navy-tint text-brand-navy"
+                    : "border-border text-muted-foreground hover:bg-secondary",
                 )}
               >
-                <Ic className="h-4 w-4" />
+                <Ic className="h-3.5 w-3.5" />
               </button>
             );
           })}
           <button
             type="button"
-            onClick={telaCheia}
-            className="ml-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-white/20 px-2.5 text-[12px] hover:bg-white/10"
+            onClick={() => mudar({ painelAvisos: !est.painelAvisos })}
+            aria-pressed={est.painelAvisos}
+            className={cn(
+              "ml-1 inline-flex h-7 items-center gap-1 rounded-md border px-2",
+              est.painelAvisos
+                ? "border-brand-navy bg-navy-tint text-brand-navy"
+                : "border-border hover:bg-secondary",
+            )}
           >
-            {cheia ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}{" "}
-            {cheia ? "Sair" : "Tela cheia"}
+            <AlertTriangle className="h-3.5 w-3.5" /> Avisos{" "}
+            <b className="font-mono">{avisosVisiveis.length}</b>
           </button>
-          <span className="ml-2 font-mono text-[12px] text-white/70">
-            {new Date(relogio).toLocaleTimeString("pt-BR")}
+          <button
+            type="button"
+            onClick={telaCheia}
+            title={cheia ? "Sair da tela cheia" : "Tela cheia"}
+            aria-label="Tela cheia"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border hover:bg-secondary"
+          >
+            {cheia ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
+          </button>
+          <span className="ml-1 font-mono text-muted-foreground">
+            {new Date(relogio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>
       </header>
@@ -482,7 +497,12 @@ export default function PainelCCO() {
           <Loader2 className="h-5 w-5 animate-spin" /> Carregando a operação…
         </div>
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_340px]">
+        <div
+          className={cn(
+            "grid min-h-0 flex-1",
+            est.painelAvisos ? "grid-cols-[minmax(0,1fr)_340px]" : "grid-cols-1",
+          )}
+        >
           <div
             className={cn(
               "grid min-h-0 gap-1 bg-border p-1",
@@ -511,155 +531,177 @@ export default function PainelCCO() {
             ))}
           </div>
 
-          <aside className="flex min-h-0 flex-col border-l border-border bg-card">
-            <div className="border-b border-border px-3 py-2">
-              <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
-                <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto ·{" "}
-                {avisosVisiveis.length}
-              </h2>
-              {layout > 1 && (
-                <div className="mt-2 flex gap-1" role="tablist" aria-label="Avisos de qual mapa">
-                  {[-1, ...Array.from({ length: layout }, (_, i) => i)].map((i) => (
+          {est.painelAvisos && (
+            <aside className="flex min-h-0 flex-col border-l border-border bg-card">
+              <div className="border-b border-border px-3 py-2">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <label className="flex cursor-pointer items-center gap-1.5 text-[12px]">
+                    <input
+                      id="cco-alertas-mapa"
+                      type="checkbox"
+                      checked={alertasNoMapa}
+                      onChange={(e) => mudar({ alertasNoMapa: e.target.checked })}
+                    />
+                    Marcar alertas no mapa
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => mudar({ painelAvisos: false })}
+                    aria-label="Fechar avisos"
+                    title="Fechar avisos"
+                    className="rounded p-1 text-muted-foreground hover:bg-secondary"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <h2 className="flex items-center gap-1.5 text-[14px] font-semibold">
+                  <AlertTriangle className="h-4 w-4 text-coral" /> Avisos em aberto ·{" "}
+                  {avisosVisiveis.length}
+                </h2>
+                {layout > 1 && (
+                  <div className="mt-2 flex gap-1" role="tablist" aria-label="Avisos de qual mapa">
+                    {[-1, ...Array.from({ length: layout }, (_, i) => i)].map((i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        role="tab"
+                        aria-selected={abaAvisos === i}
+                        onClick={() => mudar({ abaAvisos: i })}
+                        className={cn(
+                          "h-7 flex-1 rounded-md border text-[11px] font-medium",
+                          abaAvisos === i
+                            ? "border-brand-navy bg-navy-tint text-foreground"
+                            : "border-border text-muted-foreground hover:bg-secondary",
+                        )}
+                      >
+                        {i < 0 ? "Todos os mapas" : `Mapa ${i + 1}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {(
+                    [
+                      ["", "Todos"],
+                      ["seguranca", "Segurança"],
+                      ["camera", "Câmera"],
+                      ["manutencao", "Manutenção"],
+                      ["equipamento", "Equipamento"],
+                    ] as [string, string][]
+                  ).map(([k, r]) => (
                     <button
-                      key={i}
+                      key={k}
                       type="button"
-                      role="tab"
-                      aria-selected={abaAvisos === i}
-                      onClick={() => mudar({ abaAvisos: i })}
+                      onClick={() => mudar({ fonte: k as "" | FonteAviso })}
+                      aria-pressed={fonte === k}
                       className={cn(
-                        "h-7 flex-1 rounded-md border text-[11px] font-medium",
-                        abaAvisos === i
-                          ? "border-brand-navy bg-navy-tint text-foreground"
-                          : "border-border text-muted-foreground hover:bg-secondary",
+                        "h-7 rounded-full border px-2.5 text-[11px] font-medium",
+                        fonte === k
+                          ? "border-brand-navy bg-brand-navy text-white"
+                          : "border-border hover:bg-secondary",
                       )}
                     >
-                      {i < 0 ? "Todos os mapas" : `Mapa ${i + 1}`}
+                      {r} {k ? `· ${avisosVisiveis.filter((a) => a.fonte === k).length}` : ""}
                     </button>
                   ))}
                 </div>
-              )}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {(
-                  [
-                    ["", "Todos"],
-                    ["seguranca", "Segurança"],
-                    ["camera", "Câmera"],
-                    ["manutencao", "Manutenção"],
-                    ["equipamento", "Equipamento"],
-                  ] as [string, string][]
-                ).map(([k, r]) => (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => mudar({ fonte: k as "" | FonteAviso })}
-                    aria-pressed={fonte === k}
-                    className={cn(
-                      "h-7 rounded-full border px-2.5 text-[11px] font-medium",
-                      fonte === k
-                        ? "border-brand-navy bg-brand-navy text-white"
-                        : "border-border hover:bg-secondary",
-                    )}
-                  >
-                    {r} {k ? `· ${avisosVisiveis.filter((a) => a.fonte === k).length}` : ""}
-                  </button>
-                ))}
+                {!mock && !q.data?.manutencao_disponivel && (
+                  <p className="mt-1.5 text-[11px] text-muted-foreground">
+                    Avisos de manutenção aparecem ao escolher uma empresa.
+                  </p>
+                )}
               </div>
-              {!mock && !q.data?.manutencao_disponivel && (
-                <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  Avisos de manutenção aparecem ao escolher uma empresa.
-                </p>
-              )}
-            </div>
-            <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
-              {lista.length === 0 && (
-                <li className="p-6 text-center text-[13px] text-muted-foreground">
-                  Nenhum aviso em aberto.
-                </li>
-              )}
-              {lista.slice(0, 300).map((a) => {
-                const v = comCor.find((x) => String(x.id) === String(a.unit_id));
-                if (!v) return null;
-                return (
-                  <li
-                    key={a.id}
-                    className="overflow-hidden rounded-lg border border-border bg-white"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => focar(v.id)}
-                      className="flex w-full gap-2 p-2 text-left hover:bg-secondary/50"
-                    >
-                      <span
-                        className="w-1 shrink-0 rounded"
-                        style={{
-                          background:
-                            a.gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
-                        }}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-[13px] font-semibold">
-                            {a.nome}
-                            {a.quantidade > 1 ? ` ×${a.quantidade}` : ""}
-                          </span>
-                          <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
-                            {a.ultimo
-                              ? new Date(a.ultimo).toLocaleTimeString("pt-BR", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : ""}
-                          </span>
-                        </span>
-                        <span className="block truncate text-[12px] text-muted-foreground">
-                          <b className="font-mono text-foreground">{v.prefixo}</b> {v.placa} ·{" "}
-                          {ROTULO_FONTE[a.fonte]}
-                          {a.detalhe ? ` · ${a.detalhe}` : ""}
-                          {a.reaberto ? " · voltou a ocorrer" : ""}
-                        </span>
-                      </span>
-                    </button>
-                    <div className="flex border-t border-border text-[12px]">
-                      {(a.fonte === "camera" || a.fonte === "equipamento") && (
-                        <Atalho
-                          href="/app/seguranca/video"
-                          titulo="Videotelemetria"
-                          abrir={abrir}
-                          className="flex flex-1 items-center justify-center gap-1 py-1.5 text-brand-navy hover:bg-secondary"
-                        >
-                          <Camera className="h-3.5 w-3.5" /> Vídeo
-                        </Atalho>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => marcar(a, "visto")}
-                        className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 hover:bg-secondary first:border-l-0"
-                      >
-                        <Eye className="h-3.5 w-3.5" /> Visto
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => marcar(a, "tratado")}
-                        className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 font-medium text-leaf hover:bg-secondary"
-                      >
-                        <CheckCheck className="h-3.5 w-3.5" /> Tratado
-                      </button>
-                    </div>
+              <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
+                {lista.length === 0 && (
+                  <li className="p-6 text-center text-[13px] text-muted-foreground">
+                    Nenhum aviso em aberto.
                   </li>
-                );
-              })}
-              {lista.length > 300 && (
-                <li className="p-2 text-center text-[12px] text-muted-foreground">
-                  Mostrando os 300 primeiros de {lista.length}. Escolha uma empresa, um mapa ou um
-                  tipo para ver o resto.
-                </li>
-              )}
-            </ul>
-            <p className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-              Sem som. Um aviso junta as ocorrências do mesmo tipo no veículo e só sai com Visto ou
-              Tratado; se voltar a ocorrer depois, reaparece.
-            </p>
-          </aside>
+                )}
+                {lista.slice(0, 300).map((a) => {
+                  const v = comCor.find((x) => String(x.id) === String(a.unit_id));
+                  if (!v) return null;
+                  return (
+                    <li
+                      key={a.id}
+                      className="overflow-hidden rounded-lg border border-border bg-white"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => focar(v.id)}
+                        className="flex w-full gap-2 p-2 text-left hover:bg-secondary/50"
+                      >
+                        <span
+                          className="w-1 shrink-0 rounded"
+                          style={{
+                            background:
+                              a.gravidade === "critico" ? COR_HEX.vermelho : COR_HEX.amarelo,
+                          }}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate text-[13px] font-semibold">
+                              {a.nome}
+                              {a.quantidade > 1 ? ` ×${a.quantidade}` : ""}
+                            </span>
+                            <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                              {a.ultimo
+                                ? new Date(a.ultimo).toLocaleTimeString("pt-BR", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : ""}
+                            </span>
+                          </span>
+                          <span className="block truncate text-[12px] text-muted-foreground">
+                            <b className="font-mono text-foreground">{v.prefixo}</b> {v.placa} ·{" "}
+                            {ROTULO_FONTE[a.fonte]}
+                            {a.detalhe ? ` · ${a.detalhe}` : ""}
+                            {a.reaberto ? " · voltou a ocorrer" : ""}
+                          </span>
+                        </span>
+                      </button>
+                      <div className="flex border-t border-border text-[12px]">
+                        {(a.fonte === "camera" || a.fonte === "equipamento") && (
+                          <Atalho
+                            href="/app/seguranca/video"
+                            titulo="Videotelemetria"
+                            abrir={abrir}
+                            className="flex flex-1 items-center justify-center gap-1 py-1.5 text-brand-navy hover:bg-secondary"
+                          >
+                            <Camera className="h-3.5 w-3.5" /> Vídeo
+                          </Atalho>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => marcar(a, "visto")}
+                          className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 hover:bg-secondary first:border-l-0"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Visto
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => marcar(a, "tratado")}
+                          className="flex flex-1 items-center justify-center gap-1 border-l border-border py-1.5 font-medium text-leaf hover:bg-secondary"
+                        >
+                          <CheckCheck className="h-3.5 w-3.5" /> Tratado
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+                {lista.length > 300 && (
+                  <li className="p-2 text-center text-[12px] text-muted-foreground">
+                    Mostrando os 300 primeiros de {lista.length}. Escolha uma empresa, um mapa ou um
+                    tipo para ver o resto.
+                  </li>
+                )}
+              </ul>
+              <p className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+                Sem som. Um aviso junta as ocorrências do mesmo tipo no veículo e só sai com Visto
+                ou Tratado; se voltar a ocorrer depois, reaparece.
+              </p>
+            </aside>
+          )}
         </div>
       )}
 

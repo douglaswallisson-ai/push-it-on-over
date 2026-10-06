@@ -27,6 +27,7 @@ import {
   WifiOff,
   Wrench,
   X,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
@@ -90,6 +91,8 @@ type Estado = {
   grupo?: string;
   fonte: "" | FonteAviso;
   abaAvisos: number;
+  /** Mapas fechados pelo operador (tela cinza com + para reabrir). */
+  fechados?: boolean[];
   /** Aba de avisos aberta (retrátil). */
   painelAvisos: boolean;
   /** Pintar o carro pelo alerta. Desligado = mapa só com a situação (andando/parado), sem poluir. */
@@ -120,6 +123,7 @@ function lerEstado(): Estado {
     grupo: grupoAtivo(),
     fonte: "",
     abaAvisos: -1,
+    fechados: [false, false, false, false],
     painelAvisos: true,
     alertasNoMapa: false,
   };
@@ -318,15 +322,21 @@ export default function PainelCCO() {
       }),
     [comCor, selecoes],
   );
+  const fechados = est.fechados ?? [false, false, false, false];
+  const fecharMapa = (i: number, f: boolean) => {
+    if (f) contem.current[i] = () => false;
+    mudar({ fechados: fechados.map((x, j) => (j === i ? f : x)) });
+  };
   const idsVisiveis = useMemo(() => {
     const s = new Set<string>();
     const abas =
       abaAvisos >= 0 && abaAvisos < layout
         ? [abaAvisos]
         : Array.from({ length: layout }, (_, i) => i);
-    for (const i of abas) for (const v of doMapa[i]) s.add(String(v.id));
+    // Mapa fechado não mostra carro nem traz aviso.
+    for (const i of abas) if (!fechados[i]) for (const v of doMapa[i]) s.add(String(v.id));
     return s;
-  }, [doMapa, layout, abaAvisos]);
+  }, [doMapa, layout, abaAvisos, fechados.join()]); // eslint-disable-line react-hooks/exhaustive-deps
   const visiveis = comCor.filter((v) => idsVisiveis.has(String(v.id)));
   const avisosVisiveis = avisos.filter((a) => idsVisiveis.has(String(a.unit_id)));
 
@@ -499,22 +509,37 @@ export default function PainelCCO() {
                   : "grid-cols-2 grid-rows-2",
             )}
           >
-            {Array.from({ length: layout }, (_, i) => (
-              <MapaCCO
-                key={i}
-                indice={i}
-                vista={vistas[i]}
-                onVista={(v) => setVista(i, v)}
-                veiculos={doMapa[i]}
-                todos={comCor}
-                selecao={selecoes[i] ?? []}
-                onSelecao={(ids) => setSelecao(i, ids)}
-                selId={selId}
-                onSelecionar={setSelId}
-                foco={foco && foco.mapa === i ? foco : null}
-                registrar={(fn) => (contem.current[i] = fn)}
-              />
-            ))}
+            {Array.from({ length: layout }, (_, i) =>
+              fechados[i] ? (
+                <div key={i} className="flex min-h-0 items-center justify-center bg-secondary">
+                  <button
+                    type="button"
+                    onClick={() => fecharMapa(i, false)}
+                    title="Abrir mapa"
+                    aria-label="Abrir mapa"
+                    className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow hover:text-brand-navy"
+                  >
+                    <Plus className="h-7 w-7" />
+                  </button>
+                </div>
+              ) : (
+                <MapaCCO
+                  key={i}
+                  onFechar={() => fecharMapa(i, true)}
+                  indice={i}
+                  vista={vistas[i]}
+                  onVista={(v) => setVista(i, v)}
+                  veiculos={doMapa[i]}
+                  todos={comCor}
+                  selecao={selecoes[i] ?? []}
+                  onSelecao={(ids) => setSelecao(i, ids)}
+                  selId={selId}
+                  onSelecionar={setSelId}
+                  foco={foco && foco.mapa === i ? foco : null}
+                  registrar={(fn) => (contem.current[i] = fn)}
+                />
+              ),
+            )}
           </div>
 
           {est.painelAvisos && (
@@ -777,7 +802,9 @@ function MapaCCO({
   onSelecionar,
   foco,
   registrar,
+  onFechar,
 }: {
+  onFechar: () => void;
   indice: number;
   vista: Vista;
   onVista: (v: Vista) => void;
@@ -821,7 +848,6 @@ function MapaCCO({
         ))}
       </MapContainer>
       <div className="absolute right-2 top-2 z-[400] flex items-center gap-1 rounded-md bg-white/95 px-1.5 py-1 text-[12px] shadow">
-        <span className="font-semibold text-muted-foreground">Mapa {indice + 1}</span>
         <select
           id={`cco-area-${indice}`}
           value={vista.area}
@@ -836,7 +862,11 @@ function MapaCCO({
               {a.nome}
             </option>
           ))}
-          <option value="livre">Área livre</option>
+          {vista.area === "livre" && (
+            <option value="livre" disabled hidden>
+              Ir para região…
+            </option>
+          )}
         </select>
         <button
           type="button"
@@ -853,6 +883,15 @@ function MapaCCO({
           {selecao.length
             ? `${veiculos.length} veículo${veiculos.length === 1 ? "" : "s"}`
             : "Todos os veículos"}
+        </button>
+        <button
+          type="button"
+          onClick={onFechar}
+          title="Fechar este mapa"
+          aria-label="Fechar este mapa"
+          className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
+        >
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
       {aberto && (

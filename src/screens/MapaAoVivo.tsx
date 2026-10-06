@@ -1,6 +1,17 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bike, Bus, Car, Gauge, MapPin, Navigation, Search, Tractor, Truck } from "lucide-react";
+import {
+  Bike,
+  Bus,
+  Car,
+  Gauge,
+  MapPin,
+  Navigation,
+  Search,
+  Tractor,
+  Truck,
+  MonitorUp,
+} from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Database, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +22,14 @@ import { usePosicoesAoVivo } from "@/hooks/use-posicoes-ao-vivo";
 import { Dot, Pill, type PillTone } from "@/components/ss/ui/data";
 import { FleetFilters, type FleetFilterValue } from "@/components/ss/ui/FleetFilters";
 import { ErrorBox, SkeletonBlock } from "@/components/ss/ui/QueryState";
-import { desde, nf, posicoesQuery, toCanvasXY, veiculosQuery, videoOcorrenciasQuery } from "@/lib/queries";
+import {
+  desde,
+  nf,
+  posicoesQuery,
+  toCanvasXY,
+  veiculosQuery,
+  videoOcorrenciasQuery,
+} from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import type { PosicaoVeiculo } from "@/types";
 
@@ -30,11 +48,22 @@ const STATUS: Record<Status, { label: string; tone: PillTone; cor: string }> = {
   "sem-sinal": { label: "Sem sinal recente", tone: "neutral", cor: COR_SITUACAO.sem_transmissao },
 };
 
-const ICONE_TIPO = { caminhao: Truck, onibus: Bus, carro: Car, moto: Bike, maquina: Tractor } as const;
+const ICONE_TIPO = {
+  caminhao: Truck,
+  onibus: Bus,
+  carro: Car,
+  moto: Bike,
+  maquina: Tractor,
+} as const;
 
 /** Bolinha com a cor exata do marcador do mapa. */
 function Cor({ cor, pisca }: { cor: string; pisca?: boolean }) {
-  return <span className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full", pisca && "animate-pulse")} style={{ background: cor }} />;
+  return (
+    <span
+      className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full", pisca && "animate-pulse")}
+      style={{ background: cor }}
+    />
+  );
 }
 
 type Veiculo = {
@@ -95,13 +124,21 @@ export default function MapaAoVivo() {
     for (const v of veiculosCadastro.data?.items ?? []) if (v.prefixo) m.set(v.placa, v.prefixo);
     return m;
   }, [veiculosCadastro.data]);
-  const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: "" });
+  const [filtros, setFiltros] = useState<FleetFilterValue>({
+    veiculo: "Todos",
+    motorista: "Todos",
+    data: "",
+  });
 
   /**
    * Estado do marcador. Combina comunicação, ignição e pendências: é o que o
    * operador precisa distinguir de longe, e não a situação cadastral.
    */
-  const estadoDe = (p: PosicaoVeiculo, temEventoCritico: boolean, emManutencao: boolean): string => {
+  const estadoDe = (
+    p: PosicaoVeiculo,
+    temEventoCritico: boolean,
+    emManutencao: boolean,
+  ): string => {
     // Mesma regra da lista e da legenda (statusDe): 20 min sem leitura = sem sinal.
     if (statusDe(p) === "sem-sinal") return "sem_transmissao";
     if (temEventoCritico) return "evento_critico";
@@ -162,9 +199,22 @@ export default function MapaAoVivo() {
     <>
       <PageHeader
         title="Mapa ao vivo"
-        subtitle={isPending ? "Carregando posições…" : `${nf(veiculos.length)} veículos · ${veiculos[0]?.atualizado ?? "—"}`}
+        subtitle={
+          isPending
+            ? "Carregando posições…"
+            : `${nf(veiculos.length)} veículos · ${veiculos[0]?.atualizado ?? "—"}`
+        }
         actions={
           <div className="flex items-center gap-3">
+            {/* Painel CCO: tela própria em outra aba (segundo monitor / telão). */}
+            <a
+              href="/cco"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-navy px-3 text-[13px] font-semibold text-white hover:opacity-90"
+            >
+              <MonitorUp className="h-4 w-4" /> Painel CCO
+            </a>
             {/* Estado da atualização automática. Sem isso o usuário não sabe se
                 o mapa está vivo ou congelado. */}
             <span className="hidden items-center gap-1.5 text-[12px] text-muted-foreground sm:flex">
@@ -196,7 +246,12 @@ export default function MapaAoVivo() {
               )}
               {dataUpdatedAt > 0 && (
                 <span className="font-mono">
-                  · {new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                  ·{" "}
+                  {new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
                 </span>
               )}
             </span>
@@ -243,16 +298,23 @@ export default function MapaAoVivo() {
                     onClick={() => toggle(s)}
                     className={cn(
                       "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-medium transition-all",
-                      on ? "border-border bg-white text-foreground" : "border-transparent bg-secondary text-muted-foreground opacity-60",
+                      on
+                        ? "border-border bg-white text-foreground"
+                        : "border-transparent bg-secondary text-muted-foreground opacity-60",
                     )}
                   >
                     <Cor cor={STATUS[s].cor} />
                     {STATUS[s].label}
-                    <span className="font-mono text-[12px] text-muted-foreground">({nf(contagem(s))})</span>
+                    <span className="font-mono text-[12px] text-muted-foreground">
+                      ({nf(contagem(s))})
+                    </span>
                   </button>
                 );
               })}
-              <span className="inline-flex items-center gap-2 px-2 py-2 text-[13px] text-muted-foreground" title="Vermelho piscando: ocorrência de risco alto aguardando tratativa. Laranja piscando: veículo em manutenção.">
+              <span
+                className="inline-flex items-center gap-2 px-2 py-2 text-[13px] text-muted-foreground"
+                title="Vermelho piscando: ocorrência de risco alto aguardando tratativa. Laranja piscando: veículo em manutenção."
+              >
                 <Cor cor={COR_SITUACAO.evento_critico} pisca /> Evento crítico
                 <Cor cor={COR_SITUACAO.manutencao} pisca /> Em manutenção
               </span>
@@ -286,8 +348,13 @@ export default function MapaAoVivo() {
                         const Icone = ICONE_TIPO[tipoPorCategoria(v.categoriaId)];
                         return (
                           <div
-                            className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-sm", v.estadoMapa === "evento_critico" && "animate-pulse")}
-                            style={{ background: COR_SITUACAO[v.estadoMapa] ?? COR_SITUACAO.desligado }}
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-sm",
+                              v.estadoMapa === "evento_critico" && "animate-pulse",
+                            )}
+                            style={{
+                              background: COR_SITUACAO[v.estadoMapa] ?? COR_SITUACAO.desligado,
+                            }}
                             title={STATUS[v.status].label}
                           >
                             <Icone className="h-[18px] w-[18px]" strokeWidth={2.2} />
@@ -301,7 +368,11 @@ export default function MapaAoVivo() {
                         </div>
                         <div className="truncate text-[12px] text-muted-foreground">{v.local}</div>
                       </div>
-                      {v.vel > 0 && <span className="shrink-0 font-mono text-[12px] font-semibold text-leaf">{v.vel} km/h</span>}
+                      {v.vel > 0 && (
+                        <span className="shrink-0 font-mono text-[12px] font-semibold text-leaf">
+                          {v.vel} km/h
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -364,41 +435,60 @@ function MapCanvas({
         className="absolute inset-0 origin-center transition-transform duration-200"
         style={{ transform: `scale(${zoom})` }}
       >
-      {/* "Rodovias" decorativas. */}
-      <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
-        <path d="M-50 200 Q 300 120 620 260 T 1200 300" fill="none" stroke="white" strokeWidth="6" opacity="0.7" />
-        <path d="M-50 420 Q 400 500 700 380 T 1300 460" fill="none" stroke="white" strokeWidth="6" opacity="0.7" />
-        <path d="M200 -20 Q 260 300 420 500 T 520 900" fill="none" stroke="white" strokeWidth="5" opacity="0.55" />
-      </svg>
+        {/* "Rodovias" decorativas. */}
+        <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+          <path
+            d="M-50 200 Q 300 120 620 260 T 1200 300"
+            fill="none"
+            stroke="white"
+            strokeWidth="6"
+            opacity="0.7"
+          />
+          <path
+            d="M-50 420 Q 400 500 700 380 T 1300 460"
+            fill="none"
+            stroke="white"
+            strokeWidth="6"
+            opacity="0.7"
+          />
+          <path
+            d="M200 -20 Q 260 300 420 500 T 520 900"
+            fill="none"
+            stroke="white"
+            strokeWidth="5"
+            opacity="0.55"
+          />
+        </svg>
 
-      {veiculos.map((v) => {
-        const isSel = selected === v.placa;
-        return (
-          <button
-            key={`${v.veiculoId}-${v.placa}`}
-            onClick={() => onSelect(v.placa)}
-            style={{ left: `${v.x}%`, top: `${v.y}%` }}
-            className="group absolute -translate-x-1/2 -translate-y-full"
-          >
-            <div
-              className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-semibold shadow-card transition-transform group-hover:-translate-y-0.5",
-                isSel ? "border-brand-navy bg-brand-navy text-white" : "border-border bg-white text-foreground",
-              )}
+        {veiculos.map((v) => {
+          const isSel = selected === v.placa;
+          return (
+            <button
+              key={`${v.veiculoId}-${v.placa}`}
+              onClick={() => onSelect(v.placa)}
+              style={{ left: `${v.x}%`, top: `${v.y}%` }}
+              className="group absolute -translate-x-1/2 -translate-y-full"
             >
-              <Dot tone={STATUS[v.status].tone} />
-              {v.placa}
-            </div>
-            <div
-              className={cn(
-                "mx-auto h-2.5 w-2.5 -translate-y-1 rotate-45 border-b border-r",
-                isSel ? "border-brand-navy bg-brand-navy" : "border-border bg-white",
-              )}
-            />
-          </button>
-        );
-      })}
-
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-semibold shadow-card transition-transform group-hover:-translate-y-0.5",
+                  isSel
+                    ? "border-brand-navy bg-brand-navy text-white"
+                    : "border-border bg-white text-foreground",
+                )}
+              >
+                <Dot tone={STATUS[v.status].tone} />
+                {v.placa}
+              </div>
+              <div
+                className={cn(
+                  "mx-auto h-2.5 w-2.5 -translate-y-1 rotate-45 border-b border-r",
+                  isSel ? "border-brand-navy bg-brand-navy" : "border-border bg-white",
+                )}
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* Zoom do canvas — antes os botões não faziam nada. */}

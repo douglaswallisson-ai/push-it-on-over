@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as CcoRouteImport } from './routes/cco'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as LoginRouteImport } from './routes/login'
@@ -108,6 +109,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CcoRoute = CcoRouteImport.update({
+  id: '/cco',
+  path: '/cco',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsoleRoute = ConsoleRouteImport.update({
@@ -567,6 +573,7 @@ const AppMotoristasPerfilNomeRoute = AppMotoristasPerfilNomeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
@@ -658,6 +665,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cco': typeof CcoRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/app/$': typeof AppSplatRoute
@@ -750,6 +758,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
@@ -844,6 +853,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/cco'
     | '/console'
     | '/embed'
     | '/login'
@@ -935,6 +945,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cco'
     | '/embed'
     | '/login'
     | '/app/$'
@@ -1026,6 +1037,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/cco'
     | '/console'
     | '/embed'
     | '/login'
@@ -1119,6 +1131,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  CcoRoute: typeof CcoRoute
   ConsoleRoute: typeof ConsoleRouteWithChildren
   EmbedRoute: typeof EmbedRoute
   LoginRoute: typeof LoginRoute
@@ -1138,6 +1151,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cco': {
+      id: '/cco'
+      path: '/cco'
+      fullPath: '/cco'
+      preLoaderRoute: typeof CcoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/console': {
@@ -1969,6 +1989,7 @@ const ConsoleRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  CcoRoute: CcoRoute,
   ConsoleRoute: ConsoleRouteWithChildren,
   EmbedRoute: EmbedRoute,
   LoginRoute: LoginRoute,

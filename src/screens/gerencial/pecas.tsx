@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { ResponsiveContainer } from "recharts";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Info as InfoIcon, type LucideIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  FileDown,
+  Info as InfoIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { Card } from "@/components/ss/ui/data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { exportarCSV } from "@/lib/export";
 import { nf } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +27,14 @@ export function Info({ texto, className }: { texto: ReactNode; className?: strin
   return (
     <Tooltip delayDuration={120}>
       <TooltipTrigger asChild>
-        <button type="button" aria-label="O que é este indicador" className={cn("inline-flex text-muted-foreground/70 transition-colors hover:text-brand-navy", className)}>
+        <button
+          type="button"
+          aria-label="O que é este indicador"
+          className={cn(
+            "inline-flex text-muted-foreground/70 transition-colors hover:text-brand-navy",
+            className,
+          )}
+        >
           <InfoIcon className="h-3.5 w-3.5" />
         </button>
       </TooltipTrigger>
@@ -53,18 +68,39 @@ export function useContagem(alvo: number | null | undefined, ms = 900) {
   return alvo == null || Number.isNaN(alvo) ? null : v;
 }
 
-export function Numero({ valor, fmt = (n) => nf(n) }: { valor: number | null | undefined; fmt?: (n: number) => string }) {
+export function Numero({
+  valor,
+  fmt = (n) => nf(n),
+}: {
+  valor: number | null | undefined;
+  fmt?: (n: number) => string;
+}) {
   const v = useContagem(valor);
   return <>{v == null ? "—" : fmt(v)}</>;
 }
 
-export function Variacao({ atual, anterior, menorMelhor, rotulo = "vs. período anterior" }: { atual: number | null; anterior: number | null; menorMelhor?: boolean; rotulo?: string }) {
+export function Variacao({
+  atual,
+  anterior,
+  menorMelhor,
+  rotulo = "vs. período anterior",
+}: {
+  atual: number | null;
+  anterior: number | null;
+  menorMelhor?: boolean;
+  rotulo?: string;
+}) {
   if (atual == null || anterior == null || anterior === 0) return null;
   const v = (atual - anterior) / Math.abs(anterior);
   const bom = menorMelhor ? v < 0 : v > 0;
   const Icone = v >= 0 ? ArrowUpRight : ArrowDownRight;
   return (
-    <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-semibold", bom ? "text-leaf" : "text-coral")}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[12px] font-semibold",
+        bom ? "text-leaf" : "text-coral",
+      )}
+    >
       <Icone className="h-3.5 w-3.5" />
       {nf(Math.abs(v) * 100, 1)}% {rotulo}
     </span>
@@ -72,7 +108,18 @@ export function Variacao({ atual, anterior, menorMelhor, rotulo = "vs. período 
 }
 
 export function Kpi({
-  icon: Icone, label, valor, fmt, texto, unidade, dica, alerta, atual, anterior, menorMelhor, sub,
+  icon: Icone,
+  label,
+  valor,
+  fmt,
+  texto,
+  unidade,
+  dica,
+  alerta,
+  atual,
+  anterior,
+  menorMelhor,
+  sub,
 }: {
   icon: LucideIcon;
   label: string;
@@ -103,10 +150,16 @@ export function Kpi({
       </div>
       <p className="mt-2 font-display text-2xl font-bold tabular-nums">
         {texto ?? <Numero valor={valor} fmt={fmt} />}
-        {unidade && <span className="ml-1 text-[12px] font-medium text-muted-foreground">{unidade}</span>}
+        {unidade && (
+          <span className="ml-1 text-[12px] font-medium text-muted-foreground">{unidade}</span>
+        )}
       </p>
       <div className="mt-1 min-h-[16px] text-[12px] text-muted-foreground">
-        {atual !== undefined ? <Variacao atual={atual ?? null} anterior={anterior ?? null} menorMelhor={menorMelhor} /> : sub}
+        {atual !== undefined ? (
+          <Variacao atual={atual ?? null} anterior={anterior ?? null} menorMelhor={menorMelhor} />
+        ) : (
+          sub
+        )}
       </div>
     </div>
   );
@@ -117,7 +170,13 @@ export function Kpi({
  * o arco é o valor, o traço escuro é a meta. Verde quando cumpre a meta.
  */
 export function Velocimetro({
-  rotulo, valor, meta, max = 1, menorMelhor, dica, fmt = (n) => `${nf(n * 100, 1)}%`,
+  rotulo,
+  valor,
+  meta,
+  max = 1,
+  menorMelhor,
+  dica,
+  fmt = (n) => `${nf(n * 100, 1)}%`,
 }: {
   rotulo: string;
   valor: number | null;
@@ -138,7 +197,12 @@ export function Velocimetro({
   const p = valor == null ? 0 : Math.min(1, valor / lim);
   // Compara no arredondamento exibido: 0,0% contra meta 0% é "cumprida".
   const arred = (x: number) => (lim > 1.5 ? Math.round(x * 10) / 10 : Math.round(x * 1000) / 1000);
-  const cumpre = valor == null || meta == null ? null : menorMelhor ? arred(valor) <= arred(meta) : arred(valor) >= arred(meta);
+  const cumpre =
+    valor == null || meta == null
+      ? null
+      : menorMelhor
+        ? arred(valor) <= arred(meta)
+        : arred(valor) >= arred(meta);
   const cor = cumpre == null ? "var(--brand-sky)" : cumpre ? "var(--leaf)" : "var(--coral)";
   const ang = meta == null ? null : Math.PI * (1 - Math.min(1, meta / lim));
   const animado = useContagem(valor ?? null);
@@ -150,7 +214,13 @@ export function Velocimetro({
         {dica && <Info texto={dica} />}
       </div>
       <svg viewBox="0 0 120 70" className="mt-1 w-full max-w-[170px]">
-        <path d={`M 14 62 A ${r} ${r} 0 0 1 106 62`} fill="none" stroke="var(--secondary)" strokeWidth="11" strokeLinecap="round" />
+        <path
+          d={`M 14 62 A ${r} ${r} 0 0 1 106 62`}
+          fill="none"
+          stroke="var(--secondary)"
+          strokeWidth="11"
+          strokeLinecap="round"
+        />
         <path
           d={`M 14 62 A ${r} ${r} 0 0 1 106 62`}
           fill="none"
@@ -173,23 +243,63 @@ export function Velocimetro({
             strokeLinecap="round"
           />
         )}
-        <text x="60" y="58" textAnchor="middle" className="fill-foreground font-display" style={{ fontSize: 15, fontWeight: 700 }}>
+        <text
+          x="60"
+          y="58"
+          textAnchor="middle"
+          className="fill-foreground font-display"
+          style={{ fontSize: 15, fontWeight: 700 }}
+        >
           {animado == null ? "—" : fmt(animado)}
         </text>
       </svg>
       <p className="text-[12px] text-muted-foreground">
-        {meta == null ? "sem meta cadastrada" : <>Meta {fmt(meta)} {cumpre != null && <span className={cumpre ? "text-leaf" : "text-coral"}>· {cumpre ? "cumprida" : "fora"}</span>}</>}
+        {meta == null ? (
+          "sem meta cadastrada"
+        ) : (
+          <>
+            Meta {fmt(meta)}{" "}
+            {cumpre != null && (
+              <span className={cumpre ? "text-leaf" : "text-coral"}>
+                · {cumpre ? "cumprida" : "fora"}
+              </span>
+            )}
+          </>
+        )}
       </p>
     </div>
   );
 }
 
-export function Grafico({ titulo, icon, children, altura = 280, rodape, dica, acao }: { titulo: string; icon: LucideIcon; children: ReactNode; altura?: number; rodape?: ReactNode; dica?: ReactNode; acao?: ReactNode }) {
+export function Grafico({
+  titulo,
+  icon,
+  children,
+  altura = 280,
+  rodape,
+  dica,
+  acao,
+}: {
+  titulo: string;
+  icon: LucideIcon;
+  children: ReactNode;
+  altura?: number;
+  rodape?: ReactNode;
+  dica?: ReactNode;
+  acao?: ReactNode;
+}) {
   return (
     <Card
       title={titulo}
       icon={icon}
-      action={(dica || acao) && <div className="flex items-center gap-2">{acao}{dica && <Info texto={dica} />}</div>}
+      action={
+        (dica || acao) && (
+          <div className="flex items-center gap-2">
+            {acao}
+            {dica && <Info texto={dica} />}
+          </div>
+        )
+      }
       bodyClassName="p-4"
     >
       <div style={{ height: altura }}>
@@ -200,7 +310,17 @@ export function Grafico({ titulo, icon, children, altura = 280, rodape, dica, ac
   );
 }
 
-export function DicaGrafico({ active, payload, label, fmt }: { active?: boolean; payload?: { name: string; value: number; color: string; payload?: Record<string, unknown> }[]; label?: string; fmt?: (v: number, nome: string) => string }) {
+export function DicaGrafico({
+  active,
+  payload,
+  label,
+  fmt,
+}: {
+  active?: boolean;
+  payload?: { name: string; value: number; color: string; payload?: Record<string, unknown> }[];
+  label?: string;
+  fmt?: (v: number, nome: string) => string;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl border border-border bg-white/95 px-3 py-2 text-[12px] shadow-elegant backdrop-blur">
@@ -209,29 +329,49 @@ export function DicaGrafico({ active, payload, label, fmt }: { active?: boolean;
         <p key={p.name} className="flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: p.color }} />
           <span className="text-muted-foreground">{p.name}:</span>
-          <span className="font-mono font-semibold">{fmt ? fmt(p.value, p.name) : nf(p.value, 1)}</span>
+          <span className="font-mono font-semibold">
+            {fmt ? fmt(p.value, p.name) : nf(p.value, 1)}
+          </span>
         </p>
       ))}
     </div>
   );
 }
 
-export const Carregando = ({ q, children, vazio }: { q: { isPending: boolean; error: unknown; data?: unknown }; children: ReactNode; vazio?: boolean }) =>
+export const Carregando = ({
+  q,
+  children,
+  vazio,
+}: {
+  q: { isPending: boolean; error: unknown; data?: unknown };
+  children: ReactNode;
+  vazio?: boolean;
+}) =>
   q.error ? (
-    <p className="rounded-2xl border border-coral-line bg-coral-tint/30 py-10 text-center text-sm text-coral">Não foi possível carregar: {(q.error as Error).message}</p>
+    <p className="rounded-2xl border border-coral-line bg-coral-tint/30 py-10 text-center text-sm text-coral">
+      Não foi possível carregar: {(q.error as Error).message}
+    </p>
   ) : q.isPending ? (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {[0, 1, 2, 3].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />
+      ))}
     </div>
   ) : vazio ? (
-    <p className="rounded-2xl border border-border bg-card py-10 text-center text-sm text-muted-foreground">Sem dados para os filtros escolhidos.</p>
+    <p className="rounded-2xl border border-border bg-card py-10 text-center text-sm text-muted-foreground">
+      Sem dados para os filtros escolhidos.
+    </p>
   ) : (
     <>{children}</>
   );
 
 /** Barras horizontais animadas para rankings (top N). */
 export function BarrasRank({
-  itens, fmt = (n) => nf(n), cor = "var(--brand-navy)", vazio = "Sem dados.", onClick,
+  itens,
+  fmt = (n) => nf(n),
+  cor = "var(--brand-navy)",
+  vazio = "Sem dados.",
+  onClick,
 }: {
   itens: { nome: string; valor: number; detalhe?: ReactNode; chave?: string | number }[];
   fmt?: (n: number) => string;
@@ -245,44 +385,93 @@ export function BarrasRank({
     return () => cancelAnimationFrame(t);
   }, []);
   const max = Math.max(...itens.map((i) => i.valor), 0) || 1;
-  if (!itens.length) return <p className="py-6 text-center text-sm text-muted-foreground">{vazio}</p>;
+  if (!itens.length)
+    return <p className="py-6 text-center text-sm text-muted-foreground">{vazio}</p>;
   return (
-    <ol className="space-y-1.5">
-      {itens.map((it, i) => (
-        <li
-          key={it.chave ?? it.nome + i}
-          onClick={onClick ? () => onClick(it.chave) : undefined}
-          className={cn("group grid grid-cols-[22px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1 text-[13px]", onClick && "cursor-pointer hover:bg-secondary/70")}
-          title={`${it.nome}: ${fmt(it.valor)}`}
-        >
-          <span className="text-right font-mono text-[12px] text-muted-foreground">{i + 1}</span>
-          <div className="min-w-0">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate font-medium text-foreground">{it.nome}</span>
+    <div data-grafico>
+      <ol className="space-y-1.5">
+        {itens.map((it, i) => (
+          <li
+            key={it.chave ?? it.nome + i}
+            onClick={onClick ? () => onClick(it.chave) : undefined}
+            className={cn(
+              "group grid grid-cols-[22px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1 text-[13px]",
+              onClick && "cursor-pointer hover:bg-secondary/70",
+            )}
+            title={`${it.nome}: ${fmt(it.valor)}`}
+          >
+            <span className="text-right font-mono text-[12px] text-muted-foreground">{i + 1}</span>
+            <div className="min-w-0">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="truncate font-medium text-foreground">{it.nome}</span>
+              </div>
+              <div className="mt-0.5 h-2 overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-2 rounded-full"
+                  style={{
+                    width: montado ? `${(100 * it.valor) / max}%` : "0%",
+                    background: typeof cor === "function" ? cor(i) : cor,
+                    transition: `width 900ms cubic-bezier(.2,.8,.2,1) ${i * 35}ms`,
+                  }}
+                />
+              </div>
+              {it.detalhe && (
+                <div className="mt-0.5 text-[12px] text-muted-foreground">{it.detalhe}</div>
+              )}
             </div>
-            <div className="mt-0.5 h-2 overflow-hidden rounded-full bg-secondary">
-              <div
-                className="h-2 rounded-full"
-                style={{
-                  width: montado ? `${(100 * it.valor) / max}%` : "0%",
-                  background: typeof cor === "function" ? cor(i) : cor,
-                  transition: `width 900ms cubic-bezier(.2,.8,.2,1) ${i * 35}ms`,
-                }}
-              />
-            </div>
-            {it.detalhe && <div className="mt-0.5 text-[12px] text-muted-foreground">{it.detalhe}</div>}
-          </div>
-          <span className="font-mono text-[12px] font-semibold tabular-nums">{fmt(it.valor)}</span>
-        </li>
-      ))}
-    </ol>
+            <span className="font-mono text-[12px] font-semibold tabular-nums">
+              {fmt(it.valor)}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <BotaoCsv
+        onClick={() =>
+          exportarCSV(
+            itens.map((it, i) => ({ ...it, pos: i + 1 })),
+            [
+              { cabecalho: "Posição", valor: (l) => l.pos },
+              { cabecalho: "Nome", valor: (l) => l.nome },
+              { cabecalho: "Valor", valor: (l) => fmt(l.valor) },
+            ],
+            "ranking",
+          )
+        }
+      />
+    </div>
+  );
+}
+
+/** "Baixar CSV" discreto no rodapé de rankings e matrizes. */
+function BotaoCsv({ onClick }: { onClick: () => void }) {
+  return (
+    <div data-sem-exportar className="mt-2 flex justify-end">
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center gap-1 text-[12px] font-medium text-brand-navy hover:underline"
+      >
+        <FileDown className="h-3.5 w-3.5" />
+        Baixar CSV
+      </button>
+    </div>
   );
 }
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /** Matriz dia da semana × hora (Matriz Calor Eventos / Excesso Parado). */
-export function MatrizCalor({ celulas, fmt = (n) => nf(n), unidade = "eventos", cor = "210 70% 35%" }: { celulas: { dow: number; hora: number; n: number }[]; fmt?: (n: number) => string; unidade?: string; cor?: string }) {
+export function MatrizCalor({
+  celulas,
+  fmt = (n) => nf(n),
+  unidade = "eventos",
+  cor = "210 70% 35%",
+}: {
+  celulas: { dow: number; hora: number; n: number }[];
+  fmt?: (n: number) => string;
+  unidade?: string;
+  cor?: string;
+}) {
   const mapa = new Map(celulas.map((c) => [`${c.dow}-${c.hora}`, c.n]));
   const max = Math.max(...celulas.map((c) => c.n), 0) || 1;
   const totLinha = (d: number) => celulas.filter((c) => c.dow === d).reduce((a, c) => a + c.n, 0);
@@ -293,56 +482,95 @@ export function MatrizCalor({ celulas, fmt = (n) => nf(n), unidade = "eventos", 
   }, []);
   // Começa na segunda, como o BI.
   const ordem = [1, 2, 3, 4, 5, 6, 0];
+  const csv = () =>
+    exportarCSV(
+      ordem,
+      [
+        { cabecalho: "Dia", valor: (d) => DIAS_SEMANA[d] },
+        ...Array.from({ length: 24 }, (_, h) => ({
+          cabecalho: `${String(h).padStart(2, "0")}h`,
+          valor: (d: number) => mapa.get(`${d}-${h}`) ?? 0,
+        })),
+        { cabecalho: "Total", valor: (d) => totLinha(d) },
+      ],
+      `matriz-${unidade}`,
+    );
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] border-separate border-spacing-[3px] text-[12px]">
-        <thead>
-          <tr>
-            <th />
-            {Array.from({ length: 24 }, (_, h) => <th key={h} className="font-mono font-normal text-muted-foreground">{String(h).padStart(2, "0")}</th>)}
-            <th className="pl-2 text-right font-mono font-normal text-muted-foreground">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ordem.map((d, li) => (
-            <tr key={d}>
-              <td className="pr-2 text-right font-semibold text-muted-foreground">{DIAS_SEMANA[d]}</td>
-              {Array.from({ length: 24 }, (_, h) => {
-                const n = mapa.get(`${d}-${h}`) ?? 0;
-                const a = n / max;
-                return (
-                  <td
-                    key={h}
-                    title={`${DIAS_SEMANA[d]} ${String(h).padStart(2, "0")}h: ${fmt(n)} ${unidade}`}
-                    className="h-7 rounded-[5px] text-center font-mono transition-all duration-500 hover:scale-110 hover:ring-2 hover:ring-brand-navy/40"
-                    style={{
-                      background: n ? `hsl(${cor} / ${montado ? 0.08 + a * 0.85 : 0})` : "var(--secondary)",
-                      color: a > 0.55 ? "white" : "var(--muted-foreground)",
-                      transitionDelay: `${li * 40 + h * 8}ms`,
-                    }}
-                  >
-                    {n ? (n >= 1000 ? `${nf(n / 1000, 1)}k` : fmt(n)) : ""}
-                  </td>
-                );
-              })}
-              <td className="pl-2 text-right font-mono font-semibold">{fmt(totLinha(d))}</td>
+    <div data-grafico>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] border-separate border-spacing-[3px] text-[12px]">
+          <thead>
+            <tr>
+              <th />
+              {Array.from({ length: 24 }, (_, h) => (
+                <th key={h} className="font-mono font-normal text-muted-foreground">
+                  {String(h).padStart(2, "0")}
+                </th>
+              ))}
+              <th className="pl-2 text-right font-mono font-normal text-muted-foreground">Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {ordem.map((d, li) => (
+              <tr key={d}>
+                <td className="pr-2 text-right font-semibold text-muted-foreground">
+                  {DIAS_SEMANA[d]}
+                </td>
+                {Array.from({ length: 24 }, (_, h) => {
+                  const n = mapa.get(`${d}-${h}`) ?? 0;
+                  const a = n / max;
+                  return (
+                    <td
+                      key={h}
+                      title={`${DIAS_SEMANA[d]} ${String(h).padStart(2, "0")}h: ${fmt(n)} ${unidade}`}
+                      className="h-7 rounded-[5px] text-center font-mono transition-all duration-500 hover:scale-110 hover:ring-2 hover:ring-brand-navy/40"
+                      style={{
+                        background: n
+                          ? `hsl(${cor} / ${montado ? 0.08 + a * 0.85 : 0})`
+                          : "var(--secondary)",
+                        color: a > 0.55 ? "white" : "var(--muted-foreground)",
+                        transitionDelay: `${li * 40 + h * 8}ms`,
+                      }}
+                    >
+                      {n ? (n >= 1000 ? `${nf(n / 1000, 1)}k` : fmt(n)) : ""}
+                    </td>
+                  );
+                })}
+                <td className="pl-2 text-right font-mono font-semibold">{fmt(totLinha(d))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <BotaoCsv onClick={csv} />
     </div>
   );
 }
 
 export function Aviso({ children, tom = "gold" }: { children: ReactNode; tom?: "gold" | "sky" }) {
   return (
-    <div className={cn("flex items-start gap-2 rounded-xl border px-3.5 py-2.5 text-[13px]", tom === "gold" ? "border-gold-line bg-gold-tint text-foreground" : "border-border bg-navy-tint")}>
+    <div
+      className={cn(
+        "flex items-start gap-2 rounded-xl border px-3.5 py-2.5 text-[13px]",
+        tom === "gold"
+          ? "border-gold-line bg-gold-tint text-foreground"
+          : "border-border bg-navy-tint",
+      )}
+    >
       <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-navy" />
       <div>{children}</div>
     </div>
   );
 }
 
-export const dataBR = (s: string | null | undefined) => (s ? new Date(s.length <= 10 ? s + "T12:00" : s).toLocaleDateString("pt-BR") : "—");
+export const dataBR = (s: string | null | undefined) =>
+  s ? new Date(s.length <= 10 ? s + "T12:00" : s).toLocaleDateString("pt-BR") : "—";
 export const dataHoraBR = (s: string | null | undefined) =>
-  s ? new Date(s).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+  s
+    ? new Date(s).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";

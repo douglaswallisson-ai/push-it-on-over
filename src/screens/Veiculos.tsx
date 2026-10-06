@@ -464,39 +464,10 @@ export default function Veiculos() {
                 </span>
               ) : indicadores.carregando ? (
                 <span>Cruzando a frota com a telemetria dos últimos 30 dias…</span>
-              ) : indicadores.linhasKm > 0 ? null : false ? (
-                <span>
-                  <strong className="text-foreground">{nf(indicadores.linhasKm)} registros</strong> consolidados por
-                  dia, dos últimos 30 dias — mesma fonte do BI, para o número bater com o painel.
-                  {indicadores.temEstimado && (
-                    <>
-                      {" "}
-                      <strong className="text-gold">Parte é estimada:</strong> quando o combustível do dia vem
-                      zerado, o servidor substitui distância e consumo pelos valores calculados.
-                    </>
-                  )}{" "}
-                  {comKml.length < linhas.length && (
-                    <>
-                      Só <strong className="text-foreground">{comKml.length} de {linhas.length}</strong> veículos têm
-                      km/l: cerca de metade das viagens chega sem leitura de combustível, e sem ela não há como
-                      calcular consumo — a distância dessas viagens continua valendo.{" "}
-                    </>
-                  )}
-                  {0 > 0 && (
-                    <>
-                      {" "}
-                      <strong className="text-gold">
-                        {nf(0)} descartadas
-                      </strong>{" "}
-                      por leitura impossível — distância negativa por estouro de odômetro, ou velocidade acima de
-                      300 km/h. Mantê-las somaria milhões de quilômetros que não existiram.
-                    </>
-                  )}
-                </span>
-              ) : (
+              ) : indicadores.linhasKm > 0 ? null : (
                 <span>
                   <strong className="text-foreground">Nenhuma viagem retornada.</strong>{" "}
-                  {!Boolean(idsDaFrota.length)
+                  {!idsDaFrota.length
                     ? "A consulta de telemetria não chegou a ser feita — nenhum veículo carregado."
                     : `Consultadas ${nf(idsDaFrota.length)} placas no período de ${"últimos 30 dias"}, sem viagens na resposta.`}
                 </span>

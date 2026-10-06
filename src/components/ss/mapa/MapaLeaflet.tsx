@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { PopupVeiculo } from "./PopupVeiculo";
 import { CamadasMapa, type CamadasVisiveis } from "./CamadasMapa";
+import { grupoAtivo } from "@/lib/escopo-ativo";
 import { COR_SITUACAO, NOME_TIPO, svgVeiculo, type TipoVeiculo } from "./iconesVeiculo";
 
 const CHAVE_CAMADAS = "ss:mapa:camadas";
@@ -234,6 +235,8 @@ export function MapaLeaflet({
         center={pontos[0] ?? CENTRO_PADRAO}
         zoom={12}
         scrollWheelZoom
+        // Centenas de cercas: desenhar em canvas em vez de um SVG por forma.
+        preferCanvas
         className="h-full w-full"
         // O Leaflet usa z-index alto por padrão e passaria por cima de painéis
         // e do próprio menu lateral.
@@ -347,7 +350,9 @@ export function MapaLeaflet({
                 : estadoCamadas.carregando
                   ? "Carregando cercas e pontos…"
                   : estadoCamadas.longe
-                    ? "Aproxime o mapa para ver cercas e pontos."
+                    ? visiveis.cercas && grupoAtivo()
+                      ? "Aproxime o mapa para ver os pontos (POIs)."
+                      : "Aproxime o mapa para ver cercas e pontos."
                     : "Muitos itens nesta área — aproxime para ver todos."}
             </span>
           )}

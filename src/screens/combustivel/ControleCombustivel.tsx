@@ -1133,7 +1133,7 @@ function SemAbastecimentoAba({ g, onVeiculo }: { g: string; onVeiculo: (id: numb
 const COLUNAS_PLANILHA = ["placa", "data", "combustivel", "litros", "preco_litro", "km", "posto", "tanque_cheio", "nota_fiscal", "valor_nota", "motorista"];
 
 function lerCsv(txt: string): LinhaPlanilha[] {
-  const linhas = txt.replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim());
+  const linhas = txt.replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.trim());
   if (!linhas.length) return [];
   const sep = linhas[0].split(";").length >= linhas[0].split(",").length ? ";" : ",";
   const cab = linhas[0].split(sep).map((c) => c.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "_"));

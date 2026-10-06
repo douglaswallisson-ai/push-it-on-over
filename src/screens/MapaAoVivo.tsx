@@ -326,7 +326,7 @@ export default function MapaAoVivo() {
                   selecionado={selected}
                   onSelect={setSelected}
                 />
-                <div className="pointer-events-none absolute left-4 top-4 z-[400] rounded-lg bg-white/90 px-3 py-2 text-xs shadow-card backdrop-blur">
+                <div className="pointer-events-none absolute left-14 top-3 z-[400] rounded-lg bg-white/90 px-3 py-2 text-xs shadow-card backdrop-blur">
                   <span className="font-semibold text-foreground">{nf(visiveis.length)}</span>{" "}
                   <span className="text-muted-foreground">veículos visíveis</span>
                 </div>

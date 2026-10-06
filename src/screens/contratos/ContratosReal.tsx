@@ -10,6 +10,8 @@ import {
   Search,
   Truck,
   Wallet,
+  FilePlus,
+  Ban,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -33,8 +35,10 @@ import { ApiError } from "@/lib/api";
 import {
   Contratos,
   contratosQuery,
+  type Aditivo,
   type Contrato,
   type DadosContrato,
+  type NovoAditivo,
   type StatusContrato,
 } from "@/lib/contratos-api";
 import { exportarCSV } from "@/lib/export";
@@ -257,6 +261,10 @@ export default function ContratosReal() {
           <span className="block font-semibold text-foreground">
             {c.dados.nome_grupo || "Sem nome"}
           </span>
+          <span className="block font-mono text-[11px] text-muted-foreground">
+            {c.numero_sistema}
+            {c.aditivos_ativos ? ` · ${c.aditivos_ativos} aditivo(s)` : ""}
+          </span>
           <span className="block max-w-[320px] truncate text-[12px] text-muted-foreground">
             {c.dados.razao_social || "Razão social não informada"}
           </span>
@@ -296,8 +304,8 @@ export default function ContratosReal() {
       header: "Veículos",
       align: "right",
       render: (c) => (
-        <span title="Contratados / ativos hoje na plataforma">
-          {nf(c.dados.qtd_veiculos)}{" "}
+        <span title="Contratados (com aditivos) / ativos hoje na plataforma">
+          {nf(c.qtd_veiculos_total)}{" "}
           <span className="text-muted-foreground">
             / {c.grupo_a_criar ? "—" : nf(c.veiculos_hoje)}
           </span>
@@ -308,7 +316,7 @@ export default function ContratosReal() {
       key: "parcela",
       header: "Parcela",
       align: "right",
-      render: (c) => brl(c.dados.valor_parcela),
+      render: (c) => brl(c.valor_parcela_total),
     },
     {
       key: "total",
@@ -337,6 +345,8 @@ export default function ContratosReal() {
     exportarCSV(
       lista,
       [
+        { cabecalho: "Nº do contrato (sistema)", valor: (c) => c.numero_sistema },
+        { cabecalho: "Nº comercial", valor: (c) => c.dados.numero_contrato },
         { cabecalho: "Grupo", valor: (c) => c.dados.nome_grupo },
         { cabecalho: "Razão social", valor: (c) => c.dados.razao_social },
         { cabecalho: "CNPJ", valor: (c) => c.dados.cnpj },
@@ -347,9 +357,19 @@ export default function ContratosReal() {
         { cabecalho: "Início", valor: (c) => c.dados.data_inicio },
         { cabecalho: "Fim", valor: (c) => c.dados.data_fim },
         { cabecalho: "Meses", valor: (c) => c.tempo_meses_calc },
-        { cabecalho: "Veículos contratados", valor: (c) => c.dados.qtd_veiculos },
+        { cabecalho: "Veículos (contrato original)", valor: (c) => c.dados.qtd_veiculos },
+        { cabecalho: "Veículos com aditivos", valor: (c) => c.qtd_veiculos_total },
+        {
+          cabecalho: "Aditivos",
+          valor: (c) =>
+            c.aditivos
+              .filter((a) => a.status === "ativo")
+              .map((a) => a.numero)
+              .join(" "),
+        },
         { cabecalho: "Veículos hoje", valor: (c) => c.veiculos_hoje },
-        { cabecalho: "Parcela", valor: (c) => c.dados.valor_parcela },
+        { cabecalho: "Parcela (original)", valor: (c) => c.dados.valor_parcela },
+        { cabecalho: "Parcela com aditivos", valor: (c) => c.valor_parcela_total },
         { cabecalho: "Implantação", valor: (c) => c.dados.valor_implantacao },
         { cabecalho: "Total", valor: (c) => c.valor_total_calc },
         {
@@ -515,6 +535,9 @@ function FormContrato({
   onSalvo: () => void;
 }) {
   const novo = contrato === null;
+  // O contrato mostrado é atualizado na hora quando entra ou sai um aditivo.
+  const [atualizado, setAtualizado] = useState<Contrato | null>(null);
+  const atual = (atualizado ?? contrato) as Contrato;
   const [d, setD] = useState<DadosContrato>(() => ({ ...(contrato?.dados ?? {}) }));
   const [salvando, setSalvando] = useState(false);
   const [erroCampo, setErroCampo] = useState<string | null>(null);
@@ -570,7 +593,14 @@ function FormContrato({
   return (
     <div className="space-y-5 pb-8">
       <SheetHeader>
-        <SheetTitle>{novo ? "Novo contrato" : d.nome_grupo || "Contrato"}</SheetTitle>
+        <SheetTitle>
+          {novo ? "Novo contrato" : d.nome_grupo || "Contrato"}
+          {!novo && (
+            <span className="ml-2 font-mono text-[13px] font-normal text-muted-foreground">
+              {atual.numero_sistema}
+            </span>
+          )}
+        </SheetTitle>
         <SheetDescription>
           {novo
             ? "Cadastrar o contrato é o que cria o cliente (grupo) na plataforma. Os campos com * são obrigatórios."
@@ -732,6 +762,8 @@ function FormContrato({
         </fieldset>
       ))}
 
+      {!novo && <SecaoAditivos contrato={atual} onMudou={(c) => setAtualizado(c)} />}
+
       <div className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-border bg-card pt-3">
         <button
           type="button"
@@ -784,5 +816,342 @@ function FormContrato({
         )}
       </div>
     </div>
+  );
+}
+
+const ADITIVO_VAZIO: NovoAditivo = {
+  tipo: "inclusao",
+  qtd_veiculos: 1,
+  data_inicio: new Date().toISOString().slice(0, 10),
+};
+
+/**
+ * Aditivos de veículos do contrato. Cada um leva o número do contrato pai e a
+ * sequência (CT-00042-AD01), gerado pelo servidor na criação. Não se apaga
+ * aditivo: cancela com motivo, e ele sai dos totais.
+ */
+function SecaoAditivos({
+  contrato,
+  onMudou,
+}: {
+  contrato: Contrato;
+  onMudou: (c: Contrato) => void;
+}) {
+  const qc = useQueryClient();
+  const [abrir, setAbrir] = useState(false);
+  const [a, setA] = useState<NovoAditivo>(ADITIVO_VAZIO);
+  const [salvando, setSalvando] = useState(false);
+  const [erroCampo, setErroCampo] = useState<string | null>(null);
+  const [cancelando, setCancelando] = useState<number | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const set = (k: keyof NovoAditivo, v: unknown) => setA((x) => ({ ...x, [k]: v }));
+  const proximo = `${contrato.numero_sistema}-AD${String((contrato.aditivos.reduce((m, x) => Math.max(m, x.sequencia), 0) || 0) + 1).padStart(2, "0")}`;
+  const encerrado = contrato.status === "encerrado";
+
+  const criar = async () => {
+    setSalvando(true);
+    setErroCampo(null);
+    try {
+      const r = await Contratos.criarAditivo(contrato.id, a);
+      toast.success(`Aditivo ${r.numero} criado.`);
+      onMudou(r.contrato);
+      setA(ADITIVO_VAZIO);
+      setAbrir(false);
+      await qc.invalidateQueries({ queryKey: ["contratos"] });
+    } catch (e) {
+      setErroCampo(campoDoErro(e));
+      toast.error(mensagemErro(e));
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const cancelar = async (ad: Aditivo) => {
+    if (!motivo.trim()) {
+      toast.error("Informe o motivo do cancelamento.");
+      return;
+    }
+    try {
+      const c = await Contratos.cancelarAditivo(contrato.id, ad.id, motivo);
+      toast.success(`Aditivo ${ad.numero} cancelado.`);
+      onMudou(c);
+      setCancelando(null);
+      setMotivo("");
+      await qc.invalidateQueries({ queryKey: ["contratos"] });
+    } catch (e) {
+      toast.error(mensagemErro(e));
+    }
+  };
+
+  const css = (campo: string) =>
+    cn(
+      "mt-1 h-9 w-full rounded-lg border bg-white px-3 text-[13px] outline-none focus:border-accent",
+      erroCampo === campo ? "border-coral" : "border-border",
+    );
+
+  return (
+    <fieldset className="space-y-3">
+      <legend className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Aditivos de veículos
+      </legend>
+
+      <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-secondary/40 p-3 text-[12px]">
+        <div>
+          <div className="text-muted-foreground">Contrato original</div>
+          <div className="font-semibold text-foreground">
+            {nf(contrato.dados.qtd_veiculos)} veículos
+          </div>
+          <div className="text-muted-foreground">{brl(contrato.dados.valor_parcela)}/mês</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Aditivos ativos</div>
+          <div className="font-semibold text-foreground">{nf(contrato.aditivos_ativos)}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Total com aditivos</div>
+          <div className="font-semibold text-foreground">
+            {nf(contrato.qtd_veiculos_total)} veículos
+          </div>
+          <div className="text-muted-foreground">{brl(contrato.valor_parcela_total)}/mês</div>
+        </div>
+      </div>
+
+      {contrato.aditivos.length > 0 && (
+        <ul className="space-y-2">
+          {contrato.aditivos.map((ad) => (
+            <li
+              key={ad.id}
+              className={cn(
+                "rounded-xl border border-border px-3 py-2 text-[13px]",
+                ad.status === "cancelado" && "opacity-60",
+              )}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono font-semibold text-foreground">{ad.numero}</span>
+                <span className="text-[12px] text-muted-foreground">
+                  do contrato {ad.numero_contrato_pai}
+                </span>
+                <Pill
+                  tone={
+                    ad.status === "ativo" ? (ad.tipo === "retirada" ? "gold" : "green") : "neutral"
+                  }
+                >
+                  {ad.status === "cancelado"
+                    ? "Cancelado"
+                    : ad.tipo === "retirada"
+                      ? "Retirada"
+                      : "Inclusão"}
+                </Pill>
+                <span className="ml-auto font-medium">
+                  {ad.tipo === "retirada" ? "−" : "+"}
+                  {nf(ad.qtd_veiculos)} veículo(s)
+                  {ad.valor_parcela_adicional
+                    ? ` · ${ad.tipo === "retirada" ? "−" : "+"}${brl(ad.valor_parcela_adicional)}/mês`
+                    : ""}
+                </span>
+              </div>
+              <div className="mt-0.5 text-[12px] text-muted-foreground">
+                A partir de {dataBR(ad.data_inicio)}
+                {ad.data_fim ? ` até ${dataBR(ad.data_fim)}` : " até o fim do contrato"}
+                {ad.data_assinatura ? ` · assinado em ${dataBR(ad.data_assinatura)}` : ""}
+                {ad.valor_implantacao_adicional
+                  ? ` · implantação ${brl(ad.valor_implantacao_adicional)}`
+                  : ""}
+                {ad.placas ? ` · placas: ${ad.placas}` : ""}
+                {ad.observacoes ? ` · ${ad.observacoes}` : ""}
+                {ad.motivo_cancelamento ? ` · cancelado: ${ad.motivo_cancelamento}` : ""}
+              </div>
+              {ad.status === "ativo" &&
+                (cancelando === ad.id ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <input
+                      id={`ad-motivo-${ad.id}`}
+                      value={motivo}
+                      onChange={(e) => setMotivo(e.target.value)}
+                      placeholder="Motivo do cancelamento"
+                      className="h-8 min-w-[200px] flex-1 rounded-lg border border-border bg-white px-2 text-[12px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => cancelar(ad)}
+                      className="h-8 rounded-lg border border-coral/50 px-3 text-[12px] text-coral hover:bg-coral/10"
+                    >
+                      Confirmar cancelamento
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCancelando(null)}
+                      className="h-8 rounded-lg border border-border px-3 text-[12px]"
+                    >
+                      Voltar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCancelando(ad.id);
+                      setMotivo("");
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-coral"
+                  >
+                    <Ban className="h-3 w-3" /> Cancelar aditivo
+                  </button>
+                ))}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {encerrado ? (
+        <p className="text-[12px] text-muted-foreground">
+          Contrato encerrado não recebe aditivo. Reative o contrato antes.
+        </p>
+      ) : !abrir ? (
+        <button
+          type="button"
+          onClick={() => setAbrir(true)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-navy px-3 text-[13px] font-medium text-brand-navy hover:bg-navy-tint"
+        >
+          <FilePlus className="h-4 w-4" /> Novo aditivo
+        </button>
+      ) : (
+        <div className="space-y-3 rounded-xl border border-brand-navy/40 p-3">
+          <p className="text-[12px] text-muted-foreground">
+            Número do aditivo:{" "}
+            <span className="font-mono font-semibold text-foreground">{proximo}</span> (gerado ao
+            salvar, ligado ao contrato {contrato.numero_sistema})
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label htmlFor="ad-tipo" className="text-[12px] text-muted-foreground">
+              Tipo *
+              <select
+                id="ad-tipo"
+                value={a.tipo}
+                onChange={(e) => set("tipo", e.target.value)}
+                className={css("tipo")}
+              >
+                <option value="inclusao">Inclusão de veículos</option>
+                <option value="retirada">Retirada de veículos</option>
+              </select>
+            </label>
+            <label htmlFor="ad-qtd" className="text-[12px] text-muted-foreground">
+              Quantidade de veículos *
+              <input
+                id="ad-qtd"
+                type="number"
+                min={1}
+                value={a.qtd_veiculos}
+                onChange={(e) => set("qtd_veiculos", Number(e.target.value))}
+                className={css("qtd_veiculos")}
+              />
+            </label>
+            <label htmlFor="ad-parcela" className="text-[12px] text-muted-foreground">
+              Valor mensal {a.tipo === "retirada" ? "a menos" : "a mais"} (R$)
+              <input
+                id="ad-parcela"
+                type="number"
+                step="0.01"
+                min={0}
+                value={a.valor_parcela_adicional ?? ""}
+                onChange={(e) =>
+                  set(
+                    "valor_parcela_adicional",
+                    e.target.value === "" ? null : Number(e.target.value),
+                  )
+                }
+                className={css("valor_parcela_adicional")}
+              />
+            </label>
+            <label htmlFor="ad-impl" className="text-[12px] text-muted-foreground">
+              Implantação dos novos veículos (R$)
+              <input
+                id="ad-impl"
+                type="number"
+                step="0.01"
+                min={0}
+                value={a.valor_implantacao_adicional ?? ""}
+                onChange={(e) =>
+                  set(
+                    "valor_implantacao_adicional",
+                    e.target.value === "" ? null : Number(e.target.value),
+                  )
+                }
+                className={css("valor_implantacao_adicional")}
+              />
+            </label>
+            <label htmlFor="ad-assin" className="text-[12px] text-muted-foreground">
+              Data de assinatura
+              <input
+                id="ad-assin"
+                type="date"
+                value={a.data_assinatura ?? ""}
+                onChange={(e) => set("data_assinatura", e.target.value || null)}
+                className={css("data_assinatura")}
+              />
+            </label>
+            <label htmlFor="ad-ini" className="text-[12px] text-muted-foreground">
+              Vale a partir de *
+              <input
+                id="ad-ini"
+                type="date"
+                value={a.data_inicio}
+                onChange={(e) => set("data_inicio", e.target.value)}
+                className={css("data_inicio")}
+              />
+            </label>
+            <label htmlFor="ad-fim" className="text-[12px] text-muted-foreground">
+              Vale até (vazio = fim do contrato)
+              <input
+                id="ad-fim"
+                type="date"
+                value={a.data_fim ?? ""}
+                onChange={(e) => set("data_fim", e.target.value || null)}
+                className={css("data_fim")}
+              />
+            </label>
+            <label htmlFor="ad-placas" className="text-[12px] text-muted-foreground">
+              Placas (se já souber)
+              <input
+                id="ad-placas"
+                value={a.placas ?? ""}
+                placeholder="ABC1D23, EFG4H56"
+                onChange={(e) => set("placas", e.target.value || null)}
+                className={css("placas")}
+              />
+            </label>
+            <label htmlFor="ad-obs" className="text-[12px] text-muted-foreground sm:col-span-2">
+              Observações
+              <input
+                id="ad-obs"
+                value={a.observacoes ?? ""}
+                onChange={(e) => set("observacoes", e.target.value || null)}
+                className={css("observacoes")}
+              />
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={criar}
+              disabled={salvando}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-navy px-4 text-[13px] font-semibold text-white disabled:opacity-60"
+            >
+              {salvando && <Loader2 className="h-4 w-4 animate-spin" />} Criar aditivo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAbrir(false);
+                setErroCampo(null);
+              }}
+              className="h-9 rounded-lg border border-border px-3 text-[13px]"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </fieldset>
   );
 }

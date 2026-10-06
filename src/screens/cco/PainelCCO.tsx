@@ -378,6 +378,32 @@ export default function PainelCCO() {
     setFoco((f) => ({ id, n: (f?.n ?? 0) + 1, mapa: mapa ?? 0 }));
   };
 
+  // Busca por placa no topo: o carro escolhido vira o filtro do primeiro mapa aberto e é centralizado.
+  const [busca, setBusca] = useState("");
+  const [filtrado, setFiltrado] = useState<{ id: string; mapa: number; rotulo: string } | null>(
+    null,
+  );
+  const rotuloBusca = (v: VeiculoPainel) =>
+    v.placa && v.placa !== v.prefixo ? `${v.prefixo} · ${v.placa}` : String(v.prefixo);
+  const buscar = (texto: string) => {
+    setBusca(texto);
+    const t = texto.trim().toLowerCase();
+    const v = t ? comCor.find((x) => rotuloBusca(x).toLowerCase() === t) : undefined;
+    if (!v) return;
+    const mapa = Array.from({ length: layout }, (_, i) => i).find((i) => !fechados[i]) ?? 0;
+    if (filtrado && filtrado.mapa !== mapa) setSelecao(filtrado.mapa, []);
+    setSelecao(mapa, [String(v.id)]);
+    setFiltrado({ id: String(v.id), mapa, rotulo: rotuloBusca(v) });
+    setSelId(v.id);
+    setFoco((f) => ({ id: v.id, n: (f?.n ?? 0) + 1, mapa }));
+    setBusca("");
+  };
+  const limparBusca = () => {
+    if (filtrado) setSelecao(filtrado.mapa, []);
+    setFiltrado(null);
+    setSelId(null);
+  };
+
   const abrir = (titulo: string, url: string) =>
     embutido ? setSobreposicao({ titulo, url }) : undefined;
 
@@ -416,6 +442,44 @@ export default function PainelCCO() {
               </option>
             ))}
           </select>
+        )}
+        {filtrado ? (
+          <span className="inline-flex h-7 items-center gap-1 rounded-md border border-brand-navy bg-navy-tint px-2 font-semibold text-brand-navy">
+            <Search className="h-3.5 w-3.5" /> {filtrado.rotulo}
+            <button
+              type="button"
+              onClick={limparBusca}
+              aria-label="Limpar busca"
+              title="Voltar a todos os veículos"
+              className="ml-0.5 rounded p-0.5 hover:bg-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ) : (
+          <label className="relative flex items-center">
+            <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              id="cco-busca-placa"
+              list="cco-placas"
+              value={busca}
+              onChange={(e) => buscar(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                const t = busca.trim().toLowerCase();
+                const v = comCor.find((x) => rotuloBusca(x).toLowerCase().includes(t));
+                if (t && v) buscar(rotuloBusca(v));
+              }}
+              placeholder="Buscar placa ou prefixo"
+              aria-label="Buscar placa ou prefixo"
+              className="h-7 w-[200px] rounded-md border border-border bg-white pl-7 pr-2 text-[12px]"
+            />
+            <datalist id="cco-placas">
+              {comCor.map((v) => (
+                <option key={v.id} value={rotuloBusca(v)} />
+              ))}
+            </datalist>
+          </label>
         )}
         <span className="hidden items-center gap-2.5 text-muted-foreground md:flex">
           {(alertasNoMapa
@@ -848,26 +912,6 @@ function MapaCCO({
         ))}
       </MapContainer>
       <div className="absolute right-2 top-2 z-[400] flex items-center gap-1 rounded-md bg-white/95 px-1.5 py-1 text-[12px] shadow">
-        <select
-          id={`cco-area-${indice}`}
-          value={vista.area}
-          onChange={(e) => {
-            const a = AREAS.find((x) => x.id === e.target.value);
-            if (a) onVista({ centro: a.centro, zoom: a.zoom, area: a.id });
-          }}
-          className="h-7 rounded border border-border bg-white px-1 text-[12px]"
-        >
-          {AREAS.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.nome}
-            </option>
-          ))}
-          {vista.area === "livre" && (
-            <option value="livre" disabled hidden>
-              Ir para região…
-            </option>
-          )}
-        </select>
         <button
           type="button"
           onClick={() => setAberto((x) => !x)}

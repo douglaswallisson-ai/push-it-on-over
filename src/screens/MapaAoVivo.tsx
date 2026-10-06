@@ -10,7 +10,6 @@ import {
   Search,
   Tractor,
   Truck,
-  MonitorUp,
   Van,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
@@ -208,15 +207,7 @@ export default function MapaAoVivo() {
         }
         actions={
           <div className="flex items-center gap-3">
-            {/* Painel CCO: tela própria em outra aba (segundo monitor / telão). */}
-            <a
-              href="/cco"
-              target="_blank"
-              rel="opener"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-navy px-3 text-[13px] font-semibold text-white hover:opacity-90"
-            >
-              <MonitorUp className="h-4 w-4" /> Painel CCO
-            </a>
+            {/* Painel CCO saiu daqui: fica no menu principal, abaixo de Início (PM, 06/10/2026). */}
             {/* Estado da atualização automática. Sem isso o usuário não sabe se
                 o mapa está vivo ou congelado. */}
             <span className="hidden items-center gap-1.5 text-[12px] text-muted-foreground sm:flex">

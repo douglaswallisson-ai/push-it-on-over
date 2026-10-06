@@ -23,7 +23,11 @@ import {
   Truck,
   Users,
   type LucideIcon,
-  ArrowLeftRight, ClipboardCheck, LifeBuoy } from "lucide-react";
+  ArrowLeftRight,
+  ClipboardCheck,
+  LifeBuoy,
+  MonitorUp,
+} from "lucide-react";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { OrgSwitcher } from "@/components/ss/layout/OrgSwitcher";
 import { cn } from "@/lib/utils";
@@ -51,7 +55,9 @@ import { usandoMock } from "@/lib/modo";
 const RAIL = 68;
 const PANEL = 256;
 
-type SubItem = { label: string; to: string
+type SubItem = {
+  label: string;
+  to: string;
   /**
    * Marca a tela como beta no menu.
    *
@@ -60,9 +66,15 @@ type SubItem = { label: string; to: string
    */
   beta?: boolean;
 };
-type Leaf = { label: string; icon: LucideIcon; to: string; badge?: string };
+/** `novaAba`: tela própria fora do sistema (telão), abre em outra aba com a sessão (rel=opener). */
+type Leaf = { label: string; icon: LucideIcon; to: string; badge?: string; novaAba?: boolean };
 /** `modulo`: só aparece para o cliente desse segmento (ver /cliente/modulos). */
-type Group = { label: string; icon: LucideIcon; items: SubItem[]; modulo?: "urbano" | "fretamento" };
+type Group = {
+  label: string;
+  icon: LucideIcon;
+  items: SubItem[];
+  modulo?: "urbano" | "fretamento";
+};
 type Entry = Leaf | Group;
 
 const isGroup = (e: Entry): e is Group => "items" in e;
@@ -74,6 +86,7 @@ const isGroup = (e: Entry): e is Group => "items" in e;
 // Ordem definida pelo PM em 04/10/2026 (Relatórios por último, depois de Cadastros).
 const NAV_PRIMARY: Entry[] = [
   { label: "Início", icon: Home, to: "/app" },
+  { label: "Painel CCO", icon: MonitorUp, to: "/cco", novaAba: true },
   { label: "Mapa ao vivo", icon: MapPin, to: "/app/mapa" },
   {
     label: "Pessoas",
@@ -203,7 +216,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const grupo = grupoAtivo();
   const modulos = useQuery({
     queryKey: ["cliente-modulos", grupo],
-    queryFn: () => api.get<{ urbano: boolean; fretamento: boolean }>(`/api/v1/cliente/modulos?group_id=${grupo}`),
+    queryFn: () =>
+      api.get<{ urbano: boolean; fretamento: boolean }>(
+        `/api/v1/cliente/modulos?group_id=${grupo}`,
+      ),
     enabled: !!grupo && !usandoMock(),
     staleTime: 3_600_000,
   });
@@ -254,20 +270,24 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       >
         <div className="flex h-14 shrink-0 items-center justify-center gap-2.5 overflow-hidden bg-[#303c54] px-4">
           {lerEmbutido()?.marca.logo ? (
-            <img src={lerEmbutido()!.marca.logo} alt={lerEmbutido()!.marca.nome ?? "Logo"} className="h-8 max-w-[200px] object-contain object-left" />
+            <img
+              src={lerEmbutido()!.marca.logo}
+              alt={lerEmbutido()!.marca.nome ?? "Logo"}
+              className="h-8 max-w-[200px] object-contain object-left"
+            />
           ) : (
-          <>
-          <SSOrb size={30} />
-          <span
-            className={cn(
-              "whitespace-nowrap text-[16px] font-bold tracking-tight transition-opacity duration-200",
-              expanded ? "opacity-100" : "opacity-0",
-            )}
-          >
-            <span className="text-brand-sky">SS</span>
-            <span className="text-white">Telemática</span>
-          </span>
-          </>
+            <>
+              <SSOrb size={30} />
+              <span
+                className={cn(
+                  "whitespace-nowrap text-[16px] font-bold tracking-tight transition-opacity duration-200",
+                  expanded ? "opacity-100" : "opacity-0",
+                )}
+              >
+                <span className="text-brand-sky">SS</span>
+                <span className="text-white">Telemática</span>
+              </span>
+            </>
           )}
         </div>
 
@@ -291,7 +311,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           {/* Divisor entre o dia a dia e os itens de apoio. */}
           <div className="mx-4 my-2.5 h-px bg-white/12" />
 
-          {NAV_SECONDARY.filter((e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte")).map((entry) => (
+          {NAV_SECONDARY.filter(
+            (e) => !(lerEmbutido() && !isGroup(e) && e.to === "/app/suporte"),
+          ).map((entry) => (
             <NavEntry
               key={entry.label}
               entry={entry}
@@ -311,11 +333,17 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           {/* Clicar no nome abre o menu do usuário: Console de gestão (só SS) e sair. */}
           {menuUsuario && expanded && sessao?.perfil === "super_admin" && (
             <div className="mb-2 overflow-hidden rounded-lg border border-white/15 bg-white/5">
-              <NavLink to="/console" onClick={() => setMenuUsuario(false)} className="flex items-center gap-2.5 px-3 py-2 text-white/85 hover:bg-white/10">
+              <NavLink
+                to="/console"
+                onClick={() => setMenuUsuario(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-white/85 hover:bg-white/10"
+              >
                 <ArrowLeftRight className="h-4 w-4 shrink-0" />
                 <span className="min-w-0 leading-tight">
                   <span className="block truncate text-[13px] font-medium">Console de gestão</span>
-                  <span className="block truncate text-[12px] text-white/45">contratos, acessos, auditoria e plataforma</span>
+                  <span className="block truncate text-[12px] text-white/45">
+                    contratos, acessos, auditoria e plataforma
+                  </span>
                 </span>
               </NavLink>
             </div>
@@ -333,7 +361,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               </span>
               {expanded && (
                 <span className="min-w-0 flex-1 leading-tight">
-                  <span className="block truncate text-[13px] font-semibold text-white">{nomeUsuario}</span>
+                  <span className="block truncate text-[13px] font-semibold text-white">
+                    {nomeUsuario}
+                  </span>
                   <span className="block truncate text-[12px] text-white/55">{orgUsuario}</span>
                 </span>
               )}
@@ -395,6 +425,26 @@ function LeafRow({
   onNavigate: () => void;
 }) {
   const Icon = entry.icon;
+  // Embutido (iframe) abre no próprio quadro; fora dele, em outra aba para o telão.
+  if (entry.novaAba && !lerEmbutido())
+    return (
+      <a
+        href={entry.to}
+        target="_blank"
+        rel="opener"
+        onClick={onNavigate}
+        title={entry.label}
+        className={cn(
+          "relative mx-2 flex h-11 w-[calc(100%-1rem)] items-center gap-3 rounded-lg text-white/85 transition-[padding] duration-200 hover:bg-white/[0.08] hover:text-white",
+          expanded ? "px-[14px]" : "justify-center px-0",
+        )}
+      >
+        <Icon className="h-[18px] w-[18px] shrink-0" />
+        {expanded && (
+          <span className="whitespace-nowrap text-[14px] font-medium">{entry.label}</span>
+        )}
+      </a>
+    );
   return (
     <NavLink
       to={entry.to}

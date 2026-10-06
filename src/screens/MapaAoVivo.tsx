@@ -11,6 +11,7 @@ import {
   Tractor,
   Truck,
   MonitorUp,
+  Van,
 } from "lucide-react";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { Database, RefreshCw } from "lucide-react";
@@ -51,6 +52,7 @@ const STATUS: Record<Status, { label: string; tone: PillTone; cor: string }> = {
 const ICONE_TIPO = {
   caminhao: Truck,
   onibus: Bus,
+  van: Van,
   carro: Car,
   moto: Bike,
   maquina: Tractor,
@@ -210,7 +212,7 @@ export default function MapaAoVivo() {
             <a
               href="/cco"
               target="_blank"
-              rel="noreferrer"
+              rel="opener"
               className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-navy px-3 text-[13px] font-semibold text-white hover:opacity-90"
             >
               <MonitorUp className="h-4 w-4" /> Painel CCO

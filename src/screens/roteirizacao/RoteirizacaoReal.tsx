@@ -178,6 +178,8 @@ export default function RoteirizacaoReal() {
   const qc = useQueryClient();
   const qs = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const viagemId = qs.get("viagem");
+  // Entrada pelo menu "Rotograma": a tela orienta o caminho até o botão.
+  const veioDoRotograma = qs.get("rotograma") === "1";
   const [pontos, setPontos] = useState<Ponto[]>([]);
   const [unitId, setUnitId] = useState<string>("");
   const [saida, setSaida] = useState(agoraLocal());
@@ -519,6 +521,22 @@ export default function RoteirizacaoReal() {
         )}
       >
         <section className="space-y-3">
+          {veioDoRotograma && !res && (
+            <div className="rounded-xl border-2 border-brand-navy bg-navy-tint px-3 py-2 text-[13px] text-brand-navy">
+              <p className="flex items-center gap-1.5 font-semibold">
+                <FileText className="h-4 w-4" /> Rotograma
+              </p>
+              <p className="mt-1">
+                1. Escolha uma rota do cliente abaixo, ou inclua a origem e o destino (busca ou
+                clique no mapa).
+              </p>
+              <p>2. Escolha o veículo e a saída.</p>
+              <p>
+                3. Clique em <b>Rotograma (tela e PDF)</b>, que aparece embaixo do mapa assim que a
+                rota é calculada.
+              </p>
+            </div>
+          )}
           {origemTxt && (
             <p className="rounded-lg bg-brand-sky/10 px-3 py-2 text-[12px] text-brand-navy">
               {origemTxt}

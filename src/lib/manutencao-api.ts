@@ -26,7 +26,15 @@ export type ItemSituacao = {
   proxima_data: string | null;
 };
 
-export type Alerta = { chave: string; titulo: string; nivel: "critico" | "atencao"; valor: string; detalhe: string };
+/** `acao` = o que fazer, em linguagem do cliente/oficina. */
+export type Alerta = {
+  chave: string;
+  titulo: string;
+  nivel: "critico" | "atencao";
+  valor: string;
+  detalhe: string;
+  acao?: string;
+};
 
 export type Sinais = {
   temp: number | null;
@@ -36,6 +44,9 @@ export type Sinais = {
   combustivel: number | null;
   ar_freio: number | null;
   rpm: number | null;
+  /** Tensão com o motor ligado (alternador) e parado (bateria), medianas de 24 h. */
+  v_ligado?: number | null;
+  v_repouso?: number | null;
 };
 
 export type VeiculoManut = {
@@ -59,7 +70,7 @@ export type VeiculoManut = {
   sem_registro: number;
   alertas: Alerta[];
   /** Sensor mandando valor impossível (travado, estourando a escala, pulando): qualidade do dado, não defeito. */
-  sinais_suspeitos?: { sinal: string; titulo: string; detalhe: string }[];
+  sinais_suspeitos?: { sinal: string; titulo: string; detalhe: string; acao?: string }[];
   ordens_abertas: number;
   alertas_com_os: string[];
 };
@@ -81,8 +92,20 @@ export type PainelManut = {
   veiculos: VeiculoManut[];
 };
 
-export type ItemPlano = { servico: string; km: number | null; dias: number | null; horas?: number | null };
-export type Plano = { id: number; group_id: number; nome: string; escopo: "categoria" | "modelo" | "veiculo"; alvo: string; itens: ItemPlano[] };
+export type ItemPlano = {
+  servico: string;
+  km: number | null;
+  dias: number | null;
+  horas?: number | null;
+};
+export type Plano = {
+  id: number;
+  group_id: number;
+  nome: string;
+  escopo: "categoria" | "modelo" | "veiculo";
+  alvo: string;
+  itens: ItemPlano[];
+};
 export type ModeloPlano = { id: string; nome: string; categorias: number[]; itens: ItemPlano[] };
 
 export type StatusOS = "aberta" | "em_andamento" | "aguardando_peca" | "concluida" | "cancelada";
@@ -124,20 +147,42 @@ export const painelManutQuery = (g?: string) =>
   });
 
 export const planosQuery = (g?: string) =>
-  queryOptions({ queryKey: ["manut", "planos", g ?? ""], queryFn: () => api.get<Plano[]>(`${B}/planos?group_id=${g}`), enabled: ativo(g) });
+  queryOptions({
+    queryKey: ["manut", "planos", g ?? ""],
+    queryFn: () => api.get<Plano[]>(`${B}/planos?group_id=${g}`),
+    enabled: ativo(g),
+  });
 
 export const modelosPlanoQuery = () =>
-  queryOptions({ queryKey: ["manut", "modelos"], queryFn: () => api.get<ModeloPlano[]>(`${B}/modelos-plano`), enabled: !usandoMock(), staleTime: Infinity });
+  queryOptions({
+    queryKey: ["manut", "modelos"],
+    queryFn: () => api.get<ModeloPlano[]>(`${B}/modelos-plano`),
+    enabled: !usandoMock(),
+    staleTime: Infinity,
+  });
 
 export const ordensQueryReal = (g?: string) =>
-  queryOptions({ queryKey: ["manut", "ordens", g ?? ""], queryFn: () => api.get<OrdemServico[]>(`${B}/ordens?group_id=${g}`), enabled: ativo(g) });
+  queryOptions({
+    queryKey: ["manut", "ordens", g ?? ""],
+    queryFn: () => api.get<OrdemServico[]>(`${B}/ordens?group_id=${g}`),
+    enabled: ativo(g),
+  });
 
 export const historicoServicosQuery = (g?: string, unitId?: number | null) =>
   queryOptions({
     queryKey: ["manut", "servicos", g ?? "", unitId ?? ""],
-    queryFn: () => api.get<{ id: number; servico: string; data: string; odometro_km: number | null; custo: number | null; oficina: string | null; obs: string | null }[]>(
-      `${B}/servicos?group_id=${g}&unit_id=${unitId}`,
-    ),
+    queryFn: () =>
+      api.get<
+        {
+          id: number;
+          servico: string;
+          data: string;
+          odometro_km: number | null;
+          custo: number | null;
+          oficina: string | null;
+          obs: string | null;
+        }[]
+      >(`${B}/servicos?group_id=${g}&unit_id=${unitId}`),
     enabled: ativo(g) && unitId != null,
   });
 
@@ -167,6 +212,8 @@ export const Manut = {
     origem?: string;
     responsavel?: string;
   }) => api.post<{ id: number; ja_existia: boolean }>(`${B}/ordens`, d),
-  mudarOrdem: (id: number, d: { group_id: number; status?: StatusOS; responsavel?: string; custo?: number; nota?: string }) =>
-    api.patch<{ ok: boolean }>(`${B}/ordens/${id}`, d),
+  mudarOrdem: (
+    id: number,
+    d: { group_id: number; status?: StatusOS; responsavel?: string; custo?: number; nota?: string },
+  ) => api.patch<{ ok: boolean }>(`${B}/ordens/${id}`, d),
 };

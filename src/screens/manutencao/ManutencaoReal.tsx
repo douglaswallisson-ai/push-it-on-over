@@ -773,7 +773,7 @@ function Corretiva({
 
       {suspeitos.length > 0 && (
         <Card
-          title="Sinais suspeitos (sensor, não motor)"
+          title="Leituras do rastreador a ajustar (SS)"
           icon={AlertTriangle}
           action={
             <button
@@ -787,9 +787,9 @@ function Corretiva({
           bodyClassName="p-2"
         >
           <p className="px-3 py-2 text-[12px] text-muted-foreground">
-            Leituras que não podem ser reais (valor travado, escala estourando, nível pulando). Não
-            abrem alerta para não mandar o veículo à oficina por engano; o que precisa de
-            conferência é o sensor ou a configuração do equipamento.
+            Veículos em que o rastreador não está lendo direito algum sinal do motor (óleo, ARLA,
+            bateria). Não é defeito do veículo e não vira alerta, para ninguém mandar o caminhão à
+            oficina por engano. Quem resolve é a SS, ajustando o rastreador.
           </p>
           {verSuspeitos && (
             <ul className="divide-y divide-border">
@@ -1260,11 +1260,21 @@ function DetalheVeiculo({
                 sinais={v.sinais}
                 limites={limites}
               />
-              {(v.sinais_suspeitos ?? []).map((x) => (
-                <p key={x.sinal} className="rounded-lg bg-secondary px-3 py-2 text-[13px]">
-                  <b>{x.titulo} (sensor, não motor):</b> {x.detalhe}
-                </p>
-              ))}
+              {(v.sinais_suspeitos ?? []).length > 0 && (
+                <div className="space-y-1.5 rounded-lg border border-border bg-secondary/60 px-3 py-2 text-[13px]">
+                  <p className="text-[12px] font-semibold text-muted-foreground">
+                    Leituras que o rastreador não entrega direito — não é defeito do veículo
+                  </p>
+                  {(v.sinais_suspeitos ?? []).map((x) => (
+                    <div key={x.sinal}>
+                      <p>
+                        <b>{x.titulo}.</b> {x.detalhe}
+                      </p>
+                      {x.acao && <p className="text-muted-foreground">O que fazer: {x.acao}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
               {v.alertas.length > 0 && (
                 <div className="space-y-1.5">
                   {v.alertas.map((a) => (
@@ -1276,6 +1286,9 @@ function DetalheVeiculo({
                       )}
                     >
                       <b>{a.titulo}:</b> {a.detalhe}
+                      {a.acao && (
+                        <span className="mt-1 block font-medium">O que fazer: {a.acao}</span>
+                      )}
                     </p>
                   ))}
                 </div>

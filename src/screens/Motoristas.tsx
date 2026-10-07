@@ -4,8 +4,19 @@ import { AlertTriangle, Award, Clock, Search, Star, TrendingUp, Users } from "lu
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ss/layout/PageHeader";
 import { HeroBanner, HeroMetric } from "@/components/ss/ui/HeroBanner";
-import { Card, DataTable, Pill, StatTile, type Column, type PillTone } from "@/components/ss/ui/data";
-import { CelulaRelevo, RelevoDetalhe, useRelevoDaTabela } from "@/components/ss/frota/RelevoDetalhe";
+import {
+  Card,
+  DataTable,
+  Pill,
+  StatTile,
+  type Column,
+  type PillTone,
+} from "@/components/ss/ui/data";
+import {
+  CelulaRelevo,
+  RelevoDetalhe,
+  useRelevoDaTabela,
+} from "@/components/ss/frota/RelevoDetalhe";
 import { StarRating } from "@/components/ss/ui/gauges";
 import { rankingMotoristasQuery } from "@/lib/queries";
 import type { MotoristaRankingApi } from "@/lib/api";
@@ -34,35 +45,121 @@ function datasDo(p: Periodo): { inicio?: string; fim?: string; rotulo: string } 
   ontem.setDate(ontem.getDate() - 1);
   if (p === "mes") {
     const ini = new Date(ontem.getFullYear(), ontem.getMonth(), 1);
-    return { inicio: iso(ini), fim: iso(ontem), rotulo: ini.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) };
+    return {
+      inicio: iso(ini),
+      fim: iso(ontem),
+      rotulo: ini.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+    };
   }
   if (p === "mes_anterior") {
     const ini = new Date(ontem.getFullYear(), ontem.getMonth() - 1, 1);
     const fim = new Date(ontem.getFullYear(), ontem.getMonth(), 0);
-    return { inicio: iso(ini), fim: iso(fim), rotulo: ini.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) };
+    return {
+      inicio: iso(ini),
+      fim: iso(fim),
+      rotulo: ini.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+    };
   }
   return { rotulo: "últimos 30 dias" };
 }
 
 const nf = (v: number | null | undefined, casas = 0) =>
-  v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+  v == null
+    ? "—"
+    : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
 
 const pct = (v: number | null | undefined) => (v == null ? "—" : `${nf(v, 1)}%`);
 
 /** Mesmos cortes das estrelas do BI. */
-const notaTone = (n: number | null): PillTone => (n == null ? "neutral" : n >= 80 ? "green" : n >= 60 ? "gold" : "coral");
+const notaTone = (n: number | null): PillTone =>
+  n == null ? "neutral" : n >= 80 ? "green" : n >= 60 ? "gold" : "coral";
 
 const eventosHora = (m: MotoristaRankingApi) => {
   const e = m.eventos_por_hora;
-  return (e.aceleracao_brusca ?? 0) + (e.freada_brusca ?? 0) + (e.velocidade_excessiva ?? 0) + (e.embreagem ?? 0);
+  return (
+    (e.aceleracao_brusca ?? 0) +
+    (e.freada_brusca ?? 0) +
+    (e.velocidade_excessiva ?? 0) +
+    (e.embreagem ?? 0)
+  );
 };
+
+/** Eventos (aceleração, freada, velocidade, embreagem) a cada 100 km rodados. */
+const eventos100km = (m: MotoristaRankingApi) => {
+  const e: Partial<NonNullable<MotoristaRankingApi["eventos"]>> = m.eventos ?? {};
+  const n =
+    (e.aceleracao_brusca ?? 0) +
+    (e.freada_brusca ?? 0) +
+    (e.velocidade_excessiva ?? 0) +
+    (e.embreagem ?? 0);
+  return m.km > 0 ? (n / m.km) * 100 : null;
+};
+/** Acima de 0,5 evento por km é o equipamento contando demais (mesma regra da manutenção e do rotograma). */
+const EVENTOS_100KM_SUSPEITO = 50;
+/** Abaixo disso o "por km" não diz nada (meia dúzia de km). */
+const KM_MIN_POR_KM = 100;
+
+/**
+ * Como classificar o ranking (pedido da Turim, 07/10/2026). A nota continua a do Power BI (eventos por hora);
+ * a escolha só muda a ordem e a posição.
+ */
+type Criterio = "pontuacao" | "km" | "eventos_km" | "kml";
+const CRITERIOS: { id: Criterio; rotulo: string; explica: string }[] = [
+  {
+    id: "pontuacao",
+    rotulo: "Pontuação (nota)",
+    explica: "maior nota primeiro (Power BI: faixas e eventos por hora)",
+  },
+  { id: "km", rotulo: "Km rodado", explica: "quem mais rodou primeiro" },
+  {
+    id: "eventos_km",
+    rotulo: "Eventos a cada 100 km",
+    explica: `menos eventos por km primeiro; quem rodou menos de ${KM_MIN_POR_KM} km ou tem contagem suspeita vai para o fim`,
+  },
+  { id: "kml", rotulo: "Consumo (km/l)", explica: "maior km/l primeiro" },
+];
+
+function classificar(lista: MotoristaRankingApi[], c: Criterio): MotoristaRankingApi[] {
+  if (c === "pontuacao") return lista;
+  const valor = (m: MotoristaRankingApi): number | null => {
+    if (c === "km") return m.km > 0 ? m.km : null;
+    if (c === "kml") return m.kml ?? null;
+    const e = eventos100km(m);
+    return m.km >= KM_MIN_POR_KM && e != null && e <= EVENTOS_100KM_SUSPEITO ? e : null;
+  };
+  const sinal = c === "eventos_km" ? 1 : -1;
+  const ordenada = [...lista].sort((a, b) => {
+    const va = valor(a),
+      vb = valor(b);
+    if (va == null || vb == null)
+      return va == null && vb == null ? b.km - a.km : va == null ? 1 : -1;
+    return sinal * (va - vb) || b.km - a.km;
+  });
+  // Posição densa, como a da nota: empate divide a posição.
+  let pos = 0;
+  let anterior: number | null = null;
+  return ordenada.map((m) => {
+    const v = valor(m);
+    if (v == null) return { ...m, posicao: null };
+    const arred = Math.round(v * 100) / 100;
+    if (arred !== anterior) {
+      pos += 1;
+      anterior = arred;
+    }
+    return { ...m, posicao: pos };
+  });
+}
 
 const COLUNAS: Column<MotoristaRankingApi>[] = [
   {
     key: "posicao",
     header: "#",
     align: "center",
-    render: (m) => <span className="font-mono text-[13px] font-bold text-muted-foreground">{m.posicao ?? "—"}</span>,
+    render: (m) => (
+      <span className="font-mono text-[13px] font-bold text-muted-foreground">
+        {m.posicao ?? "—"}
+      </span>
+    ),
   },
   {
     key: "nome",
@@ -82,7 +179,10 @@ const COLUNAS: Column<MotoristaRankingApi>[] = [
     align: "center",
     render: (m) =>
       m.pontuacao == null ? (
-        <span className="text-[12px] text-muted-foreground" title="Sem faixas de condução no período">
+        <span
+          className="text-[12px] text-muted-foreground"
+          title="Sem faixas de condução no período"
+        >
           sem faixas
         </span>
       ) : (
@@ -95,13 +195,48 @@ const COLUNAS: Column<MotoristaRankingApi>[] = [
     align: "center",
     render: (m) => <StarRating value={m.pontuacao == null ? null : m.estrelas} />,
   },
-  { key: "km", header: "Km", align: "right", render: (m) => <span className="font-mono">{nf(m.km)}</span> },
-  { key: "horas", header: "Horas", align: "right", render: (m) => <span className="font-mono">{nf(m.horas, 1)}</span> },
-  { key: "kml", header: "Km/l", align: "right", render: (m) => <span className="font-mono">{nf(m.kml, 2)}</span> },
-  { key: "verde", header: "Verde", align: "right", render: (m) => <span className="font-mono">{pct(m.faixas.verde)}</span> },
-  { key: "inercia", header: "Inércia", align: "right", render: (m) => <span className="font-mono">{pct(m.faixas.inercia)}</span> },
-  { key: "amarela", header: "Amarela", align: "right", render: (m) => <span className="font-mono">{pct(m.faixas.amarela)}</span> },
-  { key: "vermelha", header: "Vermelha", align: "right", render: (m) => <span className="font-mono">{pct(m.faixas.vermelha)}</span> },
+  {
+    key: "km",
+    header: "Km",
+    align: "right",
+    render: (m) => <span className="font-mono">{nf(m.km)}</span>,
+  },
+  {
+    key: "horas",
+    header: "Horas",
+    align: "right",
+    render: (m) => <span className="font-mono">{nf(m.horas, 1)}</span>,
+  },
+  {
+    key: "kml",
+    header: "Km/l",
+    align: "right",
+    render: (m) => <span className="font-mono">{nf(m.kml, 2)}</span>,
+  },
+  {
+    key: "verde",
+    header: "Verde",
+    align: "right",
+    render: (m) => <span className="font-mono">{pct(m.faixas.verde)}</span>,
+  },
+  {
+    key: "inercia",
+    header: "Inércia",
+    align: "right",
+    render: (m) => <span className="font-mono">{pct(m.faixas.inercia)}</span>,
+  },
+  {
+    key: "amarela",
+    header: "Amarela",
+    align: "right",
+    render: (m) => <span className="font-mono">{pct(m.faixas.amarela)}</span>,
+  },
+  {
+    key: "vermelha",
+    header: "Vermelha",
+    align: "right",
+    render: (m) => <span className="font-mono">{pct(m.faixas.vermelha)}</span>,
+  },
   {
     key: "parado",
     header: "Parado ligado",
@@ -122,13 +257,34 @@ const COLUNAS: Column<MotoristaRankingApi>[] = [
     ),
   },
   {
+    key: "eventos_km",
+    header: "Eventos/100 km",
+    align: "right",
+    render: (m) => {
+      const e = eventos100km(m);
+      if (e == null) return <span className="text-muted-foreground">—</span>;
+      return e > EVENTOS_100KM_SUSPEITO ? (
+        <span
+          className="font-mono text-gold"
+          title="Mais de 0,5 evento por km: o equipamento está contando demais (conferir a configuração do rastreador)"
+        >
+          {nf(e, 1)} ⚠
+        </span>
+      ) : (
+        <span className="font-mono">{nf(e, 1)}</span>
+      );
+    },
+  },
+  {
     key: "cnh",
     header: "CNH",
     align: "center",
     render: (m) => {
       const st = statusCNH(m.cnh_validade);
       if (st === "sem_informacao")
-        return <span className="whitespace-nowrap text-[12px] text-muted-foreground">não informada</span>;
+        return (
+          <span className="whitespace-nowrap text-[12px] text-muted-foreground">não informada</span>
+        );
       return (
         <Pill tone={CNH_TONE[st]}>
           {exigeAtencao(st) && <AlertTriangle className="h-3 w-3" />}
@@ -143,16 +299,37 @@ export default function Motoristas() {
   const navigate = useNavigate();
   const [periodo, setPeriodo] = useState<Periodo>("30d");
   const [busca, setBusca] = useState("");
+  const [criterio, setCriterio] = useState<Criterio>(() => {
+    try {
+      const v = localStorage.getItem("ss:ranking:criterio") as Criterio | null;
+      return v && CRITERIOS.some((c) => c.id === v) ? v : "pontuacao";
+    } catch {
+      return "pontuacao";
+    }
+  });
+  const escolherCriterio = (c: Criterio) => {
+    setCriterio(c);
+    try {
+      localStorage.setItem("ss:ranking:criterio", c);
+    } catch {
+      /* sem armazenamento */
+    }
+  };
   const datas = datasDo(periodo);
   const q = useQuery(rankingMotoristasQuery(datas.inicio, datas.fim));
 
   const todos = q.data?.motoristas ?? [];
+  // A posição é calculada sobre todos (a busca só filtra o que aparece).
+  const classificados = useMemo(() => classificar(todos, criterio), [todos, criterio]);
   const lista = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     return termo
-      ? todos.filter((m) => (m.nome ?? "").toLowerCase().includes(termo) || String(m.driver_id).includes(termo))
-      : todos;
-  }, [todos, busca]);
+      ? classificados.filter(
+          (m) =>
+            (m.nome ?? "").toLowerCase().includes(termo) || String(m.driver_id).includes(termo),
+        )
+      : classificados;
+  }, [classificados, busca]);
 
   // Relevo dos últimos 30 dias por motorista, com o gráfico ao clicar.
   const relevo = useRelevoDaTabela();
@@ -170,7 +347,9 @@ export default function Motoristas() {
             km={x?.km}
             calculando={relevo.calculando}
             progresso={relevo.progresso}
-            onClick={() => setRelevoDe({ id: String(m.driver_id), nome: m.nome ?? String(m.driver_id) })}
+            onClick={() =>
+              setRelevoDe({ id: String(m.driver_id), nome: m.nome ?? String(m.driver_id) })
+            }
           />
         );
       },
@@ -190,7 +369,7 @@ export default function Motoristas() {
     <>
       <PageHeader
         title="Motoristas"
-        subtitle={`Ranking pela pontuação do BI · ${periodoTexto}`}
+        subtitle={`Ranking por ${CRITERIOS.find((c) => c.id === criterio)!.rotulo.toLowerCase()} · ${periodoTexto}`}
         actions={
           <button
             onClick={() => navigate("/app/motoristas/novo")}
@@ -206,7 +385,13 @@ export default function Motoristas() {
         <HeroBanner
           orb
           eyebrow="Equipe · Ranking de condução"
-          title={r ? `${nf(r.motoristas)} motoristas com viagem no período` : q.isPending ? "Carregando motoristas…" : "Motoristas"}
+          title={
+            r
+              ? `${nf(r.motoristas)} motoristas com viagem no período`
+              : q.isPending
+                ? "Carregando motoristas…"
+                : "Motoristas"
+          }
           subtitle="Pontuação do Power BI: cada faixa e cada evento por hora, multiplicados pelo peso cadastrado em Metas e Pesos."
         >
           <div className="flex items-center gap-6">
@@ -218,8 +403,18 @@ export default function Motoristas() {
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={Users} label="Com nota" value={nf(comNota)} color="var(--brand-navy)" />
-          <StatTile icon={Star} label="Nota média" value={nf(r?.nota_media, 2)} color="var(--gold)" />
-          <StatTile icon={AlertTriangle} label="CNH vencida ou a vencer" value={nf(q.data ? cnhAtencao : null)} color="var(--coral)" />
+          <StatTile
+            icon={Star}
+            label="Nota média"
+            value={nf(r?.nota_media, 2)}
+            color="var(--gold)"
+          />
+          <StatTile
+            icon={AlertTriangle}
+            label="CNH vencida ou a vencer"
+            value={nf(q.data ? cnhAtencao : null)}
+            color="var(--coral)"
+          />
           <StatTile
             icon={Clock}
             label="Horas sem motorista identificado"
@@ -230,8 +425,8 @@ export default function Motoristas() {
 
         {r && !r.pesos_cadastrados && (
           <div className="rounded-xl border border-gold-line bg-gold-tint/50 px-4 py-3 text-[13px] text-gold">
-            <strong>Sem pesos cadastrados em Metas e Pesos</strong> para esta empresa. Sem peso, a pontuação sai zero
-            para todos — cadastre os pesos para o ranking ter sentido.
+            <strong>Sem pesos cadastrados em Metas e Pesos</strong> para esta empresa. Sem peso, a
+            pontuação sai zero para todos — cadastre os pesos para o ranking ter sentido.
           </div>
         )}
 
@@ -249,6 +444,21 @@ export default function Motoristas() {
                   className="h-8 w-48 rounded-full border border-border bg-white pl-8 pr-3 text-[13px]"
                 />
               </div>
+              <label className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                Classificar por
+                <select
+                  value={criterio}
+                  onChange={(e) => escolherCriterio(e.target.value as Criterio)}
+                  aria-label="Classificar por"
+                  className="h-8 rounded-full border border-border bg-white px-3 text-[13px] text-foreground"
+                >
+                  {CRITERIOS.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <select
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value as Periodo)}
@@ -268,24 +478,39 @@ export default function Motoristas() {
               Não foi possível carregar o ranking: {(q.error as Error).message}
             </p>
           ) : q.isPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Calculando a pontuação de cada motorista…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Calculando a pontuação de cada motorista…
+            </p>
           ) : !lista.length ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Nenhum motorista com viagem no período.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Nenhum motorista com viagem no período.
+            </p>
           ) : (
             <DataTable
               columns={colunas}
               rows={lista}
-              onRowClick={(m) => m.nome && navigate(`/app/motoristas/perfil/${encodeURIComponent(m.nome)}`)}
+              onRowClick={(m) =>
+                m.nome && navigate(`/app/motoristas/perfil/${encodeURIComponent(m.nome)}`)
+              }
             />
           )}
         </Card>
 
         <p className="flex items-center justify-center gap-1.5 py-4 text-center text-xs text-muted-foreground">
           <TrendingUp className="h-3.5 w-3.5" />
-          Faixas sobre a soma das 13 faixas; eventos por hora trabalhada; motorista não identificado fora do ranking.
+          Classificação: {CRITERIOS.find((c) => c.id === criterio)!.explica}. A nota é sempre a do
+          Power BI (faixas sobre a soma das 13 faixas; eventos por hora trabalhada); motorista não
+          identificado fora do ranking.
         </p>
       </div>
-      {relevoDe && <RelevoDetalhe tipo="motorista" id={relevoDe.id} nome={relevoDe.nome} onClose={() => setRelevoDe(null)} />}
+      {relevoDe && (
+        <RelevoDetalhe
+          tipo="motorista"
+          id={relevoDe.id}
+          nome={relevoDe.nome}
+          onClose={() => setRelevoDe(null)}
+        />
+      )}
     </>
   );
 }

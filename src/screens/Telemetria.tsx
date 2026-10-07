@@ -9,7 +9,7 @@ import { TelemetriaEquipamentos } from "@/components/ss/frota/TelemetriaEquipame
 export default function Telemetria() {
   return (
     <>
-      <PageHeader title="Telemetria" subtitle="Frota › Equipamentos e comunicação" />
+      <PageHeader title="Hardware" subtitle="Frota › Equipamentos e comunicação" />
       <div className="mx-auto max-w-[1360px] space-y-5 px-6 py-6 md:px-8">
         <TelemetriaEquipamentos />
       </div>

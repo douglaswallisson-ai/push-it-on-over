@@ -2,9 +2,15 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useResumoFrota } from "@/hooks/use-resumo-frota";
 import type { SaudeFrotaApi } from "@/lib/api";
-import { alarmesListaQuery, alarmesNaoVisualizadosQuery, eventosApiQuery, rankingMotoristasQuery, saudeFrotaQuery } from "@/lib/queries";
+import {
+  alarmesListaQuery,
+  alarmesNaoVisualizadosQuery,
+  eventosApiQuery,
+  rankingMotoristasQuery,
+  saudeFrotaQuery,
+} from "@/lib/queries";
 import { roiQuery } from "@/lib/gerencial-api";
-import { serieGerencialQuery } from "@/lib/gerencial-api";
+import { co2Kg, serieGerencialQuery, somar, type Totais } from "@/lib/gerencial-api";
 import { useSessao } from "@/hooks/use-sessao";
 import { usandoMock } from "@/lib/modo";
 import type { ResumoOperacao } from "@/types";
@@ -26,6 +32,7 @@ import {
   Bell,
   ChevronRight,
   Fuel,
+  Leaf,
   Gauge,
   MapPin,
   RefreshCw,
@@ -65,23 +72,61 @@ type Kpi = {
 };
 
 const nf = (v: number, digits = 0) =>
-  new Intl.NumberFormat("pt-BR", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v);
+  new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(v);
 
-/** Monta os KPIs da tela a partir do resumo real da API. */
-function buildKpis(r: ResumoOperacao): Kpi[] {
+/**
+ * Monta os KPIs da tela a partir do resumo real da API.
+ *
+ * Consumo e CO₂ saem da série diária do Gerencial (últimos 30 dias, regra
+ * única de combustível): o mesmo número que o cliente vê no Gerencial. CO₂ =
+ * litros × 3,21 kg (regra do Power BI).
+ */
+function buildKpis(r: ResumoOperacao, t?: Totais): Kpi[] {
+  const kmlGerencial = t && t.litros > 0 ? t.km_com_combustivel / t.litros : null;
+  const consumo = kmlGerencial ?? r.consumoMedio;
+  const co2t = t && t.litros > 0 ? co2Kg(t.litros) / 1000 : null;
   return [
-    { icon: Truck, label: "Veículos ativos", value: nf(r.veiculosAtivos), color: "var(--leaf)", to: "/app/veiculos" },
-    { icon: Zap, label: "Alertas abertos", value: nf(r.alertasAbertos), color: "var(--brand-sky)", to: "/app/alertas" },
-    { icon: Gauge, label: "Disponibilidade", value: nf(r.disponibilidade, 1), unit: "%", color: "#6A4FA0" },
+    {
+      icon: Truck,
+      label: "Veículos ativos",
+      value: nf(r.veiculosAtivos),
+      color: "var(--leaf)",
+      to: "/app/veiculos",
+    },
+    {
+      icon: Zap,
+      label: "Alertas abertos",
+      value: nf(r.alertasAbertos),
+      color: "var(--brand-sky)",
+      to: "/app/alertas",
+    },
+    {
+      icon: Gauge,
+      label: "Disponibilidade",
+      value: nf(r.disponibilidade, 1),
+      unit: "%",
+      color: "#6A4FA0",
+    },
     {
       icon: Fuel,
       label: "Consumo médio",
       // Traço quando não há medição. Zero seria lido como consumo aferido, e
       // frota nenhuma roda a 0 km/l.
-      value: r.consumoMedio != null ? nf(r.consumoMedio, 2) : "—",
-      unit: r.consumoMedio != null ? "km/l" : undefined,
+      value: consumo != null ? nf(consumo, 2) : "—",
+      unit: consumo != null ? "km/l" : undefined,
       color: "var(--brand-green)",
-      to: "/app/estrategico",
+      to: "/app/gerencial",
+    },
+    {
+      icon: Leaf,
+      label: "CO₂ emitido · 30 dias",
+      value: co2t != null ? nf(co2t, co2t < 100 ? 1 : 0) : "—",
+      unit: co2t != null ? "t" : undefined,
+      color: "var(--leaf)",
+      to: "/app/gerencial",
     },
     {
       icon: Gauge,
@@ -119,7 +164,9 @@ export default function Inicio() {
   const refetch = recarregar;
   const isFetching = false;
 
-  const kpis = resumo ? buildKpis(resumo) : [];
+  const serieQ = useQuery(serieGerencialQuery());
+  const totais = useMemo(() => (serieQ.data ? somar(serieQ.data.dias) : undefined), [serieQ.data]);
+  const kpis = resumo ? buildKpis(resumo, totais) : [];
 
   return (
     <>
@@ -220,12 +267,18 @@ function HeroValue() {
   const roiQ = useQuery(roiQuery());
   const roi = roiQ.data?.disponivel ? roiQ.data : null;
   const brlCurto = (v: number) =>
-    v >= 1_000_000 ? `R$ ${fmt(v / 1_000_000, 1)} mi` : v >= 1_000 ? `R$ ${fmt(v / 1_000, 1)} mil` : `R$ ${fmt(v)}`;
+    v >= 1_000_000
+      ? `R$ ${fmt(v / 1_000_000, 1)} mi`
+      : v >= 1_000
+        ? `R$ ${fmt(v / 1_000, 1)} mil`
+        : `R$ ${fmt(v)}`;
   const h = new Date().getHours();
   const saudacao = h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
   const primeiroNome = (sessao?.nome ?? "").split(" ")[0];
   const fmt = (v: number | null | undefined, casas = 0) =>
-    v == null ? "—" : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    v == null
+      ? "—"
+      : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
 
   if (usandoMock()) return <HeroValueExemplo />;
 
@@ -247,11 +300,14 @@ function HeroValue() {
             <h2 className="mt-1 max-w-md text-2xl font-bold leading-tight md:text-[30px]">
               {roi ? (
                 <>
-                  Economia estimada de <span className="text-brand-green">{brlCurto(roi.economia_estimada_mes)}</span> no mês.
+                  Economia estimada de{" "}
+                  <span className="text-brand-green">{brlCurto(roi.economia_estimada_mes)}</span> no
+                  mês.
                 </>
               ) : r ? (
                 <>
-                  <span className="text-brand-green">{fmt(r.km_total)} km</span> rodados nos últimos 30 dias.
+                  <span className="text-brand-green">{fmt(r.km_total)} km</span> rodados nos últimos
+                  30 dias.
                 </>
               ) : q.isPending ? (
                 "Carregando o período…"
@@ -275,7 +331,11 @@ function HeroValue() {
                   : undefined
             }
           >
-            <HeroMetric value={roi ? `${fmt(roi.roi, 1)}x` : "—"} label="ROI" foot={roi ? "economia ÷ parcela" : "sem contrato"} />
+            <HeroMetric
+              value={roi ? `${fmt(roi.roi, 1)}x` : "—"}
+              label="ROI"
+              foot={roi ? "economia ÷ parcela" : "sem contrato"}
+            />
           </div>
           <div
             title={
@@ -290,10 +350,18 @@ function HeroValue() {
               foot="paga o contrato inteiro"
             />
           </div>
-          <HeroMetric value={fmt(r?.motoristas)} label="Motoristas com viagem" foot="últimos 30 dias" />
+          <HeroMetric
+            value={fmt(r?.motoristas)}
+            label="Motoristas com viagem"
+            foot="últimos 30 dias"
+          />
           <HeroMetric value={fmt(r?.nota_media, 1)} label="Nota média" foot="pontuação do BI" />
           <HeroMetric
-            value={r?.pct_horas_nao_identificado == null ? "—" : `${fmt(r.pct_horas_nao_identificado, 1)}%`}
+            value={
+              r?.pct_horas_nao_identificado == null
+                ? "—"
+                : `${fmt(r.pct_horas_nao_identificado, 1)}%`
+            }
             label="Horas sem motorista"
             foot="não identificado"
           />
@@ -345,18 +413,7 @@ function HeroMetric({ value, label, foot }: { value: string; label: string; foot
   );
 }
 
-function KpiCard({
-  icon: Icon,
-  label,
-  value,
-  unit,
-  delta,
-  trend,
-  good,
-  spark,
-  color,
-  to,
-}: Kpi) {
+function KpiCard({ icon: Icon, label, value, unit, delta, trend, good, spark, color, to }: Kpi) {
   const TrendIcon = trend === "down" ? ArrowDownRight : ArrowUpRight;
   const cls =
     "group block rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:border-[#cdd7e2]";
@@ -418,7 +475,9 @@ function PlanoCard() {
           <p className="mt-1 text-xl font-bold">Unidades sem ponto de atenção</p>
         </div>
         {usandoMock() && (
-          <span className="rounded-full bg-leaf-tint px-3 py-1 text-[12px] font-semibold text-leaf">Ativo</span>
+          <span className="rounded-full bg-leaf-tint px-3 py-1 text-[12px] font-semibold text-leaf">
+            Ativo
+          </span>
         )}
       </div>
 
@@ -534,12 +593,13 @@ function useSaudeFrota() {
             : daApi.percentual_saudavel >= 75
               ? "Frota com pontos de atenção"
               : "Frota exige verificação",
-      descricao: daApi.percentual_saudavel == null
-        ? `Nenhuma unidade operou o suficiente em ${daApi.referencia ?? "—"} para ser avaliada. A regra exige mais de uma hora e mais de um quilômetro.`
-        : `${daApi.unidades_saudaveis} de ${daApi.total_unidades} unidades sem apontamento em ${daApi.referencia}.` +
-          (motivos.length
-            ? ` Principais causas: ${motivos.map(([m, n]) => `${m.toLowerCase()} (${n})`).join(", ")}.`
-            : ""),
+      descricao:
+        daApi.percentual_saudavel == null
+          ? `Nenhuma unidade operou o suficiente em ${daApi.referencia ?? "—"} para ser avaliada. A regra exige mais de uma hora e mais de um quilômetro.`
+          : `${daApi.unidades_saudaveis} de ${daApi.total_unidades} unidades sem apontamento em ${daApi.referencia}.` +
+            (motivos.length
+              ? ` Principais causas: ${motivos.map(([m, n]) => `${m.toLowerCase()} (${n})`).join(", ")}.`
+              : ""),
     };
   }
 
@@ -550,7 +610,11 @@ function useSaudeFrota() {
 function useIndicePreventiva(porVeiculo: ReturnType<typeof usePreventivaFrota>["porVeiculo"]) {
   return useMemo(() => {
     if (!porVeiculo.length) {
-      return { indice: null, titulo: "Sem dados de frota", descricao: "Nenhum veículo cadastrado ainda." };
+      return {
+        indice: null,
+        titulo: "Sem dados de frota",
+        descricao: "Nenhum veículo cadastrado ainda.",
+      };
     }
 
     /**
@@ -594,14 +658,21 @@ function useIndicePreventiva(porVeiculo: ReturnType<typeof usePreventivaFrota>["
     }
 
     const titulo =
-      indice >= 90 ? "Frota em boas condições"
-      : indice >= 75 ? "Frota com pendências pontuais"
-      : indice >= 50 ? "Frota exige atenção"
-      : "Frota em situação crítica";
+      indice >= 90
+        ? "Frota em boas condições"
+        : indice >= 75
+          ? "Frota com pendências pontuais"
+          : indice >= 50
+            ? "Frota exige atenção"
+            : "Frota em situação crítica";
 
     const partes: string[] = [];
-    if (vencidasTotal) partes.push(`${vencidasTotal} manutenção${vencidasTotal > 1 ? "ões" : ""} vencida${vencidasTotal > 1 ? "s" : ""}`);
-    if (semCatalogo) partes.push(`${semCatalogo} veículo${semCatalogo > 1 ? "s" : ""} sem parâmetro cadastrado`);
+    if (vencidasTotal)
+      partes.push(
+        `${vencidasTotal} manutenção${vencidasTotal > 1 ? "ões" : ""} vencida${vencidasTotal > 1 ? "s" : ""}`,
+      );
+    if (semCatalogo)
+      partes.push(`${semCatalogo} veículo${semCatalogo > 1 ? "s" : ""} sem parâmetro cadastrado`);
 
     const descricao = partes.length
       ? `Índice sobre ${notas.length} de ${porVeiculo.length} veículos com plano. ${partes.join(" e ")} — os cartões de manutenção abaixo detalham.`
@@ -689,10 +760,12 @@ function CriticalCard() {
               <p>Nenhum alarme crítico (nível 3) disparado hoje.</p>
               {conducao && (
                 <p className="mt-1">
-                  Eventos de condução em {new Date(ontemIso + "T12:00").toLocaleDateString("pt-BR")}:{" "}
-                  <strong className="text-foreground">{nf(conducao.freada)}</strong> freadas bruscas,{" "}
-                  <strong className="text-foreground">{nf(conducao.aceleracao)}</strong> acelerações bruscas,{" "}
-                  <strong className="text-foreground">{nf(conducao.velocidade)}</strong> excessos de velocidade.
+                  Eventos de condução em {new Date(ontemIso + "T12:00").toLocaleDateString("pt-BR")}
+                  : <strong className="text-foreground">{nf(conducao.freada)}</strong> freadas
+                  bruscas, <strong className="text-foreground">{nf(conducao.aceleracao)}</strong>{" "}
+                  acelerações bruscas,{" "}
+                  <strong className="text-foreground">{nf(conducao.velocidade)}</strong> excessos de
+                  velocidade.
                   {conducao.freada + conducao.aceleracao + conducao.velocidade > 0 &&
                     " Se a frota tem eventos e nenhum alarme dispara, vale conferir a configuração dos alarmes."}
                 </p>
@@ -753,7 +826,9 @@ function Donut({ value }: { value: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-xl font-bold leading-none">{value}%</span>
-        <span className="mt-0.5 text-[12px] uppercase tracking-wide text-muted-foreground">índice</span>
+        <span className="mt-0.5 text-[12px] uppercase tracking-wide text-muted-foreground">
+          índice
+        </span>
       </div>
     </div>
   );
@@ -787,20 +862,33 @@ function CardsManutencaoReal() {
   const ordensQ = useQuery(ordensQueryReal(g));
 
   if (!g) {
-    return <p className="mt-3 text-[13px] text-muted-foreground">Escolha uma empresa para ver a situação da manutenção.</p>;
+    return (
+      <p className="mt-3 text-[13px] text-muted-foreground">
+        Escolha uma empresa para ver a situação da manutenção.
+      </p>
+    );
   }
   if (painelQ.isPending || ordensQ.isPending) {
     return (
       <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
-        {Array.from({ length: 5 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl border border-border bg-card" />)}
+        {Array.from({ length: 5 }, (_, i) => (
+          <div
+            key={i}
+            className="h-[104px] animate-pulse rounded-2xl border border-border bg-card"
+          />
+        ))}
       </div>
     );
   }
   const veiculos = painelQ.data?.veiculos ?? [];
   const ordens = ordensQ.data ?? [];
   const abertas = ordens.filter((o) => o.status !== "concluida" && o.status !== "cancelada");
-  const comOsCorretiva = new Set(abertas.filter((o) => o.tipo === "corretiva").map((o) => o.unit_id));
-  const emCorretiva = veiculos.filter((v) => v.alertas.length > 0 || comOsCorretiva.has(v.unit_id)).length;
+  const comOsCorretiva = new Set(
+    abertas.filter((o) => o.tipo === "corretiva").map((o) => o.unit_id),
+  );
+  const emCorretiva = veiculos.filter(
+    (v) => v.alertas.length > 0 || comOsCorretiva.has(v.unit_id),
+  ).length;
   const criticos = veiculos.filter((v) => v.alertas.some((a) => a.nivel === "critico")).length;
   const aguardandoPeca = abertas.filter((o) => o.status === "aguardando_peca").length;
   const vencidos = painelQ.data?.totais.itens_vencidos ?? 0;
@@ -808,16 +896,52 @@ function CardsManutencaoReal() {
   const semPlano = veiculos.filter((v) => !v.plano).length;
 
   const cards = [
-    { label: "Preventivas vencidas", valor: vencidos, icone: AlertTriangle, cor: "var(--coral)",
-      nota: vencidos ? `itens do plano vencidos em ${nf(painelQ.data?.totais.veiculos_com_vencido ?? 0)} veículo(s)` : "nenhum item do plano vencido", destino: "/app/manutencao" },
-    { label: "Preventivas próximas", valor: vencendo, icone: CalendarClock, cor: "var(--gold)",
-      nota: "vencem em breve (km, dias ou horas)", destino: "/app/manutencao" },
-    { label: "Em corretiva", valor: emCorretiva, icone: Wrench, cor: "var(--coral)",
-      nota: emCorretiva ? `alerta do motor ou OS corretiva aberta${criticos ? ` · ${nf(criticos)} crítico(s)` : ""}` : "nenhum veículo com alerta ou OS corretiva", destino: "/app/manutencao/ordens" },
-    { label: "Aguardando peça", valor: aguardandoPeca, icone: Package, cor: "var(--brand-sky)",
-      nota: "ordens paradas esperando material", destino: "/app/manutencao/ordens" },
-    { label: "Sem plano preventivo", valor: semPlano, icone: FileWarning, cor: semPlano ? "var(--gold)" : "var(--leaf)",
-      nota: semPlano ? `de ${nf(veiculos.length)} veículos — cadastre o plano em Manutenção` : "todos os veículos com plano", destino: "/app/manutencao" },
+    {
+      label: "Preventivas vencidas",
+      valor: vencidos,
+      icone: AlertTriangle,
+      cor: "var(--coral)",
+      nota: vencidos
+        ? `itens do plano vencidos em ${nf(painelQ.data?.totais.veiculos_com_vencido ?? 0)} veículo(s)`
+        : "nenhum item do plano vencido",
+      destino: "/app/manutencao",
+    },
+    {
+      label: "Preventivas próximas",
+      valor: vencendo,
+      icone: CalendarClock,
+      cor: "var(--gold)",
+      nota: "vencem em breve (km, dias ou horas)",
+      destino: "/app/manutencao",
+    },
+    {
+      label: "Em corretiva",
+      valor: emCorretiva,
+      icone: Wrench,
+      cor: "var(--coral)",
+      nota: emCorretiva
+        ? `alerta do motor ou OS corretiva aberta${criticos ? ` · ${nf(criticos)} crítico(s)` : ""}`
+        : "nenhum veículo com alerta ou OS corretiva",
+      destino: "/app/manutencao/ordens",
+    },
+    {
+      label: "Aguardando peça",
+      valor: aguardandoPeca,
+      icone: Package,
+      cor: "var(--brand-sky)",
+      nota: "ordens paradas esperando material",
+      destino: "/app/manutencao/ordens",
+    },
+    {
+      label: "Sem plano preventivo",
+      valor: semPlano,
+      icone: FileWarning,
+      cor: semPlano ? "var(--gold)" : "var(--leaf)",
+      nota: semPlano
+        ? `de ${nf(veiculos.length)} veículos — cadastre o plano em Manutenção`
+        : "todos os veículos com plano",
+      destino: "/app/manutencao",
+    },
   ];
 
   return (
@@ -829,15 +953,25 @@ function CardsManutencaoReal() {
           className="rounded-2xl border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elegant"
         >
           <span className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `color-mix(in oklab, ${c.cor} 14%, white)` }}>
+            <span
+              className="flex h-7 w-7 items-center justify-center rounded-lg"
+              style={{ background: `color-mix(in oklab, ${c.cor} 14%, white)` }}
+            >
               <c.icone className="h-4 w-4" style={{ color: c.cor }} />
             </span>
-            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{c.label}</span>
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+              {c.label}
+            </span>
           </span>
-          <span className="mt-2 block font-display text-[24px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
+          <span
+            className="mt-2 block font-display text-[24px] font-bold leading-none"
+            style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}
+          >
             {nf(c.valor)}
           </span>
-          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">{c.nota}</span>
+          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">
+            {c.nota}
+          </span>
         </button>
       ))}
     </div>
@@ -856,7 +990,9 @@ function CardsManutencaoExemplo() {
   const semCatalogo = porVeiculo.filter((p) => p.semCatalogo).length;
 
   const ordens = ordensQ.data ?? [];
-  const corretivas = ordens.filter((o) => o.tipo === "corretiva" && o.status !== "concluida" && o.status !== "cancelada").length;
+  const corretivas = ordens.filter(
+    (o) => o.tipo === "corretiva" && o.status !== "concluida" && o.status !== "cancelada",
+  ).length;
   const aguardandoPeca = ordens.filter((o) => o.status === "aguardando_peca").length;
 
   const cards = [
@@ -906,7 +1042,10 @@ function CardsManutencaoExemplo() {
     return (
       <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-5">
         {cards.map((c) => (
-          <div key={c.label} className="h-[104px] animate-pulse rounded-2xl border border-border bg-card" />
+          <div
+            key={c.label}
+            className="h-[104px] animate-pulse rounded-2xl border border-border bg-card"
+          />
         ))}
       </div>
     );
@@ -931,10 +1070,15 @@ function CardsManutencaoExemplo() {
               {c.label}
             </span>
           </span>
-          <span className="mt-2 block font-display text-[24px] font-bold leading-none" style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}>
+          <span
+            className="mt-2 block font-display text-[24px] font-bold leading-none"
+            style={{ color: c.valor > 0 ? c.cor : "var(--foreground)" }}
+          >
             {c.valor}
           </span>
-          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">{c.nota}</span>
+          <span className="mt-1 block text-[12px] leading-tight text-muted-foreground">
+            {c.nota}
+          </span>
         </button>
       ))}
     </div>

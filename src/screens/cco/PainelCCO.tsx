@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Polygon,
+  TileLayer,
+  Tooltip,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -59,6 +67,7 @@ import {
   type VeiculoPainel,
 } from "@/lib/cco-api";
 import { lerEmbutido } from "@/lib/embutido";
+import { areasRiscoQuery, type AreaRisco } from "@/lib/rotas-seguras-api";
 import { PlayerAoVivo } from "@/components/ss/video/PlayerAoVivo";
 import { Cameras, type Transmissao } from "@/lib/cameras-api";
 import { empresasQuery } from "@/lib/queries";
@@ -255,6 +264,9 @@ export default function PainelCCO() {
   const [cheia, setCheia] = useState(false);
   const [ocultos, setOcultos] = useState<Set<string>>(new Set());
   const empresasQ = useQuery({ ...empresasQuery(), enabled: ehSS && !mock });
+  // Áreas de risco do cliente desenhadas nos mapas (só com uma empresa escolhida).
+  const areasQ = useQuery(areasRiscoQuery(grupo));
+  const areasRisco = areasQ.data?.data ?? [];
   const empresas = empresasQ.data ?? [];
   const [relogio, setRelogio] = useState(() => Date.now());
   const [sobreposicao, setSobreposicao] = useState<{ titulo: string; url: string } | null>(null);
@@ -743,6 +755,7 @@ export default function PainelCCO() {
                   key={i}
                   onFechar={() => fecharMapa(i, true)}
                   seguindoId={seguindo && seguindo.mapa === i ? seguindo.id : null}
+                  areas={areasRisco}
                   indice={i}
                   vista={vistas[i]}
                   onVista={(v) => setVista(i, v)}
@@ -1062,9 +1075,11 @@ function MapaCCO({
   registrar,
   onFechar,
   seguindoId,
+  areas,
 }: {
   onFechar: () => void;
   seguindoId: string | null;
+  areas: AreaRisco[];
   indice: number;
   vista: Vista;
   onVista: (v: Vista) => void;
@@ -1092,6 +1107,20 @@ function MapaCCO({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Guardar vista={vista} onVista={onVista} />
+        {areas.map((a) =>
+          a.poligonos.map((pol, j) => (
+            <Polygon
+              key={`${a.chave}-${j}`}
+              positions={pol}
+              interactive={false}
+              pathOptions={{
+                color: a.nivel === "evitar" ? "#d84a3a" : "#d4a017",
+                weight: 1.5,
+                fillOpacity: 0.15,
+              }}
+            />
+          )),
+        )}
         <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
         {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
         {veiculos.map((v) => (

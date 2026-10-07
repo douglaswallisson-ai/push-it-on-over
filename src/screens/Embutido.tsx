@@ -28,8 +28,10 @@ const BASE = (import.meta.env.VITE_API_BASE as string) || "";
 
 function telaSegura(t: string | null) {
   // Só caminhos internos da plataforma; nada de URL externa.
-  // /cco (Painel CCO) também é embutível: toda ferramenta da plataforma tem de poder ser embutida.
-  return t && /^\/(app|cco)(\/[\w\-./#?=&%]*)?$/.test(t) && !t.includes("//") ? t : "/app";
+  // /cco (Painel CCO) e /rotograma também são embutíveis: toda ferramenta da plataforma tem de poder ser embutida.
+  return t && /^\/(app|cco|rotograma)(\/[\w\-./#?=&%]*)?$/.test(t) && !t.includes("//")
+    ? t
+    : "/app";
 }
 
 export default function Embutido() {

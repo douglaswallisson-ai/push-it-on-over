@@ -61,8 +61,6 @@ export function NavLink({
   const alvo = separar(to);
   // Item com query (ex.: Rotograma) só fica ativo com a mesma query.
   const mesmaQuery = alvo.search ? searchStr === `?${to.split("?")[1]}` : true;
-    ? searchStr === `?${to.split("?")[1]}`
-    : !searchStr || !alvo.search;
   const isActive =
     (end ? pathname === alvo.to : pathname === alvo.to || pathname.startsWith(`${alvo.to}/`)) &&
     mesmaQuery;

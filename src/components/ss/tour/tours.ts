@@ -191,7 +191,7 @@ export const TOURS: Record<string, TourStep[]> = {
 
 
   "/app/frota/telemetria": [
-    { selector: '[data-tour="page-header"]', title: "Telemetria", body: "O inventário dos equipamentos instalados e quando cada um comunicou dados pela última vez." },
+    { selector: '[data-tour="page-header"]', title: "Hardware", body: "O inventário dos equipamentos instalados e quando cada um comunicou dados pela última vez." },
     { selector: '[data-tour="stat"]', title: "Saúde da comunicação", body: "Quantos equipamentos existem, quantos comunicam agora, quantos estão em atraso e quantos sem sinal." },
     { selector: '[data-tour="table"]', title: "Equipamento por placa", body: "Serial, modelo, firmware, placa vinculada e a última comunicação. Passe o mouse no tempo relativo para ver a data exata." },
     { selector: '[data-tour="table"]', title: "Regra de sem sinal", body: "Comunicando até 1 h, atraso até 24 h, sem sinal acima disso. O limiar é o mesmo em todo o sistema — mudar aqui muda em todo lugar." },

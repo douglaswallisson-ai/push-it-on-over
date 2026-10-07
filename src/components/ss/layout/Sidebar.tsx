@@ -106,7 +106,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Tracking", to: "/app/frota/tracking" },
       { label: "Desempenho", to: "/app/frota/desempenho" },
-      { label: "Telemetria", to: "/app/frota/telemetria" },
+      { label: "Hardware", to: "/app/frota/telemetria" },
       { label: "Combustível", to: "/app/frota/combustivel" },
       // Frota aparece para todo cliente (carga, urbano e fretamento): o que está aqui
       // não se repete nos módulos Urbano e Fretamento (decisão do PM, 07/10/2026).

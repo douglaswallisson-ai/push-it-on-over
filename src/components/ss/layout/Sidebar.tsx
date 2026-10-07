@@ -108,8 +108,8 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Desempenho", to: "/app/frota/desempenho" },
       { label: "Telemetria", to: "/app/frota/telemetria" },
       { label: "Combustível", to: "/app/frota/combustivel" },
-      // Ferramentas compartilhadas aparecem dentro de cada módulo que as usa
-      // (decisão do PM, 04/10/2026): o cliente de carga só vê Frota.
+      // Frota aparece para todo cliente (carga, urbano e fretamento): o que está aqui
+      // não se repete nos módulos Urbano e Fretamento (decisão do PM, 07/10/2026).
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
       { label: "Rotograma", to: "/app/fretamento/roteirizacao?rotograma=1" },
@@ -125,7 +125,6 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Painel sinótico", to: "/app/operacao/sinotico" },
       { label: "Gestão de viagens", to: "/app/operacao/viagens" },
       { label: "Padrão por linha", to: "/app/urbano/padrao", beta: true },
-      { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Contagem de passageiros", to: "/app/urbano/passageiros" },
       { label: "Grupos de linhas", to: "/app/cadastros/grupos-linhas" },
     ],
@@ -137,9 +136,6 @@ const NAV_PRIMARY: Entry[] = [
     items: [
       // "Nova viagem" é botão dentro de Viagens, não item de menu.
       { label: "Viagens", to: "/app/fretamento/viagens" },
-      { label: "Escala de viagem", to: "/app/escala-viagem" },
-      { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
-      { label: "Rotograma", to: "/app/fretamento/roteirizacao?rotograma=1" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
       { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
       { label: "Cadastro de passageiros", to: "/app/fretamento/cadastro-passageiros" },

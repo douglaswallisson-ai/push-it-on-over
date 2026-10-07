@@ -17,6 +17,13 @@ const RawLink = TanstackLink as unknown as AnyLink;
 
 export const Outlet = TanstackOutlet;
 
+/** "/rota?a=1" → caminho e search separados (o TanStack não aceita a query dentro do `to`). */
+function separar(to: string): { to: string; search?: Record<string, string> } {
+  const i = to.indexOf("?");
+  if (i < 0) return { to };
+  return { to: to.slice(0, i), search: Object.fromEntries(new URLSearchParams(to.slice(i + 1))) };
+}
+
 export function Link({
   to,
   children,
@@ -27,7 +34,7 @@ export function Link({
   [key: string]: unknown;
 }) {
   return (
-    <RawLink to={to} {...rest}>
+    <RawLink {...separar(to)} {...rest}>
       {children}
     </RawLink>
   );
@@ -50,13 +57,20 @@ export function NavLink({
   children?: NavLinkRender;
   [key: string]: unknown;
 }) {
-  const { pathname } = useTanstackLocation();
-  const isActive = end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+  const { pathname, searchStr } = useTanstackLocation();
+  const alvo = separar(to);
+  // Item com query (ex.: Rotograma) só fica ativo com a mesma query.
+  const mesmaQuery = alvo.search ? searchStr === `?${to.split("?")[1]}` : true;
+    ? searchStr === `?${to.split("?")[1]}`
+    : !searchStr || !alvo.search;
+  const isActive =
+    (end ? pathname === alvo.to : pathname === alvo.to || pathname.startsWith(`${alvo.to}/`)) &&
+    mesmaQuery;
   const state = { isActive };
 
   return (
     <RawLink
-      to={to}
+      {...alvo}
       className={typeof className === "function" ? className(state) : className}
       style={typeof style === "function" ? style(state) : style}
       {...rest}

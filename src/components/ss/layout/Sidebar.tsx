@@ -112,6 +112,7 @@ const NAV_PRIMARY: Entry[] = [
       // (decisão do PM, 04/10/2026): o cliente de carga só vê Frota.
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
+      { label: "Rotograma", to: "/app/fretamento/roteirizacao?rotograma=1" },
       { label: "Checklist", to: "/app/frota/checklist", beta: true },
       { label: "Multas", to: "/app/pessoas/multas", beta: true },
     ],
@@ -138,6 +139,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Viagens", to: "/app/fretamento/viagens" },
       { label: "Escala de viagem", to: "/app/escala-viagem" },
       { label: "Roteirização", to: "/app/fretamento/roteirizacao" },
+      { label: "Rotograma", to: "/app/fretamento/roteirizacao?rotograma=1" },
       { label: "Layout de assentos", to: "/app/fretamento/assentos" },
       { label: "Contagem de passageiros", to: "/app/fretamento/passageiros" },
       { label: "Cadastro de passageiros", to: "/app/fretamento/cadastro-passageiros" },

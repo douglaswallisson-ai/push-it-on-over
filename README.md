@@ -1,6 +1,8 @@
-# Import Wizard
+# Plataforma nova da SS Telemática — telas
 
-por que eu não consigo fazer o push desse projeto https://github.com/douglaswallisson-ai/Sistem-ss aqui para dentro do lovable ? Não quero que faça um novo, quero que importe os arquivos
+**Para rodar no seu computador, siga o [COMO-RODAR.md](COMO-RODAR.md).** Sem o `VITE_API_BASE` no `.env`, as telas abrem em modo demonstração, com dados de exemplo.
+
+O servidor fica em https://github.com/douglaswallisson-ai/ss-fleet-core.
 
 This project was built with [Lovable](https://lovable.dev).
 

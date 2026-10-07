@@ -9,6 +9,7 @@ import { BuscaGlobal } from "@/components/ss/layout/BuscaGlobal";
 import { PonteEmbutido } from "@/components/ss/layout/PonteEmbutido";
 import { RegistroPaginas } from "@/components/ss/layout/RegistroPaginas";
 import { lerEmbutido } from "@/lib/embutido";
+import { usandoMock } from "@/lib/modo";
 
 /**
  * Casca do sistema: trilho de ícones fixo + conteúdo sobre o canvas
@@ -32,16 +33,28 @@ export function AppShell() {
         {comMenu && <Sidebar open={open} onClose={() => setOpen(false)} />}
 
         {comMenu && (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Abrir menu"
-          className="fixed left-4 top-4 z-[210] flex h-10 w-10 items-center justify-center rounded-full bg-sidebar text-white shadow-lg lg:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Abrir menu"
+            className="fixed left-4 top-4 z-[210] flex h-10 w-10 items-center justify-center rounded-full bg-sidebar text-white shadow-lg lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         )}
 
         <div className={comMenu ? "min-w-0 lg:ml-[68px]" : "min-w-0"}>
+          {/* Sem VITE_API_BASE o sistema roda com dados de exemplo. Antes isso acontecia em silêncio e quem
+              rodava em outro computador via números de teste achando que eram reais (07/10/2026). */}
+          {usandoMock() && (
+            <div
+              role="alert"
+              className="sticky top-0 z-[200] bg-gold px-4 py-2 text-center text-[13px] font-semibold text-white"
+            >
+              MODO DEMONSTRAÇÃO — dados de exemplo, não são da frota. Para ver os dados reais,
+              configure VITE_API_BASE no arquivo .env das telas apontando para o servidor (ver
+              COMO-RODAR.md).
+            </div>
+          )}
           <Outlet />
         </div>
 

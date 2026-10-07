@@ -73,7 +73,11 @@ export const CATALOGO: Record<string, { nome: string; fonte: Fonte; gravidade: G
   },
   // Manutenção (regras de manutencao.py)
   man_temperatura: { nome: "Motor quente", fonte: "manutencao", gravidade: "critico" },
-  man_bateria: { nome: "Bateria fraca em repouso", fonte: "manutencao", gravidade: "moderado" },
+  man_bateria: {
+    nome: "Bateria não está segurando a carga",
+    fonte: "manutencao",
+    gravidade: "moderado",
+  },
   man_arla: { nome: "ARLA baixo", fonte: "manutencao", gravidade: "moderado" },
 };
 

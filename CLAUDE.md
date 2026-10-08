@@ -55,8 +55,9 @@ Este arquivo explica **como o trabalho foi feito** para outra IA seguir igual.
 
 ## 3. Visual (decisões aprovadas pelo PM)
 
-- Fonte **só Inter** em tudo (sem serifa, sem mono); números com
-  `tabular-nums`. Escala de tamanhos: 12 · 13 · 14 · 16 · 20 · 24 · 30 px.
+- Visual da **plataforma de câmeras** (CoreUI: menu #3c4b64, verde #78c052,
+  fonte do sistema, cantos 0,25 rem) — decisão do PM em 08/10/2026; ver o fim de
+  `src/styles.css`. Números com `tabular-nums`. Escala de tamanhos: 12 · 13 · 14 · 16 · 20 · 24 · 30 px.
 - Layout **denso** (piloto de Eventos aprovado): sem banner grande, tela larga
   (`max-w-[1360px]` ou `tema-denso` com `max-w-[1760px]`). `HeroBanner` virou
   faixa compacta clara.

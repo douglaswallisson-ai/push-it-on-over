@@ -1,4 +1,4 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { Fragment, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, NavLink } from "@/lib/router-compat";
 import {
   Award,
@@ -266,7 +266,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           expanded && isDesktop && "shadow-[8px_0_32px_-12px_rgba(18,42,82,.45)]",
         )}
       >
-        <div className="flex h-16 shrink-0 items-center gap-2.5 overflow-hidden border-b border-white/10 px-[18px]">
+        <div className="flex h-14 shrink-0 items-center justify-center gap-2.5 overflow-hidden bg-[#303c54] px-4">
           {lerEmbutido()?.marca.logo ? (
             <img
               src={lerEmbutido()!.marca.logo}
@@ -290,19 +290,20 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         {/* Itens sensíveis só aparecem para quem tem permissão. */}
-        <nav className="rolagem-escura flex-1 overflow-y-auto overflow-x-hidden py-3">
-          {NAV_PRIMARY.filter(
-            (entry) =>
-              !(isGroup(entry) && entry.modulo && modulos.data && !modulos.data[entry.modulo]),
-          ).map((entry) => (
+        <nav className="rolagem-escura flex-1 overflow-y-auto overflow-x-hidden py-0">
+          {NAV_PRIMARY.filter((entry) => !(isGroup(entry) && entry.modulo && modulos.data && !modulos.data[entry.modulo])).map((entry, i, lista) => (
+            <Fragment key={entry.label}>
+            {expanded && isGroup(entry) && !lista.slice(0, i).some(isGroup) && (
+              <p className="px-4 pb-2 pt-4 text-[11px] font-bold uppercase tracking-[1px] text-white/50">Ferramentas</p>
+            )}
             <NavEntry
-              key={entry.label}
               entry={entry}
               expanded={expanded}
               openGroup={openGroup}
               setOpenGroup={setOpenGroup}
               onNavigate={onClose}
             />
+            </Fragment>
           ))}
 
           {/* Divisor entre o dia a dia e os itens de apoio. */}
@@ -450,16 +451,18 @@ function LeafRow({
       title={entry.label}
       className={({ isActive }) =>
         cn(
-          "relative mx-2 flex h-11 w-[calc(100%-1rem)] items-center gap-3 rounded-lg transition-[padding] duration-200",
-          expanded ? "px-[14px]" : "justify-center px-0",
+          "relative flex h-12 w-full items-center gap-4 transition-colors duration-200",
+          expanded ? "px-4" : "justify-center px-0",
           isActive
-            ? "bg-brand-green text-white"
-            : "text-white/85 hover:bg-white/[0.08] hover:text-white",
+            ? "coreui-ativo text-white"
+            : "text-white/80 hover:bg-[rgba(120,192,82,0.15)] hover:text-[#78c052]",
         )
       }
     >
       <Icon className="h-[18px] w-[18px] shrink-0" />
-      {expanded && <span className="whitespace-nowrap text-[14px] font-medium">{entry.label}</span>}
+      {expanded && (
+        <span className="whitespace-nowrap text-[14px]">{entry.label}</span>
+      )}
       {expanded && entry.badge && (
         <span className="ml-auto rounded-full bg-white/15 px-1.5 py-0.5 text-[12px] font-semibold">
           {entry.badge}
@@ -489,16 +492,17 @@ function GroupRow({
         onClick={onToggle}
         title={entry.label}
         className={cn(
-          "relative mx-2 flex h-11 w-[calc(100%-1rem)] items-center gap-3 rounded-lg text-white/85 transition-[padding] duration-200 hover:bg-white/[0.08] hover:text-white",
-          expanded ? "px-[14px]" : "justify-center px-0",
+          "relative flex h-12 w-full items-center gap-4 transition-colors duration-200 hover:bg-[rgba(120,192,82,0.15)] hover:text-[#78c052]",
+          open ? "bg-black/20 text-white" : "text-white/80",
+          expanded ? "px-4" : "justify-center px-0",
         )}
       >
         <Icon className="h-[18px] w-[18px] shrink-0" />
         {expanded && (
           <>
-            <span className="whitespace-nowrap text-[14px] font-medium">{entry.label}</span>
+            <span className="whitespace-nowrap text-[14px]">{entry.label}</span>
             <ChevronRight
-              className={cn("ml-auto h-3.5 w-3.5 transition-transform", open && "rotate-90")}
+              className={cn("ml-auto h-3.5 w-3.5 opacity-60 transition-transform", open ? "rotate-90" : "rotate-180")}
             />
           </>
         )}
@@ -510,7 +514,7 @@ function GroupRow({
           expanded && open ? "max-h-[1200px]" : "max-h-0",
         )}
       >
-        <div className="ml-[30px] mr-3 mt-0.5 space-y-0.5 border-l border-white/10 pb-1 pl-3">
+        <div className="bg-black/20 pb-1">
           {entry.items.map((item) => (
             <NavLink
               key={item.to}
@@ -518,10 +522,8 @@ function GroupRow({
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
-                  "block whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
-                  isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/60 hover:bg-white/[0.06] hover:text-white",
+                  "block whitespace-nowrap py-2.5 pl-[52px] pr-4 text-[14px] transition-colors",
+                  isActive ? "coreui-ativo text-white" : "text-white/70 hover:bg-[rgba(120,192,82,0.15)] hover:text-[#78c052]",
                 )
               }
             >

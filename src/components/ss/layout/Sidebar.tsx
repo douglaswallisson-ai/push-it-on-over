@@ -106,6 +106,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Tracking", to: "/app/frota/tracking" },
       { label: "Desempenho", to: "/app/frota/desempenho" },
+      { label: "Comparativo com iguais", to: "/app/frota/comparativo" },
       { label: "Hardware", to: "/app/frota/telemetria" },
       { label: "Combustível", to: "/app/frota/combustivel" },
       // Frota aparece para todo cliente (carga, urbano e fretamento): o que está aqui

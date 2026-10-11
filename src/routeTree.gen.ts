@@ -67,6 +67,7 @@ import { Route as AppFretamentoTurnosRouteImport } from './routes/app.fretamento
 import { Route as AppFrotaAnaliseRouteImport } from './routes/app.frota.analise'
 import { Route as AppFrotaChecklistRouteImport } from './routes/app.frota.checklist'
 import { Route as AppFrotaCombustivelRouteImport } from './routes/app.frota.combustivel'
+import { Route as AppFrotaComparativoRouteImport } from './routes/app.frota.comparativo'
 import { Route as AppFrotaDesempenhoRouteImport } from './routes/app.frota.desempenho'
 import { Route as AppFrotaDiagnosticoRouteImport } from './routes/app.frota.diagnostico'
 import { Route as AppFrotaManutencaoRouteImport } from './routes/app.frota.manutencao'
@@ -400,6 +401,11 @@ const AppFrotaCombustivelRoute = AppFrotaCombustivelRouteImport.update({
   path: '/frota/combustivel',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFrotaComparativoRoute = AppFrotaComparativoRouteImport.update({
+  id: '/frota/comparativo',
+  path: '/frota/comparativo',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFrotaDesempenhoRoute = AppFrotaDesempenhoRouteImport.update({
   id: '/frota/desempenho',
   path: '/frota/desempenho',
@@ -635,6 +641,7 @@ export interface FileRoutesByFullPath {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
+  '/app/frota/comparativo': typeof AppFrotaComparativoRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -727,6 +734,7 @@ export interface FileRoutesByTo {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
+  '/app/frota/comparativo': typeof AppFrotaComparativoRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -822,6 +830,7 @@ export interface FileRoutesById {
   '/app/frota/analise': typeof AppFrotaAnaliseRoute
   '/app/frota/checklist': typeof AppFrotaChecklistRoute
   '/app/frota/combustivel': typeof AppFrotaCombustivelRoute
+  '/app/frota/comparativo': typeof AppFrotaComparativoRoute
   '/app/frota/desempenho': typeof AppFrotaDesempenhoRoute
   '/app/frota/diagnostico': typeof AppFrotaDiagnosticoRoute
   '/app/frota/manutencao': typeof AppFrotaManutencaoRoute
@@ -918,6 +927,7 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
+    | '/app/frota/comparativo'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -1010,6 +1020,7 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
+    | '/app/frota/comparativo'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -1104,6 +1115,7 @@ export interface FileRouteTypes {
     | '/app/frota/analise'
     | '/app/frota/checklist'
     | '/app/frota/combustivel'
+    | '/app/frota/comparativo'
     | '/app/frota/desempenho'
     | '/app/frota/diagnostico'
     | '/app/frota/manutencao'
@@ -1558,6 +1570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFrotaCombustivelRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/frota/comparativo': {
+      id: '/app/frota/comparativo'
+      path: '/frota/comparativo'
+      fullPath: '/app/frota/comparativo'
+      preLoaderRoute: typeof AppFrotaComparativoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/frota/desempenho': {
       id: '/app/frota/desempenho'
       path: '/frota/desempenho'
@@ -1869,6 +1888,7 @@ interface AppRouteChildren {
   AppFrotaAnaliseRoute: typeof AppFrotaAnaliseRoute
   AppFrotaChecklistRoute: typeof AppFrotaChecklistRoute
   AppFrotaCombustivelRoute: typeof AppFrotaCombustivelRoute
+  AppFrotaComparativoRoute: typeof AppFrotaComparativoRoute
   AppFrotaDesempenhoRoute: typeof AppFrotaDesempenhoRoute
   AppFrotaDiagnosticoRoute: typeof AppFrotaDiagnosticoRoute
   AppFrotaManutencaoRoute: typeof AppFrotaManutencaoRoute
@@ -1943,6 +1963,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFrotaAnaliseRoute: AppFrotaAnaliseRoute,
   AppFrotaChecklistRoute: AppFrotaChecklistRoute,
   AppFrotaCombustivelRoute: AppFrotaCombustivelRoute,
+  AppFrotaComparativoRoute: AppFrotaComparativoRoute,
   AppFrotaDesempenhoRoute: AppFrotaDesempenhoRoute,
   AppFrotaDiagnosticoRoute: AppFrotaDiagnosticoRoute,
   AppFrotaManutencaoRoute: AppFrotaManutencaoRoute,

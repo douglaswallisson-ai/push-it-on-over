@@ -31,6 +31,10 @@ export type VeiculoPainel = {
   combustivel: number | null;
   motorista: string | null;
   endereco?: string | null;
+  /** Do endereço do rastreador ("Rua, Bairro - Cidade - Estado - Brasil"). */
+  cidade?: string | null;
+  uf?: string | null;
+  bairro?: string | null;
   ultima_comunicacao: string | null;
   comunicando: boolean;
   tem_camera: boolean;

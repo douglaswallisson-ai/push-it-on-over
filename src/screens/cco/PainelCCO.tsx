@@ -37,6 +37,9 @@ import {
   X,
   Plus,
   Crosshair,
+  Expand,
+  MapPinned,
+  Hash,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
@@ -111,7 +114,12 @@ type Estado = {
   painelAvisos: boolean;
   /** Pintar o carro pelo alerta. Desligado = mapa só com a situação (andando/parado), sem poluir. */
   alertasNoMapa: boolean;
+  /** Cidade escolhida (urbano é por cidade — PM, 10/10/2026). Vazio = todas. */
+  cidade?: string;
+  /** O que cada quadro mostra: mapa ou os grandes números. */
+  tipos?: TipoQuadro[];
 };
+type TipoQuadro = "mapa" | "numeros";
 /** O CCO é ao vivo: avisos das últimas 2 h ainda não tratados, sem seletor de janela. */
 const JANELA_AO_VIVO_H = 2;
 const VAZIO: string[][] = [[], [], [], []];
@@ -140,6 +148,8 @@ function lerEstado(): Estado {
     fechados: [false, false, false, false],
     painelAvisos: true,
     alertasNoMapa: false,
+    cidade: "",
+    tipos: ["mapa", "mapa", "mapa", "mapa"],
   };
   try {
     const daAba = JSON.parse(sessionStorage.getItem(CHAVE_ABA) ?? "null");
@@ -147,7 +157,7 @@ function lerEstado(): Estado {
       return { ...padrao, ...daAba };
     const v = JSON.parse(localStorage.getItem(chaveEstado()) ?? "null");
     if (v && [1, 2, 4].includes(v.layout) && Array.isArray(v.vistas) && v.vistas.length === 4)
-      return { ...padrao, ...v, grupo: padrao.grupo };
+      return { ...padrao, ...v, grupo: padrao.grupo, cidade: "" };
     // Layout salvo pela versão anterior.
     const antigo = JSON.parse(localStorage.getItem("ss:cco:layout") ?? "null");
     if (antigo?.vistas?.length === 4)
@@ -158,19 +168,25 @@ function lerEstado(): Estado {
   return padrao;
 }
 
-function icone(v: VeiculoPainel, selecionado: boolean) {
-  const hex = COR_HEX[v.cor];
+/**
+ * Só o desenho do veículo, sem a placa ao lado (PM, 10/10/2026); a placa aparece ao passar o mouse.
+ * Alerta crítico em aberto pisca em vermelho, mesmo com "Marcar alertas no mapa" desligado (PM, 10/10/2026).
+ */
+function icone(v: VeiculoPainel, selecionado: boolean, critico: boolean) {
+  const hex = critico ? COR_HEX.vermelho : COR_HEX[v.cor];
   const d = selecionado ? 34 : 28;
   return L.divIcon({
     className: "",
-    html: `<div style="display:flex;align-items:center;transform:translate(-${d / 2}px,-50%);width:max-content">
-      <span style="display:flex;align-items:center;justify-content:center;width:${d}px;height:${d}px;border-radius:50%;background:${hex};color:#fff;border:2px solid #fff;box-shadow:0 1px 5px rgba(15,25,40,.45)${selecionado ? ",0 0 0 4px rgba(46,134,193,.5)" : ""};${v.comunicando ? "" : "opacity:.55;"}">${svgVeiculo(v.tipo, selecionado ? 19 : 16)}</span>
-      <span style="margin-left:-6px;padding:2px 7px 2px 10px;border-radius:0 999px 999px 0;background:#fff;color:#16263a;font:700 11px/1.2 ui-monospace,monospace;border:1.5px solid ${hex};border-left:0;white-space:nowrap">${v.prefixo}</span>
-    </div>`,
+    html: `<span class="${critico ? "cco-pisca" : ""}" style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);width:${d}px;height:${d}px;border-radius:50%;background:${hex};color:#fff;border:2px solid #fff;box-shadow:0 1px 5px rgba(15,25,40,.45)${selecionado ? ",0 0 0 4px rgba(46,134,193,.5)" : ""};${v.comunicando ? "" : "opacity:.55;"}">${svgVeiculo(v.tipo, selecionado ? 19 : 16)}</span>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   });
 }
+
+/** Piscar do alerta crítico: anel vermelho que se expande (não some o carro do mapa). */
+const CSS_PISCA = `@keyframes cco-pisca{0%{box-shadow:0 0 0 0 rgba(216,74,58,.95),0 1px 5px rgba(15,25,40,.45)}70%{box-shadow:0 0 0 14px rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}100%{box-shadow:0 0 0 0 rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}}
+.cco-pisca{animation:cco-pisca 1.1s ease-out infinite}
+@media (prefers-reduced-motion: reduce){.cco-pisca{animation-duration:2.5s}}`;
 
 const ESCALA: Record<CorCarro, number> = { vermelho: 3000, amarelo: 2000, verde: 1000, cinza: 0 };
 
@@ -315,6 +331,34 @@ export default function PainelCCO() {
     () => (dados?.avisos ?? []).filter((a) => !ocultos.has(a.id)),
     [dados, ocultos],
   );
+  // Cidades da frota (do endereço do rastreador), da que tem mais veículos para a que tem menos.
+  const cidades = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const v of veiculos) if (v.cidade) n.set(v.cidade, (n.get(v.cidade) ?? 0) + 1);
+    return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"));
+  }, [veiculos]);
+  const cidade = est.cidade && cidades.some(([c]) => c === est.cidade) ? est.cidade : "";
+  const naCidade = useMemo(
+    () => (cidade ? veiculos.filter((v) => v.cidade === cidade) : veiculos),
+    [veiculos, cidade],
+  );
+  const criticosIds = useMemo(
+    () => new Set(avisos.filter((a) => a.gravidade === "critico").map((a) => String(a.unit_id))),
+    [avisos],
+  );
+  // Enquadrar os mapas na frota: ao trocar de empresa ou de cidade (e ao abrir, se o mapa ainda
+  // está numa área pronta como "Brasil"). A Fênix abria no Brasil inteiro (PM, 10/10/2026).
+  const [sinalEnquadrar, setSinalEnquadrar] = useState(0);
+  const enquadradoPara = useRef<string | null>(null);
+  useEffect(() => {
+    if (!naCidade.length) return;
+    const k = `${chaveGrupo}|${cidade}`;
+    if (enquadradoPara.current === k) return;
+    const primeira = enquadradoPara.current === null;
+    enquadradoPara.current = k;
+    if (primeira && vistas.every((v) => v.area === "livre")) return; // o operador já enquadrou
+    setSinalEnquadrar((n) => n + 1);
+  }, [chaveGrupo, cidade, naCidade.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => setOcultos(new Set()), [q.dataUpdatedAt]);
   useEffect(() => {
@@ -333,7 +377,7 @@ export default function PainelCCO() {
     const porUnidade = new Map<string, AvisoPainel[]>();
     for (const a of avisos)
       porUnidade.set(String(a.unit_id), [...(porUnidade.get(String(a.unit_id)) ?? []), a]);
-    return veiculos.map((v) => {
+    return naCidade.map((v) => {
       const meus = porUnidade.get(String(v.id)) ?? [];
       const cor: CorCarro = !alertasNoMapa
         ? v.ignicao && v.velocidade > 3
@@ -348,7 +392,7 @@ export default function PainelCCO() {
               : "cinza";
       return { ...v, cor };
     });
-  }, [veiculos, avisos, alertasNoMapa]);
+  }, [naCidade, avisos, alertasNoMapa]);
 
   // Veículos de cada mapa (seleção vazia = todos). Seleção com placa que saiu da frota é ignorada.
   const doMapa = useMemo(
@@ -369,6 +413,12 @@ export default function PainelCCO() {
     [doMapa, filtroSituacao],
   );
   const fechados = est.fechados ?? [false, false, false, false];
+  const tipos: TipoQuadro[] = est.tipos ?? ["mapa", "mapa", "mapa", "mapa"];
+  const setTipo = (i: number, t: TipoQuadro) =>
+    mudar({
+      tipos: tipos.map((x, j) => (j === i ? t : x)),
+      fechados: fechados.map((x, j) => (j === i ? false : x)),
+    });
   const fecharMapa = (i: number, f: boolean) => {
     if (f) contem.current[i] = () => false;
     mudar({ fechados: fechados.map((x, j) => (j === i ? f : x)) });
@@ -504,6 +554,7 @@ export default function PainelCCO() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
+      <style>{CSS_PISCA}</style>
       <header className="flex h-11 shrink-0 items-center gap-3 border-b border-border bg-card px-3 text-[12px]">
         <SSOrb size={20} />
         <span className="text-[14px] font-semibold text-foreground">Painel CCO</span>
@@ -518,7 +569,7 @@ export default function PainelCCO() {
             value={grupo ?? ""}
             aria-label="Empresa"
             onChange={(e) => {
-              mudar({ grupo: e.target.value || undefined });
+              mudar({ grupo: e.target.value || undefined, cidade: "" });
               setSelId(null);
             }}
             className="h-7 max-w-[240px] rounded-md border border-border bg-white px-2 text-[12px]"
@@ -527,6 +578,29 @@ export default function PainelCCO() {
             {empresas.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.name}
+              </option>
+            ))}
+          </select>
+        )}
+        {cidades.length > 0 && (
+          <select
+            id="cco-cidade"
+            value={cidade}
+            aria-label="Cidade"
+            title="Cidade (pelo endereço do rastreador)"
+            onChange={(e) => {
+              mudar({ cidade: e.target.value });
+              setSelId(null);
+            }}
+            className={cn(
+              "h-7 max-w-[220px] rounded-md border bg-white px-2 text-[12px]",
+              cidade ? "border-brand-navy font-semibold text-brand-navy" : "border-border",
+            )}
+          >
+            <option value="">Todas as cidades · {veiculos.length}</option>
+            {cidades.map(([c, n]) => (
+              <option key={c} value={c}>
+                {c} · {n}
               </option>
             ))}
           </select>
@@ -739,21 +813,44 @@ export default function PainelCCO() {
           >
             {Array.from({ length: layout }, (_, i) =>
               fechados[i] ? (
-                <div key={i} className="flex min-h-0 items-center justify-center bg-secondary">
-                  <button
-                    type="button"
-                    onClick={() => fecharMapa(i, false)}
-                    title="Abrir mapa"
-                    aria-label="Abrir mapa"
-                    className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow hover:text-brand-navy"
-                  >
-                    <Plus className="h-7 w-7" />
-                  </button>
+                <div
+                  key={i}
+                  className="flex min-h-0 items-center justify-center gap-3 bg-secondary"
+                >
+                  {(
+                    [
+                      ["mapa", "Abrir mapa", Plus],
+                      ["numeros", "Grandes números", Hash],
+                    ] as const
+                  ).map(([t, rot, Ic]) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTipo(i, t)}
+                      title={rot}
+                      className="inline-flex flex-col items-center gap-1 rounded-xl border border-border bg-white px-4 py-3 text-[12px] font-medium text-muted-foreground shadow hover:text-brand-navy"
+                    >
+                      <Ic className="h-6 w-6" /> {rot}
+                    </button>
+                  ))}
                 </div>
+              ) : tipos[i] === "numeros" ? (
+                <NumerosCCO
+                  key={i}
+                  veiculos={doMapa[i]}
+                  avisos={avisos}
+                  grupo={grupo}
+                  rotulo={cidade || (selecoes[i]?.length ? "Veículos escolhidos" : "Toda a frota")}
+                  onMapa={() => setTipo(i, "mapa")}
+                  onFechar={() => fecharMapa(i, true)}
+                />
               ) : (
                 <MapaCCO
                   key={i}
                   onFechar={() => fecharMapa(i, true)}
+                  onNumeros={() => setTipo(i, "numeros")}
+                  criticos={criticosIds}
+                  sinalEnquadrar={sinalEnquadrar}
                   seguindoId={seguindo && seguindo.mapa === i ? seguindo.id : null}
                   areas={areasRisco}
                   indice={i}
@@ -1074,10 +1171,16 @@ function MapaCCO({
   foco,
   registrar,
   onFechar,
+  onNumeros,
+  criticos,
+  sinalEnquadrar,
   seguindoId,
   areas,
 }: {
   onFechar: () => void;
+  onNumeros: () => void;
+  criticos: Set<string>;
+  sinalEnquadrar: number;
   seguindoId: string | null;
   areas: AreaRisco[];
   indice: number;
@@ -1093,6 +1196,7 @@ function MapaCCO({
   registrar: (fn: (lat: number, lng: number) => boolean) => void;
 }) {
   const [aberto, setAberto] = useState(false);
+  const [local, setLocal] = useState(0);
   return (
     <div className="relative min-h-0 overflow-hidden bg-white">
       <MapContainer
@@ -1122,13 +1226,17 @@ function MapaCCO({
           )),
         )}
         <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
+        <Enquadrar sinal={sinalEnquadrar + local} veiculos={veiculos} />
         {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
         {veiculos.map((v) => (
           <Marker
             key={v.id}
             position={[v.lat, v.lng]}
-            icon={icone(v, String(selId) === String(v.id))}
-            zIndexOffset={ESCALA[v.cor] + (String(selId) === String(v.id) ? 5000 : 0)}
+            icon={icone(v, String(selId) === String(v.id), criticos.has(String(v.id)))}
+            zIndexOffset={
+              (criticos.has(String(v.id)) ? 4000 : ESCALA[v.cor]) +
+              (String(selId) === String(v.id) ? 5000 : 0)
+            }
             eventHandlers={{ click: () => onSelecionar(v.id) }}
           >
             <Tooltip direction="top" offset={[0, -10]}>
@@ -1153,6 +1261,24 @@ function MapaCCO({
           {selecao.length
             ? `${veiculos.length} veículo${veiculos.length === 1 ? "" : "s"}`
             : "Todos os veículos"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setLocal((n) => n + 1)}
+          title="Enquadrar os veículos deste mapa"
+          aria-label="Enquadrar os veículos deste mapa"
+          className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
+        >
+          <Expand className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onNumeros}
+          title="Trocar este mapa pelos grandes números"
+          aria-label="Grandes números"
+          className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
+        >
+          <Hash className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
@@ -1339,6 +1465,169 @@ function Focar({
     else if (v) map.setView([v.lat, v.lng], Math.max(map.getZoom(), 12), { animate: false });
   }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
+}
+
+/** Enquadra o mapa nos veículos dele quando o sinal muda (troca de empresa/cidade ou botão). */
+function Enquadrar({ sinal, veiculos }: { sinal: number; veiculos: VeiculoPainel[] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!sinal || !veiculos.length) return;
+    const lats = veiculos.map((v) => v.lat).sort((a, b) => a - b);
+    const lngs = veiculos.map((v) => v.lng).sort((a, b) => a - b);
+    // Com muitos veículos, ignora os 2% de cada ponta: um carro em viagem não tira o foco da cidade.
+    const corte = veiculos.length >= 20 ? Math.floor(veiculos.length * 0.02) : 0;
+    const p = (xs: number[], i: number) => xs[Math.min(xs.length - 1, Math.max(0, i))];
+    const b = L.latLngBounds(
+      [p(lats, corte), p(lngs, corte)],
+      [p(lats, lats.length - 1 - corte), p(lngs, lngs.length - 1 - corte)],
+    );
+    try {
+      map.fitBounds(b, { padding: [30, 30], maxZoom: 15, animate: false });
+    } catch {
+      /* mapa montando */
+    }
+  }, [sinal]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
+/**
+ * Grandes números da operação, no lugar de um mapa (PM, 10/10/2026). Contam os veículos deste
+ * quadro (cidade e seleção) e se atualizam junto com o painel, a cada 30 s.
+ */
+function NumerosCCO({
+  veiculos,
+  avisos,
+  grupo,
+  rotulo,
+  onMapa,
+  onFechar,
+}: {
+  veiculos: VeiculoPainel[];
+  avisos: AvisoPainel[];
+  grupo?: string;
+  rotulo: string;
+  onMapa: () => void;
+  onFechar: () => void;
+}) {
+  const ids = new Set(veiculos.map((v) => String(v.id)));
+  const meus = avisos.filter((a) => ids.has(String(a.unit_id)));
+  const criticos = meus.filter((a) => a.gravidade === "critico");
+  const rodando = veiculos.filter((v) => v.comunicando && v.ignicao && v.velocidade > 3);
+  const paradoLigado = veiculos.filter((v) => v.comunicando && v.ignicao && v.velocidade <= 3);
+  const desligado = veiculos.filter((v) => v.comunicando && !v.ignicao);
+  const semSinal = veiculos.filter((v) => !v.comunicando);
+  const semMotorista = rodando.filter((v) => !v.motorista);
+  const velMedia = rodando.length
+    ? Math.round(rodando.reduce((s, v) => s + v.velocidade, 0) / rodando.length)
+    : null;
+  const tq = useQuery(turnoQuery(grupo, inicioDoTurno(), !usandoMock()));
+  const tratados = (tq.data?.data ?? []).filter(
+    (x) => x.situacao === "tratado" && ids.has(String(x.unit_id)),
+  ).length;
+  const pct = (n: number) =>
+    veiculos.length ? `${Math.round((n / veiculos.length) * 100)}% da frota` : "";
+  const cartoes: { rot: string; valor: string; pe: string; cor?: string }[] = [
+    {
+      rot: "Rodando agora",
+      valor: String(rodando.length),
+      pe: `de ${veiculos.length} · ${pct(rodando.length)}`,
+      cor: "var(--leaf)",
+    },
+    {
+      rot: "Parados com motor ligado",
+      valor: String(paradoLigado.length),
+      pe: pct(paradoLigado.length),
+      cor: paradoLigado.length ? "var(--gold)" : undefined,
+    },
+    { rot: "Desligados", valor: String(desligado.length), pe: pct(desligado.length) },
+    {
+      rot: "Sem comunicação há mais de 2 h",
+      valor: String(semSinal.length),
+      pe: pct(semSinal.length),
+      cor: semSinal.length ? "var(--coral)" : undefined,
+    },
+    {
+      rot: "Alertas críticos em aberto",
+      valor: String(criticos.length),
+      pe: `em ${new Set(criticos.map((a) => a.unit_id)).size} veículos`,
+      cor: criticos.length ? "var(--coral)" : undefined,
+    },
+    { rot: "Avisos em aberto", valor: String(meus.length), pe: "todos os tipos" },
+    {
+      rot: "Velocidade média",
+      valor: velMedia == null ? "—" : String(velMedia),
+      pe: "km/h de quem está rodando",
+    },
+    {
+      rot: "Rodando sem motorista",
+      valor: String(semMotorista.length),
+      pe: "identificado no rastreador",
+      cor: semMotorista.length ? "var(--gold)" : undefined,
+    },
+    {
+      rot: "Tratados no turno",
+      valor: usandoMock() ? "—" : String(tratados),
+      pe: `desde ${inicioDoTurno().slice(11, 16)}`,
+    },
+  ];
+  return (
+    <div className="relative flex min-h-0 flex-col bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[12px]">
+        <Hash className="h-3.5 w-3.5 text-brand-navy" />
+        <b className="text-foreground">Grandes números</b>
+        <span className="truncate text-muted-foreground">· {rotulo}</span>
+        <button
+          type="button"
+          onClick={onMapa}
+          className="ml-auto inline-flex h-7 items-center gap-1 rounded border border-border bg-white px-2 hover:bg-secondary"
+        >
+          <MapPinned className="h-3.5 w-3.5" /> Voltar ao mapa
+        </button>
+        <button
+          type="button"
+          onClick={onFechar}
+          title="Fechar este quadro"
+          aria-label="Fechar este quadro"
+          className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div
+        className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-px bg-border"
+        style={{ containerType: "size" }}
+      >
+        {cartoes.map((c) => (
+          <div
+            key={c.rot}
+            className="flex min-h-0 min-w-0 flex-col justify-center bg-card px-[3cqw]"
+          >
+            <span
+              className="line-clamp-2 font-medium leading-tight text-muted-foreground"
+              style={{ fontSize: "clamp(11px, 2.6cqmin, 20px)" }}
+            >
+              {c.rot}
+            </span>
+            <span
+              className="font-mono font-bold leading-none tabular-nums"
+              style={{
+                fontSize: "clamp(26px, 11cqmin, 120px)",
+                color: c.cor ?? "var(--foreground)",
+              }}
+            >
+              {c.valor}
+            </span>
+            <span
+              className="line-clamp-2 leading-tight text-muted-foreground"
+              style={{ fontSize: "clamp(10px, 2.2cqmin, 16px)" }}
+            >
+              {c.pe}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /** Início do turno atual: 06h, 14h ou 22h (o das 22h começa no dia anterior antes das 6h). */

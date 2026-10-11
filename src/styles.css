@@ -378,8 +378,8 @@
 }
 
 /* =====================================================================
- * TESTE (branch teste-visual-cameras): visual da plataforma de câmeras
- * (plataforma_web_new, CoreUI 3 — src/scss/_custom.scss). Só nesta cópia.
+ * Visual padrão (escolhido pelo PM em 08/10/2026): o mesmo da plataforma de
+ * câmeras (plataforma_web_new, CoreUI 3 — src/scss/_custom.scss).
  * ===================================================================== */
 :root {
   --radius: 0.25rem;                 /* cantos do CoreUI */

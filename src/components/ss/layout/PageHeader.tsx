@@ -63,7 +63,7 @@ export function PageHeader({
           </button>
         </div>
       </div>
-      {/* TESTE visual câmeras: subtítulo como faixa de migalhas (CoreUI c-subheader). */}
+      {/* Subtítulo como faixa de migalhas (CoreUI c-subheader). */}
       {subtitle && (
         <div className={`subheader-cameras flex items-center px-8 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}>
           <span><b>Início</b> / {subtitle}</span>

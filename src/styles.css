@@ -376,3 +376,52 @@
 .hero-compacto [class*="border-white/"] {
   border-color: var(--color-border);
 }
+
+/* =====================================================================
+ * Visual padrão (escolhido pelo PM em 08/10/2026): o mesmo da plataforma de
+ * câmeras (plataforma_web_new, CoreUI 3 — src/scss/_custom.scss).
+ * ===================================================================== */
+:root {
+  --radius: 0.25rem;                 /* cantos do CoreUI */
+  --canvas: #ebedef;                 /* fundo do CoreUI */
+  --sidebar: #3c4b64;                /* sidebar CoreUI */
+  --sidebar-dark: #303c54;
+  --brand-navy: #3c4b64;             /* títulos e textos fortes */
+  --brand-blue: #3c4b64;
+  --brand-green: #78c052;            /* cor primária da plataforma de câmeras */
+  --leaf: #5a9c3a;
+  --primary: #78c052;
+  --ring: #78c052;
+  --border: #d8dbe0;
+  --input: #d8dbe0;
+  --muted-foreground: #768192;
+  --secondary: #f8f9fa;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: var(--font-sans);
+  --shadow-card: 0 1px 1px rgba(60, 75, 100, 0.14), 0 2px 1px -1px rgba(60, 75, 100, 0.12), 0 1px 3px rgba(60, 75, 100, 0.2);
+}
+body, .font-display, .font-mono { font-family: var(--font-sans) !important; }
+body { background: var(--canvas); color: #3c4b64; }
+
+/* Botões principais: verde da plataforma de câmeras. */
+.bg-brand-navy { background-color: #78c052 !important; color: #fff !important; }
+.bg-brand-navy:hover { background-color: #5a9c3a !important; }
+.text-brand-navy { color: #5a9c3a !important; }
+
+/* Menu: item ativo com faixa verde à esquerda e fundo verde translúcido. */
+aside .bg-brand-green, nav .bg-brand-green { background: rgba(120, 192, 82, 0.2) !important; box-shadow: inset 3px 0 0 #78c052; color: #fff !important; }
+aside a:hover, nav a:hover { color: #78c052; }
+aside .bg-white\/10 { background: rgba(120, 192, 82, 0.2) !important; color: #fff !important; }
+
+/* Cabeçalho branco com borda e sombra leve; subtítulo vira faixa de "migalhas". */
+header[data-tour="page-header"] { border-bottom: 1px solid #d8dbe0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04); }
+.subheader-cameras { border-top: 1px solid #d8dbe0; background: #f8f9fa; min-height: 40px; font-size: 13px; color: #768192; }
+.subheader-cameras b { color: #5a9c3a; font-weight: 400; }
+
+/* Cartões no padrão CoreUI: borda clara, sombra curta. */
+.shadow-card { box-shadow: var(--shadow-card) !important; }
+.rounded-2xl, .rounded-xl { border-radius: 0.25rem !important; }
+
+/* Menu no padrão CoreUI: item ativo com fundo verde translúcido e faixa à esquerda. */
+.coreui-ativo { background: rgba(120, 192, 82, 0.2) !important; box-shadow: inset 3px 0 0 #78c052; }

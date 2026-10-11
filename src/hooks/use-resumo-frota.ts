@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frota } from "@/lib/api";
 import { eventosApiQuery, posicoesQuery, veiculosApiQuery } from "@/lib/queries";
-import { useIndicadoresBi } from "@/hooks/use-indicadores-bi";
 import { usandoMock } from "@/lib/modo";
 import type { ResumoOperacao } from "@/types";
 
@@ -33,23 +32,10 @@ export function useResumoFrota() {
   const posicoesQ = useQuery(posicoesQuery());
   const eventosQ = useQuery(eventosApiQuery({ only_pending: true, limit: 1 }));
 
-  /**
-   * Consumo médio, da telemetria.
-   *
-   * Vinha de `/indicators`, que não está publicado no servidor e responde 404.
-   * O cartão mostrava zero como se a frota rodasse a 0 km/l — e zero parece
-   * medição, não ausência.
-   *
-   * A telemetria por viagem tem o dado e já está no ar.
-   */
-  const idsDaFrota = useMemo(
-    () => (veiculosQ.data?.items ?? []).map((v) => v.id),
-    [veiculosQ.data],
-  );
-  // Mesma fonte e regra do BI (con_driver_h_km; km filtrado ÷ litros). A
-  // telemetria por viagem diverge 14,8% do BI (vault), e a tela Início ficava
-  // com um consumo e a de Veículos com outro.
-  const telemetria = useIndicadoresBi(30, idsDaFrota);
+  // Consumo médio: a tela Início usa a série diária do Gerencial (uma consulta, mesma tabela e regra).
+  // Antes este hook também puxava os relatórios do mês inteiro de todos os veículos, em páginas
+  // (driver-km-fuel-hours e rpm-band-time), só como reserva do mesmo número — era o que mais
+  // pesava no banco ao entrar na plataforma (TI, 11/10/2026).
 
   const resumo = useMemo<ResumoOperacao | undefined>(() => {
     if (usandoMock()) return mockQ.data;
@@ -72,23 +58,19 @@ export function useResumoFrota() {
 
     const eventos = eventosQ.data as { summary?: { pending: number } } | undefined;
 
-    // Consumo da frota: quilômetros somados sobre litros somados, não a média
-    // das médias. Veículo que rodou 10 km não pesa igual ao que rodou 3.000.
-    const vals = [...telemetria.porVeiculo.values()];
-    const kmTotal = vals.reduce((a, v) => a + v.kmFiltrado, 0);
-    const litrosTotal = vals.reduce((a, v) => a + v.litros, 0);
-
     return {
       veiculosAtivos: veiculos.length,
       alertasAbertos: eventos?.summary?.pending ?? 0,
-      disponibilidade: veiculos.length ? Math.round((comunicando / veiculos.length) * 1000) / 10 : 0,
-      // Nulo quando não há medição — zero diria que a frota roda a 0 km/l.
-      consumoMedio: litrosTotal > 0 ? Math.round((kmTotal / litrosTotal) * 100) / 100 : null,
+      disponibilidade: veiculos.length
+        ? Math.round((comunicando / veiculos.length) * 1000) / 10
+        : 0,
+      // Vem da série do Gerencial na tela Início (buildKpis); nulo aqui.
+      consumoMedio: null,
       // Custo por km depende de `cost_km` no cadastro do veículo e de custo
       // operacional, que ainda não é exposto. Zero em vez de número inventado.
       custoPorKm: null,
     };
-  }, [mockQ.data, veiculosQ.data, posicoesQ.data, eventosQ.data, telemetria.porVeiculo]);
+  }, [mockQ.data, veiculosQ.data, posicoesQ.data, eventosQ.data]);
 
   return {
     resumo,

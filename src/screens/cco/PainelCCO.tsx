@@ -413,6 +413,42 @@ export default function PainelCCO() {
     [doMapa, filtroSituacao],
   );
   const fechados = est.fechados ?? [false, false, false, false];
+  // Com cidade escolhida e 2 ou 4 mapas, cada mapa enquadra uma região da cidade (faixas de norte a
+  // sul ou de oeste a leste, pelo lado mais comprido), para chegar perto das ruas (PM, 11/10/2026).
+  const regioes = useMemo(() => {
+    const abertos = Array.from({ length: layout }, (_, i) => i).filter(
+      (i) => !fechados[i] && (est.tipos?.[i] ?? "mapa") === "mapa",
+    );
+    if (!cidade || abertos.length < 2 || !comCor.length) return null;
+    const lats = comCor.map((v) => v.lat);
+    const lngs = comCor.map((v) => v.lng);
+    const altura = Math.max(...lats) - Math.min(...lats);
+    const largura = (Math.max(...lngs) - Math.min(...lngs)) * Math.cos((lats[0] * Math.PI) / 180);
+    // Faixas pelos LUGARES com carro (quadrados de ~1 km), não pela quantidade de carros: a garagem
+    // concentra metade da frota num ponto só; e faixas de tamanho igual caíam em mata sem ônibus.
+    const nortesul = altura >= largura;
+    const eixo = (v: VeiculoPainel) => (nortesul ? -v.lat : v.lng);
+    const lugares = [
+      ...new Map(
+        comCor.map((v) => [`${Math.round(v.lat * 100)}|${Math.round(v.lng * 100)}`, eixo(v)]),
+      ).values(),
+    ].sort((a, b) => a - b);
+    const cortes = abertos
+      .slice(1)
+      .map((_, n) => lugares[Math.floor(((n + 1) * lugares.length) / abertos.length)]);
+    const out: (VeiculoPainel[] | null)[] = [null, null, null, null];
+    abertos.forEach((m, n) => {
+      const a = n === 0 ? -Infinity : cortes[n - 1];
+      const b = n === abertos.length - 1 ? Infinity : cortes[n];
+      const faixa = comCor.filter((v) => eixo(v) >= a && eixo(v) < b);
+      out[m] = faixa.length ? faixa : null;
+    });
+    return out;
+  }, [cidade, layout, comCor, fechados.join(), (est.tipos ?? []).join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chaveRegioes = regioes ? `${layout}|${regioes.map((r) => r?.length ?? 0).join()}` : "";
+  useEffect(() => {
+    if (chaveRegioes) setSinalEnquadrar((n) => n + 1);
+  }, [chaveRegioes.split("|")[0], Boolean(chaveRegioes)]); // eslint-disable-line react-hooks/exhaustive-deps
   const tipos: TipoQuadro[] = est.tipos ?? ["mapa", "mapa", "mapa", "mapa"];
   const setTipo = (i: number, t: TipoQuadro) =>
     mudar({
@@ -851,6 +887,7 @@ export default function PainelCCO() {
                   onNumeros={() => setTipo(i, "numeros")}
                   criticos={criticosIds}
                   sinalEnquadrar={sinalEnquadrar}
+                  enquadrarEm={regioes?.[i] ?? null}
                   seguindoId={seguindo && seguindo.mapa === i ? seguindo.id : null}
                   areas={areasRisco}
                   indice={i}
@@ -1174,6 +1211,7 @@ function MapaCCO({
   onNumeros,
   criticos,
   sinalEnquadrar,
+  enquadrarEm,
   seguindoId,
   areas,
 }: {
@@ -1181,6 +1219,8 @@ function MapaCCO({
   onNumeros: () => void;
   criticos: Set<string>;
   sinalEnquadrar: number;
+  /** Região da cidade que este mapa enquadra (null = os veículos do mapa). */
+  enquadrarEm: VeiculoPainel[] | null;
   seguindoId: string | null;
   areas: AreaRisco[];
   indice: number;
@@ -1205,6 +1245,11 @@ function MapaCCO({
         className="h-full w-full"
         style={{ zIndex: 0 }}
         preferCanvas
+        // Zoom fracionado: com nível inteiro o enquadramento recuava até 2× para caber a frota
+        // (Fênix em Florianópolis ficava "muito de cima" — PM, 11/10/2026).
+        zoomSnap={0.25}
+        zoomDelta={0.5}
+        wheelPxPerZoomLevel={120}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -1226,7 +1271,7 @@ function MapaCCO({
           )),
         )}
         <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
-        <Enquadrar sinal={sinalEnquadrar + local} veiculos={veiculos} />
+        <Enquadrar sinal={sinalEnquadrar + local} veiculos={enquadrarEm ?? veiculos} />
         {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
         {veiculos.map((v) => (
           <Marker
@@ -1472,20 +1517,32 @@ function Enquadrar({ sinal, veiculos }: { sinal: number; veiculos: VeiculoPainel
   const map = useMap();
   useEffect(() => {
     if (!sinal || !veiculos.length) return;
-    const lats = veiculos.map((v) => v.lat).sort((a, b) => a - b);
-    const lngs = veiculos.map((v) => v.lng).sort((a, b) => a - b);
-    // Com muitos veículos, ignora os 2% de cada ponta: um carro em viagem não tira o foco da cidade.
-    const corte = veiculos.length >= 20 ? Math.floor(veiculos.length * 0.02) : 0;
-    const p = (xs: number[], i: number) => xs[Math.min(xs.length - 1, Math.max(0, i))];
-    const b = L.latLngBounds(
-      [p(lats, corte), p(lngs, corte)],
-      [p(lats, lats.length - 1 - corte), p(lngs, lngs.length - 1 - corte)],
-    );
-    try {
-      map.fitBounds(b, { padding: [30, 30], maxZoom: 15, animate: false });
-    } catch {
-      /* mapa montando */
-    }
+    // Fica de fora só quem está muito longe do resto (um carro em viagem não tira o foco da cidade):
+    // mais de 3 vezes a largura do miolo (10% a 90%, no mínimo 0,1°) a partir da mediana. Antes cortava 2% de cada
+    // ponta e escondia os ônibus do sul da ilha (Fênix, 11/10/2026).
+    const longe = (xs: number[]) => {
+      const o = [...xs].sort((a, b) => a - b);
+      const q = (k: number) => o[Math.min(o.length - 1, Math.floor(k * (o.length - 1)))];
+      // Mínimo de 0,1° (≈ 11 km): com a frota parada na garagem o miolo é um ponto só, e todo o
+      // resto da cidade virava "longe" (o mapa enquadrava só a garagem).
+      const larg = Math.max(q(0.9) - q(0.1), 0.1);
+      return (x: number) => Math.abs(x - q(0.5)) > 3 * larg;
+    };
+    const fLat = longe(veiculos.map((v) => v.lat));
+    const fLng = longe(veiculos.map((v) => v.lng));
+    const perto = veiculos.filter((v) => !fLat(v.lat) && !fLng(v.lng));
+    const base = perto.length ? perto : veiculos;
+    const b = L.latLngBounds(base.map((v) => [v.lat, v.lng] as [number, number]));
+    // Espera o mapa saber o próprio tamanho (quadro recém-aberto ao trocar para 2 ou 4 mapas).
+    const t = setTimeout(() => {
+      try {
+        map.invalidateSize();
+        map.fitBounds(b, { padding: [12, 12], maxZoom: 16, animate: false });
+      } catch {
+        /* mapa montando */
+      }
+    }, 120);
+    return () => clearTimeout(t);
   }, [sinal]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }

@@ -67,7 +67,9 @@ import {
   turnoQuery,
   painelCCOQuery,
   contornoQuery,
+  indicadoresQuery,
   type ContornoCidade,
+  type DiaIndicador,
   type AvisoPainel,
   type CorCarro,
   type FonteAviso,
@@ -75,6 +77,8 @@ import {
 } from "@/lib/cco-api";
 import { api } from "@/lib/api";
 import { lerEmbutido } from "@/lib/embutido";
+import type { RankingMotoristasApi } from "@/lib/api";
+import { painelManutQuery } from "@/lib/manutencao-api";
 import { areasRiscoQuery, type AreaRisco } from "@/lib/rotas-seguras-api";
 import { PlayerAoVivo } from "@/components/ss/video/PlayerAoVivo";
 import { Cameras, type Transmissao } from "@/lib/cameras-api";
@@ -1033,7 +1037,7 @@ export default function PainelCCO() {
                   {(
                     [
                       ["mapa", "Abrir mapa", Plus],
-                      ["numeros", "Grandes números", Hash],
+                      ["numeros", "Indicadores", Hash],
                     ] as const
                   ).map(([t, rot, Ic]) => (
                     <button
@@ -1551,8 +1555,8 @@ function MapaCCO({
         <button
           type="button"
           onClick={onNumeros}
-          title="Trocar este mapa pelos grandes números"
-          aria-label="Grandes números"
+          title="Trocar este mapa pelos indicadores"
+          aria-label="Indicadores"
           className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
         >
           <Hash className="h-3.5 w-3.5" />
@@ -1867,8 +1871,10 @@ function Enquadrar({
 }
 
 /**
- * Grandes números da operação, no lugar de um mapa (PM, 10/10/2026). Contam os veículos deste
- * quadro (cidade e seleção) e se atualizam junto com o painel, a cada 30 s.
+ * Indicadores da operação, no lugar de um mapa (PM, 12/10/2026 — os 8 itens do CCO; o mapa ao vivo
+ * fica nos outros quadros). Status, alertas e equipamentos contam os veículos deste quadro (cidade e
+ * seleção). Indicadores-chave e comparativo são da empresa inteira: hoje até agora contra ontem e o
+ * mesmo dia da semana passada até o mesmo horário (ss-fleet-core cco.py /indicadores).
  */
 function NumerosCCO({
   veiculos,
@@ -1885,73 +1891,105 @@ function NumerosCCO({
   onMapa: () => void;
   onFechar: () => void;
 }) {
+  const mock = usandoMock();
   const ids = new Set(veiculos.map((v) => String(v.id)));
   const meus = avisos.filter((a) => ids.has(String(a.unit_id)));
-  const criticos = meus.filter((a) => a.gravidade === "critico");
   const rodando = veiculos.filter((v) => v.comunicando && v.ignicao && v.velocidade > 3);
-  const paradoLigado = veiculos.filter((v) => v.comunicando && v.ignicao && v.velocidade <= 3);
+  const ligadoParado = veiculos.filter((v) => v.comunicando && v.ignicao && v.velocidade <= 3);
   const desligado = veiculos.filter((v) => v.comunicando && !v.ignicao);
   const semSinal = veiculos.filter((v) => !v.comunicando);
-  const semMotorista = rodando.filter((v) => !v.motorista);
-  const velMedia = rodando.length
-    ? Math.round(rodando.reduce((s, v) => s + v.velocidade, 0) / rodando.length)
-    : null;
-  const tq = useQuery(turnoQuery(grupo, inicioDoTurno(), !usandoMock()));
-  const tratados = (tq.data?.data ?? []).filter(
-    (x) => x.situacao === "tratado" && ids.has(String(x.unit_id)),
-  ).length;
-  const pct = (n: number) =>
-    veiculos.length ? `${Math.round((n / veiculos.length) * 100)}% da frota` : "";
-  const cartoes: { rot: string; valor: string; pe: string; cor?: string }[] = [
-    {
-      rot: "Rodando agora",
-      valor: String(rodando.length),
-      pe: `de ${veiculos.length} · ${pct(rodando.length)}`,
-      cor: "var(--leaf)",
-    },
-    {
-      rot: "Parados com motor ligado",
-      valor: String(paradoLigado.length),
-      pe: pct(paradoLigado.length),
-      cor: paradoLigado.length ? "var(--gold)" : undefined,
-    },
-    { rot: "Desligados", valor: String(desligado.length), pe: pct(desligado.length) },
-    {
-      rot: "Sem comunicação há mais de 2 h",
-      valor: String(semSinal.length),
-      pe: pct(semSinal.length),
-      cor: semSinal.length ? "var(--coral)" : undefined,
-    },
-    {
-      rot: "Alertas críticos em aberto",
-      valor: String(criticos.length),
-      pe: `em ${new Set(criticos.map((a) => a.unit_id)).size} veículos`,
-      cor: criticos.length ? "var(--coral)" : undefined,
-    },
-    { rot: "Avisos em aberto", valor: String(meus.length), pe: "todos os tipos" },
-    {
-      rot: "Velocidade média",
-      valor: velMedia == null ? "—" : String(velMedia),
-      pe: "km/h de quem está rodando",
-    },
-    {
-      rot: "Rodando sem motorista",
-      valor: String(semMotorista.length),
-      pe: "identificado no rastreador",
-      cor: semMotorista.length ? "var(--gold)" : undefined,
-    },
-    {
-      rot: "Tratados no turno",
-      valor: usandoMock() ? "—" : String(tratados),
-      pe: `desde ${inicioDoTurno().slice(11, 16)}`,
-    },
+  const tem = (a: AvisoPainel, ...t: string[]) => t.some((x) => a.nome.toLowerCase().includes(x));
+  const alerta = (...t: string[]) => meus.filter((a) => tem(a, ...t));
+  const indQ = useQuery(indicadoresQuery(grupo));
+  const rankQ = useQuery({
+    queryKey: ["cco", "ranking", grupo ?? ""],
+    queryFn: () =>
+      api.get<RankingMotoristasApi>(`/api/v1/driver-ranking/?group_id=${grupo}&por=motorista`),
+    enabled: Boolean(grupo) && !mock,
+    staleTime: 30 * 60_000,
+  });
+  const manQ = useQuery({ ...painelManutQuery(grupo), enabled: Boolean(grupo) && !mock });
+  const camQ = useQuery({
+    queryKey: ["cco", "cameras"],
+    queryFn: () => api.get<unknown>(`/api/v1/video/devices`),
+    enabled: !mock,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+  const cams = (
+    Array.isArray(camQ.data) ? camQ.data : ((camQ.data as { items?: unknown[] })?.items ?? [])
+  ) as {
+    unit_id: number;
+    online: boolean;
+  }[];
+  const camsQuadro = cams.filter((c) => ids.has(String(c.unit_id)));
+  const ind = indQ.data;
+  const c = ind?.comparativo;
+  const motoristas = (rankQ.data?.motoristas ?? []).filter((m) => m.pontuacao != null);
+  const melhores = [...motoristas]
+    .sort((a, b) => (b.pontuacao ?? 0) - (a.pontuacao ?? 0))
+    .slice(0, 3);
+  const piores = [...motoristas]
+    .sort((a, b) => (a.pontuacao ?? 0) - (b.pontuacao ?? 0))
+    .slice(0, 3);
+  const tot = manQ.data?.totais;
+  const por100 = (n: number | undefined, km: number | undefined) =>
+    n == null || !km ? null : (100 * n) / km;
+  const fmt = (v: number | null | undefined, casas = 0) =>
+    v == null
+      ? "—"
+      : v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+  const eventosMedidos = Boolean(
+    c && (c.hoje.freadas || c.ontem.freadas || c.semana_passada.freadas),
+  );
+  const nomeDia = (d?: DiaIndicador) =>
+    d
+      ? `${d.dia.slice(8, 10)}/${d.dia.slice(5, 7)} (${d.dia_semana}${d.feriado ? `, feriado: ${d.feriado}` : ""})`
+      : "";
+  const linhasComp: {
+    rot: string;
+    k: (x: DiaIndicador) => number | null;
+    casas: number;
+    menor: boolean;
+    neutro?: boolean;
+  }[] = [
+    { rot: "Km rodados", k: (x) => x.km, casas: 0, menor: false, neutro: true },
+    { rot: "Consumo (km/l)", k: (x) => x.kml, casas: 2, menor: false },
+    { rot: "Tempo ocioso (%)", k: (x) => x.ocioso_pct, casas: 1, menor: true },
+    ...(eventosMedidos
+      ? [
+          {
+            rot: "Freadas a cada 100 km",
+            k: (x: DiaIndicador) => por100(x.freadas, x.km),
+            casas: 1,
+            menor: true,
+          },
+          {
+            rot: "Excesso de velocidade a cada 100 km",
+            k: (x: DiaIndicador) => por100(x.excesso_velocidade, x.km),
+            casas: 1,
+            menor: true,
+          },
+        ]
+      : []),
+    { rot: "Alertas de fadiga", k: (x) => x.fadiga, casas: 0, menor: true },
+    { rot: "Veículos que rodaram", k: (x) => x.veiculos, casas: 0, menor: false, neutro: true },
   ];
+  const carregando = (t: string) => (
+    <p className="flex items-center gap-2 text-[12px] text-muted-foreground">
+      <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t}
+    </p>
+  );
+
   return (
     <div className="relative flex min-h-0 flex-col bg-card">
       <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[12px]">
         <Hash className="h-3.5 w-3.5 text-brand-navy" />
-        <b className="text-foreground">Grandes números</b>
+        <b className="text-foreground">Indicadores</b>
         <span className="truncate text-muted-foreground">· {rotulo}</span>
+        {(indQ.isFetching || rankQ.isFetching) && (
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+        )}
         <button
           type="button"
           onClick={onMapa}
@@ -1969,40 +2007,300 @@ function NumerosCCO({
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      <div
-        className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-px bg-border"
-        style={{ containerType: "size" }}
-      >
-        {cartoes.map((c) => (
-          <div
-            key={c.rot}
-            className="flex min-h-0 min-w-0 flex-col justify-center bg-card px-[3cqw]"
-          >
-            <span
-              className="line-clamp-2 font-medium leading-tight text-muted-foreground"
-              style={{ fontSize: "clamp(11px, 2.6cqmin, 20px)" }}
-            >
-              {c.rot}
-            </span>
-            <span
-              className="font-mono font-bold leading-none tabular-nums"
-              style={{
-                fontSize: "clamp(26px, 11cqmin, 120px)",
-                color: c.cor ?? "var(--foreground)",
-              }}
-            >
-              {c.valor}
-            </span>
-            <span
-              className="line-clamp-2 leading-tight text-muted-foreground"
-              style={{ fontSize: "clamp(10px, 2.2cqmin, 16px)" }}
-            >
-              {c.pe}
-            </span>
+      <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-[repeat(auto-fit,minmax(290px,1fr))] gap-px overflow-y-auto bg-border">
+        <Bloco titulo="1 · Status da frota agora" sub={`${veiculos.length} veículos neste quadro`}>
+          <div className="grid grid-cols-2 gap-2">
+            <Num rot="Em movimento" v={fmt(rodando.length)} cor="var(--leaf)" />
+            <Num
+              rot="Motor ligado sem andar"
+              v={fmt(ligadoParado.length)}
+              cor={ligadoParado.length ? "var(--gold)" : undefined}
+            />
+            <Num rot="Parados (desligados)" v={fmt(desligado.length)} />
+            <Num
+              rot="Sem sinal há mais de 2 h"
+              v={fmt(semSinal.length)}
+              cor={semSinal.length ? "var(--coral)" : undefined}
+            />
           </div>
-        ))}
+        </Bloco>
+        <Bloco
+          titulo="2 · Alertas críticos em aberto"
+          sub="neste quadro · saem com Visto ou Tratado"
+        >
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["Excesso de velocidade", alerta("velocidade")],
+                ["Desvio de rota", alerta("desvio")],
+                ["Frenagem brusca", alerta("freada", "frenagem")],
+                ["Fadiga do motorista", alerta("fadiga", "olhos fechados", "sonol")],
+              ] as const
+            ).map(([rot, l]) => (
+              <Num
+                key={rot}
+                rot={rot}
+                v={fmt(l.length)}
+                cor={l.length ? "var(--coral)" : undefined}
+                pe={l.length ? `em ${new Set(l.map((a) => a.unit_id)).size} veículos` : undefined}
+              />
+            ))}
+          </div>
+        </Bloco>
+        <Bloco
+          titulo="3 · Indicadores-chave"
+          sub={
+            ind
+              ? `empresa inteira · hoje até ${ind.corte}, contra ontem até o mesmo horário`
+              : "empresa inteira"
+          }
+        >
+          {indQ.isPending && !mock ? (
+            carregando("Somando o dia…")
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Num
+                rot="Km rodados"
+                v={fmt(c?.hoje.km)}
+                pe={<Delta h={c?.hoje.km} b={c?.ontem.km} neutro />}
+              />
+              <Num
+                rot="Consumo (km/l)"
+                v={fmt(c?.hoje.kml, 2)}
+                pe={<Delta h={c?.hoje.kml} b={c?.ontem.kml} />}
+              />
+              <Num
+                rot="Pontualidade"
+                v={
+                  ind?.pontualidade?.pct != null && ind.pontualidade.total >= 5
+                    ? `${fmt(ind.pontualidade.pct)}%`
+                    : "—"
+                }
+                pe={
+                  ind?.pontualidade
+                    ? ind.pontualidade.total >= 5
+                      ? `no horário · ${ind.pontualidade.total} ônibus em ${ind.pontualidade.linhas} linhas (pelo intervalo)`
+                      : "poucos ônibus avaliados agora (mín. 5) — abra o sinótico das linhas"
+                    : "sem programação ligada"
+                }
+              />
+              <Num
+                rot="Tempo ocioso"
+                v={c?.hoje.ocioso_pct != null ? `${fmt(c.hoje.ocioso_pct, 1)}%` : "—"}
+                pe={<Delta h={c?.hoje.ocioso_pct} b={c?.ontem.ocioso_pct} menor />}
+              />
+            </div>
+          )}
+        </Bloco>
+        <Bloco
+          titulo="4 · Motoristas"
+          sub={
+            rankQ.data
+              ? `pontuação de condução · ${rankQ.data.inicio.split("-").reverse().join("/")} a ${rankQ.data.fim.split("-").reverse().join("/")}`
+              : "pontuação de condução · 30 dias"
+          }
+        >
+          {rankQ.isPending && !mock ? (
+            carregando("Calculando…")
+          ) : !motoristas.length ? (
+            <p className="text-[12px] text-muted-foreground">
+              Sem motorista identificado no período.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 text-[12px]">
+              <div>
+                <div className="mb-1 font-semibold text-leaf">Melhores</div>
+                {melhores.map((m) => (
+                  <div key={m.driver_id} className="flex justify-between gap-2">
+                    <span className="truncate">{m.nome ?? m.driver_id}</span>
+                    <b className="font-mono">{fmt(m.pontuacao)}</b>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="mb-1 font-semibold text-coral">Precisam de atenção</div>
+                {piores.map((m) => (
+                  <div key={m.driver_id} className="flex justify-between gap-2">
+                    <span className="truncate">{m.nome ?? m.driver_id}</span>
+                    <b className="font-mono">{fmt(m.pontuacao)}</b>
+                  </div>
+                ))}
+              </div>
+              <div className="col-span-2 text-muted-foreground">
+                Nota média {fmt(rankQ.data?.resumo.nota_media)} ·{" "}
+                {fmt(rankQ.data?.resumo.motoristas)} motoristas
+              </div>
+            </div>
+          )}
+        </Bloco>
+        <Bloco titulo="5 · Manutenção" sub="empresa inteira · plano preventivo cadastrado">
+          {manQ.isPending && !mock ? (
+            carregando("Carregando…")
+          ) : !tot?.com_plano ? (
+            <p className="text-[12px] text-muted-foreground">
+              Nenhum veículo com plano preventivo cadastrado. Cadastre em Manutenção › Plano.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Num
+                rot="Revisões vencidas"
+                v={fmt(tot.itens_vencidos)}
+                cor={tot.itens_vencidos ? "var(--coral)" : undefined}
+                pe={`em ${fmt(tot.veiculos_com_vencido)} veículos`}
+              />
+              <Num
+                rot="Perto de vencer"
+                v={fmt(tot.itens_vencendo)}
+                cor={tot.itens_vencendo ? "var(--gold)" : undefined}
+                pe={`${fmt(tot.com_plano)} veículos com plano`}
+              />
+            </div>
+          )}
+        </Bloco>
+        <Bloco titulo="6 · Saúde dos equipamentos" sub="neste quadro">
+          <div className="grid grid-cols-2 gap-2">
+            <Num
+              rot="Rastreadores sem comunicar"
+              v={fmt(semSinal.length)}
+              cor={semSinal.length ? "var(--coral)" : undefined}
+              pe={`de ${fmt(veiculos.length)} · mais de 2 h`}
+            />
+            <Num
+              rot="Câmeras sem comunicar"
+              v={camQ.isPending && !mock ? "…" : fmt(camsQuadro.filter((x) => !x.online).length)}
+              cor={camsQuadro.some((x) => !x.online) ? "var(--coral)" : undefined}
+              pe={`de ${fmt(camsQuadro.length)} câmeras`}
+            />
+          </div>
+        </Bloco>
+        <Bloco
+          titulo="7 · Comparativo"
+          sub={ind ? `empresa inteira · até ${ind.corte} de cada dia` : "empresa inteira"}
+        >
+          {!c ? (
+            <p className="text-[12px] text-muted-foreground">
+              {indQ.isError ? "Não foi possível somar agora." : "…"}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-[12px] tabular-nums">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th className="py-1 pr-2 font-medium" />
+                    <th className="py-1 pr-2 font-medium">Hoje</th>
+                    <th className="py-1 pr-2 font-medium">Ontem</th>
+                    <th className="py-1 font-medium">Sem. passada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linhasComp.map((l) => (
+                    <tr key={l.rot} className="border-t border-border">
+                      <td className="py-1 pr-2 text-muted-foreground">{l.rot}</td>
+                      <td className="py-1 pr-2 font-mono font-semibold">
+                        {fmt(l.k(c.hoje), l.casas)}
+                      </td>
+                      <td className="py-1 pr-2 font-mono">
+                        {fmt(l.k(c.ontem), l.casas)}{" "}
+                        <span className="text-[11px]">
+                          <Delta
+                            h={l.k(c.hoje)}
+                            b={l.k(c.ontem)}
+                            menor={l.menor}
+                            neutro={l.neutro}
+                          />
+                        </span>
+                      </td>
+                      <td className="py-1 font-mono">
+                        {fmt(l.k(c.semana_passada), l.casas)}{" "}
+                        <span className="text-[11px]">
+                          <Delta
+                            h={l.k(c.hoje)}
+                            b={l.k(c.semana_passada)}
+                            menor={l.menor}
+                            neutro={l.neutro}
+                          />
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Hoje {nomeDia(c.hoje)} · ontem {nomeDia(c.ontem)} · semana passada{" "}
+                {nomeDia(c.semana_passada)}.
+                {(c.hoje.feriado || c.ontem.feriado || c.semana_passada.feriado) &&
+                  " Dia de feriado não se compara com dia normal."}
+                {!eventosMedidos &&
+                  " Freadas e excesso de velocidade: o equipamento desta empresa não registra nas viagens."}{" "}
+                Fonte: viagens do dia (pode diferir do Gerencial em até ~15%).
+              </p>
+            </div>
+          )}
+        </Bloco>
       </div>
     </div>
+  );
+}
+
+function Bloco({
+  titulo,
+  sub,
+  children,
+}: {
+  titulo: string;
+  sub?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="min-w-0 bg-card p-3">
+      <h3 className="text-[12px] font-bold uppercase tracking-wide text-brand-navy">{titulo}</h3>
+      {sub && <p className="text-[11px] text-muted-foreground">{sub}</p>}
+      <div className="mt-2">{children}</div>
+    </section>
+  );
+}
+
+function Num({ rot, v, cor, pe }: { rot: string; v: string; cor?: string; pe?: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <div className="truncate text-[11.5px] text-muted-foreground">{rot}</div>
+      <div
+        className="font-mono text-[30px] font-bold leading-tight tabular-nums"
+        style={{ color: cor ?? "var(--foreground)" }}
+      >
+        {v}
+      </div>
+      {pe && <div className="text-[11px] text-muted-foreground">{pe}</div>}
+    </div>
+  );
+}
+
+/** Variação contra a base; verde quando melhorou (respeitando quando menor é melhor). */
+function Delta({
+  h,
+  b,
+  menor = false,
+  neutro = false,
+}: {
+  h: number | null | undefined;
+  b: number | null | undefined;
+  menor?: boolean;
+  /** Volume (km, veículos): mais ou menos não é melhor nem pior — sem cor. */
+  neutro?: boolean;
+}) {
+  if (h == null || b == null || b === 0) return <span>—</span>;
+  const d = ((h - b) / Math.abs(b)) * 100;
+  if (Math.abs(d) < 1) return <span>igual</span>;
+  const melhor = menor ? d < 0 : d > 0;
+  return (
+    <span
+      style={{
+        color: neutro ? "var(--muted-foreground)" : melhor ? "var(--leaf)" : "var(--coral)",
+      }}
+      className="font-semibold"
+    >
+      {d > 0 ? "▲" : "▼"} {Math.round(Math.abs(d)).toLocaleString("pt-BR")}%
+    </span>
   );
 }
 

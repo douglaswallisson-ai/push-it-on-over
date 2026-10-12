@@ -158,3 +158,43 @@ export const contornoQuery = (cidade: string, uf: string | null | undefined) =>
     staleTime: Infinity,
     retry: false,
   });
+
+/** Um dia do comparativo do CCO (hoje, ontem ou semana passada), até o mesmo horário. */
+export type DiaIndicador = {
+  dia: string;
+  dia_semana: string;
+  feriado: string | null;
+  veiculos: number;
+  km: number;
+  litros: number;
+  kml: number | null;
+  ocioso_pct: number | null;
+  freadas: number;
+  aceleracoes: number;
+  excesso_velocidade: number;
+  fadiga: number;
+};
+export type IndicadoresCCO = {
+  corte: string;
+  comparativo: { hoje: DiaIndicador; ontem: DiaIndicador; semana_passada: DiaIndicador };
+  pontualidade: {
+    adiantado: number;
+    no_horario: number;
+    atrasado: number;
+    total: number;
+    linhas: number;
+    linhas_em_operacao?: number;
+    pct: number | null;
+    criterio: string;
+  } | null;
+  fonte: string;
+  atualizado_em: string;
+};
+export const indicadoresQuery = (grupo: string | undefined) =>
+  queryOptions({
+    queryKey: ["cco", "indicadores", grupo ?? ""],
+    queryFn: () => api.get<IndicadoresCCO>(`/api/v1/cco/indicadores?group_id=${grupo}`),
+    enabled: !usandoMock() && Boolean(grupo),
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });

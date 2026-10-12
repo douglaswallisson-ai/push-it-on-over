@@ -16,6 +16,7 @@ import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RotogramaRouteImport } from './routes/rotograma'
+import { Route as SinoticoRouteImport } from './routes/sinotico'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSplatRouteImport } from './routes/app.$'
 import { Route as AppAssistenteRouteImport } from './routes/app.assistente'
@@ -136,6 +137,11 @@ const LoginRoute = LoginRouteImport.update({
 const RotogramaRoute = RotogramaRouteImport.update({
   id: '/rotograma',
   path: '/rotograma',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SinoticoRoute = SinoticoRouteImport.update({
+  id: '/sinotico',
+  path: '/sinotico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -590,6 +596,7 @@ export interface FileRoutesByFullPath {
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
+  '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
@@ -683,6 +690,7 @@ export interface FileRoutesByTo {
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
+  '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
@@ -779,6 +787,7 @@ export interface FileRoutesById {
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
+  '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
   '/app/assistente': typeof AppAssistenteRoute
   '/app/auditoria': typeof AppAuditoriaRoute
@@ -876,6 +885,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/login'
     | '/rotograma'
+    | '/sinotico'
     | '/app/$'
     | '/app/assistente'
     | '/app/auditoria'
@@ -969,6 +979,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/login'
     | '/rotograma'
+    | '/sinotico'
     | '/app/$'
     | '/app/assistente'
     | '/app/auditoria'
@@ -1064,6 +1075,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/login'
     | '/rotograma'
+    | '/sinotico'
     | '/app/$'
     | '/app/assistente'
     | '/app/auditoria'
@@ -1160,6 +1172,7 @@ export interface RootRouteChildren {
   EmbedRoute: typeof EmbedRoute
   LoginRoute: typeof LoginRoute
   RotogramaRoute: typeof RotogramaRoute
+  SinoticoRoute: typeof SinoticoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1211,6 +1224,13 @@ declare module '@tanstack/react-router' {
       path: '/rotograma'
       fullPath: '/rotograma'
       preLoaderRoute: typeof RotogramaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sinotico': {
+      id: '/sinotico'
+      path: '/sinotico'
+      fullPath: '/sinotico'
+      preLoaderRoute: typeof SinoticoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -2035,6 +2055,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRoute: EmbedRoute,
   LoginRoute: LoginRoute,
   RotogramaRoute: RotogramaRoute,
+  SinoticoRoute: SinoticoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

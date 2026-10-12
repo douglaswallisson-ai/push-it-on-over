@@ -138,3 +138,23 @@ export const CCO = {
       nome: a.nome,
     }),
 };
+
+/** Contorno oficial do município (IBGE), em [lat, lng]; caixa = [sul, oeste, norte, leste]. */
+export type ContornoCidade = {
+  ibge_id: number;
+  nome: string;
+  uf: string;
+  poligonos: [number, number][][];
+  caixa: [number, number, number, number];
+};
+export const contornoQuery = (cidade: string, uf: string | null | undefined) =>
+  queryOptions({
+    queryKey: ["cco", "contorno", cidade, uf ?? ""],
+    queryFn: () =>
+      api.get<ContornoCidade>(
+        `/api/v1/cco/contorno?cidade=${encodeURIComponent(cidade)}&uf=${encodeURIComponent(uf ?? "")}`,
+      ),
+    enabled: !usandoMock() && Boolean(cidade && uf),
+    staleTime: Infinity,
+    retry: false,
+  });

@@ -38,6 +38,7 @@ import {
   Plus,
   Crosshair,
   Expand,
+  Route,
   MonitorUp,
   MapPinned,
   Hash,
@@ -72,6 +73,7 @@ import {
   type FonteAviso,
   type VeiculoPainel,
 } from "@/lib/cco-api";
+import { api } from "@/lib/api";
 import { lerEmbutido } from "@/lib/embutido";
 import { areasRiscoQuery, type AreaRisco } from "@/lib/rotas-seguras-api";
 import { PlayerAoVivo } from "@/components/ss/video/PlayerAoVivo";
@@ -386,6 +388,14 @@ export default function PainelCCO() {
   }, [contorno?.ibge_id]); // eslint-disable-line react-hooks/exhaustive-deps
   // Área na tela de cada mapa, para abrir o mesmo enquadramento numa janela/TV.
   const limites = useRef<(() => L.LatLngBounds | null)[]>([]);
+  // Cliente urbano: botão do sinótico (o mesmo do menu, em tela separada — PM, 12/10/2026).
+  const modulosQ = useQuery({
+    queryKey: ["cliente-modulos", grupo ?? ""],
+    queryFn: () => api.get<{ urbano: boolean }>(`/api/v1/cliente/modulos?group_id=${grupo}`),
+    enabled: Boolean(grupo) && !mock,
+    staleTime: 10 * 60_000,
+  });
+  const moduloUrbano = Boolean(modulosQ.data?.urbano);
   const criticosIds = useMemo(
     () => new Set(avisos.filter((a) => a.gravidade === "critico").map((a) => String(a.unit_id))),
     [avisos],
@@ -936,6 +946,17 @@ export default function PainelCCO() {
             >
               <MonitorUp className="h-3.5 w-3.5" /> Espalhar nas TVs
             </button>
+          )}
+          {moduloUrbano && (
+            <a
+              href="/sinotico"
+              target="_blank"
+              rel="opener"
+              title="Abre o painel sinótico (linhas urbanas) numa tela separada"
+              className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 hover:bg-secondary"
+            >
+              <Route className="h-3.5 w-3.5" /> Sinótico
+            </a>
           )}
           <button
             type="button"

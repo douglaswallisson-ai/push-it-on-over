@@ -38,6 +38,7 @@ import {
   Plus,
   Crosshair,
   Expand,
+  MonitorUp,
   MapPinned,
   Hash,
 } from "lucide-react";
@@ -64,6 +65,8 @@ import {
   posicaoQuery,
   turnoQuery,
   painelCCOQuery,
+  contornoQuery,
+  type ContornoCidade,
   type AvisoPainel,
   type CorCarro,
   type FonteAviso,
@@ -118,6 +121,13 @@ type Estado = {
   cidade?: string;
   /** O que cada quadro mostra: mapa ou os grandes números. */
   tipos?: TipoQuadro[];
+  /** Com cidade escolhida: só a cidade no mapa, o resto escurecido (PM, 12/10/2026). */
+  soCidade?: boolean;
+  /** Visual de telão: mapa escuro, veículos em destaque. */
+  escuro?: boolean;
+  /** Janela aberta para uma TV ("Espalhar nas TVs"): área a enquadrar ao abrir. */
+  caixaInicial?: [number, number, number, number] | null;
+  janelaTV?: boolean;
 };
 type TipoQuadro = "mapa" | "numeros";
 /** O CCO é ao vivo: avisos das últimas 2 h ainda não tratados, sem seletor de janela. */
@@ -152,6 +162,26 @@ function lerEstado(): Estado {
     tipos: ["mapa", "mapa", "mapa", "mapa"],
   };
   try {
+    // Janela aberta para uma TV: o quadro vem no endereço (empresa, cidade, área, seleção).
+    const q = new URLSearchParams(window.location.search).get("quadro");
+    if (q) {
+      const d = JSON.parse(q);
+      const g = typeof d.g === "string" && d.g ? d.g : padrao.grupo;
+      return {
+        ...padrao,
+        layout: 1,
+        grupo: g,
+        cidade: d.c ?? "",
+        selecoes: Array.isArray(d.s) ? { [g ?? ""]: [d.s.map(String), [], [], []] } : {},
+        tipos: [d.t === "numeros" ? "numeros" : "mapa", "mapa", "mapa", "mapa"],
+        alertasNoMapa: Boolean(d.a),
+        escuro: Boolean(d.e),
+        soCidade: d.o !== false,
+        painelAvisos: false,
+        caixaInicial: Array.isArray(d.b) && d.b.length === 4 ? d.b : null,
+        janelaTV: true,
+      };
+    }
     const daAba = JSON.parse(sessionStorage.getItem(CHAVE_ABA) ?? "null");
     if (daAba && [1, 2, 4].includes(daAba.layout) && daAba.vistas?.length === 4)
       return { ...padrao, ...daAba };
@@ -187,6 +217,10 @@ function icone(v: VeiculoPainel, selecionado: boolean, critico: boolean) {
 const CSS_PISCA = `@keyframes cco-pisca{0%{box-shadow:0 0 0 0 rgba(216,74,58,.95),0 1px 5px rgba(15,25,40,.45)}70%{box-shadow:0 0 0 14px rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}100%{box-shadow:0 0 0 0 rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}}
 .cco-pisca{animation:cco-pisca 1.1s ease-out infinite}
 @media (prefers-reduced-motion: reduce){.cco-pisca{animation-duration:2.5s}}`;
+
+/** Telão escuro: o mapa de ruas invertido (fundo escuro, ruas claras); os ícones dos veículos não mudam. */
+const CSS_ESCURO = `.cco-escuro .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(1.08) contrast(1.08) saturate(.45)}
+.cco-escuro .leaflet-container{background:#0b0f14}`;
 
 const ESCALA: Record<CorCarro, number> = { vermelho: 3000, amarelo: 2000, verde: 1000, cinza: 0 };
 
@@ -299,7 +333,8 @@ export default function PainelCCO() {
   useEffect(() => {
     try {
       sessionStorage.setItem(CHAVE_ABA, JSON.stringify(est));
-      localStorage.setItem(chaveEstado(), JSON.stringify(est));
+      // Janela de TV não troca a visualização salva da tela principal.
+      if (!est.janelaTV) localStorage.setItem(chaveEstado(), JSON.stringify(est));
     } catch {
       /* sem armazenamento */
     }
@@ -342,6 +377,15 @@ export default function PainelCCO() {
     () => (cidade ? veiculos.filter((v) => v.cidade === cidade) : veiculos),
     [veiculos, cidade],
   );
+  // Só a cidade: contorno oficial (IBGE) da cidade escolhida; o estado vem do endereço do rastreador.
+  const ufCidade = cidade ? (naCidade.find((v) => v.uf)?.uf ?? null) : null;
+  const contornoQ = useQuery(contornoQuery(cidade, ufCidade));
+  const contorno = cidade && est.soCidade !== false ? (contornoQ.data ?? null) : null;
+  useEffect(() => {
+    if (contorno) setSinalEnquadrar((n) => n + 1);
+  }, [contorno?.ibge_id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Área na tela de cada mapa, para abrir o mesmo enquadramento numa janela/TV.
+  const limites = useRef<(() => L.LatLngBounds | null)[]>([]);
   const criticosIds = useMemo(
     () => new Set(avisos.filter((a) => a.gravidade === "critico").map((a) => String(a.unit_id))),
     [avisos],
@@ -581,6 +625,73 @@ export default function PainelCCO() {
   const abrir = (titulo: string, url: string) =>
     embutido ? setSobreposicao({ titulo, url }) : undefined;
 
+  /** Endereço de um quadro para abrir noutra janela: mesma empresa, cidade, área, seleção e visual. */
+  const urlQuadro = (i: number) => {
+    const b = limites.current[i]?.();
+    const sel = selecoes[i] ?? [];
+    const d = {
+      g: grupo,
+      c: cidade || undefined,
+      s: sel.length && sel.length <= 300 ? sel : undefined,
+      t: tipos[i],
+      a: alertasNoMapa || undefined,
+      e: est.escuro || undefined,
+      o: est.soCidade === false ? false : undefined,
+      b:
+        tipos[i] === "mapa" && b
+          ? [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map((x) => Number(x.toFixed(5)))
+          : undefined,
+    };
+    return `/cco?quadro=${encodeURIComponent(JSON.stringify(d))}`;
+  };
+  const abrirQuadro = (i: number, lugar?: string) => {
+    const w = window.open(urlQuadro(i), `cco-tv-${i}`, lugar ?? "popup,width=1280,height=760");
+    if (!w)
+      toast.error(
+        "O navegador bloqueou a janela. Libere os pop-ups deste endereço (ícone na barra de endereço).",
+      );
+    return w;
+  };
+  /**
+   * Uma janela por quadro aberto. No Chrome/Edge, com a permissão "Gerenciamento de janelas", cada janela já
+   * abre numa TV (as telas que não são a principal); sem ela, abrem em cascata para arrastar até cada TV.
+   * Em cada janela, um clique em "Tela cheia nesta TV" (o navegador exige o clique na própria janela).
+   */
+  const espalharNasTVs = async () => {
+    const quadros = Array.from({ length: layout }, (_, i) => i).filter((i) => !fechados[i]);
+    type Tela = {
+      availLeft: number;
+      availTop: number;
+      availWidth: number;
+      availHeight: number;
+      isPrimary: boolean;
+    };
+    let telas: Tela[] = [];
+    const w = window as unknown as { getScreenDetails?: () => Promise<{ screens: Tela[] }> };
+    if (w.getScreenDetails) {
+      try {
+        telas = (await w.getScreenDetails()).screens;
+      } catch {
+        /* sem permissão: cascata */
+      }
+    }
+    const tvs = telas.length > 1 ? telas.filter((t) => !t.isPrimary) : [];
+    quadros.forEach((i, k) => {
+      const t = tvs.length ? tvs[k % tvs.length] : null;
+      abrirQuadro(
+        i,
+        t
+          ? `popup,left=${t.availLeft},top=${t.availTop},width=${t.availWidth},height=${t.availHeight}`
+          : `popup,left=${60 + k * 50},top=${60 + k * 50},width=1280,height=760`,
+      );
+    });
+    toast.success(
+      tvs.length
+        ? `${quadros.length} janela(s) abertas nas TVs. Em cada uma, clique em "Tela cheia nesta TV".`
+        : `${quadros.length} janela(s) abertas. Arraste cada uma para uma TV e clique em "Tela cheia nesta TV".`,
+    );
+  };
+
   const telaCheia = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen().catch(() => {});
@@ -590,8 +701,17 @@ export default function PainelCCO() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      <style>{CSS_PISCA}</style>
-      <header className="flex h-11 shrink-0 items-center gap-3 border-b border-border bg-card px-3 text-[12px]">
+      <style>{CSS_PISCA + CSS_ESCURO}</style>
+      {est.janelaTV && !cheia && (
+        <button
+          type="button"
+          onClick={telaCheia}
+          className="fixed left-1/2 top-14 z-[1600] -translate-x-1/2 rounded-full bg-brand-navy px-5 py-2.5 text-[15px] font-semibold text-white shadow-2xl"
+        >
+          <Maximize className="mr-2 inline h-4 w-4" /> Tela cheia nesta TV
+        </button>
+      )}
+      <header className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto whitespace-nowrap border-b border-border bg-card px-3 text-[12px]">
         <SSOrb size={20} />
         <span className="text-[14px] font-semibold text-foreground">Painel CCO</span>
         {mock && (
@@ -781,6 +901,42 @@ export default function PainelCCO() {
             <AlertTriangle className="h-3.5 w-3.5" /> Avisos{" "}
             <b className="font-mono">{avisosVisiveis.length}</b>
           </button>
+          {cidade && (
+            <label
+              className="ml-1 flex h-7 cursor-pointer items-center gap-1 rounded-md border border-border px-2"
+              title="Mostra só a cidade; o que está fora fica escuro"
+            >
+              <input
+                id="cco-so-cidade"
+                type="checkbox"
+                checked={est.soCidade !== false}
+                onChange={(e) => mudar({ soCidade: e.target.checked })}
+              />
+              Só a cidade
+            </label>
+          )}
+          <label
+            className="flex h-7 cursor-pointer items-center gap-1 rounded-md border border-border px-2"
+            title="Mapa escuro, com os veículos em destaque (para telão)"
+          >
+            <input
+              id="cco-escuro"
+              type="checkbox"
+              checked={Boolean(est.escuro)}
+              onChange={(e) => mudar({ escuro: e.target.checked })}
+            />
+            Telão escuro
+          </label>
+          {!est.janelaTV && !embutido && (
+            <button
+              type="button"
+              onClick={() => void espalharNasTVs()}
+              title="Abre cada mapa numa janela própria, uma por TV"
+              className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 hover:bg-secondary"
+            >
+              <MonitorUp className="h-3.5 w-3.5" /> Espalhar nas TVs
+            </button>
+          )}
           <button
             type="button"
             onClick={telaCheia}
@@ -888,6 +1044,11 @@ export default function PainelCCO() {
                   criticos={criticosIds}
                   sinalEnquadrar={sinalEnquadrar}
                   enquadrarEm={regioes?.[i] ?? null}
+                  contorno={contorno}
+                  escuro={Boolean(est.escuro)}
+                  caixaInicial={i === 0 ? (est.caixaInicial ?? null) : null}
+                  registrarLimites={(fn) => (limites.current[i] = fn)}
+                  onJanela={() => abrirQuadro(i)}
                   seguindoId={seguindo && seguindo.mapa === i ? seguindo.id : null}
                   areas={areasRisco}
                   indice={i}
@@ -1212,9 +1373,21 @@ function MapaCCO({
   criticos,
   sinalEnquadrar,
   enquadrarEm,
+  contorno,
+  escuro,
+  caixaInicial,
+  registrarLimites,
+  onJanela,
   seguindoId,
   areas,
 }: {
+  /** Contorno oficial da cidade (IBGE): fora dele o mapa fica escuro e não deixa sair da área. */
+  contorno: ContornoCidade | null;
+  escuro: boolean;
+  /** Janela aberta numa TV: enquadra esta área ao abrir. */
+  caixaInicial: [number, number, number, number] | null;
+  registrarLimites: (fn: () => L.LatLngBounds | null) => void;
+  onJanela: () => void;
   onFechar: () => void;
   onNumeros: () => void;
   criticos: Set<string>;
@@ -1238,7 +1411,12 @@ function MapaCCO({
   const [aberto, setAberto] = useState(false);
   const [local, setLocal] = useState(0);
   return (
-    <div className="relative min-h-0 overflow-hidden bg-white">
+    <div
+      className={cn(
+        "relative min-h-0 overflow-hidden",
+        escuro ? "cco-escuro bg-[#0b0f14]" : "bg-white",
+      )}
+    >
       <MapContainer
         center={vista.centro}
         zoom={vista.zoom}
@@ -1256,6 +1434,26 @@ function MapaCCO({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Guardar vista={vista} onVista={onVista} />
+        <Limites contorno={contorno} registrar={registrarLimites} caixaInicial={caixaInicial} />
+        {contorno && (
+          <>
+            {/* Tudo fora da cidade escurecido, como o mapa da planta de uma mineração (PM, 12/10/2026). */}
+            <Polygon
+              positions={[MUNDO, ...contorno.poligonos]}
+              interactive={false}
+              pathOptions={{
+                stroke: false,
+                fillColor: escuro ? "#05070a" : "#1d2633",
+                fillOpacity: escuro ? 0.94 : 0.82,
+              }}
+            />
+            <Polygon
+              positions={contorno.poligonos}
+              interactive={false}
+              pathOptions={{ color: escuro ? "#5dade2" : "#1f5f99", weight: 2, fill: false }}
+            />
+          </>
+        )}
         {areas.map((a) =>
           a.poligonos.map((pol, j) => (
             <Polygon
@@ -1271,7 +1469,11 @@ function MapaCCO({
           )),
         )}
         <Focar foco={foco} veiculos={veiculos} registrar={registrar} />
-        <Enquadrar sinal={sinalEnquadrar + local} veiculos={enquadrarEm ?? veiculos} />
+        <Enquadrar
+          sinal={sinalEnquadrar + local}
+          veiculos={enquadrarEm ?? veiculos}
+          caixa={!enquadrarEm && contorno ? contorno.caixa : null}
+        />
         {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
         {veiculos.map((v) => (
           <Marker
@@ -1315,6 +1517,15 @@ function MapaCCO({
           className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
         >
           <Expand className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onJanela}
+          title="Abrir este mapa numa janela própria (para pôr numa TV)"
+          aria-label="Abrir este mapa numa janela"
+          className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-white hover:bg-secondary"
+        >
+          <MonitorUp className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
@@ -1512,11 +1723,98 @@ function Focar({
   return null;
 }
 
-/** Enquadra o mapa nos veículos dele quando o sinal muda (troca de empresa/cidade ou botão). */
-function Enquadrar({ sinal, veiculos }: { sinal: number; veiculos: VeiculoPainel[] }) {
+/** Retângulo do mundo inteiro: com os contornos da cidade como furos, vira a máscara de fora da cidade. */
+const MUNDO: [number, number][] = [
+  [-85, -180],
+  [-85, 180],
+  [85, 180],
+  [85, -180],
+];
+
+/**
+ * Com o contorno da cidade, o mapa não deixa arrastar para longe (folga de 15%). Também informa a área
+ * que está na tela (para abrir o mapa numa janela) e, numa janela de TV, enquadra a área recebida.
+ */
+function Limites({
+  contorno,
+  registrar,
+  caixaInicial,
+}: {
+  contorno: ContornoCidade | null;
+  registrar: (fn: () => L.LatLngBounds | null) => void;
+  caixaInicial: [number, number, number, number] | null;
+}) {
   const map = useMap();
   useEffect(() => {
-    if (!sinal || !veiculos.length) return;
+    registrar(() => {
+      try {
+        return map.getBounds();
+      } catch {
+        return null;
+      }
+    });
+  }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!contorno?.caixa) {
+      map.setMaxBounds(undefined as unknown as L.LatLngBounds);
+      return;
+    }
+    const [a, b, c, d] = contorno.caixa;
+    map.setMaxBounds(L.latLngBounds([a, b], [c, d]).pad(0.15));
+  }, [contorno, map]);
+  useEffect(() => {
+    if (!caixaInicial) return;
+    const t = setTimeout(() => {
+      try {
+        map.invalidateSize();
+        const [a, b, c, d] = caixaInicial;
+        map.fitBounds(
+          [
+            [a, b],
+            [c, d],
+          ],
+          { animate: false },
+        );
+      } catch {
+        /* mapa montando */
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
+/** Enquadra o mapa nos veículos dele quando o sinal muda (troca de empresa/cidade ou botão). */
+function Enquadrar({
+  sinal,
+  veiculos,
+  caixa,
+}: {
+  sinal: number;
+  veiculos: VeiculoPainel[];
+  /** Quando há contorno da cidade, enquadra a cidade inteira (não só onde estão os carros). */
+  caixa?: [number, number, number, number] | null;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (!sinal || (!veiculos.length && !caixa)) return;
+    if (caixa) {
+      const t = setTimeout(() => {
+        try {
+          map.invalidateSize();
+          map.fitBounds(
+            [
+              [caixa[0], caixa[1]],
+              [caixa[2], caixa[3]],
+            ],
+            { padding: [8, 8], animate: false },
+          );
+        } catch {
+          /* mapa montando */
+        }
+      }, 120);
+      return () => clearTimeout(t);
+    }
     // Fica de fora só quem está muito longe do resto (um carro em viagem não tira o foco da cidade):
     // mais de 3 vezes a largura do miolo (10% a 90%, no mínimo 0,1°) a partir da mediana. Antes cortava 2% de cada
     // ponta e escondia os ônibus do sul da ilha (Fênix, 11/10/2026).

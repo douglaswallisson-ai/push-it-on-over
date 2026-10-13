@@ -91,6 +91,16 @@ export function PaginaRelevo({ f }: Ctx) {
   const [veicDia, setVeicDia] = useState<string>("");
   const [diaTel, setDiaTel] = useState<string>("");
   const r = q.data;
+  // Perfil do dia: abre no último dia em que o veículo escolhido rodou (em feriado ou fim de semana o
+  // último dia do período podia estar parado e o perfil vinha vazio).
+  const unidadeDia =
+    veicDia || String((r?.por_veiculo ?? []).find((v) => v.km >= KM_MINIMO)?.unit_id ?? "");
+  const ultimoDiaRodado =
+    (r?.por_veiculo_dia ?? [])
+      .filter((x) => String(x.unit_id) === unidadeDia)
+      .map((x) => x.dia)
+      .sort()
+      .pop() ?? f.fim;
   const t = r?.totais;
 
   const veiculos = useMemo(() => (r?.por_veiculo ?? []).filter((v) => v.km >= KM_MINIMO), [r]);
@@ -379,7 +389,7 @@ export function PaginaRelevo({ f }: Ctx) {
             </select>
             <input
               type="date"
-              value={diaTel || f.fim}
+              value={diaTel || ultimoDiaRodado}
               max={f.fim}
               onChange={(e) => e.target.value && setDiaTel(e.target.value)}
               className="h-8 rounded-lg border border-border bg-white px-2"
@@ -392,7 +402,7 @@ export function PaginaRelevo({ f }: Ctx) {
         {veiculos.length ? (
           <PerfilDoDia
             unitId={veicDia || String(veiculos[0]?.unit_id)}
-            dia={diaTel || f.fim}
+            dia={diaTel || ultimoDiaRodado}
             rotulo={
               veiculos.find((v) => String(v.unit_id) === (veicDia || String(veiculos[0]?.unit_id)))
                 ?.placa ?? ""

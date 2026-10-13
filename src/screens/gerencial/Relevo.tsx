@@ -20,7 +20,7 @@ import {
   type PontoRelacao,
 } from "@/components/ss/frota/RelacaoRelevo";
 import { RelevoDetalhe } from "@/components/ss/frota/RelevoDetalhe";
-import { GraficoTelemetriaDia } from "@/components/ss/frota/GraficoTelemetriaDia";
+import { PerfilDoDia } from "@/components/ss/frota/PerfilDoDia";
 import { iso, nf } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 import { ANIM, Aviso, BarrasRank, Carregando, DicaGrafico, Grafico, Info, Kpi } from "./pecas";
@@ -359,7 +359,7 @@ export function PaginaRelevo({ f }: Ctx) {
       </div>
 
       <Card
-        title="Telemetria do dia"
+        title="Perfil do dia"
         icon={Activity}
         action={
           <div className="flex flex-wrap items-center gap-2 text-[12px]">
@@ -390,12 +390,12 @@ export function PaginaRelevo({ f }: Ctx) {
         bodyClassName="p-4"
       >
         {veiculos.length ? (
-          <GraficoTelemetriaDia
-            unitId={veicDia || veiculos[0]?.unit_id}
+          <PerfilDoDia
+            unitId={veicDia || String(veiculos[0]?.unit_id)}
             dia={diaTel || f.fim}
             rotulo={
               veiculos.find((v) => String(v.unit_id) === (veicDia || String(veiculos[0]?.unit_id)))
-                ?.placa
+                ?.placa ?? ""
             }
           />
         ) : (

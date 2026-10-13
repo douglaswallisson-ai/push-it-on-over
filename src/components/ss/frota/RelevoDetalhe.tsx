@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mountain, X } from "lucide-react";
-import { PerfilElevacao } from "@/components/ss/frota/PerfilElevacao";
 import { GraficoRelevoDia, RelacaoRelevo } from "@/components/ss/frota/RelacaoRelevo";
-import { GraficoTelemetriaDia } from "@/components/ss/frota/GraficoTelemetriaDia";
+import { PerfilDoDia } from "@/components/ss/frota/PerfilDoDia";
 import { datasDoPeriodo, iso, ontem } from "@/lib/gerencial-api";
-import { classeRelevo, relevoResumoQuery, relevoTrajetoQuery } from "@/lib/relevo-api";
+import { classeRelevo, relevoResumoQuery } from "@/lib/relevo-api";
 import { usandoMock } from "@/lib/modo";
 
 /**
@@ -104,7 +103,6 @@ export function RelevoDetalhe({
   const [dia, setDia] = useState(iso(ontem()));
   // Motorista: os dias que ele rodou, com o veículo de cada um (mais recente primeiro), para o gráfico do dia.
   const [escolha, setEscolha] = useState(0);
-  const trajQ = useQuery(relevoTrajetoQuery(tipo === "veiculo" ? id : undefined, dia));
   const t = q.data?.totais;
   const c = classeRelevo(t?.subida_por_100km);
   const dias = q.data?.por_dia ?? [];
@@ -198,7 +196,7 @@ export function RelevoDetalhe({
                 />
                 {tipo === "veiculo" && (
                   <p className="mt-1 text-[12px] text-muted-foreground">
-                    Clique numa barra para ver o perfil daquele dia abaixo.
+                    Clique numa barra para ver o perfil daquele dia logo abaixo.
                   </p>
                 )}
               </div>
@@ -235,18 +233,17 @@ export function RelevoDetalhe({
                   )}
                 </div>
                 {tipo === "veiculo" ? (
-                  <GraficoTelemetriaDia unitId={id} dia={dia} rotulo={nome} />
+                  <PerfilDoDia unitId={id} dia={dia} rotulo={nome} />
                 ) : alvo ? (
-                  <GraficoTelemetriaDia
+                  <PerfilDoDia
                     unitId={alvo.unit_id}
                     dia={alvo.dia}
-                    driverId={id}
                     rotulo={`${nome} · ${alvo.placa}`}
                   />
                 ) : (
                   <p className="rounded-2xl border border-border bg-card p-4 text-[13px] text-muted-foreground">
                     Nenhum dia com 20 km ou mais deste motorista nos últimos 30 dias para mostrar o
-                    gráfico do dia.
+                    perfil do dia.
                   </p>
                 )}
               </div>
@@ -263,30 +260,6 @@ export function RelevoDetalhe({
                   grupo: x.unit_id,
                 }))}
               />
-              {tipo === "veiculo" && (
-                <>
-                  <div className="flex items-center justify-end gap-2 text-[13px]">
-                    Dia do perfil
-                    <input
-                      type="date"
-                      value={dia}
-                      max={iso(ontem())}
-                      onChange={(e) => e.target.value && setDia(e.target.value)}
-                      className="h-8 rounded-lg border border-border bg-white px-2"
-                    />
-                  </div>
-                  <PerfilElevacao
-                    dados={trajQ.data}
-                    carregando={trajQ.isLoading}
-                    erro={trajQ.error}
-                    onHover={() => {}}
-                    rotuloVeiculo={nome}
-                    linkMapa={(e) =>
-                      `/app/frota/tracking?veiculo=${encodeURIComponent(id)}&dia=${dia}&foco=${e.lat},${e.lon}&focoTitulo=${encodeURIComponent(`${e.evento ?? "Evento"} · ${e.hora.slice(0, 5)}`)}`
-                    }
-                  />
-                </>
-              )}
             </>
           )}
         </div>

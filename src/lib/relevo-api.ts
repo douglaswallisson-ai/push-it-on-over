@@ -23,15 +23,20 @@ export type MetricasRelevo = {
   pct_declive: number | null;
 };
 
+/** Faixa de condução: % do tempo andando na faixa econômica (verde, extra-econômica, inércia, eco-roll). */
+export type FaixaConducao = { pct_faixa_eco?: number | null; pct_faixa_vermelha?: number | null };
+
 export type ResumoRelevo = {
   inicio: string;
   fim: string;
   calculando: boolean;
   progresso: number;
   totais: (MetricasRelevo & { veiculos: number; kml: number | null }) | null;
-  por_veiculo: (MetricasRelevo & { unit_id: number; placa: string; kml: number | null })[];
-  por_motorista: (MetricasRelevo & { driver_id: number; nome: string | null; kml: number | null })[];
-  por_dia: (MetricasRelevo & { dia: string })[];
+  por_veiculo: (MetricasRelevo &
+    FaixaConducao & { unit_id: number; placa: string; kml: number | null })[];
+  por_motorista: (MetricasRelevo &
+    FaixaConducao & { driver_id: number; nome: string | null; kml: number | null })[];
+  por_dia: (MetricasRelevo & FaixaConducao & { dia: string; kml?: number | null })[];
   correlacao_kml: number | null;
   fonte?: string;
 };
@@ -88,7 +93,15 @@ const semRepetir = (n: number, e: unknown) => {
 
 export const relevoResumoQuery = (f: FiltrosBI) =>
   queryOptions({
-    queryKey: chaveComGrupo("relevo", "resumo", f.inicio, f.fim, f.garagem ?? "", f.placa ?? "", f.condutor ?? ""),
+    queryKey: chaveComGrupo(
+      "relevo",
+      "resumo",
+      f.inicio,
+      f.fim,
+      f.garagem ?? "",
+      f.placa ?? "",
+      f.condutor ?? "",
+    ),
     queryFn: () =>
       api.get<ResumoRelevo>(
         `/api/v1/relevo/resumo${qs({ ...filtroGrupo(), start_date: f.inicio, end_date: f.fim, subgroup_id: f.garagem, unit_id: f.placa, driver_id: f.condutor })}`,

@@ -52,7 +52,7 @@ export const comparativoQuery = (grupo: string | undefined, dias: number) =>
 
 /** Exemplo para o modo de demonstração (números inventados, sem cliente real). */
 export function comparativoExemplo(): Comparativo {
-  const ig = (xs: number[]) => xs.map((valor, i) => ({ nome: `Cliente ${"ABCDEFGH"[i]}`, valor }));
+  const ig = (xs: number[]) => xs.map((valor, i) => ({ nome: `Empresa ${"ABCDEFGH"[i]}`, valor }));
   return {
     group_id: 0,
     segmento: "urbano",

@@ -177,7 +177,12 @@ export function RelevoDetalhe({
               </div>
               <div className="rounded-2xl border border-border bg-card p-4">
                 <p className="mb-2 text-[13px] font-semibold">Relevo por dia</p>
-                <GraficoRelevoDia dias={dias} onDia={tipo === "veiculo" ? setDia : undefined} />
+                <GraficoRelevoDia
+                  dias={dias}
+                  inicio={q.data?.inicio ?? d.inicio}
+                  fim={q.data?.fim ?? d.fim}
+                  onDia={tipo === "veiculo" ? setDia : undefined}
+                />
                 {tipo === "veiculo" && (
                   <p className="mt-1 text-[12px] text-muted-foreground">
                     Clique numa barra para ver o perfil daquele dia abaixo.

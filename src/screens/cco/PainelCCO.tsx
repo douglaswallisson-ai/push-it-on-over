@@ -77,8 +77,6 @@ import {
 } from "@/lib/cco-api";
 import { api } from "@/lib/api";
 import { lerEmbutido } from "@/lib/embutido";
-import type { RankingMotoristasApi } from "@/lib/api";
-import { painelManutQuery } from "@/lib/manutencao-api";
 import { areasRiscoQuery, type AreaRisco } from "@/lib/rotas-seguras-api";
 import { PlayerAoVivo } from "@/components/ss/video/PlayerAoVivo";
 import { Cameras, type Transmissao } from "@/lib/cameras-api";
@@ -1944,38 +1942,35 @@ function NumerosCCO({
   const tem = (a: AvisoPainel, ...t: string[]) => t.some((x) => a.nome.toLowerCase().includes(x));
   const alerta = (...t: string[]) => meus.filter((a) => tem(a, ...t));
   const indQ = useQuery(indicadoresQuery(grupo));
-  const rankQ = useQuery({
-    queryKey: ["cco", "ranking", grupo ?? ""],
-    queryFn: () =>
-      api.get<RankingMotoristasApi>(`/api/v1/driver-ranking/?group_id=${grupo}&por=motorista`),
-    enabled: Boolean(grupo) && !mock,
-    staleTime: 30 * 60_000,
-  });
-  const manQ = useQuery({ ...painelManutQuery(grupo), enabled: Boolean(grupo) && !mock });
-  const camQ = useQuery({
-    queryKey: ["cco", "cameras"],
-    queryFn: () => api.get<unknown>(`/api/v1/video/devices`),
-    enabled: !mock,
-    staleTime: 60_000,
-    refetchInterval: 120_000,
-  });
-  const cams = (
-    Array.isArray(camQ.data) ? camQ.data : ((camQ.data as { items?: unknown[] })?.items ?? [])
-  ) as {
-    unit_id: number;
-    online: boolean;
-  }[];
-  const camsQuadro = cams.filter((c) => ids.has(String(c.unit_id)));
+  // Motoristas que estão gerando os alertas em aberto agora (PM, 13/10/2026: no CCO, o que serve à
+  // operação — não o ranking do mês, que é do gestor).
+  const veicPorId = new Map(veiculos.map((v) => [String(v.id), v]));
+  const porMotorista = new Map<
+    string,
+    { nome: string; placas: Set<string>; n: number; criticos: number; tipos: Map<string, number> }
+  >();
+  for (const a of meus) {
+    const v = veicPorId.get(String(a.unit_id));
+    if (!v) continue;
+    const nome = v.motorista ?? `Sem motorista identificado · ${v.prefixo}`;
+    const m = porMotorista.get(nome) ?? {
+      nome,
+      placas: new Set<string>(),
+      n: 0,
+      criticos: 0,
+      tipos: new Map<string, number>(),
+    };
+    m.placas.add(v.prefixo);
+    m.n += 1;
+    if (a.gravidade === "critico") m.criticos += 1;
+    m.tipos.set(a.nome, (m.tipos.get(a.nome) ?? 0) + 1);
+    porMotorista.set(nome, m);
+  }
+  const comAlertas = [...porMotorista.values()]
+    .sort((a, b) => b.criticos - a.criticos || b.n - a.n)
+    .slice(0, 8);
   const ind = indQ.data;
   const c = ind?.comparativo;
-  const motoristas = (rankQ.data?.motoristas ?? []).filter((m) => m.pontuacao != null);
-  const melhores = [...motoristas]
-    .sort((a, b) => (b.pontuacao ?? 0) - (a.pontuacao ?? 0))
-    .slice(0, 3);
-  const piores = [...motoristas]
-    .sort((a, b) => (a.pontuacao ?? 0) - (b.pontuacao ?? 0))
-    .slice(0, 3);
-  const tot = manQ.data?.totais;
   const por100 = (n: number | undefined, km: number | undefined) =>
     n == null || !km ? null : (100 * n) / km;
   const fmt = (v: number | null | undefined, casas = 0) =>
@@ -2030,9 +2025,7 @@ function NumerosCCO({
         <Hash className="h-3.5 w-3.5 text-brand-navy" />
         <b className="text-foreground">Indicadores</b>
         <span className="truncate text-muted-foreground">· {rotulo}</span>
-        {(indQ.isFetching || rankQ.isFetching) && (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-        )}
+        {indQ.isFetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         <button
           type="button"
           onClick={onMapa}
@@ -2135,89 +2128,44 @@ function NumerosCCO({
             </div>
           )}
         </Bloco>
-        <Bloco
-          titulo="4 · Motoristas"
-          sub={
-            rankQ.data
-              ? `pontuação de condução · ${rankQ.data.inicio.split("-").reverse().join("/")} a ${rankQ.data.fim.split("-").reverse().join("/")}`
-              : "pontuação de condução · 30 dias"
-          }
-        >
-          {rankQ.isPending && !mock ? (
-            carregando("Calculando…")
-          ) : !motoristas.length ? (
+        <Bloco titulo="4 · Motoristas gerando alertas" sub="avisos em aberto neste quadro, agora">
+          {!comAlertas.length ? (
             <p className="text-[12px] text-muted-foreground">
-              Sem motorista identificado no período.
+              Nenhum aviso em aberto nos veículos deste quadro.
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-3 text-[12px]">
-              <div>
-                <div className="mb-1 font-semibold text-leaf">Melhores</div>
-                {melhores.map((m) => (
-                  <div key={m.driver_id} className="flex justify-between gap-2">
-                    <span className="truncate">{m.nome ?? m.driver_id}</span>
-                    <b className="font-mono">{fmt(m.pontuacao)}</b>
+            <div className="space-y-1 text-[12px]">
+              {comAlertas.map((m) => (
+                <div
+                  key={m.nome}
+                  className="flex items-start justify-between gap-2 border-b border-border pb-1 last:border-0"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">{m.nome}</div>
+                    <div className="truncate text-[11px] text-muted-foreground">
+                      {[...m.placas].join(", ")} ·{" "}
+                      {[...m.tipos.entries()]
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([t, n]) => (n > 1 ? `${t} ×${n}` : t))
+                        .join(" · ")}
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div>
-                <div className="mb-1 font-semibold text-coral">Precisam de atenção</div>
-                {piores.map((m) => (
-                  <div key={m.driver_id} className="flex justify-between gap-2">
-                    <span className="truncate">{m.nome ?? m.driver_id}</span>
-                    <b className="font-mono">{fmt(m.pontuacao)}</b>
+                  <div className="shrink-0 text-right font-mono">
+                    <b style={{ color: m.criticos ? "var(--coral)" : "var(--gold)" }}>{m.n}</b>
+                    {m.criticos > 0 && (
+                      <div className="text-[10px] text-coral">
+                        {m.criticos} crítico{m.criticos > 1 ? "s" : ""}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-              <div className="col-span-2 text-muted-foreground">
-                Nota média {fmt(rankQ.data?.resumo.nota_media)} ·{" "}
-                {fmt(rankQ.data?.resumo.motoristas)} motoristas
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </Bloco>
-        <Bloco titulo="5 · Manutenção" sub="empresa inteira · plano preventivo cadastrado">
-          {manQ.isPending && !mock ? (
-            carregando("Carregando…")
-          ) : !tot?.com_plano ? (
-            <p className="text-[12px] text-muted-foreground">
-              Nenhum veículo com plano preventivo cadastrado. Cadastre em Manutenção › Plano.
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <Num
-                rot="Revisões vencidas"
-                v={fmt(tot.itens_vencidos)}
-                cor={tot.itens_vencidos ? "var(--coral)" : undefined}
-                pe={`em ${fmt(tot.veiculos_com_vencido)} veículos`}
-              />
-              <Num
-                rot="Perto de vencer"
-                v={fmt(tot.itens_vencendo)}
-                cor={tot.itens_vencendo ? "var(--gold)" : undefined}
-                pe={`${fmt(tot.com_plano)} veículos com plano`}
-              />
-            </div>
-          )}
-        </Bloco>
-        <Bloco titulo="6 · Saúde dos equipamentos" sub="neste quadro">
-          <div className="grid grid-cols-2 gap-2">
-            <Num
-              rot="Rastreadores sem comunicar"
-              v={fmt(semSinal.length)}
-              cor={semSinal.length ? "var(--coral)" : undefined}
-              pe={`de ${fmt(veiculos.length)} · mais de 2 h`}
-            />
-            <Num
-              rot="Câmeras sem comunicar"
-              v={camQ.isPending && !mock ? "…" : fmt(camsQuadro.filter((x) => !x.online).length)}
-              cor={camsQuadro.some((x) => !x.online) ? "var(--coral)" : undefined}
-              pe={`de ${fmt(camsQuadro.length)} câmeras`}
-            />
-          </div>
-        </Bloco>
         <Bloco
-          titulo="7 · Comparativo"
+          titulo="5 · Comparativo"
           sub={ind ? `empresa inteira · até ${ind.corte} de cada dia` : "empresa inteira"}
         >
           {!c ? (

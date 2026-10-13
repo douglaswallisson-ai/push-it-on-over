@@ -216,6 +216,20 @@ export function RelacaoRelevo({
   kmMin: number;
 }) {
   const v = pontosValidos(pontos, kmMin);
+  if (v.length < 3) {
+    const km = pontos.reduce((t, p) => t + (p.km || 0), 0);
+    return (
+      <div className="rounded-2xl border border-border bg-card px-4 py-4 text-[13px]">
+        <p className="font-semibold">Condução × relevo × consumo</p>
+        <p className="mt-1 text-muted-foreground">
+          {v.length === 0 ? "Nenhum" : `Só ${v.length}`}{" "}
+          {v.length === 1 ? unidade.replace(/s$/, "") : unidade} com consumo, relevo e faixa medidos
+          neste período ({nf(km)} km rodados ao todo). Para mostrar a relação são precisos pelo
+          menos 3, cada um com {kmMin} km ou mais.
+        </p>
+      </div>
+    );
+  }
   const m = regressao2(
     v
       .filter((p) => p.subida != null && p.eco != null)
@@ -285,12 +299,30 @@ export function GraficoRelevoDia({
   dias,
   onDia,
   altura = 220,
+  inicio,
+  fim,
 }: {
   dias: DiaRelevo[];
   onDia?: (dia: string) => void;
   altura?: number;
+  /** Período inteiro no eixo (dias sem rodar aparecem vazios): com só os dias rodados, um motorista
+   * que rodou um dia virava uma barra só ocupando o gráfico (PM, 13/10/2026). */
+  inicio?: string;
+  fim?: string;
 }) {
-  const dados = dias.map((x) => ({
+  const todos: DiaRelevo[] = [];
+  if (inicio && fim) {
+    const porDia = new Map(dias.map((x) => [x.dia, x]));
+    for (
+      let d = new Date(inicio + "T12:00");
+      d <= new Date(fim + "T12:00");
+      d.setDate(d.getDate() + 1)
+    ) {
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      todos.push(porDia.get(k) ?? { dia: k, subida_por_100km: null, km: 0 });
+    }
+  } else todos.push(...dias);
+  const dados = todos.map((x) => ({
     dia: x.dia,
     rotulo: `${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
     "Subida por 100 km": x.subida_por_100km ?? 0,
@@ -309,7 +341,12 @@ export function GraficoRelevoDia({
           }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="rotulo" tick={{ fontSize: 11 }} />
+          <XAxis
+            dataKey="rotulo"
+            tick={{ fontSize: 11 }}
+            interval="preserveStartEnd"
+            minTickGap={14}
+          />
           <YAxis yAxisId="s" tick={{ fontSize: 11 }} unit=" m" width={60} />
           <YAxis yAxisId="k" orientation="right" tick={{ fontSize: 11 }} width={50} />
           <Tooltip
@@ -319,6 +356,13 @@ export function GraficoRelevoDia({
                 : undefined;
               if (!d) return null;
               const c = classeRelevo(d.x.subida_por_100km);
+              if (!d.x.km)
+                return (
+                  <div className="rounded-xl border border-border bg-white/95 px-3 py-2 text-[12px] shadow-elegant">
+                    <p className="font-semibold">{d.dia.split("-").reverse().join("/")}</p>
+                    <p className="text-muted-foreground">Não rodou neste dia</p>
+                  </div>
+                );
               return (
                 <div className="rounded-xl border border-border bg-white/95 px-3 py-2 text-[12px] shadow-elegant">
                   <p className="font-semibold">{d.dia.split("-").reverse().join("/")}</p>
@@ -342,6 +386,7 @@ export function GraficoRelevoDia({
             dataKey="Subida por 100 km"
             fill="#8A6A3A"
             radius={[4, 4, 0, 0]}
+            maxBarSize={28}
             animationDuration={900}
           />
           <Line
@@ -349,7 +394,7 @@ export function GraficoRelevoDia({
             dataKey="Km"
             stroke="var(--brand-navy)"
             strokeWidth={2}
-            dot={false}
+            dot={{ r: 2 }}
             animationDuration={900}
           />
         </ComposedChart>

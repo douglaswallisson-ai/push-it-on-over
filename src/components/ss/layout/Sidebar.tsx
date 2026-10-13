@@ -106,7 +106,7 @@ const NAV_PRIMARY: Entry[] = [
       { label: "Veículos", to: "/app/veiculos" },
       { label: "Tracking", to: "/app/frota/tracking" },
       { label: "Desempenho", to: "/app/frota/desempenho" },
-      { label: "Comparativo com iguais", to: "/app/frota/comparativo" },
+      { label: "Benchmark com o mercado", to: "/app/frota/comparativo" },
       { label: "Hardware", to: "/app/frota/telemetria" },
       { label: "Combustível", to: "/app/frota/combustivel" },
       // Frota aparece para todo cliente (carga, urbano e fretamento): o que está aqui
@@ -292,18 +292,23 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Itens sensíveis só aparecem para quem tem permissão. */}
         <nav className="rolagem-escura flex-1 overflow-y-auto overflow-x-hidden py-0">
-          {NAV_PRIMARY.filter((entry) => !(isGroup(entry) && entry.modulo && modulos.data && !modulos.data[entry.modulo])).map((entry, i, lista) => (
+          {NAV_PRIMARY.filter(
+            (entry) =>
+              !(isGroup(entry) && entry.modulo && modulos.data && !modulos.data[entry.modulo]),
+          ).map((entry, i, lista) => (
             <Fragment key={entry.label}>
-            {expanded && isGroup(entry) && !lista.slice(0, i).some(isGroup) && (
-              <p className="px-4 pb-2 pt-4 text-[11px] font-bold uppercase tracking-[1px] text-white/50">Ferramentas</p>
-            )}
-            <NavEntry
-              entry={entry}
-              expanded={expanded}
-              openGroup={openGroup}
-              setOpenGroup={setOpenGroup}
-              onNavigate={onClose}
-            />
+              {expanded && isGroup(entry) && !lista.slice(0, i).some(isGroup) && (
+                <p className="px-4 pb-2 pt-4 text-[11px] font-bold uppercase tracking-[1px] text-white/50">
+                  Ferramentas
+                </p>
+              )}
+              <NavEntry
+                entry={entry}
+                expanded={expanded}
+                openGroup={openGroup}
+                setOpenGroup={setOpenGroup}
+                onNavigate={onClose}
+              />
             </Fragment>
           ))}
 
@@ -461,9 +466,7 @@ function LeafRow({
       }
     >
       <Icon className="h-[18px] w-[18px] shrink-0" />
-      {expanded && (
-        <span className="whitespace-nowrap text-[14px]">{entry.label}</span>
-      )}
+      {expanded && <span className="whitespace-nowrap text-[14px]">{entry.label}</span>}
       {expanded && entry.badge && (
         <span className="ml-auto rounded-full bg-white/15 px-1.5 py-0.5 text-[12px] font-semibold">
           {entry.badge}
@@ -503,7 +506,10 @@ function GroupRow({
           <>
             <span className="whitespace-nowrap text-[14px]">{entry.label}</span>
             <ChevronRight
-              className={cn("ml-auto h-3.5 w-3.5 opacity-60 transition-transform", open ? "rotate-90" : "rotate-180")}
+              className={cn(
+                "ml-auto h-3.5 w-3.5 opacity-60 transition-transform",
+                open ? "rotate-90" : "rotate-180",
+              )}
             />
           </>
         )}
@@ -524,7 +530,9 @@ function GroupRow({
               className={({ isActive }) =>
                 cn(
                   "block whitespace-nowrap py-2.5 pl-[52px] pr-4 text-[14px] transition-colors",
-                  isActive ? "coreui-ativo text-white" : "text-white/70 hover:bg-[rgba(120,192,82,0.15)] hover:text-[#78c052]",
+                  isActive
+                    ? "coreui-ativo text-white"
+                    : "text-white/70 hover:bg-[rgba(120,192,82,0.15)] hover:text-[#78c052]",
                 )
               }
             >

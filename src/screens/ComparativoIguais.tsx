@@ -47,8 +47,8 @@ export default function ComparativoIguais() {
   return (
     <>
       <PageHeader
-        title="Comparativo com iguais"
-        subtitle="Frota › A sua operação contra outros clientes do mesmo segmento"
+        title="Benchmark com o mercado"
+        subtitle="Frota › A sua operação contra o mercado do mesmo segmento"
         actions={
           <div className="flex gap-1" role="group" aria-label="Período">
             {[30, 60, 90].map((n) => (
@@ -91,8 +91,11 @@ export default function ComparativoIguais() {
               <Scale className="h-4 w-4 text-brand-navy" /> {d.segmento_nome}
             </span>
             <span>
-              Comparado com <b>{d.iguais}</b> cliente{d.iguais === 1 ? "" : "s"} do mesmo segmento
+              Base interna: <b>{d.iguais}</b> empresa{d.iguais === 1 ? "" : "s"} do mesmo segmento
+              atendida
+              {d.iguais === 1 ? "" : "s"} pela SS (sem nome)
             </span>
+            <span className="text-muted-foreground">Base externa (NTU): em estudo</span>
             <span className="text-muted-foreground">
               {dataBR(d.inicio)} a {dataBR(d.fim)} · {nf(d.base.veiculos, 0)} veículos ·{" "}
               {nf(d.base.km, 0)} km
@@ -120,9 +123,16 @@ export default function ComparativoIguais() {
                 um tem o equipamento configurado com limites próprios.
               </li>
               <li>
-                {d.nomes_visiveis
-                  ? "Você é da SS e vê o nome dos clientes. O cliente vê só “Cliente A”, “Cliente B”…"
-                  : "Os outros clientes aparecem sem nome."}
+                <b className="text-foreground">Base interna:</b> as empresas da base da SS no mesmo
+                segmento. Nenhuma aparece pelo nome (“Empresa A”, “Empresa B”…), para ninguém.
+              </li>
+              <li>
+                <b className="text-foreground">Base externa:</b> o Anuário NTU 2024-2025 acompanha
+                13 indicadores do ônibus urbano (viagens, passageiros, quilometragem total,
+                passageiros por km e por veículo, frota, idade média, salários, preço do diesel,
+                custo por km e tarifa), mas não traz consumo em km/l nem eventos de condução. A
+                comparação com a NTU está em estudo e entra aqui só com o racional e a quantidade de
+                dados de cada base.
               </li>
             </ul>
           </Card>

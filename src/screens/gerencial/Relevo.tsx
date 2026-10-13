@@ -339,7 +339,12 @@ export function PaginaRelevo({ f }: Ctx) {
           }
           bodyClassName="p-4"
         >
-          <GraficoRelevoDia dias={diasTendencia} altura={320} />
+          <GraficoRelevoDia
+            dias={diasTendencia}
+            altura={320}
+            inicio={tendencia.f.inicio}
+            fim={tendencia.f.fim}
+          />
           {tendencia.estendida && qT.data?.calculando && (
             <p className="mt-2 text-[12px] text-muted-foreground">
               Calculando o relevo dos últimos 30 dias… {Math.round((qT.data.progresso ?? 0) * 100)}%
@@ -376,6 +381,14 @@ export function PaginaRelevo({ f }: Ctx) {
             pontoDe === "motorista" ? "motoristas" : pontoDe === "veiculo" ? "veículos" : "dias"
           }
           kmMin={pontoDe === "dia" ? 20 : KM_MINIMO}
+          porVeiculoDia={(r?.por_veiculo_dia ?? []).map((x) => ({
+            nome: `${x.placa} · ${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
+            subida: x.subida_por_100km,
+            eco: x.pct_faixa_eco ?? null,
+            kml: x.kml ?? null,
+            km: x.km,
+            grupo: x.unit_id,
+          }))}
         />
       </Card>
 

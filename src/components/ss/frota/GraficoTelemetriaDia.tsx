@@ -138,7 +138,7 @@ export function GraficoTelemetriaDia({
                       strokeDasharray="4 3"
                       label={{
                         value: `Início da faixa ${f.nome.toLowerCase()} · ${nf(f.de)} rpm`,
-                        position: "insideTopLeft",
+                        position: "insideBottomLeft",
                         fontSize: 10,
                         fill: COR_FAIXA[f.nome] ?? "#888",
                       }}
@@ -151,7 +151,7 @@ export function GraficoTelemetriaDia({
                       strokeDasharray="4 3"
                       label={{
                         value: `Fim da faixa ${f.nome.toLowerCase()} · ${nf(f.ate)} rpm`,
-                        position: "insideTopLeft",
+                        position: "insideTopRight",
                         fontSize: 10,
                         fill: COR_FAIXA[f.nome] ?? "#888",
                       }}

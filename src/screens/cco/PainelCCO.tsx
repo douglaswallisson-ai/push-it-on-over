@@ -208,24 +208,36 @@ function lerEstado(): Estado {
  * Só o desenho do veículo, sem a placa ao lado (PM, 10/10/2026); a placa aparece ao passar o mouse.
  * Alerta crítico em aberto pisca em vermelho, mesmo com "Marcar alertas no mapa" desligado (PM, 10/10/2026).
  */
+// Ícones guardados por aparência: o painel redesenha a cada atualização e, com um ícone novo a cada vez,
+// o mapa trocava o desenho dos ~480 carros (travava e deixava os nomes do mouse presos na tela — PM, 13/10/2026).
+const ICONES = new Map<string, L.DivIcon>();
+
 function icone(v: VeiculoPainel, selecionado: boolean, critico: boolean) {
   const hex = critico ? COR_HEX.vermelho : COR_HEX[v.cor];
   const d = selecionado ? 34 : 28;
-  return L.divIcon({
+  const chave = `${v.tipo}|${hex}|${selecionado}|${critico}|${v.comunicando}`;
+  const pronto = ICONES.get(chave);
+  if (pronto) return pronto;
+  const novo = L.divIcon({
     className: "",
     html: `<span class="${critico ? "cco-pisca" : ""}" style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);width:${d}px;height:${d}px;border-radius:50%;background:${hex};color:#fff;border:2px solid #fff;box-shadow:0 1px 5px rgba(15,25,40,.45)${selecionado ? ",0 0 0 4px rgba(46,134,193,.5)" : ""};${v.comunicando ? "" : "opacity:.55;"}">${svgVeiculo(v.tipo, selecionado ? 19 : 16)}</span>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   });
+  ICONES.set(chave, novo);
+  return novo;
 }
 
 /** Piscar do alerta crítico: anel vermelho que se expande (não some o carro do mapa). */
-const CSS_PISCA = `@keyframes cco-pisca{0%{box-shadow:0 0 0 0 rgba(216,74,58,.95),0 1px 5px rgba(15,25,40,.45)}70%{box-shadow:0 0 0 14px rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}100%{box-shadow:0 0 0 0 rgba(216,74,58,0),0 1px 5px rgba(15,25,40,.45)}}
-.cco-pisca{animation:cco-pisca 1.1s ease-out infinite}
-@media (prefers-reduced-motion: reduce){.cco-pisca{animation-duration:2.5s}}`;
+// Anel por cima do ícone, animado só com tamanho e transparência (o navegador não redesenha a página;
+// a sombra animada de antes pesava com muitos carros).
+const CSS_PISCA = `@keyframes cco-anel{from{transform:scale(.85);opacity:.95}to{transform:scale(1.9);opacity:0}}
+.cco-pisca{position:relative}
+.cco-pisca::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:3px solid #d84a3a;animation:cco-anel 1.2s ease-out infinite;will-change:transform,opacity;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.cco-pisca::after{animation-duration:2.5s}}`;
 
 /** Telão escuro: o mapa de ruas invertido (fundo escuro, ruas claras); os ícones dos veículos não mudam. */
-const CSS_ESCURO = `.cco-escuro .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(1.08) contrast(1.08) saturate(.45)}
+const CSS_ESCURO = `.cco-escuro .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(1.45) contrast(1.2) saturate(.55)}
 .cco-escuro .leaflet-container{background:#0b0f14}`;
 
 const ESCALA: Record<CorCarro, number> = { vermelho: 3000, amarelo: 2000, verde: 1000, cinza: 0 };
@@ -420,7 +432,8 @@ export default function PainelCCO() {
 
   useEffect(() => setOcultos(new Set()), [q.dataUpdatedAt]);
   useEffect(() => {
-    const t = setInterval(() => setRelogio(Date.now()), 1000);
+    // A cada 15 s basta (o relógio mostra hora e minuto); a cada 1 s redesenhava o painel inteiro.
+    const t = setInterval(() => setRelogio(Date.now()), 15_000);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
@@ -1459,6 +1472,7 @@ function MapaCCO({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Guardar vista={vista} onVista={onVista} />
+        <AcompanharTamanho />
         <Limites contorno={contorno} registrar={registrarLimites} caixaInicial={caixaInicial} />
         {contorno && (
           <>
@@ -1745,6 +1759,35 @@ function Focar({
       map.panTo([v.lat, v.lng], { animate: false });
     else if (v) map.setView([v.lat, v.lng], Math.max(map.getZoom(), 12), { animate: false });
   }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
+/**
+ * Avisa o mapa quando o quadro muda de tamanho (abrir/fechar avisos, layout, tela cheia). Sem isso ele
+ * só carregava as imagens da área antiga: ficava um pedaço escuro e era preciso arrastar (PM, 13/10/2026).
+ */
+function AcompanharTamanho() {
+  const map = useMap();
+  useEffect(() => {
+    const el = map.getContainer();
+    if (typeof ResizeObserver === "undefined") return;
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const o = new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        try {
+          map.invalidateSize({ pan: false });
+        } catch {
+          /* mapa desmontado */
+        }
+      }, 80);
+    });
+    o.observe(el);
+    return () => {
+      clearTimeout(t);
+      o.disconnect();
+    };
+  }, [map]);
   return null;
 }
 

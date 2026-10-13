@@ -20,6 +20,7 @@ import {
   type PontoRelacao,
 } from "@/components/ss/frota/RelacaoRelevo";
 import { RelevoDetalhe } from "@/components/ss/frota/RelevoDetalhe";
+import { GraficoTelemetriaDia } from "@/components/ss/frota/GraficoTelemetriaDia";
 import { iso, nf } from "@/lib/gerencial-api";
 import { cn } from "@/lib/utils";
 import { ANIM, Aviso, BarrasRank, Carregando, DicaGrafico, Grafico, Info, Kpi } from "./pecas";
@@ -86,6 +87,9 @@ export function PaginaRelevo({ f }: Ctx) {
     id: string;
     nome: string;
   } | null>(null);
+  // Gráfico de linhas do dia (rpm, altitude, velocidade, combustível e faixas — PM, 13/10/2026).
+  const [veicDia, setVeicDia] = useState<string>("");
+  const [diaTel, setDiaTel] = useState<string>("");
   const r = q.data;
   const t = r?.totais;
 
@@ -353,6 +357,53 @@ export function PaginaRelevo({ f }: Ctx) {
           )}
         </Card>
       </div>
+
+      <Card
+        title="Telemetria do dia"
+        icon={Activity}
+        action={
+          <div className="flex flex-wrap items-center gap-2 text-[12px]">
+            <select
+              value={veicDia || String(veiculos[0]?.unit_id ?? "")}
+              onChange={(e) => setVeicDia(e.target.value)}
+              className="h-8 max-w-[220px] rounded-lg border border-border bg-white px-2"
+              aria-label="Veículo"
+            >
+              {[...veiculos]
+                .sort((a, b) => b.km - a.km)
+                .map((v) => (
+                  <option key={v.unit_id} value={v.unit_id}>
+                    {v.placa} · {nf(v.km)} km
+                  </option>
+                ))}
+            </select>
+            <input
+              type="date"
+              value={diaTel || f.fim}
+              max={f.fim}
+              onChange={(e) => e.target.value && setDiaTel(e.target.value)}
+              className="h-8 rounded-lg border border-border bg-white px-2"
+              aria-label="Dia"
+            />
+          </div>
+        }
+        bodyClassName="p-4"
+      >
+        {veiculos.length ? (
+          <GraficoTelemetriaDia
+            unitId={veicDia || veiculos[0]?.unit_id}
+            dia={diaTel || f.fim}
+            rotulo={
+              veiculos.find((v) => String(v.unit_id) === (veicDia || String(veiculos[0]?.unit_id)))
+                ?.placa
+            }
+          />
+        ) : (
+          <p className="text-[13px] text-muted-foreground">
+            Nenhum veículo com km medido no período.
+          </p>
+        )}
+      </Card>
 
       <Card
         title="Relação condução × altitude × consumo"

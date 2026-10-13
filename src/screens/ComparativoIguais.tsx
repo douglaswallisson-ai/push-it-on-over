@@ -95,7 +95,10 @@ export default function ComparativoIguais() {
               atendida
               {d.iguais === 1 ? "" : "s"} pela SS (sem nome)
             </span>
-            <span className="text-muted-foreground">Base externa (NTU): em estudo</span>
+            <span className="text-muted-foreground">
+              Base externa: estimativa de mercado no consumo por porte (carga); NTU em estudo
+              (urbano)
+            </span>
             <span className="text-muted-foreground">
               {dataBR(d.inicio)} a {dataBR(d.fim)} · {nf(d.base.veiculos, 0)} veículos ·{" "}
               {nf(d.base.km, 0)} km
@@ -164,6 +167,34 @@ function CartaoIndicador({ i }: { i: IndicadorComparativo }) {
         </span>
         <span className="text-[12px] text-muted-foreground">{i.unidade}</span>
       </div>
+      {i.referencia_mercado && i.valor != null && (
+        <p
+          className="mt-1 rounded-lg bg-secondary px-2 py-1 text-[12px]"
+          title={i.referencia_mercado.fonte}
+        >
+          <b>Mercado (estimado):</b> {nf(i.referencia_mercado.min, 1)} a{" "}
+          {nf(i.referencia_mercado.max, 1)} km/l ·{" "}
+          <b
+            style={{
+              color:
+                i.valor > i.referencia_mercado.max
+                  ? "var(--leaf)"
+                  : i.valor < i.referencia_mercado.min
+                    ? "var(--coral)"
+                    : "var(--foreground)",
+            }}
+          >
+            {i.valor > i.referencia_mercado.max
+              ? "acima da faixa"
+              : i.valor < i.referencia_mercado.min
+                ? "abaixo da faixa"
+                : "dentro da faixa"}
+          </b>
+          <span className="block text-[11px] text-muted-foreground">
+            {i.referencia_mercado.base} · estimativa, não estudo oficial
+          </span>
+        </p>
+      )}
       {tem ? (
         <>
           <Faixa i={i} />

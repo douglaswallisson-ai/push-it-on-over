@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mountain, X } from "lucide-react";
-import { GraficoRelevoDia, RelacaoRelevo } from "@/components/ss/frota/RelacaoRelevo";
+import { GraficoRelevoDia } from "@/components/ss/frota/RelacaoRelevo";
 import { PerfilDoDia } from "@/components/ss/frota/PerfilDoDia";
 import { datasDoPeriodo, iso, ontem } from "@/lib/gerencial-api";
 import { classeRelevo, relevoResumoQuery } from "@/lib/relevo-api";
@@ -110,14 +110,6 @@ export function RelevoDetalhe({
     (a, b) => b.dia.localeCompare(a.dia) || b.km - a.km,
   );
   const alvo = diasMotorista[Math.min(escolha, Math.max(0, diasMotorista.length - 1))];
-  // Um ponto por dia, para a relação condução × relevo × consumo.
-  const pontos = dias.map((x) => ({
-    nome: ddmm(x.dia),
-    subida: x.subida_por_100km,
-    eco: x.pct_faixa_eco ?? null,
-    kml: x.kml ?? null,
-    km: x.km,
-  }));
 
   return (
     <div
@@ -247,19 +239,6 @@ export function RelevoDetalhe({
                   </p>
                 )}
               </div>
-              <RelacaoRelevo
-                pontos={pontos}
-                unidade="dias"
-                kmMin={20}
-                porVeiculoDia={(q.data?.por_veiculo_dia ?? []).map((x) => ({
-                  nome: `${x.placa} · ${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
-                  subida: x.subida_por_100km,
-                  eco: x.pct_faixa_eco ?? null,
-                  kml: x.kml ?? null,
-                  km: x.km,
-                  grupo: x.unit_id,
-                }))}
-              />
             </>
           )}
         </div>

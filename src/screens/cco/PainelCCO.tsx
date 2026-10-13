@@ -137,8 +137,8 @@ type Estado = {
   janelaTV?: boolean;
 };
 type TipoQuadro = "mapa" | "numeros";
-/** O CCO é ao vivo: avisos das últimas 2 h ainda não tratados, sem seletor de janela. */
-const JANELA_AO_VIVO_H = 2;
+/** O CCO é ao vivo: avisos das últimas 24 h ainda não tratados, sem seletor de janela (PM, 13/10/2026). */
+const JANELA_AO_VIVO_H = 24;
 const VAZIO: string[][] = [[], [], [], []];
 
 /** Visualização desta aba do navegador (cada monitor com a sua empresa). */
@@ -2638,7 +2638,8 @@ function CardVeiculo({
   const atalhos: [string, string, typeof Gauge][] = [
     ["Sinais do motor", `/app/frota/sinais?veiculo=${id}`, Activity],
     ["Tracking do dia", `/app/frota/tracking?veiculo=${encodeURIComponent(v.prefixo)}`, Gauge],
-    ["Eventos", "/app/eventos", AlertTriangle],
+    // Eventos já filtrados neste veículo (PM, 13/10/2026: abria a lista da frota inteira e demorava).
+    ["Eventos", `/app/eventos?unidade=${id}&placa=${encodeURIComponent(v.placa)}`, AlertTriangle],
     ...(v.tem_camera
       ? ([["Câmera ao vivo", "/app/seguranca/video", Camera]] as [string, string, typeof Gauge][])
       : []),

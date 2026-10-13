@@ -115,6 +115,8 @@ const iconBox = (t: PillTone) =>
 /** Duas visões: a lista por evento (de sempre) e a linha do tempo da frota. */
 export default function Eventos() {
   const [visao, setVisao] = useState<"lista" | "timeline">(() => {
+    // Vindo do CCO com um veículo: abre direto a lista dele.
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("unidade")) return "lista";
     try {
       return (localStorage.getItem("ss:eventos:visao") as "lista" | "timeline") || "lista";
     } catch {
@@ -169,6 +171,14 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
     const data = q.get("data");
     return data && /^\d{4}-\d{2}-\d{2}$/.test(data) ? { data, veiculo: (q.get("veiculo") ?? "").toLowerCase(), hora: q.get("hora") ?? "" } : null;
   }, []);
+  // Veículo pedido pelo endereço (botão Eventos do box do CCO): só os eventos dele, e a consulta
+  // de condução já vem filtrada no servidor — a da frota inteira demorava a carregar.
+  const [soVeiculo, setSoVeiculo] = useState<{ unidade: string; placa: string } | null>(() => {
+    if (typeof window === "undefined") return null;
+    const q = new URLSearchParams(window.location.search);
+    const unidade = q.get("unidade");
+    return unidade ? { unidade, placa: q.get("placa") ?? "" } : null;
+  });
   const [filtros, setFiltros] = useState<FleetFilterValue>({ veiculo: "Todos", motorista: "Todos", data: pedido?.data ?? (usandoMock() ? "2026-07-24" : iso(new Date())) });
   const [pedidoAtendido, setPedidoAtendido] = useState(false);
   const [origem, setOrigem] = useState<"todas" | "alarme" | "conducao">("todas");
@@ -199,7 +209,7 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
   const alarmesQ = useQuery(alarmesListaQuery(horasJanela));
   // Eventos de condução do dia (freada, aceleração, velocidade, faixas…) e os
   // totais consolidados, que chegam antes do detalhe.
-  const conducaoQ = useQuery(listaEventosBIQuery(filtros.data, {}, 5000));
+  const conducaoQ = useQuery(listaEventosBIQuery(filtros.data, soVeiculo ? { placa: soVeiculo.unidade } : {}, 5000));
   const totaisQ = useQuery(serieBIQuery({ inicio: filtros.data, fim: filtros.data }));
   const totDia = totaisQ.data?.dias[0];
   const carga = conducaoQ.data?.ultimo_carregado ?? null;
@@ -292,12 +302,14 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
     () =>
       base.filter(
         (e) =>
+          (!soVeiculo ||
+            (e.unitId != null ? String(e.unitId) === soVeiculo.unidade : !!soVeiculo.placa && e.veiculo.toUpperCase().includes(soVeiculo.placa.toUpperCase()))) &&
           (filtros.veiculo === "Todos" || e.veiculo === filtros.veiculo) &&
           (filtros.motorista === "Todos" || e.motorista === filtros.motorista) &&
           (gravFiltro === "todas" || e.gravidade === gravFiltro) &&
           (origem === "todas" || e.origem === origem),
       ),
-    [base, filtros, gravFiltro, origem],
+    [base, filtros, gravFiltro, origem, soVeiculo],
   );
 
   const naoVistos = lista.filter((e) => !e.visto && !vistos.has(e.id)).length;
@@ -348,6 +360,19 @@ function EventosLista({ alternar }: { alternar: React.ReactNode }) {
       />
 
       <div className="mx-auto max-w-[1760px] space-y-4 px-4 py-4 md:px-6">
+        {soVeiculo && (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-navy/30 bg-navy-tint px-3 py-2 text-[13px]">
+            <Truck className="h-4 w-4 text-brand-navy" />
+            Mostrando só os eventos do veículo <b className="font-mono">{soVeiculo.placa || soVeiculo.unidade}</b>
+            <button
+              type="button"
+              onClick={() => setSoVeiculo(null)}
+              className="ml-auto rounded-md border border-border bg-white px-2 py-1 text-[12px] hover:bg-secondary"
+            >
+              Ver a frota toda
+            </button>
+          </div>
+        )}
         {usandoMock() && (
         <HeroBanner
           orb

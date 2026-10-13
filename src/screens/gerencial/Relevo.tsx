@@ -14,11 +14,7 @@ import {
 } from "lucide-react";
 import { Card, DataTable, Pill, type Column } from "@/components/ss/ui/data";
 import { classeRelevo, relevoResumoQuery, type ResumoRelevo } from "@/lib/relevo-api";
-import {
-  GraficoRelevoDia,
-  RelacaoRelevo,
-  type PontoRelacao,
-} from "@/components/ss/frota/RelacaoRelevo";
+import { GraficoRelevoDia } from "@/components/ss/frota/RelacaoRelevo";
 import { RelevoDetalhe } from "@/components/ss/frota/RelevoDetalhe";
 import { PerfilDoDia } from "@/components/ss/frota/PerfilDoDia";
 import { iso, nf } from "@/lib/gerencial-api";
@@ -79,8 +75,6 @@ export function PaginaRelevo({ f }: Ctx) {
   const tendencia = janelaTendencia(f);
   const qT = useQuery(relevoResumoQuery(tendencia.f));
   const [por, setPor] = useState<"veiculo" | "motorista">("veiculo");
-  // Relação condução × relevo × consumo: cada ponto um motorista, um veículo ou um dia (PM, 13/10/2026).
-  const [pontoDe, setPontoDe] = useState<"motorista" | "veiculo" | "dia">("motorista");
   // Clique num motorista ou veículo abre a mesma janela de Relevo da tela de Motoristas.
   const [aberto, setAberto] = useState<{
     tipo: "veiculo" | "motorista";
@@ -109,32 +103,6 @@ export function PaginaRelevo({ f }: Ctx) {
     .filter((v) => v.kml != null && v.kml > 0.3 && v.kml < 8)
     .map((v) => ({ x: v.subida_por_100km ?? 0, y: v.kml ?? 0, z: v.km, nome: v.placa }));
   const diasTendencia = (tendencia.estendida ? qT.data?.por_dia : r?.por_dia) ?? [];
-  const pontosRelacao: PontoRelacao[] =
-    pontoDe === "motorista"
-      ? motoristas
-          .filter((m) => m.driver_id)
-          .map((m) => ({
-            nome: m.nome ?? String(m.driver_id),
-            subida: m.subida_por_100km,
-            eco: m.pct_faixa_eco ?? null,
-            kml: m.kml,
-            km: m.km,
-          }))
-      : pontoDe === "veiculo"
-        ? veiculos.map((v) => ({
-            nome: v.placa,
-            subida: v.subida_por_100km,
-            eco: v.pct_faixa_eco ?? null,
-            kml: v.kml,
-            km: v.km,
-          }))
-        : (r?.por_dia ?? []).map((d) => ({
-            nome: ddmm(d.dia),
-            subida: d.subida_por_100km,
-            eco: d.pct_faixa_eco ?? null,
-            kml: d.kml ?? null,
-            km: d.km,
-          }));
   const corr = r?.correlacao_kml;
   const leituraCorr =
     corr == null
@@ -413,44 +381,6 @@ export function PaginaRelevo({ f }: Ctx) {
             Nenhum veículo com km medido no período.
           </p>
         )}
-      </Card>
-
-      <Card
-        title="Relação condução × altitude × consumo"
-        icon={Fuel}
-        action={
-          <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
-            {(["motorista", "veiculo", "dia"] as const).map((x) => (
-              <button
-                key={x}
-                onClick={() => setPontoDe(x)}
-                className={cn(
-                  "rounded-md px-3 py-1 text-[12px] font-medium",
-                  pontoDe === x ? "bg-white shadow-sm" : "text-muted-foreground",
-                )}
-              >
-                {x === "motorista" ? "Por motorista" : x === "veiculo" ? "Por veículo" : "Por dia"}
-              </button>
-            ))}
-          </div>
-        }
-        bodyClassName="p-4"
-      >
-        <RelacaoRelevo
-          pontos={pontosRelacao}
-          unidade={
-            pontoDe === "motorista" ? "motoristas" : pontoDe === "veiculo" ? "veículos" : "dias"
-          }
-          kmMin={pontoDe === "dia" ? 20 : KM_MINIMO}
-          porVeiculoDia={(r?.por_veiculo_dia ?? []).map((x) => ({
-            nome: `${x.placa} · ${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
-            subida: x.subida_por_100km,
-            eco: x.pct_faixa_eco ?? null,
-            kml: x.kml ?? null,
-            km: x.km,
-            grupo: x.unit_id,
-          }))}
-        />
       </Card>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">

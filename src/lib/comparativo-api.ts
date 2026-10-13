@@ -25,6 +25,14 @@ export type IndicadorComparativo = {
   p75?: number;
   melhor?: number;
   iguais: { nome: string; valor: number }[];
+  /** Base externa estimada (só no consumo por porte da carga). */
+  referencia_mercado?: {
+    min: number;
+    max: number;
+    base: string;
+    fonte: string;
+    estimada: boolean;
+  } | null;
 };
 
 export type Comparativo = {

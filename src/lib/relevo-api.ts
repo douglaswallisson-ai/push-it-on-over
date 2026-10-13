@@ -134,3 +134,39 @@ export function classeRelevo(subidaPor100km: number | null | undefined) {
   if (subidaPor100km < 1500) return { rotulo: "Montanhoso", cor: "#E0803C" };
   return { rotulo: "Serra", cor: "var(--coral)" };
 }
+
+/** Dia inteiro de um veículo no tempo: rotação, velocidade, altitude, combustível e faixa (relevo.py /telemetria-dia). */
+export type TelemetriaDia = {
+  unit_id: number;
+  dia: string;
+  leituras?: number;
+  altitude_do_equipamento: boolean;
+  pontos: {
+    hora: string;
+    rpm: number;
+    velocidade: number;
+    altitude: number | null;
+    combustivel: number | null;
+    faixa: string | null;
+    ignicao: boolean;
+    motorista: string | null;
+  }[];
+  faixas_rpm: { faixa: number; nome: string; de: number; ate: number; leituras: number }[];
+  tempo_por_faixa: { faixa: string; min: number; pct: number }[];
+};
+
+export const telemetriaDiaQuery = (
+  unitId: string | number | undefined,
+  dia: string,
+  driverId?: string | number,
+) =>
+  queryOptions({
+    queryKey: ["relevo", "telemetria-dia", String(unitId ?? ""), dia, String(driverId ?? "")],
+    queryFn: () =>
+      api.get<TelemetriaDia>(
+        `/api/v1/relevo/telemetria-dia${qs({ unit_id: unitId, dia, driver_id: driverId })}`,
+      ),
+    enabled: !usandoMock() && Boolean(unitId && dia),
+    retry: semRepetir,
+    staleTime: 5 * 60_000,
+  });

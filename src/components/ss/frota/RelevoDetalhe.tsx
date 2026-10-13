@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Mountain, X } from "lucide-react";
 import { PerfilElevacao } from "@/components/ss/frota/PerfilElevacao";
 import { GraficoRelevoDia, RelacaoRelevo } from "@/components/ss/frota/RelacaoRelevo";
+import { GraficoTelemetriaDia } from "@/components/ss/frota/GraficoTelemetriaDia";
 import { datasDoPeriodo, iso, ontem } from "@/lib/gerencial-api";
 import { classeRelevo, relevoResumoQuery, relevoTrajetoQuery } from "@/lib/relevo-api";
 import { usandoMock } from "@/lib/modo";
@@ -101,10 +102,16 @@ export function RelevoDetalhe({
     }),
   );
   const [dia, setDia] = useState(iso(ontem()));
+  // Motorista: os dias que ele rodou, com o veículo de cada um (mais recente primeiro), para o gráfico do dia.
+  const [escolha, setEscolha] = useState(0);
   const trajQ = useQuery(relevoTrajetoQuery(tipo === "veiculo" ? id : undefined, dia));
   const t = q.data?.totais;
   const c = classeRelevo(t?.subida_por_100km);
   const dias = q.data?.por_dia ?? [];
+  const diasMotorista = [...(q.data?.por_veiculo_dia ?? [])].sort(
+    (a, b) => b.dia.localeCompare(a.dia) || b.km - a.km,
+  );
+  const alvo = diasMotorista[Math.min(escolha, Math.max(0, diasMotorista.length - 1))];
   // Um ponto por dia, para a relação condução × relevo × consumo.
   const pontos = dias.map((x) => ({
     nome: ddmm(x.dia),
@@ -181,11 +188,65 @@ export function RelevoDetalhe({
                   dias={dias}
                   inicio={q.data?.inicio ?? d.inicio}
                   fim={q.data?.fim ?? d.fim}
-                  onDia={tipo === "veiculo" ? setDia : undefined}
+                  onDia={(d) => {
+                    if (tipo === "veiculo") setDia(d);
+                    else {
+                      const i = diasMotorista.findIndex((x) => x.dia === d);
+                      if (i >= 0) setEscolha(i);
+                    }
+                  }}
                 />
                 {tipo === "veiculo" && (
                   <p className="mt-1 text-[12px] text-muted-foreground">
                     Clique numa barra para ver o perfil daquele dia abaixo.
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-end gap-2 text-[13px]">
+                  {tipo === "motorista" ? (
+                    diasMotorista.length > 0 && (
+                      <>
+                        Dia e veículo
+                        <select
+                          value={Math.min(escolha, diasMotorista.length - 1)}
+                          onChange={(e) => setEscolha(Number(e.target.value))}
+                          className="h-8 rounded-lg border border-border bg-white px-2"
+                        >
+                          {diasMotorista.map((x, i) => (
+                            <option key={`${x.unit_id}-${x.dia}`} value={i}>
+                              {ddmm(x.dia)} · {x.placa} · {Math.round(x.km)} km
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    )
+                  ) : (
+                    <>
+                      Dia
+                      <input
+                        type="date"
+                        value={dia}
+                        max={iso(ontem())}
+                        onChange={(e) => e.target.value && setDia(e.target.value)}
+                        className="h-8 rounded-lg border border-border bg-white px-2"
+                      />
+                    </>
+                  )}
+                </div>
+                {tipo === "veiculo" ? (
+                  <GraficoTelemetriaDia unitId={id} dia={dia} rotulo={nome} />
+                ) : alvo ? (
+                  <GraficoTelemetriaDia
+                    unitId={alvo.unit_id}
+                    dia={alvo.dia}
+                    driverId={id}
+                    rotulo={`${nome} · ${alvo.placa}`}
+                  />
+                ) : (
+                  <p className="rounded-2xl border border-border bg-card p-4 text-[13px] text-muted-foreground">
+                    Nenhum dia com 20 km ou mais deste motorista nos últimos 30 dias para mostrar o
+                    gráfico do dia.
                   </p>
                 )}
               </div>

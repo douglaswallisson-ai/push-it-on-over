@@ -91,3 +91,30 @@ export function forca(r2: number | null | undefined): string {
   if (r2 < 0.6) return "forte";
   return "muito forte";
 }
+
+/**
+ * Tira a média de cada grupo (veículo): o que sobra é a variação do mesmo veículo de um dia para o
+ * outro. Comparar veículos diferentes mistura modelo, carga e rota — com a CECOTI, entre veículos a
+ * subida parecia melhorar o consumo; no mesmo caminhão, piora (análise de 13/10/2026).
+ */
+export function centrarPorGrupo<T extends { grupo: string | number; w?: number }>(
+  pontos: T[],
+  campos: (keyof T)[],
+): T[] {
+  const por = new Map<string | number, T[]>();
+  for (const p of pontos) por.set(p.grupo, [...(por.get(p.grupo) ?? []), p]);
+  const out: T[] = [];
+  for (const lista of por.values()) {
+    if (lista.length < 2) continue; // um dia só não tem variação dentro do veículo
+    const sw = lista.reduce((s, p) => s + (p.w ?? 1), 0);
+    const media = Object.fromEntries(
+      campos.map((c) => [c, lista.reduce((s, p) => s + (p.w ?? 1) * (p[c] as number), 0) / sw]),
+    );
+    for (const p of lista)
+      out.push({
+        ...p,
+        ...Object.fromEntries(campos.map((c) => [c, (p[c] as number) - media[c as string]])),
+      });
+  }
+  return out;
+}

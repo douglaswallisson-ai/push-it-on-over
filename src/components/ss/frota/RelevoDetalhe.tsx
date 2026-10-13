@@ -189,7 +189,19 @@ export function RelevoDetalhe({
                   </p>
                 )}
               </div>
-              <RelacaoRelevo pontos={pontos} unidade="dias" kmMin={20} />
+              <RelacaoRelevo
+                pontos={pontos}
+                unidade="dias"
+                kmMin={20}
+                porVeiculoDia={(q.data?.por_veiculo_dia ?? []).map((x) => ({
+                  nome: `${x.placa} · ${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
+                  subida: x.subida_por_100km,
+                  eco: x.pct_faixa_eco ?? null,
+                  kml: x.kml ?? null,
+                  km: x.km,
+                  grupo: x.unit_id,
+                }))}
+              />
               {tipo === "veiculo" && (
                 <>
                   <div className="flex items-center justify-end gap-2 text-[13px]">

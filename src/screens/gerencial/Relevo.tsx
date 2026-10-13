@@ -381,6 +381,14 @@ export function PaginaRelevo({ f }: Ctx) {
             pontoDe === "motorista" ? "motoristas" : pontoDe === "veiculo" ? "veículos" : "dias"
           }
           kmMin={pontoDe === "dia" ? 20 : KM_MINIMO}
+          porVeiculoDia={(r?.por_veiculo_dia ?? []).map((x) => ({
+            nome: `${x.placa} · ${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}`,
+            subida: x.subida_por_100km,
+            eco: x.pct_faixa_eco ?? null,
+            kml: x.kml ?? null,
+            km: x.km,
+            grupo: x.unit_id,
+          }))}
         />
       </Card>
 

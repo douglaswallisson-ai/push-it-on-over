@@ -46,6 +46,7 @@ import {
 import { toast } from "sonner";
 import { SSOrb } from "@/components/ss/brand/SSOrb";
 import { NOME_TIPO, svgVeiculo } from "@/components/ss/mapa/iconesVeiculo";
+import { agrupar as agruparPorRegiao, type Grupo } from "@/components/ss/mapa/agrupar";
 import {
   AREAS,
   avancar,
@@ -129,6 +130,8 @@ type Estado = {
   soCidade?: boolean;
   /** Visual de telão: mapa escuro, veículos em destaque. */
   escuro?: boolean;
+  /** Agrupar os carros por região conforme o zoom (pedido do CEO, 13/10/2026). Padrão: ligado. */
+  agrupar?: boolean;
   /** Janela aberta para uma TV ("Espalhar nas TVs"): área a enquadrar ao abrir. */
   caixaInicial?: [number, number, number, number] | null;
   janelaTV?: boolean;
@@ -942,6 +945,18 @@ export default function PainelCCO() {
           )}
           <label
             className="flex h-7 cursor-pointer items-center gap-1 rounded-md border border-border px-2"
+            title="Junta os carros por estado, cidade ou bairro conforme o zoom; clique no grupo para aproximar"
+          >
+            <input
+              id="cco-agrupar"
+              type="checkbox"
+              checked={est.agrupar !== false}
+              onChange={(e) => mudar({ agrupar: e.target.checked })}
+            />
+            Agrupar por região
+          </label>
+          <label
+            className="flex h-7 cursor-pointer items-center gap-1 rounded-md border border-border px-2"
             title="Mapa escuro, com os veículos em destaque (para telão)"
           >
             <input
@@ -1080,6 +1095,7 @@ export default function PainelCCO() {
                   criticos={criticosIds}
                   sinalEnquadrar={sinalEnquadrar}
                   enquadrarEm={regioes?.[i] ?? null}
+                  agrupar={est.agrupar !== false}
                   contorno={contorno}
                   escuro={Boolean(est.escuro)}
                   caixaInicial={i === 0 ? (est.caixaInicial ?? null) : null}
@@ -1409,6 +1425,7 @@ function MapaCCO({
   criticos,
   sinalEnquadrar,
   enquadrarEm,
+  agrupar,
   contorno,
   escuro,
   caixaInicial,
@@ -1417,6 +1434,8 @@ function MapaCCO({
   seguindoId,
   areas,
 }: {
+  /** Agrupar os carros por região (estado, cidade, bairro) conforme o zoom. */
+  agrupar: boolean;
   /** Contorno oficial da cidade (IBGE): fora dele o mapa fica escuro e não deixa sair da área. */
   contorno: ContornoCidade | null;
   escuro: boolean;
@@ -1512,22 +1531,14 @@ function MapaCCO({
           caixa={!enquadrarEm && contorno ? contorno.caixa : null}
         />
         {seguindoId && <Seguir alvo={veiculos.find((v) => String(v.id) === seguindoId)} />}
-        {veiculos.map((v) => (
-          <Marker
-            key={v.id}
-            position={[v.lat, v.lng]}
-            icon={icone(v, String(selId) === String(v.id), criticos.has(String(v.id)))}
-            zIndexOffset={
-              (criticos.has(String(v.id)) ? 4000 : ESCALA[v.cor]) +
-              (String(selId) === String(v.id) ? 5000 : 0)
-            }
-            eventHandlers={{ click: () => onSelecionar(v.id) }}
-          >
-            <Tooltip direction="top" offset={[0, -10]}>
-              {NOME_TIPO[v.tipo]} {v.prefixo} · {v.placa} · {ROTULO_COR[v.cor]}
-            </Tooltip>
-          </Marker>
-        ))}
+        <MarcadoresCCO
+          veiculos={veiculos}
+          selId={selId}
+          criticos={criticos}
+          onSelecionar={onSelecionar}
+          agrupar={agrupar}
+          fixo={seguindoId}
+        />
       </MapContainer>
       <div className="absolute right-2 top-2 z-[400] flex items-center gap-1 rounded-md bg-white/95 px-1.5 py-1 text-[12px] shadow">
         <button
@@ -1758,6 +1769,124 @@ function Focar({
     else if (v) map.setView([v.lat, v.lng], Math.max(map.getZoom(), 12), { animate: false });
   }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
+}
+
+const ICONES_GRUPO = new Map<string, L.DivIcon>();
+
+/** Ícone do grupo: número de veículos; vermelho piscando se algum tem alerta crítico em aberto. */
+function iconeGrupo(n: number, cor: string, critico: boolean, nome: string) {
+  const chave = `${n}|${cor}|${critico}|${nome}`;
+  const pronto = ICONES_GRUPO.get(chave);
+  if (pronto) return pronto;
+  const d = n >= 100 ? 46 : n >= 20 ? 40 : 34;
+  // Nome só nos grupos maiores: no centro da cidade os bairros são vizinhos e os nomes se encavalavam.
+  const rotulo =
+    nome && n >= 5
+      ? `<span style="margin-top:3px;padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.92);color:#16263a;font:600 11px/1.3 ui-sans-serif,system-ui;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25)">${nome}</span>`
+      : "";
+  const novo = L.divIcon({
+    className: "",
+    html: `<div style="transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:max-content;cursor:pointer"><span class="${critico ? "cco-pisca" : ""}" style="display:flex;align-items:center;justify-content:center;width:${d}px;height:${d}px;border-radius:50%;background:${cor};color:#fff;border:3px solid rgba(255,255,255,.9);box-shadow:0 0 0 4px ${cor}55,0 2px 6px rgba(15,25,40,.45);font:800 ${n >= 100 ? 14 : 13}px/1 ui-sans-serif,system-ui">${n}</span>${rotulo}</div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+  });
+  ICONES_GRUPO.set(chave, novo);
+  return novo;
+}
+
+/**
+ * Carros no mapa, agrupados por região conforme o zoom (components/ss/mapa/agrupar.ts). Clique no grupo:
+ * o mapa aproxima até mostrar os carros dele. O carro selecionado ou seguido fica sempre fora do grupo.
+ */
+function MarcadoresCCO({
+  veiculos,
+  selId,
+  criticos,
+  onSelecionar,
+  agrupar: ligado,
+  fixo,
+}: {
+  veiculos: VeiculoPainel[];
+  selId: string | number | null;
+  criticos: Set<string>;
+  onSelecionar: (id: string | number) => void;
+  agrupar: boolean;
+  fixo: string | null;
+}) {
+  const map = useMap();
+  const [vista, setVista] = useState(0);
+  useMapEvents({ zoomend: () => setVista((n) => n + 1), moveend: () => setVista((n) => n + 1) });
+  const grupos = useMemo(() => {
+    const fora = (v: VeiculoPainel) => String(v.id) === String(selId) || String(v.id) === fixo;
+    if (!ligado)
+      return veiculos.map((v) => ({ soltos: [v], g: null as null | Grupo<VeiculoPainel> }));
+    const z = map.getZoom();
+    const gs = agruparPorRegiao(
+      veiculos.filter((v) => !fora(v)),
+      z,
+      (lat, lng) => map.project([lat, lng], z),
+    );
+    return [
+      ...veiculos
+        .filter(fora)
+        .map((v) => ({ soltos: [v], g: null as null | Grupo<VeiculoPainel> })),
+      ...gs.map((g) =>
+        g.itens.length === 1
+          ? { soltos: g.itens, g: null as null | Grupo<VeiculoPainel> }
+          : { soltos: [] as VeiculoPainel[], g },
+      ),
+    ];
+  }, [veiculos, ligado, vista, selId, fixo, map]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <>
+      {grupos.flatMap(({ soltos, g }) => {
+        if (g) {
+          const nCrit = g.itens.filter((v) => criticos.has(String(v.id))).length;
+          const andando = g.itens.filter((v) => v.cor === "verde").length;
+          const cor = nCrit ? COR_HEX.vermelho : andando ? COR_HEX.verde : COR_HEX.cinza;
+          return [
+            <Marker
+              key={g.chave}
+              position={[g.lat, g.lng]}
+              icon={iconeGrupo(g.itens.length, cor, nCrit > 0, g.nome)}
+              zIndexOffset={nCrit ? 4500 : 3500}
+              eventHandlers={{
+                click: () => {
+                  const b = L.latLngBounds(g.itens.map((v) => [v.lat, v.lng] as [number, number]));
+                  // Todos quase no mesmo ponto (garagem): aproxima até soltar.
+                  if (b.getNorthEast().distanceTo(b.getSouthWest()) < 30)
+                    map.setView(b.getCenter(), 17, { animate: true });
+                  else map.fitBounds(b.pad(0.15), { maxZoom: 17, animate: true });
+                },
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -18]}>
+                {g.nome ? `${g.nome} · ` : ""}
+                {g.itens.length} veículos · {andando} em movimento
+                {nCrit ? ` · ${nCrit} com alerta crítico` : ""} — clique para ver
+              </Tooltip>
+            </Marker>,
+          ];
+        }
+        return soltos.map((v) => (
+          <Marker
+            key={v.id}
+            position={[v.lat, v.lng]}
+            icon={icone(v, String(selId) === String(v.id), criticos.has(String(v.id)))}
+            zIndexOffset={
+              (criticos.has(String(v.id)) ? 4000 : ESCALA[v.cor]) +
+              (String(selId) === String(v.id) ? 5000 : 0)
+            }
+            eventHandlers={{ click: () => onSelecionar(v.id) }}
+          >
+            <Tooltip direction="top" offset={[0, -10]}>
+              {NOME_TIPO[v.tipo]} {v.prefixo} · {v.placa} · {ROTULO_COR[v.cor]}
+            </Tooltip>
+          </Marker>
+        ));
+      })}
+    </>
+  );
 }
 
 /**

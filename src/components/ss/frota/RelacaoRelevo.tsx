@@ -12,7 +12,8 @@ import {
   ZAxis,
 } from "recharts";
 import { classeRelevo } from "@/lib/relevo-api";
-import { forca, regressao, regressao2, type Reta } from "@/lib/regressao";
+import { useState } from "react";
+import { centrarPorGrupo, forca, regressao, regressao2, type Reta } from "@/lib/regressao";
 
 /**
  * Relação condução × relevo × consumo (PM, 13/10/2026): três dispersões com a reta de tendência
@@ -30,6 +31,8 @@ export type PontoRelacao = {
   eco: number | null;
   kml: number | null;
   km: number;
+  /** Veículo do ponto (comparação "o mesmo veículo, dia a dia"). */
+  grupo?: string | number;
 };
 
 const nf = (v: number | null | undefined, c = 0) =>
@@ -70,17 +73,34 @@ function Dispersao({
   x,
   y,
   leitura,
+  dentro = false,
 }: {
   titulo: string;
   pontos: PontoRelacao[];
   x: Eixo;
   y: Eixo;
   leitura: (r: Reta) => string;
+  /** Inclinação de dentro do mesmo veículo (cada um comparado com ele mesmo). */
+  dentro?: boolean;
 }) {
   const dados = pontos
     .filter((p) => p[x] != null && p[y] != null)
     .map((p) => ({ x: p[x] as number, y: p[y] as number, z: p.km, nome: p.nome, p }));
-  const r = regressao(dados.map((d) => ({ x: d.x, y: d.y, w: d.z })));
+  let r = regressao(dados.map((d) => ({ x: d.x, y: d.y, w: d.z })));
+  if (dentro) {
+    const c = centrarPorGrupo(
+      dados
+        .filter((d) => d.p.grupo != null)
+        .map((d) => ({ grupo: d.p.grupo as string | number, x: d.x, y: d.y, w: d.z })),
+      ["x", "y"],
+    );
+    const rw = regressao(c);
+    const sw = dados.reduce((t, d) => t + d.z, 0) || 1;
+    const mx = dados.reduce((t, d) => t + d.z * d.x, 0) / sw;
+    const my = dados.reduce((t, d) => t + d.z * d.y, 0) / sw;
+    // Reta com a inclinação de dentro do veículo, passando pela média geral.
+    r = rw ? { a: my - rw.b * mx, b: rw.b, r2: rw.r2, n: rw.n } : null;
+  }
   const reta = linhaDe(
     r,
     dados.map((d) => d.x),
@@ -210,12 +230,47 @@ export function RelacaoRelevo({
   pontos,
   unidade,
   kmMin,
+  porVeiculoDia,
 }: {
   pontos: PontoRelacao[];
   unidade: string;
   kmMin: number;
+  /** Um ponto por veículo e dia: permite comparar cada veículo com ele mesmo. */
+  porVeiculoDia?: PontoRelacao[];
 }) {
-  const v = pontosValidos(pontos, kmMin);
+  // Padrão: o mesmo veículo, dia a dia (comparar veículos diferentes mistura modelo, carga e rota).
+  const vd = pontosValidos(porVeiculoDia ?? [], 20);
+  const repetidos = new Map<string | number, number>();
+  for (const p of vd)
+    if (p.grupo != null) repetidos.set(p.grupo, (repetidos.get(p.grupo) ?? 0) + 1);
+  const temDentro = [...repetidos.values()].filter((n) => n >= 2).length >= 1 && vd.length >= 5;
+  const [modo, setModo] = useState<"mesmo" | "entre">("mesmo");
+  const dentro = temDentro && modo === "mesmo";
+  const seletor = temDentro && (
+    <div className="flex gap-1 rounded-lg bg-secondary p-0.5 text-[12px]">
+      {(
+        [
+          ["mesmo", "Mesmo veículo, dia a dia"],
+          ["entre", `Entre ${unidade}`],
+        ] as const
+      ).map(([k, rot]) => (
+        <button
+          key={k}
+          type="button"
+          onClick={() => setModo(k)}
+          className={
+            modo === k
+              ? "rounded-md bg-white px-3 py-1 font-medium shadow-sm"
+              : "rounded-md px-3 py-1 text-muted-foreground"
+          }
+        >
+          {rot}
+        </button>
+      ))}
+    </div>
+  );
+  if (dentro) unidade = "dias de veículo";
+  const v = dentro ? vd : pontosValidos(pontos, kmMin);
   if (v.length < 3) {
     const km = pontos.reduce((t, p) => t + (p.km || 0), 0);
     return (
@@ -230,23 +285,40 @@ export function RelacaoRelevo({
       </div>
     );
   }
-  const m = regressao2(
-    v
-      .filter((p) => p.subida != null && p.eco != null)
-      .map((p) => ({ x1: p.subida as number, x2: p.eco as number, y: p.kml as number, w: p.km })),
-  );
+  const base = v
+    .filter((p) => p.subida != null && p.eco != null)
+    .map((p) => ({
+      grupo: p.grupo ?? p.nome,
+      x1: p.subida as number,
+      x2: p.eco as number,
+      y: p.kml as number,
+      w: p.km,
+    }));
+  const m = regressao2(dentro ? centrarPorGrupo(base, ["x1", "x2", "y"]) : base);
   return (
     <div className="space-y-3">
       <div className="rounded-2xl border border-border bg-card px-4 py-3 text-[13px]">
-        <p className="font-semibold">Condução × relevo × consumo</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-semibold">Condução × relevo × consumo</p>
+          {seletor}
+        </div>
+        {dentro && (
+          <p className="text-[12px] text-muted-foreground">
+            Cada veículo comparado com ele mesmo de um dia para o outro: tira o efeito do modelo, da
+            carga habitual e da rota.
+          </p>
+        )}
         {m ? (
           <p className="text-muted-foreground">
-            Descontando um do outro ({m.n} {unidade}, com {kmMin}+ km): cada{" "}
+            Descontando um do outro ({m.n} {unidade}, com {dentro ? 20 : kmMin}+ km): cada{" "}
             <b className="text-foreground">+100 m de subida por 100 km</b> muda o consumo em{" "}
             <b className="text-foreground">{nf(m.b1 * 100, 2)} km/l</b>, e cada{" "}
             <b className="text-foreground">+10 pontos na faixa econômica</b> muda em{" "}
             <b className="text-foreground">{nf(m.b2 * 10, 2)} km/l</b>. Juntos explicam{" "}
-            {nf(m.r2 * 100)}% da diferença de consumo (R² {nf(m.r2, 2)}).
+            {nf(m.r2 * 100)}% da diferença de consumo (R² {nf(m.r2, 2)})
+            {m.r2 < 0.1
+              ? " — é pouco: o consumo depende mais de carga, rota e velocidade do que destes dois."
+              : "."}
           </p>
         ) : (
           <p className="text-muted-foreground">
@@ -265,6 +337,7 @@ export function RelacaoRelevo({
           x="subida"
           y="kml"
           leitura={(r) => `cada +100 m de subida: ${nf(r.b * 100, 2)} km/l`}
+          dentro={dentro}
         />
         <Dispersao
           titulo="Faixa de condução × consumo"
@@ -272,6 +345,7 @@ export function RelacaoRelevo({
           x="eco"
           y="kml"
           leitura={(r) => `cada +10 pontos na faixa econômica: ${nf(r.b * 10, 2)} km/l`}
+          dentro={dentro}
         />
         <Dispersao
           titulo="Altitude × faixa de condução"
@@ -279,6 +353,7 @@ export function RelacaoRelevo({
           x="subida"
           y="eco"
           leitura={(r) => `cada +100 m de subida: ${nf(r.b * 100, 1)} pontos na faixa econômica`}
+          dentro={dentro}
         />
       </div>
     </div>

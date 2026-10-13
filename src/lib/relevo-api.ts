@@ -37,6 +37,9 @@ export type ResumoRelevo = {
   por_motorista: (MetricasRelevo &
     FaixaConducao & { driver_id: number; nome: string | null; kml: number | null })[];
   por_dia: (MetricasRelevo & FaixaConducao & { dia: string; kml?: number | null })[];
+  /** Veículo × dia (20+ km), para comparar cada veículo com ele mesmo. */
+  por_veiculo_dia?: (MetricasRelevo &
+    FaixaConducao & { unit_id: number; placa: string; dia: string; kml?: number | null })[];
   correlacao_kml: number | null;
   fonte?: string;
 };

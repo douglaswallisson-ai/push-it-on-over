@@ -456,9 +456,11 @@ export default function RoteirizacaoReal() {
     return (
       <>
         <PageHeader title="Roteirização" subtitle="Rota, tempo, combustível e pedágio" />
-        <p className="px-8 py-6 text-[13px] text-muted-foreground">
-          Escolha uma empresa no topo do menu.
+        <p className="mx-auto max-w-[1760px] px-4 pt-3 text-[13px] text-muted-foreground md:px-6">
+          Para as rotas do cliente, as áreas de risco e a programação, escolha uma empresa no topo do
+          menu. A rota automática de fretamento abaixo não depende da empresa.
         </p>
+        <FretamentoAutomatico />
       </>
     );
   }

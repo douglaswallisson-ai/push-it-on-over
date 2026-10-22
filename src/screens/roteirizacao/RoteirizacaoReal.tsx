@@ -41,6 +41,7 @@ import { CadastrosApi, type Registro } from "@/lib/cadastros-api";
 import { cn } from "@/lib/utils";
 import { CHAVE_ROTOGRAMA, COR_NIVEL, ROTULO_NIVEL, type NivelRisco } from "@/lib/rotas-seguras-api";
 import { AreasRisco } from "@/screens/roteirizacao/AreasRisco";
+import { FretamentoAutomatico } from "@/screens/roteirizacao/FretamentoAutomatico";
 import { ListaProgramacao, ProgramarViagem } from "@/screens/roteirizacao/Programacao";
 
 /**
@@ -169,7 +170,7 @@ function Enquadrar({ pontos }: { pontos: [number, number][] }) {
   return null;
 }
 
-type Aba = "rota" | "areas" | "programacao";
+type Aba = "rota" | "automatica" | "areas" | "programacao";
 
 export default function RoteirizacaoReal() {
   const g = grupoAtivo();
@@ -481,6 +482,7 @@ export default function RoteirizacaoReal() {
         {(
           [
             ["rota", "Rota", Route],
+            ["automatica", "Rota automática de fretamento", Sparkles],
             ["areas", "Áreas de risco", ShieldAlert],
             ["programacao", "Programação de viagens", CalendarClock],
           ] as const
@@ -499,6 +501,10 @@ export default function RoteirizacaoReal() {
             <I className="h-4 w-4" /> {rot}
           </button>
         ))}
+      </div>
+      {/* Montada sempre (escondida fora da aba) para não perder a planilha ao trocar de aba. */}
+      <div className={cn(aba !== "automatica" && "hidden")}>
+        <FretamentoAutomatico />
       </div>
       {aba === "areas" && <AreasRisco grupo={g} />}
       {aba === "programacao" && <ListaProgramacao grupo={g} />}

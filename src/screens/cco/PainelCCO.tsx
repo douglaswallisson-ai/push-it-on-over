@@ -979,13 +979,13 @@ export default function PainelCCO() {
           )}
           {/* rel="opener": o login fica no sessionStorage e só passa para a aba nova assim (como o Sinótico). */}
           <a
-            href="/consumo-modelo"
+            href="/painel-operacional"
             target="_blank"
             rel="opener"
-            title="Abre o consumo por modelo numa nova aba"
+            title="Abre o painel operacional numa nova aba"
             className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 hover:bg-secondary"
           >
-            <Fuel className="h-3.5 w-3.5" /> Consumo por modelo
+            <Fuel className="h-3.5 w-3.5" /> Painel operacional
           </a>
           {moduloUrbano && (
             <a

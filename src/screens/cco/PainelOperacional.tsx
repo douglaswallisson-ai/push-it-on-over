@@ -1,20 +1,22 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronDown, ChevronRight, Fuel, Loader2 } from "lucide-react";
 import {
-  consumoModeloQuery,
+  hojeAoVivoQuery,
+  painelOperacionalQuery,
   variacao,
   type CelulaConsumo,
   type ColunaConsumo,
-  type ConsumoModelo,
+  type HojeAoVivo,
+  type PainelOperacional as DadosPainel,
   type RegraVariacao,
-} from "@/lib/consumo-modelo-api";
+} from "@/lib/painel-operacional-api";
 import { empresasQuery } from "@/lib/queries";
 import { mensagemErro } from "@/lib/suporte-api";
 import { cn } from "@/lib/utils";
 
 /**
- * Consumo por Modelo (PM, 31/10/2026): km/l por modelo mês a mês, indicadores gerais e os veículos com
+ * Painel Operacional (PM, 31/10/2026): km/l por modelo mês a mês, indicadores gerais e os veículos com
  * falha de dados de telemetria. Tela própria, aberta em nova aba pelo CCO, pensada também para TV.
  * A variação do mês atual é sempre contra o mesmo período do mês anterior, nunca contra o mês cheio.
  */
@@ -118,7 +120,7 @@ function Bloco({
 
 /** Quais blocos estão abertos; lembrado neste navegador. Fechado, o bloco mostra só a linha que o resume. */
 type Grupo = "consumo" | "indicadores" | "qualidade";
-const CHAVE_ABERTOS = "ss:consumo-modelo:abertos";
+const CHAVE_ABERTOS = "ss:painel-operacional:abertos";
 
 function useBlocosAbertos() {
   const [abertos, setAbertos] = useState<Record<Grupo, boolean>>(() => {
@@ -233,7 +235,7 @@ function LinhaNumero({
   );
 }
 
-function Tabela({ d }: { d: ConsumoModelo }) {
+function Tabela({ d }: { d: DadosPainel }) {
   const colunas = d.colunas.filter((c) => !c.oculta);
   const n = colunas.length + 1;
   const a = d.qualidade_andamento;
@@ -258,6 +260,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
                   "sticky top-0 z-20 min-w-[104px] border-b border-border px-3 py-3 text-right text-[13px] font-bold",
                   c.tipo === "atual" ? "bg-brand-navy text-white" : "bg-card",
                   c.tipo === "anterior" && "text-muted-foreground",
+                  c.tipo === "hoje" && "bg-coral text-white",
                 )}
               >
                 {c.rotulo}
@@ -319,6 +322,16 @@ function Tabela({ d }: { d: ConsumoModelo }) {
               dica="Km rodados ÷ tempo em viagem"
             />
           )}
+          {abertos.indicadores && (
+            <LinhaNumero
+              nome="Altitude média (m)"
+              valores={d.altitude}
+              colunas={colunas}
+              regra="neutra"
+              calculando={calculando}
+              dica="Altitude informada pelo rastreador com o veículo andando. Só conta quem manda esse dado: sem nenhum, aparece —"
+            />
+          )}
 
           <Bloco
             titulo="Qualidade do dado: veículos com falha de dados de telemetria"
@@ -378,12 +391,77 @@ function Tabela({ d }: { d: ConsumoModelo }) {
   );
 }
 
-export default function ConsumoPorModelo() {
+/** Junta a coluna de hoje (ao vivo) às colunas do painel. Hoje não tem seta: dia parcial não se compara. */
+function comHoje(d: DadosPainel, h: HojeAoVivo | undefined): DadosPainel {
+  if (!h) return d;
+  const lido = new Date(h.lido_em).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+  const k = "hoje";
+  const coluna = {
+    chave: k,
+    rotulo: `Hoje, ao vivo (${lido})`,
+    tipo: "hoje" as const,
+    inicio: h.lido_em.slice(0, 10),
+    fim: h.lido_em.slice(0, 10),
+    oculta: false,
+  };
+  const nomes = new Set(d.modelos.map((m) => m.modelo));
+  const modelos = [
+    ...d.modelos.map((m) => ({
+      modelo: m.modelo,
+      celulas: h.modelos[m.modelo] ? { ...m.celulas, [k]: h.modelos[m.modelo] } : m.celulas,
+    })),
+    ...Object.entries(h.modelos)
+      .filter(([m]) => !nomes.has(m))
+      .map(([modelo, c]) => ({ modelo, celulas: { [k]: c } })),
+  ];
+  const q = d.qualidade;
+  return {
+    ...d,
+    colunas: [...d.colunas, coluna],
+    modelos,
+    frota: { ...d.frota, [k]: h.frota },
+    diesel: { ...d.diesel, [k]: h.diesel },
+    custo_km: { ...d.custo_km, [k]: h.custo_km },
+    velocidade: { ...d.velocidade, [k]: h.velocidade },
+    altitude: { ...d.altitude, [k]: h.altitude },
+    qualidade: {
+      rpm: { ...q.rpm, [k]: h.qualidade.rpm },
+      pedal: { ...q.pedal, [k]: h.qualidade.pedal },
+      velocidade: { ...q.velocidade, [k]: h.qualidade.velocidade },
+      offline: { ...q.offline, [k]: h.qualidade.offline },
+      total: { ...q.total, [k]: h.qualidade.total },
+    },
+  };
+}
+
+/** Segundos desde a última busca, correndo na tela. */
+function AoVivo({ lidoEm }: { lidoEm?: string }) {
+  const [agora, setAgora] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (!lidoEm) return null;
+  const s = Math.max(0, Math.round((agora - new Date(lidoEm).getTime()) / 1000));
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-coral">
+      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-coral" /> Ao vivo · atualizado há{" "}
+      {s} s
+    </span>
+  );
+}
+
+export default function PainelOperacional() {
   const [grupo, setGrupo] = useState(""); // padrão: todos os clientes
   const [meses, setMeses] = useState(6);
-  const q = useQuery(consumoModeloQuery(grupo, meses));
+  const q = useQuery(painelOperacionalQuery(grupo, meses));
+  const hoje = useQuery(hojeAoVivoQuery(grupo));
   const empresas = useQuery(empresasQuery());
-  const d = q.data;
+  const d = useMemo(() => (q.data ? comHoje(q.data, hoje.data) : undefined), [q.data, hoje.data]);
   const quando = d ? new Date(d.atualizado_em) : null;
   const campo = "h-10 rounded-lg border border-border bg-white px-3 text-[15px]";
 
@@ -391,7 +469,8 @@ export default function ConsumoPorModelo() {
     <div className="flex h-screen flex-col gap-3 bg-canvas p-4">
       <header className="flex flex-wrap items-center gap-3">
         <Fuel className="h-6 w-6 text-brand-navy" />
-        <h1 className="font-display text-[24px] font-bold">Consumo por Modelo</h1>
+        <h1 className="font-display text-[24px] font-bold">Painel Operacional</h1>
+        <AoVivo lidoEm={hoje.data?.lido_em} />
         <div className="ml-auto flex flex-wrap items-center gap-2 text-[14px]">
           <label className="flex items-center gap-1.5">
             Cliente
@@ -423,7 +502,7 @@ export default function ConsumoPorModelo() {
 
       {q.isPending ? (
         <div className="flex flex-1 items-center justify-center gap-2 text-[16px] text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" /> Carregando o consumo por modelo…
+          <Loader2 className="h-5 w-5 animate-spin" /> Carregando o painel operacional…
         </div>
       ) : q.isError ? (
         <div className="flex flex-1 items-center justify-center text-[16px] text-coral">

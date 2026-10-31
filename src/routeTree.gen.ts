@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as CcoRouteImport } from './routes/cco'
 import { Route as ConsoleRouteImport } from './routes/console'
+import { Route as ConsumoModeloRouteImport } from './routes/consumo-modelo'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RotogramaRouteImport } from './routes/rotograma'
@@ -122,6 +123,11 @@ const CcoRoute = CcoRouteImport.update({
 const ConsoleRoute = ConsoleRouteImport.update({
   id: '/console',
   path: '/console',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumoModeloRoute = ConsumoModeloRouteImport.update({
+  id: '/consumo-modelo',
+  path: '/consumo-modelo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmbedRoute = EmbedRouteImport.update({
@@ -593,6 +599,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
+  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
@@ -687,6 +694,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cco': typeof CcoRoute
+  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
@@ -784,6 +792,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
+  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
   '/rotograma': typeof RotogramaRoute
@@ -882,6 +891,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/cco'
     | '/console'
+    | '/consumo-modelo'
     | '/embed'
     | '/login'
     | '/rotograma'
@@ -976,6 +986,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cco'
+    | '/consumo-modelo'
     | '/embed'
     | '/login'
     | '/rotograma'
@@ -1072,6 +1083,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/cco'
     | '/console'
+    | '/consumo-modelo'
     | '/embed'
     | '/login'
     | '/rotograma'
@@ -1169,6 +1181,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   CcoRoute: typeof CcoRoute
   ConsoleRoute: typeof ConsoleRouteWithChildren
+  ConsumoModeloRoute: typeof ConsumoModeloRoute
   EmbedRoute: typeof EmbedRoute
   LoginRoute: typeof LoginRoute
   RotogramaRoute: typeof RotogramaRoute
@@ -1203,6 +1216,13 @@ declare module '@tanstack/react-router' {
       path: '/console'
       fullPath: '/console'
       preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumo-modelo': {
+      id: '/consumo-modelo'
+      path: '/consumo-modelo'
+      fullPath: '/consumo-modelo'
+      preLoaderRoute: typeof ConsumoModeloRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/embed': {
@@ -2052,6 +2072,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   CcoRoute: CcoRoute,
   ConsoleRoute: ConsoleRouteWithChildren,
+  ConsumoModeloRoute: ConsumoModeloRoute,
   EmbedRoute: EmbedRoute,
   LoginRoute: LoginRoute,
   RotogramaRoute: RotogramaRoute,

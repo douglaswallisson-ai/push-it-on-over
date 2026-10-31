@@ -239,6 +239,8 @@ function Tabela({ d }: { d: ConsumoModelo }) {
   const a = d.qualidade_andamento;
   const calculando = !a.erro && a.feitos < a.total;
   const { abertos, alternar } = useBlocosAbertos();
+  // Modelo sem km/l em nenhuma coluna visível só teria traços: fica fora da lista (segue na média da frota).
+  const modelos = d.modelos.filter((m) => colunas.some((c) => m.celulas[c.chave]?.kml != null));
   return (
     <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-border bg-card">
       <table className="w-full border-separate border-spacing-0">
@@ -265,13 +267,13 @@ function Tabela({ d }: { d: ConsumoModelo }) {
         </thead>
         <tbody>
           <Bloco
-            titulo={`Consumo por modelo (km/l): ${d.modelos.length} modelos`}
+            titulo={`Consumo por modelo (km/l): ${modelos.length} modelos`}
             n={n}
             aberto={abertos.consumo}
             onAlternar={() => alternar("consumo")}
           />
           {abertos.consumo &&
-            d.modelos.map((m) => (
+            modelos.map((m) => (
               <LinhaConsumo
                 key={m.modelo}
                 nome={m.modelo}

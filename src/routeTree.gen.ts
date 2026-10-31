@@ -13,9 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as CcoRouteImport } from './routes/cco'
 import { Route as ConsoleRouteImport } from './routes/console'
-import { Route as ConsumoModeloRouteImport } from './routes/consumo-modelo'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PainelOperacionalRouteImport } from './routes/painel-operacional'
 import { Route as RotogramaRouteImport } from './routes/rotograma'
 import { Route as SinoticoRouteImport } from './routes/sinotico'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -125,11 +125,6 @@ const ConsoleRoute = ConsoleRouteImport.update({
   path: '/console',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsumoModeloRoute = ConsumoModeloRouteImport.update({
-  id: '/consumo-modelo',
-  path: '/consumo-modelo',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EmbedRoute = EmbedRouteImport.update({
   id: '/embed',
   path: '/embed',
@@ -138,6 +133,11 @@ const EmbedRoute = EmbedRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelOperacionalRoute = PainelOperacionalRouteImport.update({
+  id: '/painel-operacional',
+  path: '/painel-operacional',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RotogramaRoute = RotogramaRouteImport.update({
@@ -599,9 +599,9 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
-  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
+  '/painel-operacional': typeof PainelOperacionalRoute
   '/rotograma': typeof RotogramaRoute
   '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
@@ -694,9 +694,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cco': typeof CcoRoute
-  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
+  '/painel-operacional': typeof PainelOperacionalRoute
   '/rotograma': typeof RotogramaRoute
   '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
@@ -792,9 +792,9 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/cco': typeof CcoRoute
   '/console': typeof ConsoleRouteWithChildren
-  '/consumo-modelo': typeof ConsumoModeloRoute
   '/embed': typeof EmbedRoute
   '/login': typeof LoginRoute
+  '/painel-operacional': typeof PainelOperacionalRoute
   '/rotograma': typeof RotogramaRoute
   '/sinotico': typeof SinoticoRoute
   '/app/$': typeof AppSplatRoute
@@ -891,9 +891,9 @@ export interface FileRouteTypes {
     | '/app'
     | '/cco'
     | '/console'
-    | '/consumo-modelo'
     | '/embed'
     | '/login'
+    | '/painel-operacional'
     | '/rotograma'
     | '/sinotico'
     | '/app/$'
@@ -986,9 +986,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cco'
-    | '/consumo-modelo'
     | '/embed'
     | '/login'
+    | '/painel-operacional'
     | '/rotograma'
     | '/sinotico'
     | '/app/$'
@@ -1083,9 +1083,9 @@ export interface FileRouteTypes {
     | '/app'
     | '/cco'
     | '/console'
-    | '/consumo-modelo'
     | '/embed'
     | '/login'
+    | '/painel-operacional'
     | '/rotograma'
     | '/sinotico'
     | '/app/$'
@@ -1181,9 +1181,9 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   CcoRoute: typeof CcoRoute
   ConsoleRoute: typeof ConsoleRouteWithChildren
-  ConsumoModeloRoute: typeof ConsumoModeloRoute
   EmbedRoute: typeof EmbedRoute
   LoginRoute: typeof LoginRoute
+  PainelOperacionalRoute: typeof PainelOperacionalRoute
   RotogramaRoute: typeof RotogramaRoute
   SinoticoRoute: typeof SinoticoRoute
 }
@@ -1218,13 +1218,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/consumo-modelo': {
-      id: '/consumo-modelo'
-      path: '/consumo-modelo'
-      fullPath: '/consumo-modelo'
-      preLoaderRoute: typeof ConsumoModeloRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/embed': {
       id: '/embed'
       path: '/embed'
@@ -1237,6 +1230,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-operacional': {
+      id: '/painel-operacional'
+      path: '/painel-operacional'
+      fullPath: '/painel-operacional'
+      preLoaderRoute: typeof PainelOperacionalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rotograma': {
@@ -2072,9 +2072,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   CcoRoute: CcoRoute,
   ConsoleRoute: ConsoleRouteWithChildren,
-  ConsumoModeloRoute: ConsumoModeloRoute,
   EmbedRoute: EmbedRoute,
   LoginRoute: LoginRoute,
+  PainelOperacionalRoute: PainelOperacionalRoute,
   RotogramaRoute: RotogramaRoute,
   SinoticoRoute: SinoticoRoute,
 }

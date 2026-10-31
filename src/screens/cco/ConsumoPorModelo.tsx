@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Fuel, Loader2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Fuel, Loader2 } from "lucide-react";
 import {
   consumoModeloQuery,
   variacao,
@@ -78,23 +78,68 @@ function CabecalhoLinha({ children, forte }: { children: ReactNode; forte?: bool
   );
 }
 
-function Bloco({ titulo, n, alerta }: { titulo: string; n: number; alerta?: boolean }) {
+function Bloco({
+  titulo,
+  n,
+  alerta,
+  aberto,
+  onAlternar,
+}: {
+  titulo: string;
+  n: number;
+  alerta?: boolean;
+  aberto: boolean;
+  onAlternar: () => void;
+}) {
+  const Seta = aberto ? ChevronDown : ChevronRight;
   return (
     <tr>
       <th
         colSpan={n}
         scope="colgroup"
         className={cn(
-          "px-3 py-2 text-left text-[14px] font-bold text-white",
+          "p-0 text-left text-[14px] font-bold text-white",
           alerta ? "bg-coral" : "bg-brand-navy",
         )}
       >
-        <span className="sticky left-3 inline-flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onAlternar}
+          aria-expanded={aberto}
+          className="sticky left-0 inline-flex w-max items-center gap-1.5 px-3 py-2 hover:underline"
+        >
+          <Seta className="h-5 w-5" />
           {alerta && <AlertTriangle className="h-4 w-4" />} {titulo}
-        </span>
+        </button>
       </th>
     </tr>
   );
+}
+
+/** Quais blocos estão abertos; lembrado neste navegador. Fechado, o bloco mostra só a linha que o resume. */
+type Grupo = "consumo" | "indicadores" | "qualidade";
+const CHAVE_ABERTOS = "ss:consumo-modelo:abertos";
+
+function useBlocosAbertos() {
+  const [abertos, setAbertos] = useState<Record<Grupo, boolean>>(() => {
+    const padrao = { consumo: false, indicadores: false, qualidade: false };
+    try {
+      return { ...padrao, ...JSON.parse(localStorage.getItem(CHAVE_ABERTOS) ?? "{}") };
+    } catch {
+      return padrao;
+    }
+  });
+  const alternar = (g: Grupo) =>
+    setAbertos((x) => {
+      const novo = { ...x, [g]: !x[g] };
+      try {
+        localStorage.setItem(CHAVE_ABERTOS, JSON.stringify(novo));
+      } catch {
+        /* só perde a lembrança */
+      }
+      return novo;
+    });
+  return { abertos, alternar };
 }
 
 function LinhaConsumo({
@@ -193,6 +238,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
   const n = colunas.length + 1;
   const a = d.qualidade_andamento;
   const calculando = !a.erro && a.feitos < a.total;
+  const { abertos, alternar } = useBlocosAbertos();
   return (
     <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-border bg-card">
       <table className="w-full border-separate border-spacing-0">
@@ -218,28 +264,42 @@ function Tabela({ d }: { d: ConsumoModelo }) {
           </tr>
         </thead>
         <tbody>
-          <Bloco titulo="Consumo por modelo (km/l)" n={n} />
-          {d.modelos.map((m) => (
-            <LinhaConsumo
-              key={m.modelo}
-              nome={m.modelo}
-              celulas={m.celulas}
-              colunas={d.colunas.filter((c) => !c.oculta)}
-            />
-          ))}
+          <Bloco
+            titulo={`Consumo por modelo (km/l): ${d.modelos.length} modelos`}
+            n={n}
+            aberto={abertos.consumo}
+            onAlternar={() => alternar("consumo")}
+          />
+          {abertos.consumo &&
+            d.modelos.map((m) => (
+              <LinhaConsumo
+                key={m.modelo}
+                nome={m.modelo}
+                celulas={m.celulas}
+                colunas={d.colunas.filter((c) => !c.oculta)}
+              />
+            ))}
           <LinhaConsumo nome="Média da frota" celulas={d.frota} colunas={colunas} forte />
           {/* "Com pedal / sem pedal": significado a confirmar com o PM. Quando confirmar, as linhas entram aqui. */}
 
-          <Bloco titulo="Indicadores gerais" n={n} />
-          <LinhaNumero
-            nome="Preço do diesel (R$/L)"
-            valores={d.diesel}
-            colunas={colunas}
-            regra="subir_ruim"
-            casas={2}
-            dica="ANP, média dos estados no período"
+          <Bloco
+            titulo="Indicadores gerais"
+            n={n}
+            aberto={abertos.indicadores}
+            onAlternar={() => alternar("indicadores")}
           />
+          {abertos.indicadores && (
+            <LinhaNumero
+              nome="Preço do diesel (R$/L)"
+              valores={d.diesel}
+              colunas={colunas}
+              regra="subir_ruim"
+              casas={2}
+              dica="ANP, média dos estados no período"
+            />
+          )}
           <LinhaNumero
+            forte={!abertos.indicadores}
             nome="Custo por km (R$/km)"
             valores={d.custo_km}
             colunas={colunas}
@@ -247,52 +307,60 @@ function Tabela({ d }: { d: ConsumoModelo }) {
             casas={2}
             dica="Preço do diesel ÷ km/l da frota"
           />
-          <LinhaNumero
-            nome="Velocidade média (km/h)"
-            valores={d.velocidade}
-            colunas={colunas}
-            regra="neutra"
-            casas={1}
-            dica="Km rodados ÷ tempo em viagem"
-          />
+          {abertos.indicadores && (
+            <LinhaNumero
+              nome="Velocidade média (km/h)"
+              valores={d.velocidade}
+              colunas={colunas}
+              regra="neutra"
+              casas={1}
+              dica="Km rodados ÷ tempo em viagem"
+            />
+          )}
 
           <Bloco
             titulo="Qualidade do dado: veículos com falha de dados de telemetria"
             n={n}
             alerta
+            aberto={abertos.qualidade}
+            onAlternar={() => alternar("qualidade")}
           />
-          <LinhaNumero
-            nome="Não gera RPM"
-            valores={d.qualidade.rpm}
-            colunas={colunas}
-            regra="subir_ruim"
-            calculando={calculando}
-            dica="Rodou mais de 1 km no período e nenhuma leitura com RPM"
-          />
-          <LinhaNumero
-            nome="Não gera pedal"
-            valores={d.qualidade.pedal}
-            colunas={colunas}
-            regra="subir_ruim"
-            calculando={calculando}
-            dica="Rodou mais de 1 km no período e nenhuma leitura com pedal do acelerador"
-          />
-          <LinhaNumero
-            nome="Não gera velocidade"
-            valores={d.qualidade.velocidade}
-            colunas={colunas}
-            regra="subir_ruim"
-            calculando={calculando}
-            dica="Rodou mais de 1 km no período e nenhuma leitura com velocidade do CAN"
-          />
-          <LinhaNumero
-            nome="Offline"
-            valores={d.qualidade.offline}
-            colunas={colunas}
-            regra="subir_ruim"
-            calculando={calculando}
-            dica="Veículo ativo sem nenhuma leitura no último dia do período"
-          />
+          {abertos.qualidade && (
+            <>
+              <LinhaNumero
+                nome="Não gera RPM"
+                valores={d.qualidade.rpm}
+                colunas={colunas}
+                regra="subir_ruim"
+                calculando={calculando}
+                dica="Rodou mais de 1 km no período e nenhuma leitura com RPM"
+              />
+              <LinhaNumero
+                nome="Não gera pedal"
+                valores={d.qualidade.pedal}
+                colunas={colunas}
+                regra="subir_ruim"
+                calculando={calculando}
+                dica="Rodou mais de 1 km no período e nenhuma leitura com pedal do acelerador"
+              />
+              <LinhaNumero
+                nome="Não gera velocidade"
+                valores={d.qualidade.velocidade}
+                colunas={colunas}
+                regra="subir_ruim"
+                calculando={calculando}
+                dica="Rodou mais de 1 km no período e nenhuma leitura com velocidade do CAN"
+              />
+              <LinhaNumero
+                nome="Offline"
+                valores={d.qualidade.offline}
+                colunas={colunas}
+                regra="subir_ruim"
+                calculando={calculando}
+                dica="Veículo ativo sem nenhuma leitura no último dia do período"
+              />
+            </>
+          )}
           <LinhaNumero
             nome="Total de veículos com falha"
             valores={d.qualidade.total}

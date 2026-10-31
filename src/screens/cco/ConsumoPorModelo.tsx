@@ -335,7 +335,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
                 colunas={colunas}
                 regra="subir_ruim"
                 calculando={calculando}
-                dica="Rodou mais de 1 km no período e nenhuma leitura com RPM"
+                dica="Rodou mais de 1 km no período e nenhuma leitura com RPM (sem Passeio e Pickup)"
               />
               <LinhaNumero
                 nome="Não gera pedal"
@@ -343,7 +343,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
                 colunas={colunas}
                 regra="subir_ruim"
                 calculando={calculando}
-                dica="Rodou mais de 1 km no período e nenhuma leitura com pedal do acelerador"
+                dica="Rodou mais de 1 km no período e nenhuma leitura com pedal do acelerador (sem Passeio e Pickup)"
               />
               <LinhaNumero
                 nome="Não gera velocidade"
@@ -351,7 +351,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
                 colunas={colunas}
                 regra="subir_ruim"
                 calculando={calculando}
-                dica="Rodou mais de 1 km no período e nenhuma leitura com velocidade do CAN"
+                dica="Rodou mais de 1 km no período e nenhuma leitura com velocidade do CAN (sem Passeio e Pickup)"
               />
               <LinhaNumero
                 nome="Offline"
@@ -359,7 +359,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
                 colunas={colunas}
                 regra="subir_ruim"
                 calculando={calculando}
-                dica="Veículo ativo sem nenhuma leitura no último dia do período"
+                dica="Veículo ativo sem nenhuma leitura no último dia do período (sem Passeio e Pickup)"
               />
             </>
           )}
@@ -370,7 +370,7 @@ function Tabela({ d }: { d: ConsumoModelo }) {
             regra="subir_ruim"
             forte
             calculando={calculando}
-            dica="Cada veículo conta uma vez, mesmo com mais de uma falha"
+            dica="Cada veículo conta uma vez, mesmo com mais de uma falha (sem Passeio e Pickup)"
           />
         </tbody>
       </table>
@@ -384,9 +384,7 @@ export default function ConsumoPorModelo() {
   const q = useQuery(consumoModeloQuery(grupo, meses));
   const empresas = useQuery(empresasQuery());
   const d = q.data;
-  const a = d?.qualidade_andamento;
   const quando = d ? new Date(d.atualizado_em) : null;
-  const atual = d?.qualidade.total.atual;
   const campo = "h-10 rounded-lg border border-border bg-white px-3 text-[15px]";
 
   return (
@@ -422,25 +420,6 @@ export default function ConsumoPorModelo() {
           </label>
         </div>
       </header>
-
-      {atual != null && atual > 0 && (
-        <p className="flex items-center gap-2 rounded-lg border-2 border-coral bg-coral-tint px-3 py-2 text-[15px] font-semibold text-coral">
-          <AlertTriangle className="h-5 w-5 shrink-0" />
-          {nf(atual)} veículo(s) com falha de dados de telemetria no mês atual: sem dado confiável,
-          o km/l também não é confiável.
-        </p>
-      )}
-      {a && !a.erro && a.feitos < a.total && (
-        <p className="text-[13px] text-muted-foreground">
-          Calculando o histórico da qualidade do dado: {nf(a.feitos)} de {nf(a.total)} dias. Pode
-          fechar a página; o cálculo continua no servidor.
-        </p>
-      )}
-      {a?.erro && (
-        <p className="text-[13px] text-coral">
-          Não foi possível calcular a qualidade do dado agora; tenta de novo no próximo acesso.
-        </p>
-      )}
 
       {q.isPending ? (
         <div className="flex flex-1 items-center justify-center gap-2 text-[16px] text-muted-foreground">

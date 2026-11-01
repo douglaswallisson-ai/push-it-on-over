@@ -2,10 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
   indicadoresSerieQuery,
   linhasQuery,
-  multasQuery,
   nf,
   ordensQuery,
-  pneusQuery,
   videoOcorrenciasQuery,
   viagensOperacaoQuery,
 } from "@/lib/queries";
@@ -32,9 +30,7 @@ const brl = (v: number, casas = 2) =>
 
 export const SUGESTOES_ASSISTENTE = [
   "Resuma a operação do último mês e compare com o anterior",
-  "Quais veículos estão com pneu abaixo do mínimo?",
   "Como está o cumprimento de programação hoje?",
-  "Quais multas têm prazo de indicação vencendo?",
   "Qual o custo de manutenção em aberto?",
   "Onde estão os maiores riscos de segurança?",
 ];
@@ -42,9 +38,7 @@ export const SUGESTOES_ASSISTENTE = [
 export function useAssistente() {
   const serieQ = useQuery(indicadoresSerieQuery());
   const viagensQ = useQuery(viagensOperacaoQuery(dataOperacao(new Date())));
-  const pneusQ = useQuery(pneusQuery());
   const ordensQ = useQuery(ordensQuery());
-  const multasQ = useQuery(multasQuery());
   const videoQ = useQuery(videoOcorrenciasQuery());
   const linhasQ = useQuery(linhasQuery());
 
@@ -81,18 +75,7 @@ export function useAssistente() {
     }
 
     if (p.includes("pneu")) {
-      const pneus = pneusQ.data ?? [];
-      const criticos = pneus.filter((x) => x.status === "em_uso" && x.sulcoMm <= x.sulcoMinimoMm);
-      const proximos = pneus.filter((x) => x.status === "em_uso" && x.sulcoMm > x.sulcoMinimoMm && x.sulcoMm <= 3);
-      if (!pneus.length) return "Não há pneus cadastrados no sistema ainda.";
-      return [
-        `${criticos.length} pneu(s) abaixo do sulco mínimo de 1,6 mm:`,
-        ...criticos.map((x) => `• ${x.fogo} — ${x.marca}, posição ${x.posicao}, sulco ${x.sulcoMm.toFixed(1)} mm`),
-        ``,
-        `Outros ${proximos.length} estão entre 1,6 e 3 mm e devem entrar em programação.`,
-        ``,
-        `Rodar abaixo do mínimo é infração e retém o veículo em fiscalização, então esses são de troca imediata.`,
-      ].join("\n");
+      return "Os pneus ficam na tela de Pneus, em Manutenção. Por aqui ainda não respondo sobre eles.";
     }
 
     if (p.includes("programa") || p.includes("viagem") || p.includes("cumprimento")) {
@@ -114,17 +97,8 @@ export function useAssistente() {
       ].join("\n");
     }
 
-    if (p.includes("multa") || p.includes("indica")) {
-      const multas = multasQ.data ?? [];
-      const pend = multas.filter((m) => m.status === "pendente_indicacao");
-      return [
-        `${pend.length} multa(s) pendente(s) de indicação de condutor:`,
-        ...pend.map((m) => `• ${m.ait} — ${m.infracao}, ${brl(m.valor)}`),
-        ``,
-        `Sem indicar no prazo, a pontuação recai sobre a empresa e o valor costuma dobrar.`,
-        ``,
-        `⚠ O sistema não tem integração com o Detran, então essas multas foram lançadas manualmente. Pode haver autuação não registrada aqui.`,
-      ].join("\n");
+    if (p.includes("multa")) {
+      return "As multas ficam no quadro de Multas. Por aqui ainda não respondo sobre elas.";
     }
 
     if (p.includes("manuten") || p.includes("custo") || p.includes("os") || p.includes("ordem")) {
@@ -178,7 +152,7 @@ export function useAssistente() {
     return [
       `Não consegui responder com os dados que tenho carregados.`,
       ``,
-      `Hoje consigo falar sobre: indicadores mensais e comparativos, cumprimento de programação, pneus, ordens de serviço e custo de manutenção, multas e ocorrências de vídeo.`,
+      `Hoje consigo falar sobre: indicadores mensais e comparativos, cumprimento de programação, ordens de serviço e custo de manutenção e ocorrências de vídeo.`,
       ``,
       `Prefiro dizer isso a arriscar um número errado.`,
     ].join("\n");

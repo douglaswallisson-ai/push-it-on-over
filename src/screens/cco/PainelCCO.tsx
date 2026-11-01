@@ -322,7 +322,9 @@ export default function PainelCCO() {
   const embutido = Boolean(lerEmbutido());
   const [est, setEst] = useState<Estado>(lerEstado);
   const { layout, vistas, fonte, abaAvisos } = est;
-  const grupo = ehSS ? est.grupo : grupoAtivo();
+  // A empresa do menu lateral manda. Sem ela, vale a do seletor ou a da janela aberta para uma TV.
+  const doMenu = grupoAtivo();
+  const grupo = doMenu ?? (ehSS || est.janelaTV ? est.grupo : undefined);
   const chaveGrupo = grupo ?? "";
   const selecoes = est.selecoes[chaveGrupo] ?? VAZIO;
   const q = useQuery(painelCCOQuery(grupo, JANELA_AO_VIVO_H));
@@ -332,7 +334,7 @@ export default function PainelCCO() {
   const contem = useRef<((lat: number, lng: number) => boolean)[]>([]);
   const [cheia, setCheia] = useState(false);
   const [ocultos, setOcultos] = useState<Set<string>>(new Set());
-  const empresasQ = useQuery({ ...empresasQuery(), enabled: ehSS && !mock });
+  const empresasQ = useQuery({ ...empresasQuery(), enabled: ehSS && !mock && !doMenu });
   // Áreas de risco do cliente desenhadas nos mapas (só com uma empresa escolhida).
   const areasQ = useQuery(areasRiscoQuery(grupo));
   const areasRisco = areasQ.data?.data ?? [];
@@ -747,7 +749,7 @@ export default function PainelCCO() {
             exemplo
           </span>
         )}
-        {ehSS && !mock && (
+        {ehSS && !mock && !doMenu && (
           <select
             id="cco-empresa"
             value={grupo ?? ""}

@@ -488,8 +488,8 @@ export const periodoPorMes = (p: string) => MOCK_INDICADORES_PERIODO.find((x) =>
 /* ------------------------------------------------------------------ */
 
 import type {
-  Jornada, Multa, OcorrenciaVideo, OrdemServico,
-  PlanoManutencao, Pneu, TipoAlarmeVideo,
+  Jornada, OcorrenciaVideo, OrdemServico,
+  PlanoManutencao, TipoAlarmeVideo,
 } from "@/types";
 
 const hAtras = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
@@ -533,17 +533,6 @@ export const MOCK_PLANOS: PlanoManutencao[] = [
 ];
 
 /* ---- Bloco 2: pneus ---- */
-export const MOCK_PNEUS: Pneu[] = [
-  { id: "pn1", fogo: "F-10241", marca: "Michelin", medida: "295/80 R22.5", veiculoId: "v1", posicao: "1DE", vidas: 0, maxVidas: 3, sulcoMm: 12.4, sulcoMinimoMm: 1.6, pressaoPsi: 118, kmAcumulado: 42800, custoAquisicao: 2890, instaladoEm: dAtras(180), status: "em_uso" },
-  { id: "pn2", fogo: "F-10242", marca: "Michelin", medida: "295/80 R22.5", veiculoId: "v1", posicao: "1DD", vidas: 0, maxVidas: 3, sulcoMm: 12.1, sulcoMinimoMm: 1.6, pressaoPsi: 116, kmAcumulado: 42800, custoAquisicao: 2890, instaladoEm: dAtras(180), status: "em_uso" },
-  { id: "pn3", fogo: "F-09877", marca: "Pirelli", medida: "295/80 R22.5", veiculoId: "v1", posicao: "2TEE", vidas: 1, maxVidas: 3, sulcoMm: 4.2, sulcoMinimoMm: 1.6, pressaoPsi: 112, kmAcumulado: 118400, custoAquisicao: 2650, instaladoEm: dAtras(410), status: "em_uso" },
-  { id: "pn4", fogo: "F-09878", marca: "Pirelli", medida: "295/80 R22.5", veiculoId: "v1", posicao: "2TEI", vidas: 1, maxVidas: 3, sulcoMm: 2.1, sulcoMinimoMm: 1.6, pressaoPsi: 109, kmAcumulado: 121200, custoAquisicao: 2650, instaladoEm: dAtras(410), status: "em_uso" },
-  { id: "pn5", fogo: "F-11002", marca: "Goodyear", medida: "295/80 R22.5", veiculoId: "v3", posicao: "1DE", vidas: 0, maxVidas: 3, sulcoMm: 9.8, sulcoMinimoMm: 1.6, pressaoPsi: 120, kmAcumulado: 61300, custoAquisicao: 2740, instaladoEm: dAtras(240), status: "em_uso" },
-  { id: "pn6", fogo: "F-08120", marca: "Bridgestone", medida: "295/80 R22.5", veiculoId: "v5", posicao: "2TDE", vidas: 2, maxVidas: 3, sulcoMm: 1.4, sulcoMinimoMm: 1.6, pressaoPsi: 104, kmAcumulado: 198700, custoAquisicao: 2810, instaladoEm: dAtras(620), status: "em_uso" },
-  { id: "pn7", fogo: "F-11540", marca: "Michelin", medida: "295/80 R22.5", vidas: 0, maxVidas: 3, sulcoMm: 14.0, sulcoMinimoMm: 1.6, kmAcumulado: 0, custoAquisicao: 2890, status: "estoque" },
-  { id: "pn8", fogo: "F-07430", marca: "Pirelli", medida: "295/80 R22.5", vidas: 2, maxVidas: 3, sulcoMm: 1.8, sulcoMinimoMm: 1.6, kmAcumulado: 214500, custoAquisicao: 2650, status: "recapagem" },
-  { id: "pn9", fogo: "F-06011", marca: "Goodyear", medida: "295/80 R22.5", vidas: 3, maxVidas: 3, sulcoMm: 0.9, sulcoMinimoMm: 1.6, kmAcumulado: 289300, custoAquisicao: 2740, status: "sucata" },
-];
 
 /* ---- Bloco 4: ocorrências de vídeo ---- */
 const TIPOS_VIDEO: { t: TipoAlarmeVideo; r: "baixo" | "medio" | "alto"; n: number }[] = [
@@ -616,12 +605,6 @@ export const MOCK_JORNADAS: Jornada[] = [
     minutosTrabalhados: 532, minutosDirecao: 432, minutosEspera: 35, minutosRefeicao: 65, minutosExtras: 52, limiteExtrasMin: 120, fechada: true, infracoes: [] },
 ];
 
-export const MOCK_MULTAS: Multa[] = [
-  { id: "mu1", ait: "AE-2026-884210", veiculoId: "v4", motoristaId: "m4", em: dAtras(9), local: "Av. Paulista, km 2", infracao: "Excesso de velocidade até 20%", gravidade: "media", pontos: 4, valor: 130.16, vencimento: dAtras(-21), prazoIndicacao: dAtras(-6), status: "pendente_indicacao" },
-  { id: "mu2", ait: "AE-2026-881944", veiculoId: "v9", motoristaId: "m2", em: dAtras(24), local: "Rod. Ayrton Senna, km 21", infracao: "Avanço de sinal vermelho", gravidade: "gravissima", pontos: 7, valor: 293.47, vencimento: dAtras(-6), status: "indicada" },
-  { id: "mu3", ait: "AE-2026-878330", veiculoId: "v3", em: dAtras(41), local: "Av. Aricanduva, 5555", infracao: "Estacionar em local proibido", gravidade: "media", pontos: 4, valor: 195.23, vencimento: dAtras(11), status: "em_recurso" },
-  { id: "mu4", ait: "AE-2026-870112", veiculoId: "v1", motoristaId: "m1", em: dAtras(62), local: "Marginal Tietê", infracao: "Faixa exclusiva de ônibus", gravidade: "grave", pontos: 5, valor: 195.23, vencimento: dAtras(32), status: "paga" },
-];
 
 /* ---- Bloco 6: contratos ---- */
 

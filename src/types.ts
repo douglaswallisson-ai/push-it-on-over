@@ -700,30 +700,7 @@ export type PlanoManutencao = {
 };
 
 /** Posição do pneu no veículo, no padrão eixo/lado. */
-export type PosicaoPneu =
-  | "1DE" | "1DD"
-  | "2TEI" | "2TEE" | "2TDI" | "2TDE"
-  | "3TEI" | "3TEE" | "3TDI" | "3TDE"
-  | "estepe";
 
-export type Pneu = {
-  id: string;
-  fogo: string;
-  marca: string;
-  medida: string;
-  veiculoId?: string;
-  posicao?: PosicaoPneu;
-  /** Quantas recapagens já sofreu. Zero = pneu novo. */
-  vidas: number;
-  maxVidas: number;
-  sulcoMm: number;
-  sulcoMinimoMm: number;
-  pressaoPsi?: number;
-  kmAcumulado: number;
-  custoAquisicao: number;
-  instaladoEm?: string;
-  status: "em_uso" | "estoque" | "recapagem" | "sucata";
-};
 
 /* ================================================================== */
 /* BLOCO 4 — Videotelemetria (DMS/ADAS)                               */
@@ -868,22 +845,6 @@ export type Jornada = {
   fechada: boolean;
 };
 
-export type Multa = {
-  id: string;
-  ait: string;
-  veiculoId: string;
-  motoristaId?: string;
-  em: string;
-  local: string;
-  infracao: string;
-  gravidade: "leve" | "media" | "grave" | "gravissima";
-  pontos: number;
-  valor: number;
-  vencimento: string;
-  /** Prazo legal para indicar o condutor. */
-  prazoIndicacao?: string;
-  status: "pendente_indicacao" | "indicada" | "em_recurso" | "paga" | "vencida";
-};
 
 /* ================================================================== */
 

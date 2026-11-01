@@ -17,7 +17,6 @@ import type {
   Motorista,
   OrdemServico,
   Paginated,
-  Pneu,
   PosicaoVeiculo,
   ResumoOperacao,
   Veiculo,
@@ -340,10 +339,6 @@ export const Ordens = {
 export const Planos = {
   list: () => (mock(M.MOCK_PLANOS)),
 };
-export const Pneus = {
-  /** Controle de pneu — sem tabela no backend. */
-  list: () => mock<Pneu[]>(exemploOuVazio(M.MOCK_PNEUS)),
-};
 export const Video = {
   ocorrencias: () =>
     mock(M.MOCK_OCORRENCIAS_VIDEO),
@@ -352,9 +347,6 @@ export const Video = {
 export const Jornadas = {
   list: (data?: string) =>
     mock(M.MOCK_JORNADAS),
-};
-export const Multas = {
-  list: () => (mock(M.MOCK_MULTAS)),
 };
 
 export const CCO = {

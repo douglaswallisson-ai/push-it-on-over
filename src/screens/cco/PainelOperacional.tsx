@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { grupoAtivo } from "@/lib/escopo-ativo";
+import { lerSessao } from "@/lib/session";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronDown, ChevronRight, Fuel, Loader2 } from "lucide-react";
 import {
@@ -456,11 +458,14 @@ function AoVivo({ lidoEm }: { lidoEm?: string }) {
 }
 
 export default function PainelOperacional() {
-  const [grupo, setGrupo] = useState(""); // padrão: todos os clientes
+  // Abre na empresa escolhida no menu lateral. O seletor só existe quando nenhuma foi escolhida: esta aba não tem menu.
+  const doMenu = grupoAtivo();
+  const [escolhido, setEscolhido] = useState("");
+  const grupo = doMenu ?? escolhido;
   const [meses, setMeses] = useState(6);
   const q = useQuery(painelOperacionalQuery(grupo, meses));
   const hoje = useQuery(hojeAoVivoQuery(grupo));
-  const empresas = useQuery(empresasQuery());
+  const empresas = useQuery({ ...empresasQuery(), enabled: !doMenu });
   const d = useMemo(() => (q.data ? comHoje(q.data, hoje.data) : undefined), [q.data, hoje.data]);
   const quando = d ? new Date(d.atualizado_em) : null;
   const campo = "h-10 rounded-lg border border-border bg-white px-3 text-[15px]";
@@ -472,17 +477,25 @@ export default function PainelOperacional() {
         <h1 className="font-display text-[24px] font-bold">Painel Operacional</h1>
         <AoVivo lidoEm={hoje.data?.lido_em} />
         <div className="ml-auto flex flex-wrap items-center gap-2 text-[14px]">
-          <label className="flex items-center gap-1.5">
-            Cliente
-            <select value={grupo} onChange={(e) => setGrupo(e.target.value)} className={campo}>
-              <option value="">Todos</option>
-              {(empresas.data ?? []).map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          {doMenu ? (
+            <span className="font-semibold">{lerSessao()?.organizacaoAtiva}</span>
+          ) : (
+            <label className="flex items-center gap-1.5">
+              Cliente
+              <select
+                value={escolhido}
+                onChange={(e) => setEscolhido(e.target.value)}
+                className={campo}
+              >
+                <option value="">Todos</option>
+                {(empresas.data ?? []).map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="flex items-center gap-1.5">
             Período
             <select

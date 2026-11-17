@@ -110,7 +110,7 @@ export type PneusDoVeiculo = {
   sem_posicao_no_modelo: LinhaPneu[];
 };
 
-const B = "/api/v1/cco/pneus";
+const B = "/api/v1/pneus";
 
 export const pneusQuery = (grupo: string) =>
   queryOptions({

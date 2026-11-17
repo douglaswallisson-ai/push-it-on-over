@@ -15,7 +15,7 @@
  */
 
 export type Gravidade = "critico" | "moderado";
-export type Fonte = "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao";
+export type Fonte = "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao" | "multa";
 export type CorCarro = "vermelho" | "amarelo" | "verde" | "cinza";
 
 export const COR_HEX: Record<CorCarro, string> = {
@@ -87,6 +87,7 @@ export const ROTULO_FONTE: Record<Fonte, string> = {
   manutencao: "Manutenção",
   equipamento: "Equipamento",
   operacao: "Operação",
+  multa: "Multa",
 };
 
 export type Aviso = {

@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { grupoAtivo } from "@/lib/escopo-ativo";
 import { usandoMock } from "@/lib/modo";
+import { Notificacoes } from "@/components/ss/layout/Notificacoes";
 
 /**
  * Cabeçalho branco sticky de cada página — título à esquerda, ações à direita.
@@ -36,11 +37,17 @@ export function PageHeader({
 
   return (
     <header data-tour="page-header" className="sticky top-0 z-10 border-b border-border bg-white">
-      <div className={`flex items-center justify-between gap-4 px-8 py-4 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}>
+      <div
+        className={`flex items-center justify-between gap-4 px-8 py-4 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}
+      >
         <div className="flex min-w-0 items-center gap-4">
           {logo && (
             <>
-              <img src={logo} alt={embutido?.marca.nome ?? "Logo"} className="h-9 max-w-[140px] shrink-0 object-contain" />
+              <img
+                src={logo}
+                alt={embutido?.marca.nome ?? "Logo"}
+                className="h-9 max-w-[140px] shrink-0 object-contain"
+              />
               <span className="h-8 w-px shrink-0 bg-border" aria-hidden />
             </>
           )}
@@ -50,6 +57,7 @@ export function PageHeader({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {actions}
+          <Notificacoes />
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("ss:abrir-busca"))}
@@ -59,14 +67,20 @@ export function PageHeader({
           >
             <Search className="h-4 w-4" />
             <span className="hidden lg:inline">Buscar</span>
-            <kbd className="hidden rounded border border-border bg-secondary px-1.5 text-[12px] lg:inline">Ctrl K</kbd>
+            <kbd className="hidden rounded border border-border bg-secondary px-1.5 text-[12px] lg:inline">
+              Ctrl K
+            </kbd>
           </button>
         </div>
       </div>
       {/* Subtítulo como faixa de migalhas (CoreUI c-subheader). */}
       {subtitle && (
-        <div className={`subheader-cameras flex items-center px-8 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}>
-          <span><b>Início</b> / {subtitle}</span>
+        <div
+          className={`subheader-cameras flex items-center px-8 ${semMenu ? "pl-4 sm:pl-8" : "pl-16 lg:pl-8"}`}
+        >
+          <span>
+            <b>Início</b> / {subtitle}
+          </span>
         </div>
       )}
     </header>

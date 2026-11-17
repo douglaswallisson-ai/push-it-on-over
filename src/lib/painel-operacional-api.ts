@@ -46,7 +46,7 @@ export const painelOperacionalQuery = (grupo: string, meses: number) =>
     queryKey: ["cco", "painel-operacional", grupo, meses],
     queryFn: () =>
       api.get<PainelOperacional>(
-        `/api/v1/cco/painel-operacional?meses=${meses}${grupo ? `&group_id=${grupo}` : ""}`,
+        `/api/v1/painel-operacional?meses=${meses}${grupo ? `&group_id=${grupo}` : ""}`,
       ),
     staleTime: 60_000,
     // Enquanto o histórico da qualidade do dado é calculado, as células vão se completando.
@@ -75,7 +75,7 @@ export const hojeAoVivoQuery = (grupo: string) =>
     queryKey: ["cco", "painel-operacional", "hoje", grupo],
     queryFn: () =>
       api.get<HojeAoVivo>(
-        `/api/v1/cco/painel-operacional/hoje${grupo ? `?group_id=${grupo}` : ""}`,
+        `/api/v1/painel-operacional/hoje${grupo ? `?group_id=${grupo}` : ""}`,
       ),
     refetchInterval: 10_000,
     refetchIntervalInBackground: true,

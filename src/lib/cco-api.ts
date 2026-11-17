@@ -9,7 +9,8 @@ import type { TipoVeiculo } from "@/components/ss/mapa/iconesVeiculo";
  */
 
 export type CorCarro = "vermelho" | "amarelo" | "verde" | "cinza";
-export type FonteAviso = "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao";
+export type FonteAviso =
+  "seguranca" | "camera" | "manutencao" | "equipamento" | "operacao" | "multa";
 
 export type VeiculoPainel = {
   id: number | string;
@@ -39,6 +40,11 @@ export type VeiculoPainel = {
   comunicando: boolean;
   tem_camera: boolean;
   cor: CorCarro;
+  /** Subgrupo do cadastro (garagem). */
+  garagem_id?: number | null;
+  garagem?: string | null;
+  /** Manutenção do plano, nota de risco e multa: não pintam o carro, aparecem como marcador. */
+  marcadores?: Partial<Record<FonteAviso, "critico" | "moderado">>;
 };
 
 export type AvisoPainel = {
@@ -53,6 +59,9 @@ export type AvisoPainel = {
   ate?: string | null;
   detalhe: string;
   reaberto?: boolean;
+  /** Aviso de estado agrupado por veículo: os itens que ele junta. */
+  itens?: { nome: string; gravidade: "critico" | "moderado"; chave: string }[];
+  sem_cor?: boolean;
 };
 
 export type RespostaPainel = {

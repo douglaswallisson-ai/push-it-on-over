@@ -13,6 +13,7 @@ import {
   MapPin,
   Moon,
   Plus,
+  Search,
   Route,
   Save,
   ShieldAlert,
@@ -187,6 +188,26 @@ export default function RoteirizacaoReal() {
   const [eixos, setEixos] = useState(3);
   const [tarifa, setTarifa] = useState("");
   const [busca, setBusca] = useState("");
+  // Endereço digitado (PM, 06/11/2026: "como no Maps"). Busca ao apertar Enter: o mapa público não aceita autocompletar.
+  const [endereco, setEndereco] = useState("");
+  const [achados, setAchados] = useState<{ nome: string; lat: number; lng: number }[] | null>(null);
+  const [buscandoEndereco, setBuscandoEndereco] = useState(false);
+  const buscarEndereco = async () => {
+    if (endereco.trim().length < 3) return;
+    setBuscandoEndereco(true);
+    try {
+      const r = await api.get<{ itens: { nome: string; lat: number; lng: number }[] }>(
+        `/api/v1/roteirizacao/buscar-endereco?q=${encodeURIComponent(endereco.trim())}`,
+      );
+      setAchados(r.itens);
+      if (!r.itens.length)
+        toast.warning("Endereço não encontrado. Confira a cidade ou clique no mapa.");
+    } catch (e) {
+      toast.error(mensagemErro(e));
+    } finally {
+      setBuscandoEndereco(false);
+    }
+  };
   const [res, setRes] = useState<Resultado | null>(null);
   const [calculando, setCalculando] = useState(false);
   const [origemTxt, setOrigemTxt] = useState<string | null>(null);
@@ -457,8 +478,8 @@ export default function RoteirizacaoReal() {
       <>
         <PageHeader title="Roteirização" subtitle="Rota, tempo, combustível e pedágio" />
         <p className="mx-auto max-w-[1760px] px-4 pt-3 text-[13px] text-muted-foreground md:px-6">
-          Para as rotas do cliente, as áreas de risco e a programação, escolha uma empresa no topo do
-          menu. A rota automática de fretamento abaixo não depende da empresa.
+          Para as rotas do cliente, as áreas de risco e a programação, escolha uma empresa no topo
+          do menu. A rota automática de fretamento abaixo não depende da empresa.
         </p>
         <FretamentoAutomatico />
       </>
@@ -833,6 +854,60 @@ export default function RoteirizacaoReal() {
               ))}
             </ol>
             <div className="relative mt-2">
+              <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={endereco}
+                onChange={(e) => {
+                  setEndereco(e.target.value);
+                  setAchados(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") buscarEndereco();
+                }}
+                placeholder="Digite o endereço e aperte Enter (rua, número, cidade)…"
+                className="h-9 w-full rounded-lg border border-border pl-8 pr-9 text-[13px]"
+              />
+              <button
+                onClick={buscarEndereco}
+                disabled={buscandoEndereco || endereco.trim().length < 3}
+                aria-label="Buscar endereço"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-secondary disabled:opacity-40"
+              >
+                {buscandoEndereco ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </button>
+              {achados && achados.length > 0 && (
+                <ul className="absolute z-[500] mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
+                  {achados.map((a, i) => (
+                    <li key={i}>
+                      <button
+                        className="w-full px-3 py-1.5 text-left text-[13px] hover:bg-secondary"
+                        onClick={() => {
+                          setPontos((ps) => [
+                            ...ps,
+                            {
+                              id: novoId(),
+                              nome: a.nome.split(",").slice(0, 3).join(",").trim(),
+                              latitude: a.lat,
+                              longitude: a.lng,
+                              parada_min: ps.length ? 30 : 0,
+                            },
+                          ]);
+                          setEndereco("");
+                          setAchados(null);
+                        }}
+                      >
+                        {a.nome}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="relative mt-2">
               <Plus className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={busca}
@@ -868,7 +943,7 @@ export default function RoteirizacaoReal() {
               )}
             </div>
             <p className="mt-2 text-[12px] text-muted-foreground">
-              Ou clique no mapa para incluir um ponto. A primeira é a origem e a última, o destino.
+              Também dá para clicar no mapa. O primeiro ponto é a origem e o último, o destino.
             </p>
           </div>
         </section>

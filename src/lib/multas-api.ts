@@ -99,7 +99,7 @@ export type DetalheMulta = {
 export const quadroMultasQuery = (grupo: string) =>
   queryOptions({
     queryKey: ["multas", "quadro", grupo],
-    queryFn: () => api.get<QuadroMultas>(`/api/v1/cco/multas${grupo ? `?group_id=${grupo}` : ""}`),
+    queryFn: () => api.get<QuadroMultas>(`/api/v1/multas${grupo ? `?group_id=${grupo}` : ""}`),
     refetchInterval: 5 * 60_000,
     staleTime: 60_000,
   });
@@ -107,15 +107,15 @@ export const quadroMultasQuery = (grupo: string) =>
 export const detalheMultaQuery = (id: number) =>
   queryOptions({
     queryKey: ["multas", "detalhe", id],
-    queryFn: () => api.get<DetalheMulta>(`/api/v1/cco/multas/${id}`),
+    queryFn: () => api.get<DetalheMulta>(`/api/v1/multas/${id}`),
     staleTime: 60_000,
   });
 
 export const moverMulta = (id: number, para: ChaveColuna) =>
-  api.post<{ coluna: ChaveColuna }>(`/api/v1/cco/multas/${id}/mover`, { para });
+  api.post<{ coluna: ChaveColuna }>(`/api/v1/multas/${id}/mover`, { para });
 
 export const marcarAvisosVistos = (ultimo_id: number) =>
-  api.post<{ ok: boolean }>(`/api/v1/cco/multas/avisos/visto`, { ultimo_id });
+  api.post<{ ok: boolean }>(`/api/v1/multas/avisos/visto`, { ultimo_id });
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -123,7 +123,7 @@ const BASE = import.meta.env.VITE_API_BASE ?? "";
 export async function anexarBoleto(id: number, arquivo: File): Promise<void> {
   const corpo = new FormData();
   corpo.append("arquivo", arquivo);
-  const res = await requisicaoAutenticada(`${BASE}/api/v1/cco/multas/${id}/boleto`, {
+  const res = await requisicaoAutenticada(`${BASE}/api/v1/multas/${id}/boleto`, {
     method: "POST",
     body: corpo,
   });
@@ -131,7 +131,7 @@ export async function anexarBoleto(id: number, arquivo: File): Promise<void> {
 }
 
 export async function abrirBoleto(id: number): Promise<void> {
-  const res = await requisicaoAutenticada(`${BASE}/api/v1/cco/multas/${id}/boleto`);
+  const res = await requisicaoAutenticada(`${BASE}/api/v1/multas/${id}/boleto`);
   if (!res.ok) throw new Error(await res.text());
   const url = URL.createObjectURL(await res.blob());
   window.open(url, "_blank", "noopener");
@@ -140,4 +140,4 @@ export async function abrirBoleto(id: number): Promise<void> {
 
 /** Registra a geração na auditoria e devolve os dados do relatório. */
 export const gerarRelatorioMulta = (id: number) =>
-  api.post<DetalheMulta>(`/api/v1/cco/multas/${id}/relatorio`, {});
+  api.post<DetalheMulta>(`/api/v1/multas/${id}/relatorio`, {});

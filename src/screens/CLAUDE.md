@@ -30,7 +30,7 @@ Legenda de situação:
 | Frota/Urbano/Fretamento › Escala de viagem | `/app/escala-viagem` | `EscalaViagem.tsx` | Real | `escala-viagem` |
 | Frota/Fretamento › Roteirização | `/app/fretamento/roteirizacao` | `roteirizacao/RoteirizacaoReal.tsx` (demonstração: `RoteirizacaoOtimizada.tsx`) | Real | `roteirizacao`, `cadastros/rota` |
 | Frota › Checklist β | `/app/frota/checklist` | `Checklist.tsx` | Protótipo (API Gateway separada, não configurada) | — |
-| Frota › Multas β | `/app/pessoas/multas` | `Multas.tsx` | Real, sem dados até o e-Frotas ser ligado | `cco/multas` |
+| Frota › Multas β | `/app/pessoas/multas` | `Multas.tsx` | Real, sem dados até o e-Frotas ser ligado | `multas` |
 | Urbano › Painel sinótico | `/app/operacao/sinotico` | `PainelSinotico.tsx` | Casca → `operacao/SinoticoUrbano` | `sinotico` |
 | Urbano › Gestão de viagens | `/app/operacao/viagens` | `GestaoViagens.tsx` | Casca → `OperacaoLinhas.tsx` | `operacao` |
 | Urbano › Padrão por linha β | `/app/urbano/padrao` | `PadraoPorLinha.tsx` | Protótipo | — |
@@ -43,7 +43,7 @@ Legenda de situação:
 | Manutenção › Painel | `/app/manutencao/` | `Manutencao.tsx` | Casca → `manutencao/ManutencaoReal` | `manutencao` |
 | Manutenção › Sinais do motor | `/app/frota/sinais` | `SinaisCAN.tsx` | Real (esconde heartbeats; marcha válida) | `reports/history/detailed` |
 | Manutenção › Ordens | `/app/manutencao/ordens` | `OrdensServico.tsx` | Casca → `ManutencaoReal` (corretiva) | `manutencao` |
-| Manutenção › Pneus β | `/app/manutencao/pneus` | `Pneus.tsx` | Real (MVP) | `cco/pneus` |
+| Manutenção › Pneus β | `/app/manutencao/pneus` | `Pneus.tsx` | Real (MVP) | `pneus` |
 | Manutenção › DTC β / DPF β | `diagnostico`, `regeneracao` | `DiagnosticoDTC.tsx`, `Regeneracao.tsx` | Protótipo | — |
 | Gerencial | `/app/gerencial` | `Gerencial.tsx` | Casca → `RelatoriosGerenciais.tsx` + `gerencial/*` | `bi`, `gerencial`, `relevo` |
 | IA Ops Advisor | `/app/estrategico` | `IAFleetManager.tsx` (+ `ai-fleet/PainelReal`) | Real | `ai-fleet` |

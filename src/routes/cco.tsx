@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 import { estaAutenticado } from "@/lib/session";
 
 /**
@@ -23,6 +24,8 @@ function Tela() {
   return (
     <Suspense fallback={carregando}>
       <PainelCCO />
+      {/* Fora do menu não há o AppShell: sem isto, nenhum aviso do CCO aparecia (nem os de erro). */}
+      <Toaster position="bottom-right" richColors closeButton />
     </Suspense>
   );
 }
